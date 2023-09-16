@@ -11,7 +11,6 @@ class userModel{
 
     static async autenticar(email, senha){
         let user = await db.query(`SELECT * FROM usuario WHERE email = '${email}' AND senha = '${md5(senha)}'`);
-        console.log(user);
         return user; 
     }
 

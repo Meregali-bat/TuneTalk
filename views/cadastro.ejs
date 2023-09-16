@@ -4,23 +4,23 @@
             <div class="col-4"></div>
             <div class="col-4 container-fluid">
                 <div class="row">
-                    <form action="" id="container__central__form">           
+                    <form action="/cadastrar" method="post" id="container__central__form">
                         <label for="container__central__form__imagem" id="container__central__form__label">
                             <i id="icone" class="bi bi-person-fill"></i>
-                            <span class="picture__img"></span> 
+                            <span class="picture__img"></span>
                         </label>
                         <input type="file" name="imagem" id="container__central__form__imagem">
                         <div id="container__central__form__nomeSobrenome">
-                            <input type="text" name="nome" id="container__central__form__nome" placeholder="Nome">
-                            <input type="text" name="sobrenome" id="container__central__form__sobrenome" placeholder="Sobrenome">
+                            <input type="text" name="nome" id="container__central__form__nome" placeholder="Nome" required>
                         </div>
                 </div>
-                <input type="text" name="email" id="container__central__form__email" placeholder="E-mail">
-                <input type="password" name="senha" id="container__central__form__senha" placeholder="Senha">
-                <input type="password" name="confirmarSenha" id="container__central__form__confirmarSenha" placeholder="Confirmar senha">
-                <button type="submit" id="container__central__form__button"><a href="/login" class="link">Criar conta</a></button>
-            </form>
-            <p id="logar">já tem uma conta? <a href="/login" class="link">Faça login aqui</a></p>
+                <input type="text" name="email" id="container__central__form__email" placeholder="E-mail" required>
+                <input type="password" name="senha" id="container__central__form__senha" placeholder="Senha" required>
+                <input type="password" name="confirmarSenha" id="container__central__form__confirmarSenha"
+                    placeholder="Confirmar senha" required>
+                <button type="submit" id="container__central__form__button">Criar conta</button>
+                </form>
+                <p id="logar">já tem uma conta? <a href="/login">Faça login aqui</a></p>
             </div>
             <div class="col-4"></div>
         </div>

@@ -85,10 +85,22 @@ app.post('/login', (req, res) => {
     controllerUsuario.autenticar(req, res);
 });
 
+app.get('/foryou', (req, res) => {
+    res.render('foryouPage');
+});
+
 app.get('/logout', (req, res) => {
     controllerUsuario.logout(req, res);
 });
 
 app.listen(port, () => {
     console.log(`Servidor rodando em http://localhost:${port}`);
+});
+
+app.post('/cadastrar', (req, res) => {
+    controllerUsuario.cadastrar(req, res);
+});
+
+app.get('/perfil', (req, res) => {
+    res.render('perfilPage');
 });

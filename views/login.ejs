@@ -1,19 +1,22 @@
-<body>
-    <main>
-        <div id="background">
-            <div class="col-4"></div>
-            <div class="col-4 container-fluid">
-                <h1 id="container__central__titulo">TuneTalk</h1>
-                <form action="" id="container__central__forms">
-                    <input id="container__central__forms__nome" type="text" placeholder="Email">
-                    <input id="container__central__forms__senha" type="password" placeholder="Senha">
+<div class="container-fluid">
+    <div class="row">
+        <div class="col-md-12">
+            <div class="d-flex justify-content-center align-items-center tela">
+                <form action="/login" method="post">
+                    <h1 class="text-center mb-4">Login</h1>
+                    <div class="mb-3">
+                        <label for="email" class="form-label">email</label>
+                        <input type="email" class="form-control" id="email" name="email" placeholder="exemplo@gmail.com" required>
+                    </div>
+                    <div class="mb-3">
+                        <label for="senha" class="form-label">senha</label>
+                        <input type="password" class="form-control" id="senha" name="senha" placeholder="12345" autocomplete="off" required>
+                    </div>
+                    <div class="d-grid">
+                        <button type="submit" class="btn btn-primary btn-lg">Login</button>
+                    </div>
                 </form>
-                <button id="container__central__botao"><a id="container__central__novo__link" href="./indexPerfil.html">entrar</a></button>
-                <p id="container__central__novo">Não tem uma conta? <a id="container__central__novo__link" href="/cadastrar">Crie-a aqui</a></p>
-                <p id="container__central__direito">© 2023 TuneTalk. Todos os direitos reservados.<br>Termos de Serviço
-                    | Política de Privacidade</p>
             </div>
-            <div class="col-4"></div>
         </div>
-    </main>
-</body>
+    </div>
+</div>
