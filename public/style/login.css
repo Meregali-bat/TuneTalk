@@ -1,0 +1,135 @@
+@import url('https://fonts.googleapis.com/css2?family=EB+Garamond&family=Geologica:wght@300&family=Raleway&display=swap');
+
+#corpo{
+    background-color: #14181D;
+}
+
+.link{
+    color: #fff;
+    text-decoration: none;
+}
+
+header{
+    background-image: url("/img/background.svg");
+    background-repeat: no-repeat;
+    background-position: top;
+    background-size: 70vw 70vh;
+    height: 70vh;
+}
+
+#header__titulo{
+    font-family: 'Raleway', sans-serif;
+    font-size: 3.5rem;
+    color: #fff;
+    text-align: center;
+    
+}
+#header__links{
+    font-family: 'Geologica', sans-serif;
+    font-size: 1rem;
+    color: #fff;
+}
+
+#header__links a{
+    color: #fff;
+    text-decoration: none;
+}
+
+#header__links a:hover{
+    color: #fff;
+    text-decoration: underline;
+    cursor: pointer;
+}
+
+#searchbar{
+    background-color: #888;
+    border-radius: 60px;
+    border: none;
+    opacity: calc(60%);
+    color: #fff;
+    font-family: 'Geologica', sans-serif;
+    font-size: 1rem;
+    padding: 0.5rem;
+}
+
+#searchbar:focus{
+    outline: none;
+    box-shadow: none;
+}
+
+#searchbar::-webkit-search-cancel-button {
+    -webkit-appearance: none;
+    appearance: none;
+    display: none;
+}
+
+#icon__searchbar{
+    color: #fff;
+    font-size: 1.5rem;
+    padding: 0.5rem;
+}
+
+#header__Subtitulo{
+    font-family: 'EB Garamond', serif;
+    font-size: 2,5rem;
+    color: #fff;
+    margin-top: 32vh;
+}
+
+#main__btn{
+    background-color:#4E9F3D;
+    width: 80%;
+    height: 3rem;
+    border-radius: 3px; 
+    font-family: 'Geologica', sans-serif;  
+    font-size: 1rem;
+    color: #fff;
+    text-align: center;
+    margin: 0 auto;
+    display: block;
+    border: none;
+    
+}
+
+#disponibilidade{
+    font-family: 'Geologica', sans-serif;
+    font-size: 1.8rem;
+    color: #fff;
+    text-align: center;
+    margin: 0 auto;
+    display: block;
+    margin-top: 4vh;
+}
+
+#disponibilidade__texto{
+    margin: 0 auto;
+    display: block;
+    font-size: 1.5rem;
+}
+
+#disponibilidade i{
+    color: #4E9F3D;
+}
+
+#beneficios{
+    font-family: 'Geologica', sans-serif;
+    font-size: 1.8rem;
+    color: #fff;
+
+    margin: 0 auto;
+    display: block;
+    margin-top: 4vh;
+}
+
+.beneficios__spans{
+    font-family: 'Geologica', sans-serif;
+    font-size: 1rem;
+    width: 312px;
+    height: 102px;
+    color: #9d9d9d;
+    background-color: #191919;
+    border-radius: 10px;
+    padding: 10px;
+    margin: 0 10px 10px 0 ;
+}
+
