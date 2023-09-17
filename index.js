@@ -8,6 +8,7 @@ const session = require('express-session');
 const modelUsuario = require('./models/modelUsuario.js');
 const multer = require('multer');
 const path = require('path');
+const controllerPost = require('./controllers/controllerPost.js');
 
 app.use(session({
     secret: 'l1u2c3a4s5',
@@ -26,7 +27,7 @@ app.use(express.static(path.join(__dirname, 'public')));
 
 const storage = multer.diskStorage({
     destination: function (req, file, cb) {
-        cb(null, 'public/uploads/') // Diretório onde os arquivos serão salvos
+        cb(null, 'public/uploads/')
     },
     filename: function (req, file, cb) {
         cb(null, file.originalname)
@@ -38,7 +39,7 @@ const upload = multer({
 });
 
 app.use((req, res, next) => {
-    if (!req.session.usuario) {
+    if (!req.session.user) {
         if (req.originalUrl == '/' ||  req.originalUrl == '/login' || req.originalUrl == '/cadastrar') {
             app.set('layout', './layouts/default/login');
             res.locals.layoutVariables = {
@@ -46,7 +47,7 @@ app.use((req, res, next) => {
                 img: "/img/",
                 style: "/style/",
                 title: "TuneTalk",
-                usuario: req.session.usuario
+                user: req.session.user
             };
             next();
         } else {
@@ -59,7 +60,7 @@ app.use((req, res, next) => {
             img: "/img/",
             style: "/style/",
             title: "TuneTalk",
-            usuario: req.session.usuario
+            user: req.session.user
         };
         next();
     }
@@ -89,6 +90,10 @@ app.get('/foryou', (req, res) => {
     res.render('foryouPage');
 });
 
+app.get('/perfil', (req, res) => {
+    res.render('perfil');
+});
+
 app.get('/logout', (req, res) => {
     controllerUsuario.logout(req, res);
 });
@@ -97,10 +102,7 @@ app.listen(port, () => {
     console.log(`Servidor rodando em http://localhost:${port}`);
 });
 
+
 app.post('/cadastrar', (req, res) => {
     controllerUsuario.cadastrar(req, res);
-});
-
-app.get('/perfil', (req, res) => {
-    res.render('perfilPage');
 });

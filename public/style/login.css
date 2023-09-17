@@ -63,12 +63,6 @@ header{
     display: none;
 }
 
-#icon__searchbar{
-    color: #fff;
-    font-size: 1.5rem;
-    padding: 0.5rem;
-}
-
 #header__Subtitulo{
     font-family: 'EB Garamond', serif;
     font-size: 2,5rem;

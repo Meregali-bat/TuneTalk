@@ -16,6 +16,7 @@ async function autenticar(req, res){
                 email: resp[0].email
             };
             res.redirect('/foryou');
+            console.log(req.session.user);
         }else{
             res.redirect('/login');
         }
@@ -29,6 +30,7 @@ async function cadastrar(req, res){
         res.redirect('/login');
     }
 };
+
 
 module.exports = {
     login,

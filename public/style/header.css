@@ -1,0 +1,54 @@
+header{
+    background-color: #191A19;
+    height: 15vh;
+    width: 100%;
+    display: flex;
+    align-items: center;
+}
+
+#header__titulo{
+    font-family: 'Raleway', sans-serif;
+    font-size: 3.5rem;
+    color: #fff;
+    text-align: center;
+    
+}
+#header__links{
+    font-family: 'Geologica', sans-serif;
+    font-size: 1rem;
+    color: #fff;
+}
+
+#header__links a{
+    color: #fff;
+    text-decoration: none;
+}
+
+#searchbar{
+    background-color: #888;
+    border-radius: 60px;
+    border: none;
+    opacity: calc(60%);
+    color: #fff;
+    font-family: 'Geologica', sans-serif;
+    font-size: 1rem;
+    padding: 0.5rem;
+}
+
+#searchbar:focus{
+    outline: none;
+    box-shadow: none;
+}
+
+#searchbar::-webkit-search-cancel-button {
+    -webkit-appearance: none;
+    appearance: none;
+    display: none;
+}
+
+#header__Subtitulo{
+    font-family: 'EB Garamond', serif;
+    font-size: 2,5rem;
+    color: #fff;
+    margin-top: 32vh;
+}
