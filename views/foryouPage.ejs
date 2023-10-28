@@ -1,1 +1,23 @@
-<h1>area de Foryou</h1>
+<div class="row mt-5" style="margin: 0;">
+    <div class="col-3"></div>
+    <% posts.forEach((post) => { %>
+    <div class="col-md-6">
+        <div class="card mb-4" style="border: none;">
+            <div class="card-body" id="post-container">
+                <h2><%= post.title %></h2>
+                <p class="card-text"><%= post.texto %></p>
+                <div class="d-flex justify-content-between align-items-center">
+                    <small><i class="bi bi-share"></i></small>
+                    <a href="/post/curtir/<%- post.idpost %>"><i class="bi bi-heart btn botao-like" ></i> <%= post.likes %>  </small></a>
+                </div>
+            </div>
+        </div>
+    </div>
+    <% }); %>
+    <div class="col-3"></div>
+</div>
+<div class="fixed-bottom mb-5 mr-5">
+    <a href="/create-post" class="botão-criarpost">
+        <i class="bi bi-plus"></i>
+    </a>
+</div>

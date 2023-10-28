@@ -9,6 +9,7 @@ const modelUsuario = require('./models/modelUsuario.js');
 const multer = require('multer');
 const path = require('path');
 const controllerPost = require('./controllers/controllerPost.js');
+const modelPost = require('./models/modelPost.js');
 
 app.use(session({
     secret: 'l1u2c3a4s5',
@@ -86,10 +87,6 @@ app.post('/login', (req, res) => {
     controllerUsuario.autenticar(req, res);
 });
 
-app.get('/foryou', (req, res) => {
-    res.render('foryouPage');
-});
-
 app.get('/perfil', (req, res) => {
     res.render('perfil');
 });
@@ -97,6 +94,13 @@ app.get('/perfil', (req, res) => {
 app.get('/logout', (req, res) => {
     controllerUsuario.logout(req, res);
 });
+
+app.get('/post/curtir/:idpost', (req, res) => {
+    controllerPost.darLike(req, res);
+});
+
+app.get('/foryou', controllerPost.listarPosts);
+app.post('/post/curtir/:idpost', controllerPost.darLike);
 
 app.listen(port, () => {
     console.log(`Servidor rodando em http://localhost:${port}`);

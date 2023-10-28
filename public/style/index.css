@@ -1,0 +1,40 @@
+:root {
+    --texto: #fff;
+    --background: #14181D;
+    --destaque: #4E9F3D;
+}
+
+*{
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+
+body{
+    background-color: var(--background);
+    font-family: 'Geologica', sans-serif;
+}
+
+#post-container{
+    background-color: var(--background);
+    color: var(--destaque);
+    
+}
+
+.botão-criarpost{
+   padding: 1rem;
+   margin-left: 1rem;
+   background-color: var(--destaque);
+   border-radius: 50%;
+   color: #000;
+   font-size: 2rem;
+}
+
+.botao-like:not(:hover){
+    color: var(--destaque);
+}
+
+a{
+    color: var(--texto);
+    text-decoration: none;
+}
