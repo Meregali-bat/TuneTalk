@@ -1,21 +1,26 @@
-<div class="container-fluid">
-    <div class="row">
-        <div class="col-md-12">
-            <div class="d-flex justify-content-center align-items-center tela">
-                <form action="/login" method="post">
-                    <h1 class="text-center mb-4">Login</h1>
-                    <div class="mb-3">
-                        <label for="email" class="form-label">email</label>
-                        <input type="email" class="form-control" id="email" name="email" placeholder="exemplo@gmail.com" required>
-                    </div>
-                    <div class="mb-3">
-                        <label for="senha" class="form-label">senha</label>
-                        <input type="password" class="form-control" id="senha" name="senha" placeholder="12345" autocomplete="off" required>
-                    </div>
-                    <div class="d-grid">
-                        <button type="submit" class="btn btn-primary btn-lg">Login</button>
-                    </div>
-                </form>
+<div id="bodyLogin">
+    <div class="container-fluid containerInputs" >
+        <div class="row">
+            <div class="col-md-12">
+                <div class="d-flex justify-content-center align-items-center tela">
+                    <form action="/login" method="post">
+                        <h1 class="text-center mb-4">Login</h1>
+                        <div class="mb-3">
+                            <label for="email" class="form-label">email</label>
+                            <input type="email" class="form-control" id="email" name="email" placeholder="exemplo@gmail.com" required>
+                        </div>
+                        <div class="mb-3">
+                            <label for="senha" class="form-label">senha</label>
+                            <input type="password" class="form-control" id="senha" name="senha" placeholder="12345" autocomplete="off" required>
+                        </div>
+                        <div class="d-grid">
+                            <button type="submit" class="btn btn-primary btn-lg">Login</button>
+                        </div>
+                        <a href="/cadastrar">
+                            <span class="novoUsuario">Não tem uma conta ainda? Cadastre-se aqui</span>
+                        </a>
+                    </form>
+                </div>
             </div>
         </div>
     </div>
