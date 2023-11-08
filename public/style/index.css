@@ -15,7 +15,7 @@ body{
     font-family: 'Geologica', sans-serif;
 }
 
-#post-container{
+.post-container{
     background-color: var(--background);
     color: var(--destaque);
     
@@ -138,3 +138,14 @@ a{
     object-fit: cover;
     margin-right: 10px;
 }
+
+#comment{
+    margin-left: 1rem;
+    width: 70%;
+    height: 100%;
+}
+
+#music-name{
+    color: #fff;
+}
+

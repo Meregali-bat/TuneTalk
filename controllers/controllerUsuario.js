@@ -11,7 +11,7 @@ async function autenticar(req, res) {
     const resp = await userModel.autenticar(req.body.email, req.body.senha);
     if (resp.length > 0) {
       req.session.user = {
-        id: resp[0].id,
+        id: resp[0].idUsuario,
         nome: resp[0].nome,
         email: resp[0].email,
       };

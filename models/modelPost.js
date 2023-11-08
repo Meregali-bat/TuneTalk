@@ -2,11 +2,12 @@
 const db = require('./dbModel.js');
 
 class Post {
-  constructor(idpost, texto, idUsuario, likes) {
+  constructor(idpost, texto, usuario_idusuario, likes, musicName) {
     this.idpost = idpost;
     this.texto = texto;
-    this.idUsuario = idUsuario;
+    this.usuario_idusuario = usuario_idusuario;
     this.likes = likes;
+    this.musicName = musicName;
   }
 
   static async listarPosts() {
@@ -17,11 +18,7 @@ class Post {
 
   async postar() {
     const post = await db.query(`INSERT INTO post 
-    (texto, likes, usuario_idusuario, musica) 
-    VALUES ('${this.texto}',
-     '${this.likes}', 
-     '${this.usuario_idusuario}', 
-     '${this.musica}')`);
+    (texto, likes, usuario_idusuario, musicName) VALUES ('${this.texto}','${this.likes}', '${this.usuario_idusuario}', '${this.musicName}')`);
     return post;
   }
 

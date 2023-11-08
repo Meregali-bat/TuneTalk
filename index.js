@@ -96,10 +96,6 @@ app.get('/artistas', (req, res) => {
   });
   
 
-app.get('/create-post', (req, res) => {
-  res.render('create-post');
-});
-
 app.get('/logout', (req, res) => {
   controllerUsuario.logout(req, res);
 });
@@ -108,8 +104,13 @@ app.get('/post/curtir/:idpost', (req, res) => {
   controllerPost.darLike(req, res);
 });
 
+app.get('/create-post', (req, res) => {
+  controllerPost.criarPost(req, res);
+});
+
 app.get('/foryou', controllerPost.listarPosts);
 app.post('/post/curtir/:idpost', controllerPost.darLike);
+app.post('/create-post', controllerPost.criarPost);
 
 app.listen(port, () => {
   console.log(`Servidor rodando em http://localhost:${port}`);
