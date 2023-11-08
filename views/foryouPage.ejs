@@ -1,29 +1,37 @@
 <div class="row mt-5" style="margin: 0;">
-    
     <% posts.forEach((post) => { %>
-        <div class="col-3"></div>
-    <div class="col-md-6">
+    <div class="col-2"></div>
+    <div class="col-md-8">
         <div class="card mb-4" style="border: none;">
-            <div class="card-body post-container" >
-                <h2><%= post.musicName %></h2> <!-- Adicionado aqui -->
+            <div class="card-body post-container">
+                <h2><%= post.musicName %></h2>
+                <h3 class="artist-name"><%= post.artistName %></h3>
+                <h4 class="username"><%= post.autor %></h4>
                 <h2><%= post.title %></h2>
                 <p class="card-text"><%= post.texto %></p>
                 <div class="d-flex justify-content-between align-items-center">
                     <small><i class="bi bi-share"></i></small>
-                    <a href="/post/curtir/<%- post.idpost %>"><i class="bi bi-heart btn botao-like" ></i> <%= post.likes %>  </small></a>
+                    <button type="button" class="btn botao-like" data-bs-toggle="collapse" data-bs-target="#comments<%= post.idpost %>" aria-expanded="false" aria-controls="comments<%= post.idpost %>">
+                        <i class="bi bi-chat"></i>
+                    </button>
+                    <a href="/post/curtir/<%- post.idpost %>"><i class="bi bi-heart btn botao-like"></i>
+                        <%= post.likes %> </small></a>
+                </div>
+                <div class="collapse comments" id="comments<%= post.idpost %>">
+                    <% post.comentarios.forEach((comentario) => { %>
+                        <p class="comment"><strong><%= comentario.autor %>:</strong> <%= comentario.texto %></p>
+                    <% }); %>
                 </div>
             </div>
         </div>
     </div>
-    <div class="col-3"></div>
-    <% }); %>   
+    <div class="col-2"></div>
+    <% }); %>
 </div>
 <div class="fixed-bottom mb-5 mr-5">
-        <span class="botão-criarpost"><i class="bi bi-plus"></i></span>
-        <div id="overlay"></div>
-        <div id="search-bar">
-            <input type="text" id="search-input" placeholder="Digite a música">
-            <div id="search-results"></div>
-        </div>
-</div>
-
+    <span class="botão-criarpost"><i class="bi bi-plus"></i></span>
+    <div id="overlay"></div>
+    <div id="search-bar">
+        <input type="text" id="search-input" placeholder="Digite a música">
+        <div id="search-results"></div>
+    </div>

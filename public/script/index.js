@@ -50,6 +50,7 @@ function searchFunction(e) {
                             <form action="/create-post" method="post">
                                 <input id="texto" name="texto" type="text">
                                 <input id="musicName" name="musicName" type="hidden" value="${track.name}">
+                                <input id="artistName" name="artistName" type="hidden" value="${track.artist}">
                                 <button type="submit" class="botão-criarpost">Postar</button>
                             </form>
                         `;

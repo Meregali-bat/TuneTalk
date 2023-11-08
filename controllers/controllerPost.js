@@ -25,10 +25,10 @@ async function criarPost(req, res) {
   }
   
   // Coleta os dados do post do corpo da solicitação
-  const { texto, musicName } = req.body;
+  const { texto, musicName, artistName } = req.body;
 
   // Cria uma nova instância do modelo Post
-  const post = new Post(0, texto, req.session.user.id, 0, musicName);
+  const post = new Post(0, texto, req.session.user.id, 0, musicName, artistName);
   try {
     await post.postar();
     res.redirect('/foryou');
