@@ -111,6 +111,7 @@ app.get('/create-post', (req, res) => {
 app.get('/foryou', controllerPost.listarPosts);
 app.post('/post/curtir/:idpost', controllerPost.darLike);
 app.post('/create-post', controllerPost.criarPost);
+app.post('/comentarios', controllerPost.comentar);
 
 app.listen(port, () => {
   console.log(`Servidor rodando em http://localhost:${port}`);

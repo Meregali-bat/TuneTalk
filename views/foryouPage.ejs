@@ -11,16 +11,27 @@
                 <p class="card-text"><%= post.texto %></p>
                 <div class="d-flex justify-content-between align-items-center">
                     <small><i class="bi bi-share"></i></small>
-                    <button type="button" class="btn botao-like" data-bs-toggle="collapse" data-bs-target="#comments<%= post.idpost %>" aria-expanded="false" aria-controls="comments<%= post.idpost %>">
+                    <button type="button" class="btn botao-like" data-bs-toggle="collapse"
+                        data-bs-target="#comments<%= post.idpost %>" aria-expanded="false"
+                        aria-controls="comments<%= post.idpost %>">
                         <i class="bi bi-chat"></i>
                     </button>
                     <a href="/post/curtir/<%- post.idpost %>"><i class="bi bi-heart btn botao-like"></i>
                         <%= post.likes %> </small></a>
                 </div>
                 <div class="collapse comments" id="comments<%= post.idpost %>">
+                    <form id="comentario-form-<%= post.idpost %>" action="/comentarios" method="POST">
+                        <input type="hidden" name="post_id" value="<%= post.idpost %>">
+                        <input type="text" name="texto" class="comment-input" placeholder="Adicione um comentário..."
+                            required>
+                        <button type="submit" class="comment-button">Responder</button>
+                    </form>
                     <% post.comentarios.forEach((comentario) => { %>
-                        <p class="comment"><strong><%= comentario.autor %>:</strong> <%= comentario.texto %></p>
+                        <p class="comment">
+                            <strong><%= comentario.autor %>:</strong> <%= comentario.texto %>
+                        </p>
                     <% }); %>
+                    
                 </div>
             </div>
         </div>
@@ -28,10 +39,10 @@
     <div class="col-2"></div>
     <% }); %>
 </div>
-<div class="fixed-bottom mb-5 mr-5">
+<div class="fixed-bottom mb-3">
     <span class="botão-criarpost"><i class="bi bi-plus"></i></span>
     <div id="overlay"></div>
     <div id="search-bar">
         <input type="text" id="search-input" placeholder="Digite a música">
         <div id="search-results"></div>
-    </div>
+    </div>  

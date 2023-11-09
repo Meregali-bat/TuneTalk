@@ -206,10 +206,16 @@ CREATE TABLE IF NOT EXISTS `tunetalk`.`comentarios` (
   `likes` INT NULL,
   `post_idpost` INT NOT NULL,
   `post_usuario_idusuario` INT NOT NULL,
+  `autor_idusuario` INT NOT NULL,
   PRIMARY KEY (`post_idpost`, `post_usuario_idusuario`),
   CONSTRAINT `fk_comentarios_post1`
     FOREIGN KEY (`post_idpost` , `post_usuario_idusuario`)
     REFERENCES `tunetalk`.`post` (`idpost` , `usuario_idusuario`)
+    ON DELETE NO ACTION
+    ON UPDATE NO ACTION,
+  CONSTRAINT `fk_comentarios_usuario`
+    FOREIGN KEY (`autor_idusuario`)
+    REFERENCES `tunetalk`.`usuario` (`idusuario`)
     ON DELETE NO ACTION
     ON UPDATE NO ACTION)
 ENGINE = InnoDB;

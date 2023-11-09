@@ -39,8 +39,26 @@ async function criarPost(req, res) {
   }
 }
 
+async function comentar(req, res) {
+  // Verifica se o usuário está logado
+  if (!req.session.user) {
+      res.status(401).json({ message: 'Please log in to comment' });
+      return;
+  }
+
+  // Coleta os dados do comentário do corpo da solicitação
+  const { post_id, texto } = req.body;
+
+  // Insere o comentário no banco de dados
+  await Post.comentar(post_id, req.session.user.id, texto);
+
+  // Redireciona o usuário de volta para a página de posts
+  res.redirect('/foryou');
+}
+
 module.exports = {
   listarPosts,
   darLike,
   criarPost, 
+  comentar
 };

@@ -14,13 +14,16 @@ class Post {
   static async listarPosts() {
     const posts = await db.query(`
       SELECT post.*, usuario.nome AS autor, 
-      GROUP_CONCAT(CONCAT(comentarios.texto, '||', usuario.nome)) AS comentarios
+      GROUP_CONCAT(CONCAT(comentarios.texto, '||', comentario_autor.nome)) AS comentarios
       FROM post 
       JOIN usuario ON post.usuario_idusuario = usuario.idusuario
       LEFT JOIN comentarios ON post.idpost = comentarios.post_idpost
-      LEFT JOIN usuario AS comentario_autor ON comentarios.post_usuario_idusuario = comentario_autor.idusuario
+      LEFT JOIN usuario AS comentario_autor ON comentarios.autor_idusuario = comentario_autor.idusuario
       GROUP BY post.idpost
+      ORDER BY post.idpost DESC
     `);
+
+    console.log(posts);
 
     return posts.map(post => ({
       ...post,
@@ -32,7 +35,24 @@ class Post {
         };
       }) : []
     }));
-  }
+}
+
+  static async comentar(idpost, idusuario, texto) {
+    // Primeiro, obtenha o post_usuario_idusuario para o post
+    const post = await db.query(`
+        SELECT usuario_idusuario 
+        FROM post 
+        WHERE idpost = '${idpost}'
+    `);
+
+    // Em seguida, insira o comentário no banco de dados
+    const comentario = await db.query(`
+        INSERT INTO comentarios (post_idpost, post_usuario_idusuario, autor_idusuario, texto) 
+        VALUES ('${idpost}', '${post[0].usuario_idusuario}', '${idusuario}', '${texto}')
+    `);
+    console.log(comentario);
+    return comentario;
+}
 
   async postar() {
     const post = await db.query(`INSERT INTO post 
