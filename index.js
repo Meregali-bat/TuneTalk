@@ -12,7 +12,7 @@ const bodyParser = require('body-parser');
 
 const multer = require('multer');
 const upload = multer({
-  dest: '/uploads/'
+  dest: 'uploads/'
 });
 
 cloudinary.config({
