@@ -6,20 +6,21 @@ const expressLayouts = require('express-ejs-layouts');
 const session = require('express-session');
 const path = require('path');
 const controllerPost = require('./controllers/controllerPost.js');
-require('dotenv').config();
 const cloudinary = require('cloudinary').v2;
 const bodyParser = require('body-parser');
+require('dotenv').config()
+
+cloudinary.config({
+  cloud_name: process.env.CLOUDINARY_CLOUD_NAME,
+  api_key: process.env.CLOUDINARY_API_KEY, 
+  api_secret: process.env.CLOUDINARY_API_SECRET,
+});
 
 const multer = require('multer');
 const upload = multer({
   dest: 'uploads/'
 });
 
-cloudinary.config({
-  cloud_name: 'dorm41uma',
-  api_key: '464246716741195',
-  api_secret: 'om8q7YJIwQbwZjJp4lK2v3tJJJw',
-});
 
 app.use(bodyParser.urlencoded({ extended: true }));
 app.use(bodyParser.json());
