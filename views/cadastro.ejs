@@ -1,7 +1,7 @@
 <div id="bodyLogin">
     <div id="bodyInputs">
         <div class="row">
-            <form action="/cadastrar" method="post" id="container__central__form">
+            <form action="/cadastrar" method="post" id="container__central__form" enctype="multipart/form-data">
                 <label for="container__central__form__imagem" id="container__central__form__label">
                     <i id="icone" class="bi bi-person-fill"></i>
                     <span class="picture__img"></span>
@@ -15,9 +15,10 @@
         <input type="password" name="senha" id="container__central__form__senha" placeholder="Senha" required>
         <input type="password" name="confirmarSenha" id="container__central__form__confirmarSenha"
             placeholder="Confirmar senha" required>
+        <input type="hidden" name="fotoPerfilUrl" id="fotoPerfilUrl">
+        <input type="hidden" name="publicId" id="publicId">
         <button type="submit" id="container__central__form__button">Criar conta</button>
         </form>
         <p class="novoUsuario">já tem uma conta? <a class="novoUsuario" href="/login">Faça login aqui</a></p>
     </div>
 </div>
-

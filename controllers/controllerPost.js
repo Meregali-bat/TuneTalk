@@ -47,18 +47,28 @@ async function comentar(req, res) {
   }
 
   // Coleta os dados do comentário do corpo da solicitação
-  const { post_id, texto } = req.body;
+  const { post_id, texto, idcomentario_pai } = req.body; // Use idcomentario_pai em vez de parentCommentId
 
   // Insere o comentário no banco de dados
-  await Post.comentar(post_id, req.session.user.id, texto);
+  await Post.comentar(post_id, req.session.user.id, texto, idcomentario_pai); // Use idcomentario_pai como um argumento para Post.comentar
 
   // Redireciona o usuário de volta para a página de posts
-  res.redirect('/foryou');
+  res.redirect(`/post/${post_id}`);
+}
+
+
+
+async function verPost(req, res) {
+  const post = posts.find(post => post.idpost == req.params.idpost);
+  res.render('post', {
+    post,
+  });
 }
 
 module.exports = {
   listarPosts,
   darLike,
   criarPost, 
-  comentar
+  comentar,
+  verPost
 };

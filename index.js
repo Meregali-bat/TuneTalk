@@ -4,10 +4,25 @@ const port = 3000;
 const controllerUsuario = require('./controllers/controllerUsuario.js');
 const expressLayouts = require('express-ejs-layouts');
 const session = require('express-session');
-const multer = require('multer');
 const path = require('path');
 const controllerPost = require('./controllers/controllerPost.js');
+require('dotenv').config();
+const cloudinary = require('cloudinary').v2;
+const bodyParser = require('body-parser');
 
+const multer = require('multer');
+const upload = multer({
+  dest: '/uploads/'
+});
+
+cloudinary.config({
+  cloud_name: 'dorm41uma',
+  api_key: '464246716741195',
+  api_secret: 'om8q7YJIwQbwZjJp4lK2v3tJJJw',
+});
+
+app.use(bodyParser.urlencoded({ extended: true }));
+app.use(bodyParser.json());
 
 app.use(session({
   secret: 'l1u2c3a4s5',
@@ -24,24 +39,11 @@ app.use(express.urlencoded({
 }));
 app.use(express.static(path.join(__dirname, 'public')));
 
-const storage = multer.diskStorage({
-  destination: function(req, file, cb) {
-    cb(null, 'public/uploads/');
-  },
-  filename: function(req, file, cb) {
-    cb(null, file.originalname);
-  },
-});
-
-const upload = multer({
-  storage: storage,
-});
-
 app.use((req, res, next) => {
   if (!req.session.user) {
     if (req.originalUrl == '/' ||
-     req.originalUrl == '/login' ||
-     req.originalUrl == '/cadastrar') {
+      req.originalUrl == '/login' ||
+      req.originalUrl == '/cadastrar') {
       app.set('layout', './layouts/default/login');
       res.locals.layoutVariables = {
         url: process.env.URL,
@@ -54,18 +56,23 @@ app.use((req, res, next) => {
     } else {
       res.redirect('/login');
     }
-  } else {
-    app.set('layout', './layouts/default/index');
-    res.locals.layoutVariables = {
-      url: process.env.URL,
-      img: '/img/',
-      style: '/style/',
-      title: 'TuneTalk',
-      user: req.session.user,
-    };
-    next();
+  } else if (req.session.user) {
+    if (req.originalUrl == '/login' || req.originalUrl == '/cadastrar') {
+      res.redirect('/foryou');
+    } else {
+      app.set('layout', './layouts/default/index');
+      res.locals.layoutVariables = {
+        url: process.env.URL,
+        img: '/img/',
+        style: '/style/',
+        title: 'TuneTalk',
+        user: req.session.user,
+      };
+      next();
+    }
   }
 });
+
 
 
 // Rotas
@@ -92,9 +99,9 @@ app.get('/perfil', (req, res) => {
 });
 
 app.get('/artistas', (req, res) => {
-    res.render('artistas');
-  });
-  
+  res.render('artistas');
+});
+
 
 app.get('/logout', (req, res) => {
   controllerUsuario.logout(req, res);
@@ -113,12 +120,26 @@ app.post('/post/curtir/:idpost', controllerPost.darLike);
 app.post('/create-post', controllerPost.criarPost);
 app.post('/comentarios', controllerPost.comentar);
 
-app.listen(port, () => {
-  console.log(`Servidor rodando em http://localhost:${port}`);
+app.get('/post/:idpost', controllerPost.verPost, controllerPost.listarPosts, controllerPost.comentar, controllerPost.darLike);
+
+app.post('/cadastrar', upload.single('imagem'), (req, res) => {
+  if (!req.file) {
+    return res.status(400).send('Nenhum arquivo foi enviado.');
+  }
+
+  cloudinary.uploader.upload(req.file.path, (error, result) => {
+    if (error) {
+      console.error('Erro ao fazer o upload da imagem:', error);
+      res.status(500).send('Erro ao fazer o upload da imagem');
+    } else {
+      req.body.fotoPerfil = result.url;
+      req.body.publicId = result.public_id;
+      controllerUsuario.cadastrar(req, res);
+    }
+  });
 });
 
 
-app.post('/cadastrar', (req, res) => {
-  controllerUsuario.cadastrar(req, res);
-  upload.single('foto');
+app.listen(port, () => {
+  console.log(`Servidor rodando em http://localhost:${port}`);
 });

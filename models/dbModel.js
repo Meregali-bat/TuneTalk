@@ -4,9 +4,10 @@ const mysql = require('mysql2/promise');
 async function connect() {
   try {
     const connection = await mysql.createConnection({
-      host: 'localhost',
-      user: 'root',
+      host: 'mysql30-farm10.kinghost.net',
+      user: 'tunetalk',
       database: 'tunetalk',
+      password: 'meregali2',
     });
     return connection;
   } catch (error) {
