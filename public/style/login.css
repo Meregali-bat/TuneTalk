@@ -6,7 +6,9 @@
   
   @import url('https://fonts.googleapis.com/css2?family=EB+Garamond&family=Geologica:wght@300&family=Raleway&display=swap');
   
-  #corpo,
+  #corpo{
+    background-color: var(--background);
+  }
   .link {
     color: var(--texto);
     text-decoration: none;
@@ -295,4 +297,8 @@ display: none;
     align-items: center;
     justify-content: center;
     border-radius: 16px;
+}
+
+.header__links a{
+    color: #fff;
 }

@@ -39,7 +39,6 @@ function exchangeCodeForToken(code) {
     .then((response) => response.json())
     .then((data) => {
       access_token = data.access_token;
-      getTopTracks(access_token);
     })
     .catch((error) => {
       console.error("Erro ao trocar código por token:", error);
