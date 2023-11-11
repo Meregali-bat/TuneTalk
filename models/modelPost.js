@@ -9,7 +9,10 @@ class Post {
     likes,
     musicName,
     artistName,
-    posterMusica
+    posterMusica,
+    albumName,
+    posterAlbum,
+    postType
   ) {
     this.idpost = idpost;
     this.texto = texto;
@@ -17,7 +20,10 @@ class Post {
     this.likes = likes;
     this.musicName = musicName;
     this.artistName = artistName;
-    this.posterMusica = posterMusica; // Add this line
+    this.posterMusica = posterMusica;
+    this.albumName = albumName;
+    this.posterAlbum = posterAlbum;
+    this.postType = postType;
   }
 
   static async listarPosts() {
@@ -36,7 +42,10 @@ class Post {
 
     return posts.map((post) => ({
       ...post,
-      posterMusica: post.posterMusica, // Add this line
+      posterMusica: post.posterMusica,
+      albumName: post.albumName,
+      posterAlbum: post.posterAlbum,
+      postType: post.postType, 
       comentarios: post.comentarios
         ? post.comentarios.split(",").map((comentario) => {
             const [texto, autor, fotoPerfil] = comentario.split("||");
@@ -73,11 +82,11 @@ class Post {
   }
   async postar() {
     const post = await db.query(`
-    INSERT INTO post 
-    (texto, likes, usuario_idusuario, musicName, artistName, posterMusica) 
-    VALUES 
-    ('${this.texto}', '${this.likes}', '${this.usuario_idusuario}', '${this.musicName}', '${this.artistName}', '${this.posterMusica}')
-  `);
+      INSERT INTO post 
+      (texto, likes, usuario_idusuario, musicName, artistName, posterMusica, albumName, posterAlbum, postType) 
+      VALUES 
+      ('${this.texto}', '${this.likes}', '${this.usuario_idusuario}', '${this.musicName}', '${this.artistName}', '${this.posterMusica}', '${this.albumName}', '${this.posterAlbum}', '${this.postType}')
+    `);
     console.log(post);
     return post;
   }

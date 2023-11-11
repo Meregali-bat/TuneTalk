@@ -71,7 +71,7 @@ function searchFunction(e) {
       const searchQuery = e.target.value;
       const url = `https://api.spotify.com/v1/search?q=${encodeURIComponent(
         searchQuery
-      )}&type=track`;
+      )}&type=album%2Ctrack`;
 
       fetch(url, {
         headers: {
@@ -82,6 +82,44 @@ function searchFunction(e) {
         .then((data) => {
           document.getElementById("search-results").innerHTML = "";
 
+          data.albums.items.forEach((album) => {
+            const div = document.createElement("div");
+            const img = document.createElement("img");
+          
+            img.src = album.images[0].url;
+          
+            div.appendChild(img);
+            div.appendChild(
+              document.createTextNode(
+                `${album.name} by ${album.artists[0].name} (Album)`
+              )
+            );
+          
+            div.addEventListener("click", function () {
+              document.getElementById("search-bar").innerHTML = `
+                  <div style="display: flex; flex-direction: column; height: 100%;">
+                    <h2 id="album-name">${album.name} by ${album.artists[0].name}</h2>
+                    <div style="display: flex; flex-grow: 1; align-items: center;">
+                      <img id="foto-album" src="${album.images[0].url}" alt="${album.name}">
+                      <form action="/create-post" method="post" style="margin-left: 20px;">
+                        <textarea id="texto" name="texto"></textarea>
+                        <input id="albumName" name="albumName" type="hidden" value="${album.name}">
+                        <input id="artistName" name="artistName" type="hidden" value="${album.artists[0].name}">
+                        <input id="posterAlbum" name="posterAlbum" type="hidden" value="${album.images[0].url}">
+                        <input id="postType" name="postType" type="hidden" value="album"> <!-- Add this line -->
+                        <button type="submit" class="botão-criarpost" style="align-self: flex-end;">Postar</button>
+                      </form>
+                    </div>
+                  </div>
+                `;
+            });
+          
+            div.className = "search-result";
+            img.className = "search-result-img";
+          
+            document.getElementById("search-results").appendChild(div);
+          });
+
           data.tracks.items.forEach((track) => {
             const div = document.createElement("div");
             const img = document.createElement("img");
@@ -91,7 +129,7 @@ function searchFunction(e) {
             div.appendChild(img);
             div.appendChild(
               document.createTextNode(
-                `${track.name} by ${track.artists[0].name}`
+                `${track.name} by ${track.artists[0].name} (Track)`
               )
             );
 
@@ -124,31 +162,4 @@ document
     document.getElementById("search-bar").style.display = "block";
     document.getElementById("overlay").style.display = "block";
     searchFunction();
-  });
-
-  let artistIds = '2CIMQHirSU0MQqyYHq0eOx,57dN52uHvrHOxijzpIgu3E,1vCWHaC5f2uS3yhpwWbIA6'; 
-  
-  const url = `https://api.spotify.com/v1/artists?ids=${artistIds}`;
-  
-  let divCharts = document.querySelector("#charts-artistas");
-  
-  fetch(url, {
-    method: 'GET',
-    headers: {
-      'Authorization': `Bearer ${access_token}`
-    }
-  })
-  .then(response => response.json())
-  .then(data => {
-    let html = '';
-    data.artists.forEach(artist => {
-      html += `
-        <div class="chart-artistas">
-          <img src="${artist.images[0].url}" alt="">
-          <h3>${artist.name}</h3>
-          <p>${artist.followers.total} followers</p>
-        </div>
-      `;
-    });
-    divCharts.innerHTML = html;
   });

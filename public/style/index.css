@@ -36,7 +36,8 @@ body {
     margin-bottom: 1rem;
 }
 
-.titulo-musica{
+.titulo-musica,
+.titulo-album {
     font-size: 1.5rem;
     color: var(--destaque);
     margin-top: 0.4rem;
@@ -105,6 +106,21 @@ body {
 
 a {
     text-decoration: none;
+}
+
+.container-musica,
+.container-album{
+    display: flex;
+    flex-direction: row;
+    align-items: center;
+    padding: 0;
+    border-radius: 16px;
+    border: 1px solid #2f3336;
+}
+
+.container-musica img,
+.container-album img{
+    border-radius:  16px 0 0 16px;
 }
 
 #charts-artistas {
@@ -220,7 +236,8 @@ p {
     height: 100%;
 }
 
-#music-name {
+#music-name,
+#album-name {
     color: #fff;
 }
 
@@ -236,7 +253,8 @@ p {
     height: 20vh;
 }
 
-#foto-musica{
+#foto-musica,
+#foto-album{
         width: 30%;
         height: 30%;
     }
@@ -250,7 +268,8 @@ p {
     margin-bottom: 1rem;
 }
 
-.music-poster{
+.music-poster,
+.album-poster{
     width: 100px;
     height: 100px;
     margin-right: 1rem;
