@@ -25,14 +25,14 @@ async function criarPost(req, res) {
   }
   
   // Coleta os dados do post do corpo da solicitação
-  const { texto, musicName, artistName } = req.body;
+  const { texto, musicName, artistName, posterMusica } = req.body;
 
   // Cria uma nova instância do modelo Post
-  const post = new Post(0, texto, req.session.user.id, 0, musicName, artistName);
+  const post = new Post(0, texto, req.session.user.id, 0, musicName, artistName, posterMusica); // Add posterMusica as a parameter
+
   try {
     await post.postar();
     res.redirect('/foryou');
-    console.log(post);
   } catch (error) {
     console.error('Error:', error);
     res.status(500).json({ message: 'Error creating post' });

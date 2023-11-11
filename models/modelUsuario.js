@@ -23,6 +23,7 @@ class userModel {
     console.log(user);
     return user;
   }
+
 }
 
 module.exports = userModel;

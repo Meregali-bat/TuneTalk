@@ -1,13 +1,13 @@
 /* eslint-disable require-jsdoc */
-const userModel = require('../models/modelUsuario.js');
+const userModel = require("../models/modelUsuario.js");
 
 function login(req, res) {
-  res.render('login');
-};
-
+  res.render("login");
+}
 
 async function autenticar(req, res) {
-  if (req.body.email == '' || req.body.senha == '') {} else {
+  if (req.body.email == "" || req.body.senha == "") {
+  } else {
     const resp = await userModel.autenticar(req.body.email, req.body.senha);
     if (resp.length > 0) {
       req.session.user = {
@@ -15,28 +15,28 @@ async function autenticar(req, res) {
         nome: resp[0].nome,
         email: resp[0].email,
       };
-      res.redirect('/foryou');
+      res.redirect("/foryou");
       console.log(req.session.user);
     } else {
-      res.redirect('/login');
+      res.redirect("/login");
     }
   }
-};
+}
 
 async function cadastrar(req, res) {
-  if (req.body.nome == '' || req.body.email == '' || req.body.senha == '') {
-    res.redirect('/cadastrar');
+  if (req.body.nome == "" || req.body.email == "" || req.body.senha == "") {
+    res.redirect("/cadastrar");
   } else {
     const resp = await userModel.cadastrar(
-        req.body.nome,
-        req.body.email,
-        req.body.senha,
-        req.body.fotoPerfil,);
+      req.body.nome,
+      req.body.email,
+      req.body.senha,
+      req.body.fotoPerfil
+    );
     console.log(resp);
-    res.redirect('/login');
+    res.redirect("/login");
   }
-};
-
+}
 
 module.exports = {
   login,

@@ -1,42 +1,54 @@
 /* eslint-disable require-jsdoc */
-const db = require('./dbModel.js');
+const db = require("./dbModel.js");
 
 class Post {
-  constructor(idpost, texto, usuario_idusuario, likes, musicName, artistName) {
+  constructor(
+    idpost,
+    texto,
+    usuario_idusuario,
+    likes,
+    musicName,
+    artistName,
+    posterMusica
+  ) {
     this.idpost = idpost;
     this.texto = texto;
     this.usuario_idusuario = usuario_idusuario;
     this.likes = likes;
     this.musicName = musicName;
     this.artistName = artistName;
+    this.posterMusica = posterMusica; // Add this line
   }
 
   static async listarPosts() {
     const posts = await db.query(`
-        SELECT post.*, usuario.nome AS autor, usuario.fotoPerfil, 
-        GROUP_CONCAT(CONCAT(comentarios.texto, '||', comentario_autor.nome, '||', comentario_autor.fotoPerfil)) AS comentarios
-        FROM post 
-        JOIN usuario ON post.usuario_idusuario = usuario.idusuario
-        LEFT JOIN comentarios ON post.idpost = comentarios.post_idpost
-        LEFT JOIN usuario AS comentario_autor ON comentarios.autor_idusuario = comentario_autor.idusuario
-        GROUP BY post.idpost
-        ORDER BY post.idpost DESC
+      SELECT post.*, usuario.nome AS autor, usuario.fotoPerfil, 
+      GROUP_CONCAT(CONCAT(comentarios.texto, '||', comentario_autor.nome, '||', comentario_autor.fotoPerfil)) AS comentarios
+      FROM post 
+      JOIN usuario ON post.usuario_idusuario = usuario.idusuario
+      LEFT JOIN comentarios ON post.idpost = comentarios.post_idpost
+      LEFT JOIN usuario AS comentario_autor ON comentarios.autor_idusuario = comentario_autor.idusuario
+      GROUP BY post.idpost
+      ORDER BY post.idpost DESC
     `);
 
     console.log(posts);
 
-    return posts.map(post => ({
-        ...post,
-        comentarios: post.comentarios ? post.comentarios.split(',').map(comentario => {
-            const [texto, autor, fotoPerfil] = comentario.split('||');
+    return posts.map((post) => ({
+      ...post,
+      posterMusica: post.posterMusica, // Add this line
+      comentarios: post.comentarios
+        ? post.comentarios.split(",").map((comentario) => {
+            const [texto, autor, fotoPerfil] = comentario.split("||");
             return {
-                texto,
-                autor,
-                fotoPerfil
+              texto,
+              autor,
+              fotoPerfil,
             };
-        }) : []
+          })
+        : [],
     }));
-}
+  }
 
   static async comentar(idpost, idusuario, texto, idcomentario_pai) {
     const post = await db.query(`
@@ -58,10 +70,15 @@ class Post {
 `);
     console.log(comentario);
     return comentario;
-}
+  }
   async postar() {
-    const post = await db.query(`INSERT INTO post 
-    (texto, likes, usuario_idusuario, musicName, artistName) VALUES ('${this.texto}','${this.likes}', '${this.usuario_idusuario}', '${this.musicName}', '${this.artistName}')`);
+    const post = await db.query(`
+    INSERT INTO post 
+    (texto, likes, usuario_idusuario, musicName, artistName, posterMusica) 
+    VALUES 
+    ('${this.texto}', '${this.likes}', '${this.usuario_idusuario}', '${this.musicName}', '${this.artistName}', '${this.posterMusica}')
+  `);
+    console.log(post);
     return post;
   }
 
@@ -74,8 +91,7 @@ class Post {
     const post = await db.query(`UPDATE post SET 
     likes = likes + 1 WHERE idpost = '${idpost}'`);
     return post;
-}
-
+  }
 }
 
 module.exports = Post;

@@ -2,16 +2,20 @@
         <% posts.forEach((post) => { %>
         <div class="col-2"></div>
         <div class="col-md-8">
-            <a href="/post/<%= post.idpost %>">
+
                 <div class="card mb-4" style="border: none;">
                     <div class="card-body post-container">
-                        <div class="d-flex align-items-center">
+                        <div class="d-flex align-items-center post-header">
+                            <div class="row ">
+                                <div>
                             <img src="<%= post.fotoPerfil %>" alt="Foto de perfil do usuário" class="user-profile-picture">
                             <h4 class="username"><%= post.autor %></h4>
                         </div>
-                        <h2 class="titulo-musica"><%= post.musicName %></h2>
-                        <h3 class="artist-name"><%= post.artistName %></h3>
-                        <h2><%= post.title %></h2>
+                                <h2 class="titulo-musica"><%= post.musicName %></h2>
+                                <h3 class="artist-name"><%= post.artistName %></h3> 
+                            </div>
+                                <img src="<%= post.posterMusica %>" alt="Poster da música" class="music-poster">
+                            </div>
                         <p class="card-text"><%= post.texto %></p>
                         <div class="d-flex justify-content-around align-items-center">
                             <button type="button" class="btn botao-like" data-bs-toggle="collapse"
@@ -45,7 +49,7 @@
                     </div>
                 </div>
             </div>
-            </a>
+            
         <div class="col-2"></div>
         <% }); %>
     </div>

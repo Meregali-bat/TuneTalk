@@ -1,8 +1,6 @@
 const inputFile = document.querySelector('#container__central__form__imagem');
 const pictureImage = document.querySelector('.picture__img');
-const pictureImageTxt = 'Escolha sua foto de perfil';
 const icone = document.querySelector('#icone');
-pictureImage.innerHTML = pictureImageTxt;
 
 inputFile.addEventListener('change', function(e) {
   const inputTarget = e.target;
@@ -26,6 +24,19 @@ inputFile.addEventListener('change', function(e) {
 
     reader.readAsDataURL(file);
   } else {
-    pictureImage.innerHTML = pictureImageTxt;
+  
+  }
+});
+
+document.getElementById('container__central__form').addEventListener('submit', function(event) {
+  const password = document.getElementById('container__central__form__senha').value;
+  const confirmPassword = document.getElementById('container__central__form__confirmarSenha').value;
+  const passwordError = document.getElementById('passwordError');
+
+  if (password !== confirmPassword) {
+    passwordError.textContent = 'Passwords do not match.';
+    event.preventDefault(); // prevent form submission
+  } else {
+    passwordError.textContent = ''; // clear the error message if the passwords match
   }
 });

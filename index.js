@@ -8,7 +8,10 @@ const path = require('path');
 const controllerPost = require('./controllers/controllerPost.js');
 const cloudinary = require('cloudinary').v2;
 const bodyParser = require('body-parser');
+const axios = require('axios');
+const qs = require('querystring');
 require('dotenv').config()
+
 
 cloudinary.config({
   cloud_name: process.env.CLOUDINARY_CLOUD_NAME,
@@ -68,6 +71,8 @@ app.use((req, res, next) => {
         style: '/style/',
         title: 'TuneTalk',
         user: req.session.user,
+        authorizationCode: req.session.authorizationCode,
+        accessToken: req.session.accessToken,
       };
       next();
     }
@@ -103,7 +108,6 @@ app.get('/artistas', (req, res) => {
   res.render('artistas');
 });
 
-
 app.get('/logout', (req, res) => {
   controllerUsuario.logout(req, res);
 });
@@ -115,6 +119,7 @@ app.get('/post/curtir/:idpost', (req, res) => {
 app.get('/create-post', (req, res) => {
   controllerPost.criarPost(req, res);
 });
+
 
 app.get('/foryou', controllerPost.listarPosts);
 app.post('/post/curtir/:idpost', controllerPost.darLike);

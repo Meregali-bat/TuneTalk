@@ -2,94 +2,52 @@
     --texto: #fff;
     --background: #14181D;
     --destaque: #4E9F3D;
-}
-
-@import url('https://fonts.googleapis.com/css2?family=EB+Garamond&family=Geologica:wght@300&family=Raleway&display=swap');
-
-#corpo{
-    background-color: var(--background);
-}
-
-.link{
+  }
+  
+  @import url('https://fonts.googleapis.com/css2?family=EB+Garamond&family=Geologica:wght@300&family=Raleway&display=swap');
+  
+  #corpo,
+  .link {
     color: var(--texto);
     text-decoration: none;
-}
-
-header{
+  }
+  
+  header {
     background-image: url("/img/background.svg");
     background-repeat: no-repeat;
     background-position: top;
     background-size: 70vw 70vh;
     height: 70vh;
-}
-
-#header__titulo{
-    font-family: 'Raleway', sans-serif;
+  }
+  
+  #header__titulo,
+  #header__Subtitulo,
+  #main__btn {
+    font-family: var(--fonte-padrao);
+    color: var(--texto);
+  }
+  
+  #header__titulo {
     font-size: 3.5rem;
-    color: var(--texto);
     text-align: center;
-    
-}
-#header__links{
-    font-family: 'Geologica', sans-serif;
-    font-size: 1rem;
-    color: var(--texto);
-}
-
-#header__links a{
-    color: var(--texto);
-    text-decoration: none;
-}
-
-#header__links a:hover{
-    color: var(--texto);
-    text-decoration: underline;
-    cursor: pointer;
-}
-
-#searchbar{
-    background-color: #888;
-    border-radius: 60px;
-    border: none;
-    opacity: calc(60%);
-    color: var(--texto);
-    font-family: 'Geologica', sans-serif;
-    font-size: 1rem;
-    padding: 0.5rem;
-}
-
-#searchbar:focus{
-    outline: none;
-    box-shadow: none;
-}
-
-#searchbar::-webkit-search-cancel-button {
-    -webkit-appearance: none;
-    appearance: none;
-    display: none;
-}
-
-#header__Subtitulo{
-    font-family: 'EB Garamond', serif;
-    font-size: 2,5rem;
-    color: var(--texto);
+  }
+  
+  #header__Subtitulo {
+    font-size: 2.5rem;
     margin-top: 32vh;
-}
-
-#main__btn{
+  }
+  
+  #main__btn {
     background-color: var(--destaque);
     width: 80%;
     height: 3rem;
-    border-radius: 3px; 
-    font-family: 'Geologica', sans-serif;  
+    border-radius: 3px;
     font-size: 1rem;
-    color: var(--texto);
     text-align: center;
     margin: 0 auto;
     display: block;
     border: none;
-    
-}
+  }
 
 #disponibilidade{
     font-family: 'Geologica', sans-serif;
@@ -143,14 +101,19 @@ header{
 }
 
 .containerInputs{
-    background-color: var(--destaque);
+    background-color: #2a343f;
     width: 30%;
-    height: 50%;
+    height: 70%;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
     border-radius: 16px;
 }
 
 .containerInputs h1{
     font-family: 'Geologica', sans-serif;
+    color: #fff;
     font-size: 2rem;
     text-align: center;
     margin-top: 2vh;
@@ -161,28 +124,43 @@ header{
     flex-direction: column;
     align-items: center;
     justify-content: center;
-    margin-top: 2vh;
+    margin-top: 2vh;    
+    color: #fff;
 }
 
 .containerInputs form input{
     width: 100%;
-    font-family: 'Geologica', sans-serif;  
-    font-size: 1rem;
+    height: 2rem;
+    background: none;
+    border-top: none;
+    border-left: none;
+    border-right: none;
+    outline: none;
+    font-family: 'Inter', sans-serif;
     color: #000;
     text-align: center;
-    display: block;
-    border: none;
-    margin-bottom: 2vh;
+    border-bottom: 2px solid transparent; 
+    transition: border-bottom 0.3s ease-in-out; 
+    border-radius: 0;
+    margin-top: 2rem;
+    margin-bottom: 2rem;
+}
+
+.containerInputs form input::placeholder{
+    text-align: center;
+    color: #000;
 }
 
 .containerInputs form input:focus{
+    background: none;
     outline: none;
+    color: #000;
     box-shadow: none;
+    border-bottom: 2px solid #000;
 }
 
 .containerInputs form button{
-    background-color: #1E5128;
-    border-radius: 3px; 
+    background-color: var(--destaque);
     font-family: 'Geologica', sans-serif;  
     font-size: 1rem;
     color: var(--texto);
@@ -192,10 +170,6 @@ header{
     margin-top: 2vh;
 }
 
-.containerInputs form button:hover{
-    background-color: #4E9F3D;
-    cursor: pointer;
-}
 
 a{
     text-decoration: none;
@@ -216,7 +190,7 @@ a{
 
 #container__central__form{
     display: flex;
-    flex-direction: row;
+    flex-direction: column;
     justify-content: space-around;
     align-items: center;
 }
@@ -227,7 +201,7 @@ a{
     width: 8rem;
     height: 8rem;
     background-color: rgba(217, 217, 217,0.4);
-    border-radius: 20px;
+    border-radius: 64px;
     display: flex;
     align-items: center;
     text-align: center;
@@ -248,42 +222,31 @@ a{
 display: none;
 }
 
-#container__central__form__nome{
-    width: 50%;
-    margin-left: 1rem;
-}
-
-#container__central__form__nome{
-    width: 100%;
-    height: 3rem;
-    border-radius: 12px 12px;
-    background-color: rgba(217, 217, 217, 0.4);
-    border: none;
-    outline: none;
-    font-family: 'Inter', sans-serif;
-    font-weight: 700;
-    color: #000;
-    text-align: center;
-}
-
-#container__central__form__sobrenome{
-    border-radius: 0 0 12px 12px;
-    border-bottom: none;
-}
-
+#container__central__form__nome,
 #container__central__form__email,
 #container__central__form__senha,
 #container__central__form__confirmarSenha{
-    margin-top: 1rem;
-    width: 60%;
-    height: 3rem;
-    border-radius: 12px;
-    background-color: rgba(217, 217, 217, 0.5);
-    border: none;
+    width: 100%;
+    height: 2rem;
+    background: none;
+    border-top: none;
+    border-left: none;
+    border-right: none;
     outline: none;
     font-family: 'Inter', sans-serif;
-    font-weight: 700;
+    color: #000;
     text-align: center;
+    margin-top: 2rem;
+    border-bottom: 2px solid transparent; 
+    transition: border-bottom 0.3s ease-in-out; 
+    position: relative;
+}
+
+#container__central__form__nome:focus,
+#container__central__form__email:focus,
+#container__central__form__senha:focus,
+#container__central__form__confirmarSenha:focus {
+    border-bottom: 2px solid #000; /* make the border black when focused */
 }
 
 #container__central__form__email::placeholder,
@@ -296,8 +259,8 @@ display: none;
 }
 
 #container__central__form__button{
-    background-color: #1E5128;
-    border-radius: 3px; 
+    background-color: var(--destaque);
+    border-radius: 8px; 
     font-family: 'Geologica', sans-serif;  
     font-size: 1rem;
     color: var(--texto);
@@ -320,13 +283,13 @@ display: none;
     max-height: 100%;
     min-width: 100%;
     min-height: 100%;
-    border-radius: 12px;
+    border-radius: 64px;
 }
 
 #bodyInputs{
-    background-color: var(--destaque);
-    width: 50%;
-    height: 60%;
+    background-color: #2a343f;
+    width: 30%;
+    height: 70%;
     display: flex;
     flex-direction: column;
     align-items: center;

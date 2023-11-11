@@ -70,7 +70,7 @@ body {
 
 
 .comment-input {
-    width: 89%;
+    width: 80%;
     background-color: var(--background);
     border: none;
     padding: 10px;
@@ -137,6 +137,9 @@ p {
 
 #search-bar {
     display: none;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
     position: fixed;
     top: 50%;
     left: 50%;
@@ -145,11 +148,14 @@ p {
     background: var(--background);
     padding: 20px;
     border-radius: 5px;
-    width: 40%;
-}
+    width: 80%;
+    max-width: 800px;
+    box-sizing: border-box;
+  }
 
 #search-bar input {
     width: 100%;
+    height: 100%;
     font-size: 1.5rem;
     padding: 10px;
     border: none;
@@ -224,3 +230,28 @@ p {
     height: 50px; /* adjust as needed */
     object-fit: cover; /* ensures the image covers the whole area */
   }
+
+#texto{
+    width: 20rem;
+    height: 20vh;
+}
+
+#foto-musica{
+        width: 30%;
+        height: 30%;
+    }
+
+
+.post-header{
+    display: flex;
+    flex-direction: row;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: 1rem;
+}
+
+.music-poster{
+    width: 100px;
+    height: 100px;
+    margin-right: 1rem;
+}
