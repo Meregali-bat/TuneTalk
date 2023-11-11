@@ -2,7 +2,7 @@
         <% posts.forEach((post) => { %>
         <div class="col-2"></div>
         <div class="col-md-8">
-
+            <a href="/post/<%= post.idpost %>">
                 <div class="card mb-4" style="border: none;">
                     <div class="card-body post-container">
                         <div class="d-flex align-items-center post-header">
@@ -49,7 +49,7 @@
                     </div>
                 </div>
             </div>
-            
+            </a>
         <div class="col-2"></div>
         <% }); %>
     </div>
@@ -60,3 +60,8 @@
             <input type="text" id="search-input" placeholder="Digite a música">
             <div id="search-results"></div>
         </div>
+
+        <body>
+                <!-- Api Spotify -->
+    <script src="/script/apiSpotify.js"></script>
+        </body>

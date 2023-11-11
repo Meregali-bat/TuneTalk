@@ -18,8 +18,8 @@ class userModel {
   }
 
   static async cadastrar(nome, email, senha, fotoPerfil, publicId) {
-    const user = await db.query(`INSERT INTO usuario (nome, email, senha, fotoPerfil, publicId) 
-    VALUES ('${nome}', '${email}', '${md5(senha)}', '${fotoPerfil}', '${publicId}')`);
+    const user = await db.query(`INSERT INTO usuario (nome, email, senha, fotoPerfil) 
+    VALUES ('${nome}', '${email}', '${md5(senha)}', '${fotoPerfil}')`);
     console.log(user);
     return user;
   }

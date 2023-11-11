@@ -40,12 +40,6 @@ async function criarPost(req, res) {
 }
 
 async function comentar(req, res) {
-  // Verifica se o usuário está logado
-  if (!req.session.user) {
-      res.status(401).json({ message: 'Please log in to comment' });
-      return;
-  }
-
   // Coleta os dados do comentário do corpo da solicitação
   const { post_id, texto, idcomentario_pai } = req.body; // Use idcomentario_pai em vez de parentCommentId
 
