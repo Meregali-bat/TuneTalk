@@ -4,9 +4,9 @@ const Comentario = require('../models/modelComentario.js');
 let posts = [];
 
 async function criarPost(req, res) {
-  const { texto, musicName, artistName, posterMusica, albumName, posterAlbum, postType, releaseDate } = req.body; 
+  const { texto, musicName, artistName, posterMusica, albumName, posterAlbum, postType, releaseDate, nota } = req.body; 
   const usuario_idusuario = req.session.user.id;
-  const post = new Post(null, texto, usuario_idusuario, 0, musicName, artistName, posterMusica, albumName, posterAlbum, postType, releaseDate); 
+  const post = new Post(null, texto, usuario_idusuario, 0, musicName, artistName, posterMusica, albumName, posterAlbum, postType, releaseDate, nota); 
   await post.postar();
   res.redirect('/foryou');
 }

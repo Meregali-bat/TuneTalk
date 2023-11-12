@@ -1,6 +1,6 @@
 const express = require('express');
 const app = express();
-const port = 21022;
+const port = 3000;
 const controllerUsuario = require('./controllers/controllerUsuario.js');
 const expressLayouts = require('express-ejs-layouts');
 const session = require('express-session');
@@ -101,7 +101,9 @@ app.post('/login', (req, res) => {
   controllerUsuario.autenticar(req, res);
 });
 
-
+app.get('/pesquisa', (req, res) => {
+  controllerUsuario.pesquisar(req, res);
+})
 
 app.get('/artistas', (req, res) => {
   res.render('artistas');

@@ -73,7 +73,6 @@ async function editarPerfil(req, res) {
   res.redirect(`/perfil/${idUsuario}`);
 }
 
-
 module.exports = {
   login,
   autenticar,

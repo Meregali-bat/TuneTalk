@@ -12,7 +12,8 @@ class Post {
     albumName,
     posterAlbum,
     postType,
-    releaseDate
+    releaseDate,
+    nota
   ) {
     this.idpost = idpost;
     this.texto = texto;
@@ -25,14 +26,15 @@ class Post {
     this.posterAlbum = posterAlbum;
     this.postType = postType;
     this.releaseDate = releaseDate;
+    this.nota = nota;
   }
 
   async postar() {
     const post = await db.query(`
       INSERT INTO tunetalk.post 
-      (texto, usuario_idusuario, likes, musicName, artistName, posterMusica, albumName, posterAlbum, postType, releaseDate) 
+      (texto, usuario_idusuario, likes, musicName, artistName, posterMusica, albumName, posterAlbum, postType, releaseDate, nota) 
       VALUES 
-      ('${this.texto}', '${this.usuario_idusuario}', '${this.likes}', '${this.musicName}', '${this.artistName}', '${this.posterMusica}', '${this.albumName}', '${this.posterAlbum}', '${this.postType}', '${this.releaseDate}')
+      ('${this.texto}', '${this.usuario_idusuario}', '${this.likes}', '${this.musicName}', '${this.artistName}', '${this.posterMusica}', '${this.albumName}', '${this.posterAlbum}', '${this.postType}', '${this.releaseDate}', '${this.nota}')
     `);
     console.log(post);
     return post;
@@ -41,7 +43,8 @@ class Post {
   static async listarPosts() {
     const posts = await db.query(`
       SELECT post.*, usuario.nome AS autor, usuario.fotoPerfil, usuario.idusuario AS autorId,
-      (SELECT COUNT(*) FROM comentarios WHERE comentarios.post_idpost = post.idpost) AS quantidadeComentarios
+      (SELECT COUNT(*) FROM comentarios WHERE comentarios.post_idpost = post.idpost) AS quantidadeComentarios,
+      nota
       FROM post 
       JOIN usuario ON post.usuario_idusuario = usuario.idusuario
       ORDER BY post.idpost DESC
@@ -54,6 +57,7 @@ class Post {
       posterAlbum: post.posterAlbum,
       postType: post.postType,
       releaseDate: post.releaseDate,
+      nota: post.nota,
     }));
   }
 
