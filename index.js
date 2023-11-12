@@ -1,6 +1,6 @@
 const express = require('express');
 const app = express();
-const port = 3000;
+const port = 21022;
 const controllerUsuario = require('./controllers/controllerUsuario.js');
 const expressLayouts = require('express-ejs-layouts');
 const session = require('express-session');
@@ -169,5 +169,5 @@ app.post('/cadastrar', upload.single('imagem'), (req, res) => {
 
 
 app.listen(port, () => {
-  console.log(`Servidor rodando em http://localhost:${port}`);
+  console.log('Servidor rodando na porta: '+ port)
 });
