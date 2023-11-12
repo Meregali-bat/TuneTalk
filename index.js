@@ -8,8 +8,7 @@ const path = require('path');
 const controllerPost = require('./controllers/controllerPost.js');
 const cloudinary = require('cloudinary').v2;
 const bodyParser = require('body-parser');
-const axios = require('axios');
-const qs = require('querystring');
+const controllerComent = require('./controllers/controllerComent.js');
 require('dotenv').config()
 
 
@@ -31,7 +30,7 @@ app.use(bodyParser.json());
 app.use(session({
   secret: 'l1u2c3a4s5',
   saveUninitialized: true,
-  resave: true,
+  resave: false,
 }));
 
 app.use(expressLayouts);
@@ -97,12 +96,11 @@ app.get('/login', (req, res) => {
 });
 
 app.post('/login', (req, res) => {
+  console.log(req.body);
   controllerUsuario.autenticar(req, res);
 });
 
-app.get('/perfil', (req, res) => {
-  res.render('perfil');
-});
+
 
 app.get('/artistas', (req, res) => {
   res.render('artistas');
@@ -120,13 +118,11 @@ app.get('/create-post', (req, res) => {
   controllerPost.criarPost(req, res);
 });
 
-
+app.get("/perfil/:idUsuario", controllerUsuario.listarUsuarioPorId);
 app.get('/foryou', controllerPost.listarPosts);
-app.post('/post/curtir/:idpost', controllerPost.darLike);
 app.post('/create-post', controllerPost.criarPost);
-app.post('/comentarios', controllerPost.comentar);
-
-app.get('/post/:idpost', controllerPost.verPost, controllerPost.listarPosts, controllerPost.comentar, controllerPost.darLike);
+app.get('/post/:idpost', controllerPost.verPost, controllerComent.listarComentarios, controllerPost.darLike);
+app.post('/post/:idpost/comentar', controllerComent.criarComentario);
 
 app.post('/cadastrar', upload.single('imagem'), (req, res) => {
   if (!req.file) {

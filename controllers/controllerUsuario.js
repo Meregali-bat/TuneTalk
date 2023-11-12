@@ -1,5 +1,5 @@
-/* eslint-disable require-jsdoc */
 const userModel = require("../models/modelUsuario.js");
+const Post = require("../models/modelPost.js");
 
 function login(req, res) {
   res.render("login");
@@ -11,8 +11,8 @@ async function autenticar(req, res) {
     const resp = await userModel.autenticar(req.body.email, req.body.senha);
     if (resp.length > 0) {
       req.session.user = {
-        id: resp[0].idUsuario,
         nome: resp[0].nome,
+        id: resp[0].idusuario,
         email: resp[0].email,
       };
       res.redirect("/foryou");
@@ -38,8 +38,24 @@ async function cadastrar(req, res) {
   }
 }
 
+async function listarUsuarioPorId(req, res) {
+  const idUsuario = req.params.idUsuario;
+  const usuario = await userModel.listarUsuarioPorId(idUsuario);
+  const posts = await Post.listarPostsPorIdUsuario(idUsuario);
+
+  console.log("´++++++++++++++++++++++++++++++++++++++++" + JSON.stringify(posts, null, 2));
+
+  res.render('perfil', {
+    usuario,
+    posts,
+    idUsuario
+  });
+}
+
+
 module.exports = {
   login,
   autenticar,
   cadastrar,
+  listarUsuarioPorId,
 };

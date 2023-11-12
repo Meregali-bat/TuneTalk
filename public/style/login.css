@@ -195,6 +195,7 @@ a{
     flex-direction: column;
     justify-content: space-around;
     align-items: center;
+    height: 80%;
 }
 
 #container__central__form__label{
@@ -291,7 +292,7 @@ display: none;
 #bodyInputs{
     background-color: #2a343f;
     width: 30%;
-    height: 70%;
+    height: 75%;
     display: flex;
     flex-direction: column;
     align-items: center;

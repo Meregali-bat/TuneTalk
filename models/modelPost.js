@@ -1,4 +1,3 @@
-/* eslint-disable require-jsdoc */
 const db = require("./dbModel.js");
 
 class Post {
@@ -12,7 +11,8 @@ class Post {
     posterMusica,
     albumName,
     posterAlbum,
-    postType
+    postType,
+    releaseDate
   ) {
     this.idpost = idpost;
     this.texto = texto;
@@ -24,71 +24,36 @@ class Post {
     this.albumName = albumName;
     this.posterAlbum = posterAlbum;
     this.postType = postType;
+    this.releaseDate = releaseDate;
+  }
+
+  async postar() {
+    const post = await db.query(`
+      INSERT INTO tunetalk.post 
+      (texto, usuario_idusuario, likes, musicName, artistName, posterMusica, albumName, posterAlbum, postType, releaseDate) 
+      VALUES 
+      ('${this.texto}', '${this.usuario_idusuario}', '${this.likes}', '${this.musicName}', '${this.artistName}', '${this.posterMusica}', '${this.albumName}', '${this.posterAlbum}', '${this.postType}', '${this.releaseDate}')
+    `);
+    console.log(post);
+    return post;
   }
 
   static async listarPosts() {
     const posts = await db.query(`
-      SELECT post.*, usuario.nome AS autor, usuario.fotoPerfil, 
-      GROUP_CONCAT(CONCAT(comentarios.texto, '||', comentario_autor.nome, '||', comentario_autor.fotoPerfil)) AS comentarios
+      SELECT post.*, usuario.nome AS autor, usuario.fotoPerfil
       FROM post 
       JOIN usuario ON post.usuario_idusuario = usuario.idusuario
-      LEFT JOIN comentarios ON post.idpost = comentarios.post_idpost
-      LEFT JOIN usuario AS comentario_autor ON comentarios.autor_idusuario = comentario_autor.idusuario
-      GROUP BY post.idpost
       ORDER BY post.idpost DESC
     `);
-
-    console.log(posts);
 
     return posts.map((post) => ({
       ...post,
       posterMusica: post.posterMusica,
       albumName: post.albumName,
       posterAlbum: post.posterAlbum,
-      postType: post.postType, 
-      comentarios: post.comentarios
-        ? post.comentarios.split(",").map((comentario) => {
-            const [texto, autor, fotoPerfil] = comentario.split("||");
-            return {
-              texto,
-              autor,
-              fotoPerfil,
-            };
-          })
-        : [],
+      postType: post.postType,
+      releaseDate: post.releaseDate,
     }));
-  }
-
-  static async comentar(idpost, idusuario, texto, idcomentario_pai) {
-    const post = await db.query(`
-        SELECT usuario_idusuario 
-        FROM post 
-        WHERE idpost = '${idpost}'
-    `);
-
-    const usuario = await db.query(`
-        SELECT fotoPerfil 
-        FROM usuario
-        WHERE idusuario = '${idusuario}'
-    `);
-    const fotoPerfil = usuario[0].fotoPerfil;
-
-    const comentario = await db.query(`
-    INSERT INTO comentarios (post_idpost, post_usuario_idusuario, autor_idusuario, texto, idcomentario_pai) 
-    VALUES ('${idpost}', '${post[0].usuario_idusuario}', '${idusuario}', '${texto}', '${idcomentario_pai}')
-`);
-    console.log(comentario);
-    return comentario;
-  }
-  async postar() {
-    const post = await db.query(`
-      INSERT INTO post 
-      (texto, likes, usuario_idusuario, musicName, artistName, posterMusica, albumName, posterAlbum, postType) 
-      VALUES 
-      ('${this.texto}', '${this.likes}', '${this.usuario_idusuario}', '${this.musicName}', '${this.artistName}', '${this.posterMusica}', '${this.albumName}', '${this.posterAlbum}', '${this.postType}')
-    `);
-    console.log(post);
-    return post;
   }
 
   static async deletar(idpost) {
@@ -100,6 +65,25 @@ class Post {
     const post = await db.query(`UPDATE post SET 
     likes = likes + 1 WHERE idpost = '${idpost}'`);
     return post;
+  }
+
+  static async listarPostsPorIdUsuario(idusuario) {
+    const posts = await db.query(`
+      SELECT post.*, usuario.nome AS autor, usuario.fotoPerfil
+      FROM post 
+      JOIN usuario ON post.usuario_idusuario = usuario.idusuario
+      WHERE usuario_idusuario = ${idusuario}
+      ORDER BY post.idpost DESC
+    `);
+
+    return posts.map((post) => ({
+      ...post,
+      posterMusica: post.posterMusica,
+      albumName: post.albumName,
+      posterAlbum: post.posterAlbum,
+      postType: post.postType,
+      releaseDate: post.releaseDate,
+    }));
   }
 }
 

@@ -75,7 +75,7 @@ function searchFunction(e) {
 
       fetch(url, {
         headers: {
-          Authorization: "Bearer " + access_token, // userAccessToken is the access token you got from Spotify
+          Authorization: "Bearer " + access_token,
         },
       })
         .then((response) => response.json())
@@ -106,7 +106,8 @@ function searchFunction(e) {
                         <input id="albumName" name="albumName" type="hidden" value="${album.name}">
                         <input id="artistName" name="artistName" type="hidden" value="${album.artists[0].name}">
                         <input id="posterAlbum" name="posterAlbum" type="hidden" value="${album.images[0].url}">
-                        <input id="postType" name="postType" type="hidden" value="album"> <!-- Add this line -->
+                        <input id="postType" name="postType" type="hidden" value="album">
+                        <input id="releaseDate" name="releaseDate" type="hidden" value="${album.release_date}">
                         <button type="submit" class="botão-criarpost" style="align-self: flex-end;">Postar</button>
                       </form>
                     </div>
@@ -144,6 +145,8 @@ function searchFunction(e) {
                         <input id="musicName" name="musicName" type="hidden" value="${track.name}">
                         <input id="artistName" name="artistName" type="hidden" value="${track.artists[0].name}">
                         <input id="posterMusica" name="posterMusica" type="hidden" value="${track.album.images[0].url}"> 
+                        <input id="postType" name="postType" type="hidden" value="música">
+                        <input id="releaseDate" name="releaseDate" type="hidden" value="${track.album.release_date}">
                         <button type="submit" class="botão-criarpost" style="align-self: flex-end;">Postar</button>
                       </form>
                     </div>
@@ -161,5 +164,12 @@ document
   .addEventListener("click", function () {
     document.getElementById("search-bar").style.display = "block";
     document.getElementById("overlay").style.display = "block";
+    
     searchFunction();
   });
+
+  document.getElementById("overlay").addEventListener("click", function () {
+    document.getElementById("search-bar").style.display = "none";
+    document.getElementById("overlay").style.display = "none";
+  });
+  
