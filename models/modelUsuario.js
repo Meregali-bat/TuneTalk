@@ -33,6 +33,13 @@ class userModel {
     return user[0];
   }
 
+  static async editarPerfil(idUsuario, nome, fotoPerfil, bio) {
+    const user = await db.query(
+      `UPDATE usuario SET nome = '${nome}', fotoPerfil = '${fotoPerfil}', bio = '${bio}' WHERE idusuario = ${idUsuario}`
+    );
+    return user;
+  }
+
 }
 
 module.exports = userModel;

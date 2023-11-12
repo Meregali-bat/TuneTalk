@@ -19,6 +19,7 @@ cloudinary.config({
 });
 
 const multer = require('multer');
+const userModel = require('./models/modelUsuario.js');
 const upload = multer({
   dest: 'uploads/'
 });
@@ -118,11 +119,36 @@ app.get('/create-post', (req, res) => {
   controllerPost.criarPost(req, res);
 });
 
+app.get("/user/:idUsuario", controllerUsuario.listarUsuarioPorId2);
+
 app.get("/perfil/:idUsuario", controllerUsuario.listarUsuarioPorId);
 app.get('/foryou', controllerPost.listarPosts);
 app.post('/create-post', controllerPost.criarPost);
 app.get('/post/:idpost', controllerPost.verPost, controllerComent.listarComentarios, controllerPost.darLike);
 app.post('/post/:idpost/comentar', controllerComent.criarComentario);
+app.get('/perfil/editar', (req, res) => {
+  controllerUsuario.editarPerfil(req, res);
+});
+
+app.post('/perfil/editar', upload.single('foto'), async (req, res) => {
+  const idUsuario = req.session.user.id;
+  const usuarioAtual = await userModel.listarUsuarioPorId(idUsuario);
+
+  if (req.file) {
+    cloudinary.uploader.upload(req.file.path, (error, result) => {
+      if (error) {
+        console.error('Erro ao fazer o upload da imagem:', error);
+        res.status(500).send('Erro ao fazer o upload da imagem');
+      } else {
+        req.body.fotoPerfil = result.url;
+        controllerUsuario.editarPerfil(req, res);
+      }
+    });
+  } else {
+    req.body.fotoPerfil = usuarioAtual.fotoPerfil;
+    controllerUsuario.editarPerfil(req, res);
+  }
+});
 
 app.post('/cadastrar', upload.single('imagem'), (req, res) => {
   if (!req.file) {

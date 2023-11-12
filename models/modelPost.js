@@ -40,12 +40,13 @@ class Post {
 
   static async listarPosts() {
     const posts = await db.query(`
-      SELECT post.*, usuario.nome AS autor, usuario.fotoPerfil
+      SELECT post.*, usuario.nome AS autor, usuario.fotoPerfil, usuario.idusuario AS autorId,
+      (SELECT COUNT(*) FROM comentarios WHERE comentarios.post_idpost = post.idpost) AS quantidadeComentarios
       FROM post 
       JOIN usuario ON post.usuario_idusuario = usuario.idusuario
       ORDER BY post.idpost DESC
     `);
-
+  
     return posts.map((post) => ({
       ...post,
       posterMusica: post.posterMusica,

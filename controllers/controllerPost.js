@@ -20,7 +20,8 @@ async function listarPosts(req, res) {
   posts = await Post.listarPosts();
   res.render('foryouPage', {
     posts,
-    usuario : req.session.user
+    usuario : req.session.user,
+    idUsuarioLogado: req.session.user.idUsuario
   });
 };
 
