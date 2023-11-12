@@ -2,7 +2,7 @@ let access_token;
 
 const client_id = "321c28ffad9b471997daad9f28d835a9";
 const client_secret = "9255a0a660ab4b76a1805a946c41d127";
-const redirect_uri = "http://localhost:3000/foryou";
+const redirect_uri = "https://tunetalk.onrender.com/foryou";
 const authorization_url = "https://accounts.spotify.com/authorize";
 const token_url = "https://accounts.spotify.com/api/token";
 
