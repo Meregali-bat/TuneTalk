@@ -3,11 +3,11 @@
     <div class="col-md-8">
         <div class="row mb-5">
             <div class="col-2">
-                <img src="<%= usuario.fotoPerfil %>" alt="Foto de perfil do usuário" class="profile-picture">
+                <img src="<%= usuario2.fotoPerfil %>" alt="Foto de perfil do usuário" class="profile-picture">
             </div>
             <div class="col-8 justify-content-center textoPerfil">
-                <h1><%= usuario.nome %></h1>
-                <span><%= usuario.bio %></span>
+                <h1><%= usuario2.nome %></h1>
+                <span><%= usuario2.bio %></span>
             </div>
             <div class="col-2 botao-editar-perfil">
                 <button>
@@ -91,12 +91,12 @@
                     <input id="btn-salvar-edicao" type="submit" value="Salvar">
                   </div>
                   <div>
-                    <img class="profile-picture" src="<%= usuario.fotoPerfil %>" alt="Foto de perfil" style="cursor: pointer;" onclick="document.getElementById('foto').click();">
+                    <img class="profile-picture" src="<%= usuario2.fotoPerfil %>" alt="Foto de perfil" style="cursor: pointer;" onclick="document.getElementById('foto').click();">
                     <input type="file" id="foto" name="foto" style="display: none;">
                   </div> 
                   <div class="editar-perfil-inputs">
-                    <input type="text" id="nome" name="nome" value="<%= usuario.nome %>">
-                    <input type="text" id="bio" name="bio" value="<%= usuario.bio %>">
+                    <input type="text" id="nome" name="nome" value="<%= usuario2.nome %>">
+                    <input type="text" id="bio" name="bio" value="<%= usuario2.bio %>">
                   </div>
                 </div>
               </form>

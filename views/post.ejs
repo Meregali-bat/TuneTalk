@@ -56,7 +56,9 @@
                             <% for(let comentario of comentarios) { %>
                               <div class="d-flex mb-2" style="padding: 0;">
                                 <div class="container-imagem">
-                                  <img src="<%= comentario.fotoPerfil %>" alt="Foto de perfil do usuário" class="user-profile-picture">
+                                  <a href="/user/<%= comentario.usuario_idusuario %>">
+                                    <img src="<%= comentario.fotoPerfil %>" alt="Foto de perfil do usuário" class="user-profile-picture">
+                                </a>
                                 </div>
                                 <div class="nome-texto">
                                   <h4 class="username"><%= comentario.nome %></h4>
