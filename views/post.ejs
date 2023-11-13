@@ -58,11 +58,11 @@
                         </div>
                         
                     <div class="d-flex justify-content-around align-items-center">
-                            <button type="button" class="btn botao-like" data-bs-toggle="collapse"
-                                data-bs-target="#comments<%= post.idpost %>" aria-expanded="false"
-                                aria-controls="comments<%= post.idpost %>">
-                                <i class="bi bi-chat"></i> <small class="comment-count"></small>
-                            </button>
+                      <button type="button" class="btn botao-like" data-bs-toggle="collapse"
+                      data-bs-target="#comments<%= post.idpost %>" aria-expanded="false"
+                      aria-controls="comments<%= post.idpost %>">
+                      <i class="bi bi-chat"></i> <small class="comment-count"><%= post.quantidadeComentarios %></small>
+                  </button>
                             <a class="likes-count" href="/post/curtir/<%- post.idpost %> %>"><i class="bi bi-heart btn botao-like"></i>
                                 <%= post.likes %> </small></a>
                         </div>
@@ -76,7 +76,7 @@
                         </div>
                         <div class="container-comentario">
                             <% for(let comentario of comentarios) { %>
-                              <div class="d-flex mb-2" style="padding: 0;">
+                              <div class="d-flex mb-3" style="padding: 0;">
                                 <div class="container-imagem">
                                   <a href="/user/<%= comentario.usuario_idusuario %>">
                                     <img src="<%= comentario.fotoPerfil %>" alt="Foto de perfil do usuário" class="user-profile-picture">

@@ -61,7 +61,7 @@ class Post {
     }));
   }
 
-  static async deletar(idpost) {
+  static async deletarPost(idpost) {
     const post = await db.query(`DELETE FROM post WHERE idpost = '${idpost}'`);
     return post;
   }
@@ -74,13 +74,15 @@ class Post {
 
   static async listarPostsPorIdUsuario(idusuario) {
     const posts = await db.query(`
-      SELECT post.*, usuario.nome AS autor, usuario.fotoPerfil
+      SELECT post.*, usuario.nome AS autor, usuario.fotoPerfil, usuario.idusuario AS autorId,
+      (SELECT COUNT(*) FROM comentarios WHERE comentarios.post_idpost = post.idpost) AS quantidadeComentarios,
+      nota
       FROM post 
       JOIN usuario ON post.usuario_idusuario = usuario.idusuario
       WHERE usuario_idusuario = ${idusuario}
       ORDER BY post.idpost DESC
     `);
-
+  
     return posts.map((post) => ({
       ...post,
       posterMusica: post.posterMusica,
@@ -88,6 +90,7 @@ class Post {
       posterAlbum: post.posterAlbum,
       postType: post.postType,
       releaseDate: post.releaseDate,
+      numComentarios: post.numComentarios,
     }));
   }
 }

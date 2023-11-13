@@ -19,11 +19,11 @@ header {
     position: fixed;
     top: 0;
     width: 100%;
-    z-index: 1000; /* This ensures the header stays on top of all other elements */
+    z-index: 1000; 
   }
 
   main {
-    padding-top: 8% /* Adjust this value to match the height of your header */
+    padding-top: 10% 
   }
 
 .post-container {
