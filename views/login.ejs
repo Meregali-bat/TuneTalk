@@ -8,8 +8,10 @@
                         <div class="mb-3">                     
                             <input type="email" class="form-control" id="email" name="email" placeholder="exemplo@gmail.com" required>
                         </div>
-                        <div class="mb-3">                        
-                            <input type="password" class="form-control" id="senha" name="senha" placeholder="12345" autocomplete="off" required>
+                        <div class="password-container">
+                            <input type="password" name="senha" id="container__central__form__senha" placeholder="Senha" required>
+                            <button style="background: none; margin: 0; color: #000;" type="button" onclick="togglePasswordVisibility('container__central__form__senha', 'toggleIcon1')"> <i id="toggleIcon1" class="bi bi-eye-slash"></i>
+                            </button>
                         </div>
                         <div class="d-grid">
                             <button type="submit" class="btn btn-primary btn-lg">Login</button>

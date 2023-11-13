@@ -67,30 +67,17 @@
                               <% } %>
                             </div>
                           </div>
-                          </div>
                         </div>
-                    <div class="d-flex justify-content-around align-items-center">
-                      <button type="button" class="btn botao-like" data-bs-toggle="collapse"
-                      data-bs-target="#comments<%= post.idpost %>" aria-expanded="false"
-                      aria-controls="comments<%= post.idpost %>">
-                      <i class="bi bi-chat"></i> <small class="comment-count"><%= post.quantidadeComentarios %></small>
-                  </button>
-                            <a class="likes-count" href="/post/curtir/<%- post.idpost %>"><i class="bi bi-heart btn botao-like"></i>
-                                <%= post.likes %> </small></a>
-                        </div>
-                        <div class="collapse comments" id="comments<%= post.idpost %>">
-                            <form class="comentario-form-<%= post.idpost %>" action="/comentarios" method="POST">
-                                <input type="hidden" name="post_id" value="<%= post.idpost %>">
-                                <input type="text" name="texto" class="comment-input" placeholder="Adicione um comentário..."
-                                    required>
-                                <button type="submit" class="comment-button">Responder</button>
-                            </form>
-                            
-                        </div>
-                    </div>
-                </div>
-            </div>
-            </a>
+                      </div>
+                      <div class="d-flex justify-content-around align-items-center">
+                          <i style="color: #4e9f3d;" class="bi bi-chat"></i> <small class="comment-count"><%= post.quantidadeComentarios %></small>
+                                <a class="likes-count" href="/post/curtir/<%- post.idpost %>"><i class="bi bi-heart btn botao-like"></i>
+                                    <%= post.likes %> </small></a>
+                      </div>
+                      </div>
+                      </div>
+                      </div>
+                    </a>
 
         <div class="col-2"></div>
         <% }); %>
