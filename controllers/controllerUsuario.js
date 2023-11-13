@@ -33,8 +33,13 @@ async function cadastrar(req, res) {
       req.body.senha,
       req.body.fotoPerfil
     );
-    console.log(resp);
-    res.redirect("/login");
+
+    if (resp.error) {
+      res.render('cadastro', { error: resp.error });
+    } else {
+      console.log(resp);
+      res.redirect("/login");
+    }
   }
 }
 

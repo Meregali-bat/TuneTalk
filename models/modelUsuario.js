@@ -17,13 +17,17 @@ class userModel {
     return user;
   }
 
-  static async cadastrar(nome, email, senha, fotoPerfil) {
-    const user =
-      await db.query(`INSERT INTO usuario (nome, email, senha, fotoPerfil) 
-    VALUES ('${nome}', '${email}', '${md5(senha)}', '${fotoPerfil}')`);
-    console.log(user);
-    return user;
+static async cadastrar(nome, email, senha, fotoPerfil) {
+  const existingUser = await db.query(`SELECT * FROM usuario WHERE nome = '${nome}' OR email = '${email}'`);
+
+  if (existingUser.length > 0) {
+    return { error: 'Já existe um usuário com o mesmo nome ou email' };
   }
+
+  const user = await db.query(`INSERT INTO usuario (nome, email, senha, fotoPerfil) VALUES ('${nome}', '${email}', '${md5(senha)}', '${fotoPerfil}')`);
+  return user;
+}
+
 
   static async listarUsuarioPorId(idUsuario) {
     console.log("idUsuario: " + idUsuario);

@@ -1,5 +1,8 @@
 <div id="bodyLogin">
     <div id="bodyInputs">
+        <% if (typeof error !== 'undefined') { %>
+            <div class="alert alert-danger"><%= error %></div>
+        <% } %>
         
             <form action="/cadastrar" method="post" id="container__central__form" enctype="multipart/form-data">
                 <label for="container__central__form__imagem" id="container__central__form__label">
@@ -12,9 +15,22 @@
                 </div>
         
         <input type="text" name="email" id="container__central__form__email" placeholder="E-mail" required>
-        <input type="password" name="senha" id="container__central__form__senha" placeholder="Senha">
-        <small id="passwordError" style="color: red;"></small>
-        <input type="password" id="container__central__form__confirmarSenha" placeholder="Confirmar Senha">
+        <div class="password-container">
+            <input type="password" name="senha" id="container__central__form__senha" placeholder="Senha" required>
+            <button type="button" onclick="togglePasswordVisibility('container__central__form__senha', 'toggleIcon1')">
+              <i id="toggleIcon1" class="bi bi-eye-slash"></i>
+            </button>
+          </div>
+          <small id="ruleLength" style="color: #4e4e4e;">A senha deve conter no mínimo 6 caracteres.</small>
+          <small id="ruleUppercase" style="color: #4e4e4e;">A senha deve conter uma letra maiúscula.</small>
+          <small id="ruleSymbol" style="color: #4e4e4e;">A senha deve conter um símbolo.</small>
+          <div class="password-container">
+              <input type="password" id="container__central__form__confirmarSenha" placeholder="Confirmar Senha" required>
+              <button type="button" onclick="togglePasswordVisibility('container__central__form__confirmarSenha', 'toggleIcon2')">
+                <i id="toggleIcon2" class="bi bi-eye-slash"></i>
+            </button>
+        </div>
+        <small id="passwordError" style="color: #ff0000;"></small>
         <input type="hidden" name="fotoPerfilUrl" id="fotoPerfilUrl">
         <input type="hidden" name="publicId" id="publicId">
         <button type="submit" id="container__central__form__button">Criar conta</button>

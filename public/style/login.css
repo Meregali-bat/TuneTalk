@@ -204,8 +204,7 @@ a{
     width: 8rem;
     height: 8rem;
     background-color: rgba(217, 217, 217,0.4);
-    border-radius: 64px;
-    display: flex;
+    border-radius: 50%;
     align-items: center;
     text-align: center;
     cursor: pointer;
@@ -303,3 +302,24 @@ display: none;
 .header__links a{
     color: #fff;
 }
+
+.password-container {
+    display: flex;
+    align-items: center;
+  }
+  
+  .password-container input[type="password"] {
+    flex-grow: 1;
+  }
+  
+  .password-container button {
+    background: none;
+    border: none;
+    cursor: pointer;
+    margin-top: 32px;
+    padding: 0;
+  }
+
+  .hidden {
+    display: none;
+  }
