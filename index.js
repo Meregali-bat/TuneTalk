@@ -154,7 +154,7 @@ app.post('/perfil/editar', upload.single('foto'), async (req, res) => {
 
 app.post('/cadastrar', upload.single('imagem'), (req, res) => {
   if (!req.file) {
-    return res.status(400).send('Nenhum arquivo foi enviado.');
+    res.render('cadastro', { error: "Nenhuma imagem selecionada" });;
   }
 
   cloudinary.uploader.upload(req.file.path, (error, result) => {

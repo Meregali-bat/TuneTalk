@@ -66,17 +66,27 @@ function togglePasswordVisibility(inputId, iconId) {
 
 document.getElementById('container__central__form__senha').addEventListener('input', function() {
   const password = this.value;
-  document.getElementById('ruleLength').classList.toggle('hidden', password.length >= 6);
-  document.getElementById('ruleUppercase').classList.toggle('hidden', /[A-Z]/.test(password));
-  document.getElementById('ruleSymbol').classList.toggle('hidden', /\W/.test(password));
+  const ruleLength = document.getElementById('ruleLength');
+  const ruleUppercase = document.getElementById('ruleUppercase');
+  const ruleSymbol = document.getElementById('ruleSymbol');
+
+  ruleLength.classList.toggle('hidden', password.length >= 6);
+  ruleUppercase.classList.toggle('hidden', /[A-Z]/.test(password));
+  ruleSymbol.classList.toggle('hidden', /\W/.test(password));
+
+  [ruleLength, ruleUppercase, ruleSymbol].forEach(rule => {
+    rule.addEventListener('animationend', function() {
+      if (this.classList.contains('hidden')) {
+        this.style.display = 'none';
+      }
+    });
+
+    if (!rule.classList.contains('hidden')) {
+      rule.style.display = '';
+    }
+  });
 });
 
-document.getElementById('container__central__form').addEventListener('input', function() {
-  const nome = document.getElementById('container__central__form__nome').value;
-  const email = document.getElementById('container__central__form__email').value;
-  const senha = document.getElementById('container__central__form__senha').value;
-  const confirmarSenha = document.getElementById('container__central__form__confirmarSenha').value;
-  const imagem = document.getElementById('container__central__form__imagem').files.length;
-
-  document.getElementById('container__central__form__button').disabled = !(nome && email && senha && confirmarSenha && imagem);
+document.querySelector('.alert').addEventListener('click', function() {
+  this.style.display = 'none';
 });
