@@ -61,17 +61,15 @@
                                   </div>
                                 </div>
                               <% } %>
-                            </a>
                             </div>
                           </div>
-                          </div>
                         </div>
-                    <div class="d-flex justify-content-around align-items-center">
-                  <button type="button" class="btn botao-like" data-bs-toggle="collapse"
-                      data-bs-target="#comments<%= post.idpost %>" aria-expanded="false"
-                      aria-controls="comments<%= post.idpost %>">
-                      <i class="bi bi-chat"></i> <small class="comment-count"><%= post.quantidadeComentarios %></small>
-                  </button>
+                      </div>
+                      <div class="d-flex justify-content-around align-items-center">
+                        <button type="button" class="btn botao-like" >
+                          <i class="bi bi-chat"></i> <small class="comment-count"><%= post.quantidadeComentarios %></small>
+                        </button>
+                      </a>
                             <a class="likes-count" href="/post/curtir/<%- post.idpost %>"><i class="bi bi-heart btn botao-like"></i>
                                 <%= post.likes %> </small>
                             </a>
