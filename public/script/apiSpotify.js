@@ -196,4 +196,3 @@ document
     document.getElementById("search-bar").style.display = "none";
     document.getElementById("overlay").style.display = "none";
   });
-  
