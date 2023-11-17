@@ -5,7 +5,7 @@ let comentarios = [];
 async function criarComentario(req, res) {
   try {
     const { texto } = req.body;
-    const postId = req.params.idpost; // Acessando o parâmetro da URL
+    const postId = req.params.idpost; 
     const usuarioId = req.session.user.id;
     const comentario = new Comentario(null, texto, 0, postId, usuarioId);
     await comentario.comentar();

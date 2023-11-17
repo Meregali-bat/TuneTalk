@@ -18,21 +18,27 @@ async function autenticar(req, res) {
       res.redirect("/foryou");
       console.log(req.session.user);
     } else {
-      res.redirect("/login");
+      res.render('login', { error: 'Usuário ou senha incorretos.' });
     }
   }
 }
 
 async function cadastrar(req, res) {
-  if (req.body.nome == "" || req.body.email == "" || req.body.senha == "") {
+  const { nome, email, senha, fotoPerfil } = req.body;
+
+  if (!nome || !email || !senha) {
     res.redirect("/cadastrar");
   } else {
-    const resp = await userModel.cadastrar(
-      req.body.nome,
-      req.body.email,
-      req.body.senha,
-      req.body.fotoPerfil
-    );
+    const hasSymbol = /\W/.test(senha);
+    const hasSixCharacters = senha.length >= 6;
+    const hasUppercase = /[A-Z]/.test(senha);
+
+    if (!hasSymbol || !hasSixCharacters || !hasUppercase) {
+      res.render('cadastro', { error: 'A senha deve conter pelo menos um símbolo, mais de 6 caracteres e uma letra maiúscula.' });
+      return;
+    }
+
+    const resp = await userModel.cadastrar(nome, email, senha, fotoPerfil);
 
     if (resp.error) {
       res.render('cadastro', { error: resp.error });

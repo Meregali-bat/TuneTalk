@@ -1,330 +1,155 @@
 :root {
-    --texto: #fff;
-    --background: #14181D;
-    --destaque: #4E9F3D;
+    /* --texto: #fff;
+    --background: #050505;
+    --destaque: #6b35e8; */
+
+    --texto: #fcfffc;
+    --background: #040f0f;
+    --destaque: #2ba84a;
   }
   
   @import url('https://fonts.googleapis.com/css2?family=EB+Garamond&family=Geologica:wght@300&family=Raleway&display=swap');
   
-  #corpo{
-    background-color: var(--background);
+  *{
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
   }
-  .link {
+
+  .alert{
     color: var(--texto);
-    text-decoration: none;
-  }
-  
-  header {
-    background-image: url("/img/background.svg");
-    background-repeat: no-repeat;
-    background-position: top;
-    background-size: 70vw 70vh;
-    height: 70vh;
-  }
-  
-  #header__titulo,
-  #header__Subtitulo,
-  #main__btn {
-    font-family: var(--fonte-padrao);
-    color: var(--texto);
-  }
-  
-  #header__titulo {
-    font-size: 3.5rem;
-    text-align: center;
-  }
-  
-  #header__Subtitulo {
-    font-size: 2.5rem;
-    margin-top: 32vh;
-  }
-  
-  #main__btn {
     background-color: var(--destaque);
-    width: 80%;
-    height: 3rem;
-    border-radius: 3px;
-    font-size: 1rem;
-    text-align: center;
-    margin: 0 auto;
-    display: block;
-    border: none;
-  }
-
-#disponibilidade{
-    font-family: 'Geologica', sans-serif;
-    font-size: 1.8rem;
-    color: var(--texto);
-    text-align: center;
-    margin: 0 auto;
-    display: block;
-    margin-top: 4vh;
-}
-
-#disponibilidade__texto{
-    margin: 0 auto;
-    display: block;
-    font-size: 1.5rem;
-}
-
-#disponibilidade i{
-    color: var(--destaque);
-}
-
-#beneficios{
-    font-family: 'Geologica', sans-serif;
-    font-size: 1.8rem;
-    color: var(--texto);
-
-    margin: 0 auto;
-    display: block;
-    margin-top: 4vh;
-}
-
-.beneficios__spans{
-    font-family: 'Geologica', sans-serif;
-    font-size: 1rem;
-    width: 312px;
-    height: 102px;
-    color: #9d9d9d;
-    background-color: #191919;
-    border-radius: 10px;
-    padding: 10px;
-    margin: 0 10px 10px 0 ;
-}
-
-#bodyLogin{
-    background-color: var(--background);
-    height: 100vh;
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    justify-content: center;
-}
-
-.containerInputs{
-    background-color: #2a343f;
-    width: 30%;
-    height: 70%;
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    justify-content: center;
-    border-radius: 16px;
-}
-
-.containerInputs h1{
-    font-family: 'Geologica', sans-serif;
-    color: #fff;
-    font-size: 2rem;
-    text-align: center;
-    margin-top: 2vh;
-}
-
-.containerInputs form{
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    justify-content: center;
-    margin-top: 2vh;    
-    color: #fff;
-}
-
-.containerInputs form input{
-    width: 100%;
-    height: 2rem;
-    background: none;
-    border-top: none;
-    border-left: none;
-    border-right: none;
-    outline: none;
-    font-family: 'Inter', sans-serif;
-    color: #000;
-    text-align: center;
-    border-bottom: 2px solid transparent; 
-    transition: border-bottom 0.3s ease-in-out; 
+    border: var(--background);
     border-radius: 0;
-    margin-top: 2rem;
-    margin-bottom: 2rem;
 }
 
-.containerInputs form input::placeholder{
-    text-align: center;
-    color: #000;
+  a{
+    text-decoration: none;
+    color: var(--texto);
+  }
+  
+  main{
+    background: var(--background);
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    height: 100vh;
+    color: var(--texto);
+}
+form{
+    width: 100%;
+    max-width: 500px;
+    padding: 40px;
+    border-radius: 8px;
+    border: 1px solid var(--destaque);
+    display: flex;
+    flex-direction: column;
+    align-items: center;
 }
 
-.containerInputs form input:focus{
-    background: none;
+  input{
     outline: none;
-    color: #000;
-    box-shadow: none;
-    border-bottom: 2px solid #000;
-}
-
-.containerInputs form button{
-    background-color: var(--destaque);
-    font-family: 'Geologica', sans-serif;  
-    font-size: 1rem;
     color: var(--texto);
     text-align: center;
-    display: block;
+  }
+
+#container__central__form__senha,
+.container__central__form__email,
+.container__central__form__nome,
+#container__central__form__confirmarSenha{
+    width:100%;
+    background-color: var(--background);
     border: none;
-    margin-top: 2vh;
 }
 
+.password-container,
+.email-container,
+.nome-container{
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-top: 1rem;
+    width:100%;
+    border: 1px solid var(--destaque);
+    background-color: var(--background);
+    padding: .5rem;
+    border-radius: 8px;
+}
 
-a{
-    text-decoration: none;
+.password-container button{
+    border: none;
+}
+
+#toggleIcon1,
+#toggleIcon2{
+    background-color: var(--background);
+    border: none;
+    color: var(--destaque);
+    font-size: 1rem;
+    cursor: pointer;
+    
+}
+
+.btn-login{
+    margin-top: 1rem;
+    width: 60%;
+    border: none;
+    background-color: var(--destaque);
+    color: var(--texto);
+    padding: .5rem;
+    border-radius: 8px;
+    cursor: pointer;
 }
 
 .novoUsuario{
-    font-family: 'Geologica', sans-serif;
-    font-size: 1rem;
-    color: var(--texto);
-    text-align: center;
-    margin-top: 2vh;
-}
-
-#Pessoa{
-    width: 200%;
-    height: 100%;
-}
-
-#container__central__form{
-    display: flex;
-    flex-direction: column;
-    justify-content: space-around;
-    align-items: center;
-    height: 80%;
-}
-
-#container__central__form__label{
-    display: flex;
-    flex-direction: column;
-    width: 8rem;
-    height: 8rem;
-    background-color: rgba(217, 217, 217,0.4);
-    border-radius: 50%;
-    align-items: center;
-    text-align: center;
+    margin-top: 1rem;
+    color: var(--destaque);
     cursor: pointer;
-}
-
-#container__central__form__label span{
-    font-size: 0.5rem;
-    font-family: 'Inter', sans-serif;
-    font-weight: 700;
-}
-
-.bi-person-fill{
-    font-size: 5rem;
-}
-
-#container__central__form__imagem{
-display: none;
-}
-
-#container__central__form__nome,
-#container__central__form__email,
-#container__central__form__senha,
-#container__central__form__confirmarSenha{
-    width: 100%;
-    height: 2rem;
-    background: none;
-    border-top: none;
-    border-left: none;
-    border-right: none;
-    outline: none;
-    font-family: 'Inter', sans-serif;
-    color: #000;
     text-align: center;
-    margin-top: 2rem;
-    border-bottom: 2px solid transparent; 
-    transition: border-bottom 0.3s ease-in-out; 
-    position: relative;
-}
-
-#container__central__form__nome:focus,
-#container__central__form__email:focus,
-#container__central__form__senha:focus,
-#container__central__form__confirmarSenha:focus {
-    border-bottom: 2px solid #000; /* make the border black when focused */
-}
-
-#container__central__form__email::placeholder,
-#container__central__form__senha::placeholder,
-#container__central__form__confirmarSenha::placeholder,
-#container__central__form__nome::placeholder,
-#container__central__form__sobrenome::placeholder{
-    text-align: center;
-    color: #000;
-}
-
-#container__central__form__button{
-    background-color: var(--destaque);
-    border-radius: 8px; 
-    font-family: 'Geologica', sans-serif;  
-    font-size: 1rem;
-    color: var(--texto);
-    text-align: center;
-    display: block;
-    border: none;
-    margin-top: 2vh;
-    padding: 0.6rem;
-}
-
-.link{
-    text-decoration: none;
-    color: #000;
-    font-family: 'Inter', sans-serif;
-    font-weight: 700;
 }
 
 .picture__img{
-    max-width: 100%;
-    max-height: 100%;
-    min-width: 100%;
-    min-height: 100%;
-    border-radius: 64px;
+    width: 150px;
+    height: 150px;
+    border-radius: 50%;
+    margin-bottom: 1rem;
 }
 
-#bodyInputs{
-    background-color: #2a343f;
-    width: 30%;
-    height: 75%;
+#container__central__form__imagem{
+    display: none;
+}
+
+#container__central__form__label{
+    width: 150px;
+    height: 150px;
+    border-radius: 50%;
+    margin-bottom: 1rem;
+    border: 1px solid var(--destaque);
+}
+
+#icone{
+    display: none;
+}
+
+img.picture__img{
+    margin: 0;
+    width: 150px;
+    height: 150px;
+    border-radius: 50%;
+    margin-bottom: 1rem;
     display: flex;
-    flex-direction: column;
-    align-items: center;
     justify-content: center;
-    border-radius: 16px;
-}
-
-.header__links a{
-    color: #fff;
-}
-
-.password-container {
-    display: flex;
     align-items: center;
-  }
-  
-  .password-container input[type="password"] {
-    flex-grow: 1;
-  }
-  
-  .password-container button {
-    background: none;
-    border: none;
-    cursor: pointer;
-    margin-top: 32px;
-    padding: 0;
-  }
+    border: 1px solid var(--destaque);
+}
 
-  @keyframes fadeOut {
-    0% {opacity: 1;}
-    100% {opacity: 0;}
-  }
-  
-  .hidden {
-    animation: fadeOut 0.4s forwards;
-  }
+#container__central__form__button{
+    margin-top: 1rem;
+    width: 60%;
+    border: none;
+    background-color: var(--destaque);
+    color: var(--texto);
+    padding: .5rem;
+    border-radius: 8px;
+    cursor: pointer;
+}

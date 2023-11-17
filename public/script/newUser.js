@@ -45,7 +45,7 @@ confirmPasswordInput.addEventListener('input', checkPasswords);
 
 document.getElementById('container__central__form').addEventListener('submit', function(event) {
   if (passwordInput.value !== confirmPasswordInput.value) {
-    event.preventDefault(); // prevent form submission
+    event.preventDefault(); 
   }
 });
 
@@ -64,29 +64,38 @@ function togglePasswordVisibility(inputId, iconId) {
   }
 }
 
+const alert = document.querySelector('.alert');
+if (alert) {
+  alert.addEventListener('click', () => {
+    alert.style.display = 'none';
+  });
+}
+
+// Obtenha uma referência aos elementos de regra
+const ruleLength = document.getElementById('ruleLength');
+const ruleUppercase = document.getElementById('ruleUppercase');
+const ruleSymbol = document.getElementById('ruleSymbol');
+
+// Adicione um ouvinte de evento ao campo de entrada da senha
 document.getElementById('container__central__form__senha').addEventListener('input', function() {
   const password = this.value;
-  const ruleLength = document.getElementById('ruleLength');
-  const ruleUppercase = document.getElementById('ruleUppercase');
-  const ruleSymbol = document.getElementById('ruleSymbol');
 
-  ruleLength.classList.toggle('hidden', password.length >= 6);
-  ruleUppercase.classList.toggle('hidden', /[A-Z]/.test(password));
-  ruleSymbol.classList.toggle('hidden', /\W/.test(password));
+  // Verifique cada regra e oculte o elemento correspondente se a regra for cumprida
+  if (password.length >= 6) {
+    ruleLength.style.display = 'none';
+  } else {
+    ruleLength.style.display = 'block';
+  }
 
-  [ruleLength, ruleUppercase, ruleSymbol].forEach(rule => {
-    rule.addEventListener('animationend', function() {
-      if (this.classList.contains('hidden')) {
-        this.style.display = 'none';
-      }
-    });
+  if (/[A-Z]/.test(password)) {
+    ruleUppercase.style.display = 'none';
+  } else {
+    ruleUppercase.style.display = 'block';
+  }
 
-    if (!rule.classList.contains('hidden')) {
-      rule.style.display = '';
-    }
-  });
-});
-
-document.querySelector('.alert').addEventListener('click', function() {
-  this.style.display = 'none';
+  if (/\W/.test(password)) {
+    ruleSymbol.style.display = 'none';
+  } else {
+    ruleSymbol.style.display = 'block';
+  }
 });

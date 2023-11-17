@@ -130,6 +130,7 @@ app.get('/post/:idpost', controllerPost.verPost, controllerComent.listarComentar
 app.post('/post/:idpost/comentar', controllerComent.criarComentario);
 app.get('/perfil/editar', (req, res) => {
   controllerUsuario.editarPerfil(req, res);
+  res.redirect(`/perfil/${req.session.user.id}`);
 });
 
 app.post('/perfil/editar', upload.single('foto'), async (req, res) => {

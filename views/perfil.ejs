@@ -117,6 +117,9 @@
                     <input type="file" id="foto" name="foto" style="display: none;">
                   </div> 
                   <div class="editar-perfil-inputs">
+                    <% if (typeof error !== 'undefined') { %>
+                      <div class="alert m-0"><%= error %></div>
+                  <% } %>
                     <input type="text" id="nome" name="nome" value="<%= usuario.nome %>">
                     <input type="text" id="bio" name="bio" value="<%= usuario.bio %>">
                   </div>

@@ -1,0 +1,154 @@
+:root {
+    --texto: #fcfffc;
+    --background: #040f0f;
+    --destaque: #2ba84a;
+  }
+
+  @import url('https://fonts.googleapis.com/css2?family=EB+Garamond&family=Geologica:wght@300&family=Raleway&display=swap');
+  
+  *{
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+  }
+
+  body{
+    background-color: var(--background);
+    font-family: 'Geologica', sans-serif;
+  }
+
+  .navegacao{
+    display: flex;
+    justify-content: space-around;
+    align-items: center;
+    padding: 1rem;
+    background-color: var(--background);
+    color: var(--texto);
+  }
+
+  .titulo-logo{
+    font-size: 2rem;
+    color: var(--texto);
+    margin-left: 1rem;
+  }
+
+  .link-header{
+    color: var(--texto);
+    text-decoration: none;
+    font-size: 1.5rem;
+  }
+
+  .main{
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    flex-direction: column;
+    color: var(--texto);
+  }
+
+  .welcome-text{
+    padding-top: 2rem;
+    text-align: center;
+    font-size: 2rem;
+    color: var(--texto);
+    margin-top: 1rem;
+    margin-bottom: 1rem;
+  }
+
+  .welcome-text strong{
+    color: var(--destaque);
+  }
+
+  .icone{
+    font-size: 5rem;
+    color: var(--texto);
+  }
+
+.block{
+    width: 100%;
+    margin-bottom: 7rem;
+}
+
+.first-block{
+    width: 30%;
+    background-color: var(--destaque);
+    text-align: center;
+    margin-top: 5rem;
+    margin-left: 57%;
+    padding: 5rem;
+    box-shadow: #3d3d3d 20px 20px 10px;
+}
+
+.first-block span{
+    font-size: 2em;
+    color: var(--texto);
+}
+
+.second-block{
+    width: 40%;
+    background-color: var(--destaque);
+    text-align: center;
+    margin-left: 10%;
+    padding: 5rem;
+    box-shadow: #3d3d3d -20px -20px 10px;
+}
+
+.second-block span{
+    font-size: 2em;
+    color: var(--texto);
+}
+
+.third-block{
+    width: 50%;
+    background-color: var(--destaque);
+    text-align: center;
+    margin-left: 40%;
+    padding: 5rem;
+    box-shadow: #3d3d3d 20px 20px 10px;
+}
+
+.third-block span{
+    font-size: 2em;
+    color: var(--texto);
+}
+
+.fourth-block{
+    width: 40%;
+    background-color: var(--destaque);
+    text-align: center;
+    margin-left: 15%;
+    padding: 5rem;
+    box-shadow: #3d3d3d -20px 20px 10px;
+}
+
+.fourth-block span{
+    font-size: 2em;
+    color: var(--texto);
+}
+
+@media screen and (max-width: 852px){
+    .first-block{
+        width: 80%;
+        margin-left: 10%;
+    }
+
+    .second-block{
+        width: 80%;
+        margin-left: 10%;
+    }
+
+    .third-block{
+        width: 80%;
+        margin-left: 10%;
+    }
+
+    .fourth-block{
+        width: 80%;
+        margin-left: 10%;
+    }
+
+    .link-header{
+        font-size: 1rem;
+    }
+    
+}
