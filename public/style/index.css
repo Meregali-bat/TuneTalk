@@ -1,8 +1,8 @@
 :root {
-    --texto: #fff;
-    --background: #14181D;
-    --destaque: #4E9F3D;
-}
+    --texto: #fcfffc;
+    --background: #040f0f;
+    --destaque: #2ba84a;
+  }
 
 * {
     margin: 0;
@@ -15,22 +15,116 @@ body {
     font-family: 'Geologica', sans-serif;
 }
 
-header {
-    position: fixed;
-    top: 0;
+a{
+    text-decoration: none;
+}
+
+main{
+align-items: center;
+}
+
+.posts{
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
     width: 100%;
-    z-index: 1000; 
-  }
+    max-width: 74%;
+    margin-left: 13%;
+}
 
-  main {
-    padding-top: 10% 
-  }
+.post{
+    width: 100%;
+    display: flex;
+    margin-top: 3rem;
+    flex-direction: column;
+}
 
-.post-container {
-    background-color: var(--background);
+.post-header{
+    display: flex;
+    flex-direction: row;
+    width: 100%;
+    height: 100%;
+    align-items: center;
+}
+
+.foto-coluna{
+    height: 100%;
+    max-width: 200px;
+    border-radius: 10px;
+}
+
+.user-profile-picture{
+    width: 50px;
+    height: 50px;
+    border-radius: 50%;
+}
+
+.post-coluna{
+    display: flex;
+    flex-direction: column;
+    width: 90%;
+    height: 100%;
+    min-width: 100%;
+}
+
+.autor-post{
+    margin-left:1rem;
+    font-size: 1.5rem;
+    color: var(--texto);
+}
+
+.texto-post{
+    margin-left:1rem;
+    color: var(--texto);
+    text-align: justify;
+    width: 100%;
+}
+
+.container-album,
+.container-musica{
+    display: flex;
+    flex-direction: row;
+    width: 100%;
+    margin-top: 1rem;
+    border-radius: 10px;
+    border: 1px solid #2f3336;
+    margin-left: 4rem;
+}	
+
+.album-poster,
+.music-poster{
+    width: 100px;
+    height: 100px;
+    border-radius: 10px 0  0 10px;
+    margin: 0 16px 0 0;
+}
+
+.titulo-album,
+.titulo-musica{
+    font-size: 1.5rem;
+    padding-right: 1rem;
     color: var(--destaque);
-    margin: 0;
-    padding: 0;
+    margin-top: 0.4rem;
+}
+
+.artist-name{
+    font-size: 14px;
+    color: var(--destaque);
+    margin-bottom: 1rem;
+}
+
+.interacoes{
+    display: flex;
+    flex-direction: row;
+    align-items: center;
+    justify-content: space-around;
+    width: 100%;
+    margin-left: 3.6rem;
+}
+
+.botao-interacao,
+.likes-count{
+    color: var(--destaque);
 }
 
 .botão-criarpost {
@@ -42,148 +136,15 @@ header {
     font-size: 2rem;
 }
 
-.artist-name {
-    font-size: 14px;
-    color: #326428  ;
-    margin-bottom: 1rem;
-}
-
-.titulo-musica,
-.titulo-album {
-    font-size: 1.5rem;
-    padding-right: 1rem;
-    color: var(--destaque);
-    margin-top: 0.4rem;
-}
-
-.likes-count{
-    font-size: 16px;
-    color: #fff;
-
-}
-
-.nome-texto{
-    margin-left: 0.5rem;
-    
-}
-
-.foto-texto{
-    display: flex;
-    flex-direction: row;
-    margin-bottom: 1rem;
-    overflow: auto;
-    word-wrap: break-word;
-}
-
-.username {
-    font-size: 20px;
-    font-weight: 600;
-    color: #fff;
-    font-style: italic;
-    margin: 0;
-}
-
-.container-imagem {
-    min-width: 50px;  /* Or whatever size you want */
-    min-height: 50px; /* Or whatever size you want */
-  }
-
-.card-text {
-    font-size: 16px;
-    color: #fff;
-    margin: 0;
-    text-align: justify;
-}
-
-.comment {
-    font-size: 1rem;
-    color: #fff;
-    line-height: 1.5;
-}
-
-
-.comment-input {
-    width: 80%;
-    background-color: var(--background);
-    border: none;
-    padding: 10px;
-    border-radius: 4px;
-    margin-bottom: 10px;
-    color: #fff;
-    margin-top: 1rem;
-}
-
-.comment-count{
-    color: #fff;
-    font-size: 16px;
-}
-
-.comment-input :focus {
-    outline: none;
-}
-
-.comment-button {
-    width: 19%;
-    font-size: 1vw;
-    padding: 10px 20px;
-    background-color: var(--destaque);
-    font-weight: 600;
-    color: #fff;
-    border: none;
-    border-radius: 40px;
-    cursor: pointer;
-}
-
-.botao-like:not(:hover) {
-    color: var(--destaque);
-}
-
-a {
-    text-decoration: none;
-}
-
-.container-musica,
-.container-album{
-    display: flex;
-    flex-direction: row;
-    align-items: center;
-    padding: 0;
-    border-radius: 16px;
-    border: 1px solid #2f3336;
-    width: 60vw;
-}
-
-.container-musica img,
-.container-album img{
-    border-radius:  16px 0 0 16px;
-}
-
-#charts-artistas {
-    display: flex;
-    flex-wrap: wrap;
-    justify-content: center;
-    align-items: center;
-    max-width: 80%;
-    margin-left: 10%;
-}
-
-#charts-artistas img {
-    max-width: 80vw;
-    height: auto;
-    border-radius: 50%;
-}
-
-#charts-artistas h3,
-p {
-    margin-top: 10px;
-    font-size: 1.3rem;
-    color: #ffffff;
-}
-
-.chart-artistas {
-    margin: 2rem;
-    text-align: center;
-
+#overlay {
+    display: none;
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: rgba(0, 0, 0, 0.7);
+    z-index: 999;
 }
 
 #search-bar {
@@ -233,17 +194,6 @@ p {
     cursor: pointer;
 }
 
-#overlay {
-    display: none;
-    position: fixed;
-    top: 0;
-    left: 0;
-    width: 100%;
-    height: 100%;
-    background: rgba(0, 0, 0, 0.7);
-    z-index: 999;
-}
-
 #search-results {
     height: 300px;
     overflow-y: auto;
@@ -265,146 +215,43 @@ p {
     margin-right: 10px;
 }
 
-#comment {
-    margin-left: 1rem;
-    width: 70%;
-    height: 100%;
-}
-
-#music-name,
-#album-name {
-    color: #fff;
-}
-
-.user-profile-picture {
-    border-radius: 50%; 
-    width: 50px; 
-    height: 50px; 
-  }
-
-#texto{
-    width: 20rem;
-    height: 20vh;
-}
-
-#foto-musica,
-#foto-album{
-        width: 30%;
-        height: 30%;
-    }
-
-
-.post-header{
+.post-configs{
     display: flex;
     flex-direction: row;
-    align-items: center;
-    margin-bottom: 1rem;
     width: 100%;
 }
 
-.music-poster,
-.album-poster{
-    width: 100px;
-    height: 100px;
-    margin-right: 1rem;
-}
-
-#percentage{
-    font-size: 1.5rem;
-    color: #fff;
-    margin-left: 1rem;
-}
-
-.comentario-form{
+.post-configs form{
     width: 100%;
-}   
+    height: 25rem;
+}
 
-.container-comentario{
+.post-configs textarea{
+    width: 100%;
+    height: 80%;
+    border-radius: 10px;
+    border: 1px solid #2f3336;
     background-color: var(--background);
-    display: flex;
-    flex-direction: column ;
-}
-
-.profile-picture{
-    width: 10vw;
-    height: 10vw;
-    border-radius: 50%;
-    margin-right: 1rem;
-}
-
-.textoPerfil{
-    color: #fff;
-}
-
-.botao-editar-perfil{
-    display: flex; 
-    flex-direction: 
-    column; justify-content: 
-    flex-end;
-}
-
-.botao-editar-perfil button{
-    background-color: var(--background);
-    border: 1px solid var(--destaque);
-    border-radius: 64px;
-    padding: 0.5rem;
-    color: #fff;
-    font-size: 1rem;
-    margin-top: 1rem;
-}
-
-#popup{
-    display: none;
-    position: fixed;
-    top: 50%;
-    left: 50%;
-    transform: translate(-50%, -50%);
-    z-index: 1000;
-    background: var(--background);
-    padding: 20px;
-    border-radius: 5px;
-    width: 80%;
-    max-width: 800px;
-    box-sizing: border-box;
-}
-
-.header-editar-perfil{
-    color: var(--texto);
-    font-size: 1rem;
-    display: flex;
-    flex-direction: row;
-    justify-content: space-between;
-}
-
-.header-editar-perfil span{
-    font-weight: 600;
-}
-
-#btn-salvar-edicao{
-    background-color: var(--background);
-    border: 1px solid var(--destaque);
-    border-radius: 64px;
-    padding: 0.5rem;
-    color: #fff;
-}
-
-
-.editar-perfil-inputs{
-    display: flex;
-    flex-direction: column;
-    justify-content: center;
-    align-items: center;
-    margin-top: 1rem;
-}
-
-#nome,
-#bio{
-    width: 80%;
-    margin-top: 1rem;
-    background-color: var(--background);
-    border: 1px solid var(--destaque);
     color: var(--texto);
     padding: 1rem;
+    font-size: 1rem;
+    resize: none;
+}
+
+.btn-postar{
+    margin-top: 10rem;
+}
+
+#album-name,
+#music-name{
+    font-size: 1.5rem;
+    color: var(--destaque);
+}
+
+#foto-album,
+#foto-musica{
+    width: 50%;
+    height: 50%;
 }
 
 .star-rating input {
@@ -416,7 +263,220 @@ p {
     padding: 0;
     cursor: pointer;
   }
+  
   .star-rating input:checked ~ label,
   .star-rating label:hover ~ label {
     color: var(--texto);
   }
+  
+  .profile-picture{
+    width: 150px;
+    height: 150px;
+    border-radius: 50%;
+  }
+
+  .textoPerfil{
+    margin-left: 1rem ;
+    width: 60%;
+  }
+
+  .textoPerfil h1{
+    color: var(--texto);
+    font-size: 2rem;
+  }
+
+    .textoPerfil span{
+        color: var(--texto);
+        font-size: 1rem;
+        text-align: justify;
+    }
+
+    .botao-editar-perfil button{
+        padding: .5rem;
+        margin-top: 2rem;
+        background-color: var(--background);
+        border: 1px solid var(--destaque);
+        border-radius: 10px;
+        color: var(--texto);
+        font-size: 1rem;
+    }
+
+    #popup{
+        display: none;
+        position: fixed;
+        top: 50%;
+        left: 50%;
+        transform: translate(-50%, -50%);
+        z-index: 1000;
+        background: var(--background);
+        padding: 20px;
+        border-radius: 5px;
+        width: 80%;
+        max-width: 800px;
+        box-sizing: border-box;
+    }
+    
+    .header-editar-perfil{
+        color: var(--texto);
+        font-size: 1rem;
+        display: flex;
+        flex-direction: row;
+        justify-content: space-between;
+    }
+    
+    .header-editar-perfil span{
+        font-weight: 600;
+    }
+    
+    #btn-salvar-edicao{
+        background-color: var(--background);
+        border: 1px solid var(--destaque);
+        border-radius: 64px;
+        padding: 0.5rem;
+        color: #fff;
+    }
+    
+    
+    .editar-perfil-inputs{
+        display: flex;
+        flex-direction: column;
+        justify-content: center;
+        align-items: center;
+        width: 100%;
+    }
+
+    #nome,
+    #bio{
+        width: 80%;
+        margin-top: 1rem;
+        background-color: var(--background);
+        border: 1px solid var(--destaque);
+        color: var(--texto);
+        padding: 1rem;
+    }
+
+    .img-inputs{
+        display: flex;
+        width: 100%;
+        padding: 0;
+    }
+
+    .comentario-form{
+        display: flex;
+        flex-direction: row;
+        width: 100%;
+        margin-top: 1rem;
+        justify-content: space-between;
+    }
+
+    .comment-input{
+        width: 80%;
+        padding: 1rem;
+        background-color: var(--background);
+        border: 1px solid var(--destaque);
+        color: var(--texto);
+    }
+
+    .comment-button{
+        width: 15%;
+        background-color: var(--background);
+        border: 1px solid var(--destaque);
+        color: var(--texto);
+    }
+
+    .comment{
+        color: var(--texto);
+        margin-top: 3rem;
+        width: 80%;
+        margin-left: 10%;
+        display: flex;
+
+    }
+
+    .nome-texto{
+        margin-left: 1rem;
+    }
+
+@media screen and (max-width: 768px) {  
+
+    .posts{
+        max-width: 100%;
+        margin-left: 0;
+    }
+
+    .post-header{
+        align-items: flex-start;
+    }
+
+    .foto-coluna{
+        max-width: 100%;
+        margin-left: 0;
+    }
+
+
+    .texto-post,
+    .autor-post{
+        font-size: 1rem;
+        width: 90%;
+        margin: 0;
+    }
+
+    a,
+    .post-header{
+        width: 90%;
+        margin-left: 5%;
+    }
+
+    .container-album,
+    .container-musica{
+        margin-left: 0;
+    }
+
+    .album-poster,
+    .music-poster{
+        border-radius: 10px 0 0 10px;
+        margin: 0;
+    }
+
+    .column{
+        margin-left: .6rem;
+    }
+
+    .titulo-album,
+    .titulo-musica{
+        padding-right: 0;
+    }
+
+    .interacoes{
+        margin-left: 0;
+    }
+
+    .botao-interacao,
+    .likes-count{
+        margin: 0;
+        width: 30%;
+    }
+
+    .botão-criarpost {
+        margin-left: 0;
+    }
+
+    #search-bar {
+        width: 90%;
+        max-width: 90%;
+    }
+
+    .post-configs textarea{
+        height: 50%;
+    }
+
+    .star-rating label {
+        font-size: 1.3rem;
+      }
+    
+    .btn-postar{
+        margin-top: 5rem;
+    }
+
+}
+    

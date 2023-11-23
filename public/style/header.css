@@ -1,70 +1,22 @@
-:root {
-    --texto: #fff;
-    --background: #14181D;
-    --destaque: #4E9F3D;
-}
-
 @import url('https://fonts.googleapis.com/css2?family=EB+Garamond&family=Geologica:wght@300&family=Raleway&display=swap');
 
-#corpo{
-    background-color: var(--background);
-}
-
-.link{
-    color: var(--texto);
-    text-decoration: none;
-}
-
-header{
-    background-color: var(--background);
-    height: 15vh;
+.navegacao{
     display: flex;
-    justify-content: space-between;
+    justify-content: space-around;
     align-items: center;
-}
-
-#header__titulo{
-    font-family: 'Raleway', sans-serif;
-    font-size: 3.5rem;
+    padding: 1rem;
+    background-color: var(--background);
     color: var(--texto);
-    text-align: center;
-    
-}
-#header__links{
-    font-family: 'Geologica', sans-serif;
-    font-size: 1rem;
-    color: var(--texto);
-}
+  }
 
-#header__links a{
+  .titulo-logo{
+    font-size: 2rem;
+    color: var(--texto);
+    margin-left: 1rem;
+  }
+
+  .link-header{
     color: var(--texto);
     text-decoration: none;
-}
-
-#header__links a:hover{
-    color: var(--texto);
-    text-decoration: underline;
-    cursor: pointer;
-}
-
-#searchbar{
-    background-color: #888;
-    border-radius: 60px;
-    border: none;
-    opacity: calc(60%);
-    color: var(--texto);
-    font-family: 'Geologica', sans-serif;
-    font-size: 1rem;
-    padding: 0.5rem;
-}
-
-#searchbar:focus{
-    outline: none;
-    box-shadow: none;
-}
-
-#searchbar::-webkit-search-cancel-button {
-    -webkit-appearance: none;
-    appearance: none;
-    display: none;
-}
+    font-size: 1.5rem;
+  }

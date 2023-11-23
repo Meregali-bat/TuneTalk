@@ -99,7 +99,7 @@ function searchFunction(e) {
               document.getElementById("search-bar").innerHTML = `
                 <div style="display: flex; flex-direction: column; height: 100%;">
                   <h2 id="album-name">${album.name} by ${album.artists[0].name}</h2>
-                  <div style="display: flex; flex-grow: 1; align-items: center;">
+                  <div class="post-configs">
                     <img id="foto-album" src="${album.images[0].url}" alt="${album.name}">
                     <form action="/create-post" method="post" style="margin-left: 20px;">
                       <textarea id="texto" name="texto"></textarea>
@@ -119,10 +119,10 @@ function searchFunction(e) {
                         <label for="4-star"><i class="bi bi-star-fill"></i></label>
                         <input type="radio" id="5-star" name="nota" value="5">
                         <label for="5-star"><i class="bi bi-star-fill"></i></label>
+                        </div>
+                        <button type="submit" class="btn-postar">Postar</button>
+                        </form>
                       </div>
-                      <button type="submit" class="botão-criarpost" style="align-self: flex-end;">Postar</button>
-                    </form>
-                  </div>
                 </div>
               `;
             });
@@ -150,7 +150,7 @@ function searchFunction(e) {
               document.getElementById("search-bar").innerHTML = `
                   <div style="display: flex; flex-direction: column; height: 100%;">
                     <h2 id="music-name">${track.name} by ${track.artists[0].name}</h2>
-                    <div style="display: flex; flex-grow: 1; align-items: center;">
+                    <div class="post-configs">
                       <img id="foto-musica" src="${track.album.images[0].url}" alt="${track.name}">
                       <form action="/create-post" method="post" style="margin-left: 20px;">
                         <textarea id="texto" name="texto"></textarea>
@@ -160,20 +160,20 @@ function searchFunction(e) {
                         <input id="postType" name="postType" type="hidden" value="música">
                         <input id="releaseDate" name="releaseDate" type="hidden" value="${track.album.release_date}">
                         <div class="star-rating">
-                          <input type="radio" id="1-star" name="nota" value="1">
-                          <label for="1-star"><i class="bi bi-star-fill"></i></label>
-                          <input type="radio" id="2-star" name="nota" value="2">
-                          <label for="2-star"><i class="bi bi-star-fill"></i></label>
-                          <input type="radio" id="3-star" name="nota" value="3">
-                          <label for="3-star"><i class="bi bi-star-fill"></i></label>
-                          <input type="radio" id="4-star" name="nota" value="4">
-                          <label for="4-star"><i class="bi bi-star-fill"></i></label>
-                          <input type="radio" id="5-star" name="nota" value="5">
-                          <label for="5-star"><i class="bi bi-star-fill"></i></label>
+                        <input type="radio" id="1-star" name="nota" value="1">
+                        <label for="1-star"><i class="bi bi-star-fill"></i></label>
+                        <input type="radio" id="2-star" name="nota" value="2">
+                        <label for="2-star"><i class="bi bi-star-fill"></i></label>
+                        <input type="radio" id="3-star" name="nota" value="3">
+                        <label for="3-star"><i class="bi bi-star-fill"></i></label>
+                        <input type="radio" id="4-star" name="nota" value="4">
+                        <label for="4-star"><i class="bi bi-star-fill"></i></label>
+                        <input type="radio" id="5-star" name="nota" value="5">
+                        <label for="5-star"><i class="bi bi-star-fill"></i></label>
                         </div>
-                        <button type="submit" class="botão-criarpost" style="align-self: flex-end;">Postar</button>
-                      </form>
-                    </div>
+                        <button type="submit" class="btn-postar">Postar</button>
+                        </form>
+                  </div>
                   </div>
                 `;
             });

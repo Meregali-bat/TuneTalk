@@ -1,23 +1,17 @@
-<header>
-    <div class="container-fluid">
-        <div class="row">
-            <div class="col-md-2 p-0"></div>
-            <div class="col-md-1 p-0">
-                <nav class="navbar">
-                    <div class="container-fluid">
-                        <a class="navbar-brand" href="#">
-                            <img src="/img/TuneTalk Logo.svg" alt="Logo" class="d-flex">
-                        </a>
-                    </div>
-                </nav>
+<head>
+    <link rel="stylesheet" href="/style/header.css">
+</head>
+
+
+
+
+    <div class="navegacao">
+        <a href="/" class="link-header">
+            <div class="logo">
+                <img src="/img/TuneTalk Logo.svg" alt="logo">
+                <span class="titulo-logo">TuneTalk</span>
             </div>
-            <div class="col-md-2 p-0  d-flex align-items-center" id="header__titulo">
-                <h1>Tune Talk</h1>
-            </div>
-            <div class="col-md-1"></div>
-            <div class="col-md-2 p-0  d-flex align-items-center" id="header__links"><a href="/perfil/<%= usuario.id %>">Perfil</a></div>
-            <div class="col-md-2 p-0 d-flex align-items-center" id="header__links"><a href="/foryou">For you</a></div>
-            <div class="col-md-2 p-0"></div>
-        </div>
+        </a>
+            <a class="link-header" href="/perfil/<%= usuario.id %>">Perfil</a>
+            <a class="link-header" href="/foryou">foryou</a>
     </div>
-</header>

@@ -121,8 +121,6 @@ app.get('/create-post', (req, res) => {
   controllerPost.criarPost(req, res);
 });
 
-app.get("/user/:idUsuario", controllerUsuario.listarUsuarioPorId2);
-
 app.get("/perfil/:idUsuario", controllerUsuario.listarUsuarioPorId);
 app.get('/foryou', controllerPost.listarPosts);
 app.post('/create-post', controllerPost.criarPost);

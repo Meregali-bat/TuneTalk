@@ -53,26 +53,17 @@ async function listarUsuarioPorId(req, res) {
   const idUsuario = req.params.idUsuario;
   const usuario = await userModel.listarUsuarioPorId(idUsuario);
   const posts = await Post.listarPostsPorIdUsuario(idUsuario);
-
+  const idSessao = req.session.user.id
   console.log("´++++++++++++++++++++++++++++++++++++++++" + JSON.stringify(posts, null, 2));
+
+
+
 
   res.render('perfil', {
     usuario,
     posts,
     idUsuario,
-  });
-}
-
-async function listarUsuarioPorId2(req, res) {
-  const idUsuario = req.params.idUsuario;
-  const usuario2 = await userModel.listarUsuarioPorId(idUsuario);
-  const posts = await Post.listarPostsPorIdUsuario(idUsuario);
-
-  res.render('user', {
-    usuario2,
-    posts,
-    idUsuario,
-    usuario: req.session.user,
+    idSessao
   });
 }
 
@@ -90,5 +81,4 @@ module.exports = {
   cadastrar,
   listarUsuarioPorId,
   editarPerfil,
-  listarUsuarioPorId2,
 };
