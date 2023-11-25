@@ -1,289 +1,295 @@
-:root {
-    --texto: #fcfffc;
-    --background: #040f0f;
-    --destaque: #2ba84a;
-  }
+    :root {
+        --texto: #fcfffc;
+        --background: #040f0f;
+        --destaque: #2ba84a;
+    }
 
-* {
-    margin: 0;
-    padding: 0;
-    box-sizing: border-box;
-}
+    * {
+        margin: 0;
+        padding: 0;
+        box-sizing: border-box;
+    }
 
-body {
-    background-color: var(--background);
-    font-family: 'Geologica', sans-serif;
-}
+    body {
+        background-color: var(--background);
+        font-family: 'Geologica', sans-serif;
+    }
 
-a{
-    text-decoration: none;
-}
+    a{
+        text-decoration: none;
+    }
 
-main{
-align-items: center;
-}
-
-.posts{
-    display: flex;
-    flex-direction: column;
-    justify-content: center;
-    width: 100%;
-    max-width: 74%;
-    margin-left: 13%;
-}
-
-.post{
-    width: 100%;
-    display: flex;
-    margin-top: 3rem;
-    flex-direction: column;
-}
-
-.post-header{
-    display: flex;
-    flex-direction: row;
-    width: 100%;
-    height: 100%;
+    main{
     align-items: center;
+    }
+
+    .posts{
+        display: flex;
+        flex-direction: column;
+        justify-content: center;
+        width: 100%;
+        max-width: 74%;
+        margin-left: 13%;
+    }
+
+    .post{
+        width: 100%;
+        display: flex;
+        margin-top: 3rem;
+        flex-direction: column;
+    }
+
+    .post-header{
+        display: flex;
+        flex-direction: row;
+        width: 100%;
+        height: 100%;
+        align-items: flex-start;
+    }
+
+    .foto-coluna{
+        height: 100%;
+        max-width: 200px;
+        border-radius: 10px;
+    }
+
+    .user-profile-picture{
+        width: 50px;
+        height: 50px;
+        border-radius: 50%;
+    }
+
+    .post-coluna{
+        display: flex;
+        flex-direction: column;
+        width: 90%;
+        height: 100%;
+        min-width: 100%;
+    }
+
+    .data-post{
+        font-size: 1rem;    
+        color: #71767b;
+        margin-left: 1rem;
+    }
+
+    .autor-post{
+        margin-left:1rem;
+        font-size: 1.5rem;
+        color: var(--texto);
+    }
+
+    .texto-post{
+        margin-left:1rem;
+        color: var(--texto);
+        text-align: justify;
+        width: 100%;
+    }
+
+    .container-album,
+    .container-musica{
+        display: flex;
+        flex-direction: row;
+        width: 100%;
+        margin-top: 1rem;
+        border-radius: 10px;
+        border: 1px solid #2f3336;
+        margin-left: 4rem;
+    }	
+
+    .album-poster,
+    .music-poster{
+        width: 100px;
+        height: 100px;
+        border-radius: 10px 0  0 10px;
+        margin: 0 16px 0 0;
+    }
+
+    .titulo-album,
+    .titulo-musica{
+        font-size: 1.5rem;
+        padding-right: 1rem;
+        color: var(--destaque);
+        margin-top: 0.4rem;
+    }
+
+    .artist-name{
+        font-size: 14px;
+        color: var(--destaque);
+        margin-bottom: 1rem;
+    }
+
+    .interacoes{
+        display: flex;
+        flex-direction: row;
+        align-items: center;
+        justify-content: space-around;
+        width: 100%;
+        margin-left: 3.6rem;
+    }
+
+    .botao-interacao,
+    .likes-count{
+        color: var(--destaque);
+    }
+
+    .botao-criarpost {
+        padding: .8rem 1rem .8rem 1rem;
+        margin-left: 1rem;
+        background-color: var(--destaque);
+        border-radius: 50%;
+        color: #000;
+        font-size: 2rem;
+    }
+
+    #overlay {
+        display: none;
+        position: fixed;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        background: rgba(0, 0, 0, 0.7);
+        z-index: 999;
+    }
+
+    #search-bar {
+        display: none;
+        flex-direction: column;
+        justify-content: center;
+        align-items: center;
+        position: fixed;
+        top: 50%;
+        left: 50%;
+        transform: translate(-50%, -50%);
+        z-index: 1000;
+        background: var(--background);
+        padding: 20px;
+        border-radius: 5px;
+        width: 80%;
+        max-width: 800px;
+        box-sizing: border-box;
 }
 
-.foto-coluna{
-    height: 100%;
-    max-width: 200px;
-    border-radius: 10px;
-}
+    #search-bar input {
+        width: 100%;
+        height: 100%;
+        font-size: 1.5rem;
+        padding: 10px;
+        border: none;
+        border-bottom: 1px solid #000;
+        background: transparent;
+        color: #fff;
+        outline: none;
+    }
 
-.user-profile-picture{
-    width: 50px;
-    height: 50px;
-    border-radius: 50%;
-}
+    #search-bar input::placeholder {
+        color: #fff;
+    }
 
-.post-coluna{
-    display: flex;
-    flex-direction: column;
-    width: 90%;
-    height: 100%;
-    min-width: 100%;
-}
+    #search-bar button {
+        position: absolute;
+        top: 50%;
+        right: 20px;
+        transform: translateY(-50%);
+        font-size: 1rem;
+        color: #fff;
+        background: transparent;
+        border: none;
+        outline: none;
+        cursor: pointer;
+    }
 
-.autor-post{
-    margin-left:1rem;
-    font-size: 1.5rem;
-    color: var(--texto);
-}
+    #search-results {
+        height: 300px;
+        overflow-y: auto;
+        font-family: Arial, sans-serif;
+        font-size: 14px;
+        color: #ffffff;
+    }
 
-.texto-post{
-    margin-left:1rem;
-    color: var(--texto);
-    text-align: justify;
-    width: 100%;
-}
+    #search-results div {
+        display: flex;
+        align-items: center;
+        margin-bottom: 10px;
+    }
 
-.container-album,
-.container-musica{
-    display: flex;
-    flex-direction: row;
-    width: 100%;
-    margin-top: 1rem;
-    border-radius: 10px;
-    border: 1px solid #2f3336;
-    margin-left: 4rem;
-}	
+    #search-results img {
+        width: 50px;
+        height: 50px;
+        object-fit: cover;
+        margin-right: 10px;
+    }
 
-.album-poster,
-.music-poster{
-    width: 100px;
-    height: 100px;
-    border-radius: 10px 0  0 10px;
-    margin: 0 16px 0 0;
-}
+    .post-configs{
+        display: flex;
+        flex-direction: row;
+        width: 100%;
+    }
 
-.titulo-album,
-.titulo-musica{
-    font-size: 1.5rem;
-    padding-right: 1rem;
-    color: var(--destaque);
-    margin-top: 0.4rem;
-}
+    .post-configs form{
+        width: 100%;
+        height: 25rem;
+    }
 
-.artist-name{
-    font-size: 14px;
-    color: var(--destaque);
-    margin-bottom: 1rem;
-}
+    .post-configs textarea{
+        width: 100%;
+        height: 80%;
+        border-radius: 10px;
+        border: 1px solid #2f3336;
+        background-color: var(--background);
+        color: var(--texto);
+        padding: 1rem;
+        font-size: 1rem;
+        resize: none;
+    }
 
-.interacoes{
-    display: flex;
-    flex-direction: row;
-    align-items: center;
-    justify-content: space-around;
-    width: 100%;
-    margin-left: 3.6rem;
-}
+    .btn-postar{
+        margin-top: 10rem;
+    }
 
-.botao-interacao,
-.likes-count{
-    color: var(--destaque);
-}
+    #album-name,
+    #music-name{
+        font-size: 1.5rem;
+        color: var(--destaque);
+    }
 
-.botao-criarpost {
-    padding: .8rem 1rem .8rem 1rem;
-    margin-left: 1rem;
-    background-color: var(--destaque);
-    border-radius: 50%;
-    color: #000;
-    font-size: 2rem;
-}
+    #foto-album,
+    #foto-musica{
+        width: 50%;
+        height: 50%;
+    }
 
-#overlay {
-    display: none;
-    position: fixed;
-    top: 0;
-    left: 0;
-    width: 100%;
-    height: 100%;
-    background: rgba(0, 0, 0, 0.7);
-    z-index: 999;
-}
+    .star-rating input {
+        display: none;
+    }
+    .star-rating label {
+        color: var(--destaque);
+        font-size: 30px;
+        padding: 0;
+        cursor: pointer;
+    }
+    
+    .star-rating input:checked ~ label,
+    .star-rating label:hover ~ label {
+        color: var(--texto);
+    }
+    
+    .profile-picture{
+        width: 150px;
+        height: 150px;
+        border-radius: 50%;
+    }
 
-#search-bar {
-    display: none;
-    flex-direction: column;
-    justify-content: center;
-    align-items: center;
-    position: fixed;
-    top: 50%;
-    left: 50%;
-    transform: translate(-50%, -50%);
-    z-index: 1000;
-    background: var(--background);
-    padding: 20px;
-    border-radius: 5px;
-    width: 80%;
-    max-width: 800px;
-    box-sizing: border-box;
-  }
+    .textoPerfil{
+        margin-left: 1rem ;
+        width: 60%;
+    }
 
-#search-bar input {
-    width: 100%;
-    height: 100%;
-    font-size: 1.5rem;
-    padding: 10px;
-    border: none;
-    border-bottom: 1px solid #000;
-    background: transparent;
-    color: #fff;
-    outline: none;
-}
-
-#search-bar input::placeholder {
-    color: #fff;
-}
-
-#search-bar button {
-    position: absolute;
-    top: 50%;
-    right: 20px;
-    transform: translateY(-50%);
-    font-size: 1rem;
-    color: #fff;
-    background: transparent;
-    border: none;
-    outline: none;
-    cursor: pointer;
-}
-
-#search-results {
-    height: 300px;
-    overflow-y: auto;
-    font-family: Arial, sans-serif;
-    font-size: 14px;
-    color: #ffffff;
-}
-
-#search-results div {
-    display: flex;
-    align-items: center;
-    margin-bottom: 10px;
-}
-
-#search-results img {
-    width: 50px;
-    height: 50px;
-    object-fit: cover;
-    margin-right: 10px;
-}
-
-.post-configs{
-    display: flex;
-    flex-direction: row;
-    width: 100%;
-}
-
-.post-configs form{
-    width: 100%;
-    height: 25rem;
-}
-
-.post-configs textarea{
-    width: 100%;
-    height: 80%;
-    border-radius: 10px;
-    border: 1px solid #2f3336;
-    background-color: var(--background);
-    color: var(--texto);
-    padding: 1rem;
-    font-size: 1rem;
-    resize: none;
-}
-
-.btn-postar{
-    margin-top: 10rem;
-}
-
-#album-name,
-#music-name{
-    font-size: 1.5rem;
-    color: var(--destaque);
-}
-
-#foto-album,
-#foto-musica{
-    width: 50%;
-    height: 50%;
-}
-
-.star-rating input {
-    display: none;
-  }
-  .star-rating label {
-    color: var(--destaque);
-    font-size: 30px;
-    padding: 0;
-    cursor: pointer;
-  }
-  
-  .star-rating input:checked ~ label,
-  .star-rating label:hover ~ label {
-    color: var(--texto);
-  }
-  
-  .profile-picture{
-    width: 150px;
-    height: 150px;
-    border-radius: 50%;
-  }
-
-  .textoPerfil{
-    margin-left: 1rem ;
-    width: 60%;
-  }
-
-  .textoPerfil h1{
-    color: var(--texto);
-    font-size: 2rem;
-  }
+    .textoPerfil h1{
+        color: var(--texto);
+        font-size: 2rem;
+    }
 
     .textoPerfil span{
         color: var(--texto);
@@ -405,7 +411,8 @@ align-items: center;
     }
 
     .post-header{
-        align-items: flex-start;
+        display: flex;
+        align-items: center;
     }
 
     .foto-coluna{

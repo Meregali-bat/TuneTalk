@@ -1,4 +1,5 @@
 const db = require("./dbModel.js");
+const moment = require('moment');
 
 class Post {
   constructor(
@@ -13,7 +14,8 @@ class Post {
     posterAlbum,
     postType,
     releaseDate,
-    nota
+    nota,
+    data
   ) {
     this.idpost = idpost;
     this.texto = texto;
@@ -27,14 +29,28 @@ class Post {
     this.postType = postType;
     this.releaseDate = releaseDate;
     this.nota = nota;
+    this.data = data;
   }
 
   async postar() {
+
+    function getCurrentDateTime() {
+      const currentDateTime = new Date();
+      const date = currentDateTime.toISOString().slice(0, 10);
+      const time = currentDateTime.toTimeString().slice(0, 5);
+      return { date, time };
+    }
+  
+    console.log(getCurrentDateTime());
+
+    const { date, time } = getCurrentDateTime();
+    const dateTime = `${date} ${time}`;
+  
     const post = await db.query(`
       INSERT INTO tunetalk.post 
-      (texto, usuario_idusuario, likes, musicName, artistName, posterMusica, albumName, posterAlbum, postType, releaseDate, nota) 
+      (texto, usuario_idusuario, likes, musicName, artistName, posterMusica, albumName, posterAlbum, postType, releaseDate, nota, data) 
       VALUES 
-      ('${this.texto}', '${this.usuario_idusuario}', '${this.likes}', '${this.musicName}', '${this.artistName}', '${this.posterMusica}', '${this.albumName}', '${this.posterAlbum}', '${this.postType}', '${this.releaseDate}', '${this.nota}')
+      ('${this.texto}', '${this.usuario_idusuario}', '${this.likes}', '${this.musicName}', '${this.artistName}', '${this.posterMusica}', '${this.albumName}', '${this.posterAlbum}', '${this.postType}', '${this.releaseDate}', '${this.nota}', '${dateTime}')
     `);
     console.log(post);
     return post;
@@ -58,6 +74,7 @@ class Post {
       postType: post.postType,
       releaseDate: post.releaseDate,
       nota: post.nota,
+      data: moment(post.data).fromNow(),
     }));
   }
 

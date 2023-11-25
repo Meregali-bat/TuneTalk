@@ -20,6 +20,7 @@ CREATE TABLE IF NOT EXISTS `post` (
   `postType` VARCHAR(255) NULL,
   `releaseDate` DATE NULL,
   `usuario_idusuario` INT NOT NULL,
+  `data` DATETIME NOT NULL,
   PRIMARY KEY (`idpost`, `usuario_idusuario`),
   INDEX `fk_post_usuario1_idx` (`usuario_idusuario` ASC) VISIBLE,
   CONSTRAINT `fk_post_usuario1`
