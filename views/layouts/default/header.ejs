@@ -12,6 +12,6 @@
                 <span class="titulo-logo">TuneTalk</span>
             </div>
         </a>
-            <a class="link-header" href="/perfil/<%= usuario.id %>">Perfil</a>
+            <a class="link-header" href="/perfil/<%= typeof usuario.id !== 'undefined' ? usuario.id : idUsuario %>">Perfil</a>
             <a class="link-header" href="/foryou">foryou</a>
     </div>

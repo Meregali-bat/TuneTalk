@@ -16,7 +16,7 @@
     <header>
         <%- include('./headerLogin.ejs') %>
         <% if (typeof error !== 'undefined') { %>
-            <div class="alert m-0"><%= error %></div>
+            <div class="alert m-0"><%= error %></div>   
         <% } %>
     </header>
     <main>
@@ -26,7 +26,7 @@
     <script src="/script/newUser.js"></script>
     <script src="https://unpkg.com/aos@next/dist/aos.js"></script>
     <script>
-      AOS.init();
+        AOS.init();
     </script>
 </body>
 

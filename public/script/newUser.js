@@ -64,12 +64,12 @@ function togglePasswordVisibility(inputId, iconId) {
   }
 }
 
-const alert = document.querySelector('.alert');
-if (alert) {
-  alert.addEventListener('click', () => {
+let alerts = document.querySelectorAll('.alert');
+alerts.forEach((alert) => {
+  setTimeout(() => {
     alert.style.display = 'none';
-  });
-}
+  }, 1000);
+});
 
 // Obtenha uma referência aos elementos de regra
 const ruleLength = document.getElementById('ruleLength');

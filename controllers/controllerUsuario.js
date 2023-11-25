@@ -54,7 +54,7 @@ async function listarUsuarioPorId(req, res) {
   const usuario = await userModel.listarUsuarioPorId(idUsuario);
   const posts = await Post.listarPostsPorIdUsuario(idUsuario);
   const idSessao = req.session.user.id
-  console.log("´++++++++++++++++++++++++++++++++++++++++" + JSON.stringify(posts, null, 2));
+  console.log("´++++++++++++++++++++++++++++++++++++++++" + idUsuario);
 
 
 
