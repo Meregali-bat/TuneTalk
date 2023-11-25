@@ -61,7 +61,7 @@ app.use((req, res, next) => {
       res.redirect('/login');
     }
   } else if (req.session.user) {
-    if (req.originalUrl == '/login' || req.originalUrl == '/cadastrar') {
+    if (req.originalUrl == '/login' || req.originalUrl == '/cadastrar' || req.originalUrl == '/') {
       res.redirect('/foryou');
     } else {
       app.set('layout', './layouts/default/index');
