@@ -184,7 +184,7 @@ function searchFunction(e) {
 }
 
 document
-  .querySelector(".botão-criarpost")
+  .querySelector(".botao-criarpost")
   .addEventListener("click", function () {
     document.getElementById("search-bar").style.display = "block";
     document.getElementById("overlay").style.display = "block";

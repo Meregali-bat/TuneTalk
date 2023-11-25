@@ -127,8 +127,8 @@ align-items: center;
     color: var(--destaque);
 }
 
-.botão-criarpost {
-    padding: 1rem;
+.botao-criarpost {
+    padding: .8rem 1rem .8rem 1rem;
     margin-left: 1rem;
     background-color: var(--destaque);
     border-radius: 50%;
@@ -457,9 +457,6 @@ align-items: center;
         width: 30%;
     }
 
-    .botão-criarpost {
-        margin-left: 0;
-    }
 
     #search-bar {
         width: 90%;
