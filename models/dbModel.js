@@ -8,6 +8,7 @@ async function connect() {
       user: 'tunetalk',
       database: 'tunetalk',
       password: 'meregali2',
+      charset: 'utf8mb4',
     });
     return connection;
   } catch (error) {
