@@ -6,12 +6,13 @@
 
 
     <div class="navegacao">
-        <a href="/" class="link-header">
+        <a href="/" >
             <div class="logo">
                 <img src="/img/TuneTalk Logo.svg" alt="logo">
-                <span class="titulo-logo">TuneTalk</span>
             </div>
         </a>
+        <div>
             <a class="link-header" href="/perfil/<%= typeof usuario.id !== 'undefined' ? usuario.id : idUsuario %>">Perfil</a>
             <a class="link-header" href="/foryou">foryou</a>
+        </div>
     </div>

@@ -2,21 +2,22 @@
 
 .navegacao{
     display: flex;
-    justify-content: space-around;
+    justify-content: space-between;
     align-items: center;
-    padding: 1rem;
+    padding: 1rem 3rem  1rem 3rem  ;
     background-color: var(--background);
     color: var(--texto);
+    box-shadow: 0 0 10px rgba(43,168,74,.2);
   }
 
-  .titulo-logo{
-    font-size: 2rem;
-    color: var(--texto);
-    margin-left: 1rem;
+  .navegacao img{
+    width: 5rem;
+    height: 5rem; 
   }
 
   .link-header{
     color: var(--texto);
     text-decoration: none;
-    font-size: 1.5rem;
+    font-size: 1rem;
+    margin-left: 1rem;
   }
