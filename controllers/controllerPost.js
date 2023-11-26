@@ -12,14 +12,29 @@ async function criarPost(req, res) {
 }
 
 async function darLike(req, res) {
-  await Post.darLike(req.params.idpost);
-  res.redirect(req.headers.referer);
+  const newLikeCount = await Post.darLike(req.params.idpost, req);
+  res.json({ success: true, likeCount: newLikeCount });
 }
+
+async function removerLike(req, res) {
+  const newLikeCount = await Post.removerLike(req.params.idpost, req);
+  res.json({ success: true, likeCount: newLikeCount });
+}
+
+async function getLikes(req, res) {
+    const likesList = await Post.getLikes(req.session.user.id);
+    res.locals.likesList = likesList;
+    next();
+  } 
+
 
 async function listarPosts(req, res) {
   posts = await Post.listarPosts();
+  likesList = await Post.getLikes(req.session.user.id);
+  console.log(likesList);
   res.render('foryouPage', {
     posts,
+    likesList,
     usuario : req.session.user,
     idUsuarioLogado: req.session.user.idUsuario
   });
@@ -38,6 +53,8 @@ async function verPost(req, res) {
 module.exports = {
   listarPosts,
   darLike,
+  removerLike,
+  getLikes,
   criarPost, 
   verPost
 };

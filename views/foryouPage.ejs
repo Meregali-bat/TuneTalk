@@ -61,15 +61,19 @@
                                     </h3> 
                                   </div>
                                 </div>
-
                               <% } %>
                               <div class="interacoes">
                                 <button type="button" class="btn botao-interacao" >
                                   <i class="bi bi-chat"></i> <small class="comment-count"><%= post.quantidadeComentarios %></small>
                                 </button>
-                                <a class="likes-count" href="/post/curtir/<%- post.idpost %>"><i class="bi bi-heart btn botao-interacao"></i>
-                                  <%= post.likes %> </small>
-                              </a>
+                                <a class="likes-count like-button" data-post-id="<%= post.idpost %>" href="<% if(likesList.includes(post.idpost)) { %>/post/descurtir/<%- post.idpost %><% } else { %>/post/curtir/<%- post.idpost %><% } %>">
+                                  <% if(likesList.includes(post.idpost)) { %>
+                                    <i class="bi-heart-fill btn botao-interacao"></i>
+                                  <% } else { %>
+                                    <i class="bi bi-heart btn botao-interacao"></i>
+                                  <% } %>
+                                  <span class="numero"><%= post.likes %></span>
+                                </a>
                               </div>
                             </a>
                             
@@ -84,9 +88,37 @@
         </div>
     </div>
   </div>
-
   <body>
-
+    
+    
     <!-- Api Spotify -->
     <script src="/script/apiSpotify.js"></script>
+    
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.7.1/jquery.min.js" integrity="sha512-v2CJ7UaYy4JwqLDIrZUI/4hqeoQieOmAZNXBeQyjo21dadnwR+8ZaIJVT8EE2iyI61OV8e6M8PP2/4hpQINQ/g==" crossorigin="anonymous" referrerpolicy="no-referrer"></script>
+    <script>
+      $('.like-button').on('click', function(event){
+        event.preventDefault();
+        const postId = $(this).data('post-id');
+        const likeCount = $(this).find('.numero'); 
+        const likeIcon = $(this).find('i');
+        const hasLiked = likeIcon.hasClass('bi-heart-fill');
+        const url = hasLiked ? `/post/descurtir/${postId}` : `/post/curtir/${postId}`;
+        $.ajax({
+          url: url,
+          method: 'GET',
+          success: function(response){
+            likeCount.text(response.likeCount);
+            if(hasLiked){
+              likeIcon.removeClass('bi-heart-fill');
+              likeIcon.addClass('bi-heart');
+            } else {
+              likeIcon.removeClass('bi-heart');
+              likeIcon.addClass('bi-heart-fill');
+            }
+          }
+        })
+      })
+    </script>
   </body>
+
+  

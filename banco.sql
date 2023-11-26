@@ -29,6 +29,26 @@ CREATE TABLE IF NOT EXISTS `post` (
   ON DELETE NO ACTION
   ON UPDATE NO ACTION);
 
+CREATE TABLE IF NOT EXISTS `curtir` (
+  `post_idpost` INT NOT NULL,
+  `post_usuario_idusuario` INT NOT NULL,
+  `usuario_idusuario` INT NOT NULL,
+  PRIMARY KEY (`post_idpost`, `usuario_idusuario`, `post_usuario_idusuario`),
+  INDEX `fk_post_has_usuario_usuario1_idx` (`usuario_idusuario`),
+  INDEX `fk_post_has_usuario_post1_idx` (`post_idpost`, `post_usuario_idusuario`),
+  CONSTRAINT `fk_post_has_usuario_post1`
+    FOREIGN KEY (`post_idpost`, `post_usuario_idusuario`)
+    REFERENCES `post` (`idpost`, `usuario_idusuario`)
+    ON DELETE NO ACTION
+    ON UPDATE NO ACTION,
+  CONSTRAINT `fk_post_has_usuario_usuario1`
+    FOREIGN KEY (`usuario_idusuario`)
+    REFERENCES `usuario` (`idusuario`)
+    ON DELETE NO ACTION
+    ON UPDATE NO ACTION
+);
+
+
 
 CREATE TABLE IF NOT EXISTS `comentarios` (
   `idcomentarios` INT NOT NULL AUTO_INCREMENT,

@@ -36,7 +36,8 @@
         width: 100%;
         display: flex;
         margin-top: 3rem;
-        flex-direction: column;
+        flex-direction: column; 
+        box-sizing: border-box;
     }
 
     .post-header{

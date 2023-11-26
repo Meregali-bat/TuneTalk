@@ -117,6 +117,10 @@ app.get('/post/curtir/:idpost', (req, res) => {
   controllerPost.darLike(req, res);
 });
 
+app.get('/post/descurtir/:idpost', (req, res) => {
+  controllerPost.removerLike(req, res);
+});
+
 app.get('/create-post', (req, res) => {
   controllerPost.criarPost(req, res);
 });

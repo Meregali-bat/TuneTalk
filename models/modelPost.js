@@ -83,10 +83,50 @@ class Post {
     return post;
   }
 
-  static async darLike(idpost) {
-    const post = await db.query(`UPDATE post SET 
-    likes = likes + 1 WHERE idpost = '${idpost}'`);
-    return post;
+  static async darLike(idpost, req) {
+    const idusuario = req.session.user.id;
+  
+    const alreadyLiked = await db.query(`SELECT * FROM curtir WHERE post_idpost = '${idpost}' AND usuario_idusuario = '${idusuario}'`);
+  
+    if (alreadyLiked.length > 0) {
+      return;
+    }
+  
+    const post = await db.query(`SELECT * FROM post WHERE idpost = '${idpost}'`);
+    const autorId = post[0].usuario_idusuario;
+  
+    await db.query(`UPDATE post SET likes = likes + 1 WHERE idpost = '${idpost}'`);
+  
+    const curtir = await db.query(`INSERT INTO curtir (post_idpost, post_usuario_idusuario, usuario_idusuario) VALUES ('${idpost}', '${autorId}', '${idusuario}')`);
+  
+    
+    const updatedPost = await db.query(`SELECT * FROM post WHERE idpost = '${idpost}'`);
+  
+
+    return updatedPost[0].likes;
+  }
+
+  static async removerLike(idpost, req) {
+    const idusuario = req.session.user.id;
+  
+    const alreadyLiked = await db.query(`SELECT * FROM curtir WHERE post_idpost = '${idpost}' AND usuario_idusuario = '${idusuario}'`);
+  
+    if (alreadyLiked.length === 0) {
+      return;
+    }
+  
+    await db.query(`UPDATE post SET likes = likes - 1 WHERE idpost = '${idpost}'`);
+  
+    await db.query(`DELETE FROM curtir WHERE post_idpost = '${idpost}' AND usuario_idusuario = '${idusuario}'`);
+  
+    const updatedPost = await db.query(`SELECT * FROM post WHERE idpost = '${idpost}'`);
+  
+    return updatedPost[0].likes;
+  }
+
+  static async getLikes(idUsuario) {
+    const likes = await db.query(`SELECT post_idpost FROM curtir WHERE usuario_idusuario = '${idUsuario}'`);
+    return likes.map(like => like.post_idpost); 
   }
 
   static async listarPostsPorIdUsuario(idusuario) {
