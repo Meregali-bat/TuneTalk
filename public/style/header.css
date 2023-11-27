@@ -16,8 +16,8 @@
   }
 
   .link-header{
-    color: var(--texto);
+    color: var(--destaque);
     text-decoration: none;
-    font-size: 1rem;
+    font-size: 2rem;
     margin-left: 1rem;
   }

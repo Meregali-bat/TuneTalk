@@ -16,7 +16,6 @@ async function autenticar(req, res) {
         email: resp[0].email,
       };
       res.redirect("/foryou");
-      console.log(req.session.user);
     } else {
       res.render('login', { error: 'Usuário ou senha incorretos.' });
     }
@@ -43,7 +42,6 @@ async function cadastrar(req, res) {
     if (resp.error) {
       res.render('cadastro', { error: resp.error });
     } else {
-      console.log(resp);
       res.redirect("/login");
     }
   }
@@ -53,17 +51,19 @@ async function listarUsuarioPorId(req, res) {
   const idUsuario = req.params.idUsuario;
   const usuario = await userModel.listarUsuarioPorId(idUsuario);
   const posts = await Post.listarPostsPorIdUsuario(idUsuario);
-  const idSessao = req.session.user.id
-  console.log("´++++++++++++++++++++++++++++++++++++++++" + idUsuario);
-
-
-
+  const idSessao = req.session.user.id;
+  const seguindoList = await userModel.getSeguindo(idSessao);
+  const quantidadeSeguindo = await userModel.getQuantidadeSeguindo(idUsuario);
+  const quantidadeSeguidores = await userModel.getQuantidadeSeguidores(idUsuario);
 
   res.render('perfil', {
     usuario,
     posts,
     idUsuario,
-    idSessao
+    idSessao,
+    seguindoList,
+    quantidadeSeguindo,
+    quantidadeSeguidores
   });
 }
 
@@ -71,9 +71,45 @@ async function editarPerfil(req, res) {
   const idUsuario = req.session.user.id;
   const { nome, fotoPerfil, bio } = req.body;
   const usuario = await userModel.editarPerfil(idUsuario, nome, fotoPerfil, bio);
-  console.log(usuario);
+
   res.redirect(`/perfil/${idUsuario}`);
 }
+
+async function getSeguindo(req, res, next) {
+  const seguindoList = await userModel.getSeguindo(req.session.user.id); 
+  res.locals.seguindoList = seguindoList;
+  next();
+}
+
+async function seguirUsuario(req, res) {
+  const idUsuario = req.session.user.id;
+  const idUsuarioSeguido = req.params.idUsuario;
+  const usuario = await userModel.seguirUsuario(idUsuario, idUsuarioSeguido);
+  const seguindoList = await userModel.getSeguindo(idUsuario);
+
+  res.redirect(`/perfil/${idUsuarioSeguido}`);
+}
+
+async function deixardeSeguirUsuario(req, res) {
+  const idUsuario = req.session.user.id;
+  const idUsuarioSeguido = req.params.idUsuario;
+  const usuario = await userModel.deixardeSeguirUsuario(idUsuario, idUsuarioSeguido);
+
+  res.redirect(`/perfil/${idUsuarioSeguido}`);
+}
+
+async function getQuantidadeSeguindo(req, res, next) {
+  const quantidadeSeguindo = await userModel.getQuantidadeSeguindo(req.session.user.id); 
+  res.locals.quantidadeSeguindo = quantidadeSeguindo;
+  next();
+}
+
+async function getQuantidadeSeguidores(req, res, next) {
+  const quantidadeSeguidores = await userModel.getQuantidadeSeguidores(req.session.user.id); 
+  res.locals.quantidadeSeguidores = quantidadeSeguidores;
+  next();
+}
+
 
 module.exports = {
   login,
@@ -81,4 +117,9 @@ module.exports = {
   cadastrar,
   listarUsuarioPorId,
   editarPerfil,
+  seguirUsuario,
+  getSeguindo,
+  deixardeSeguirUsuario,
+  getQuantidadeSeguidores,
+  getQuantidadeSeguindo
 };

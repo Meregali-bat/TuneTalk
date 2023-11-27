@@ -1,4 +1,4 @@
-document.querySelector('.botao-editar-perfil button').addEventListener('click', function() {
+document.querySelector('.botao-editar-perfil').addEventListener('click', function() {
   document.getElementById('popup').style.display = 'block';
   document.getElementById('overlay').style.display = 'block';
 });

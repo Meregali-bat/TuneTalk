@@ -16,7 +16,6 @@ class Comentario {
       VALUES 
       ('${this.texto}', '${this.likes}', '${this.post_idpost}', '${this.usuario_idusuario}')
     `);
-    console.log(comentario);
     return comentario;
   }
 

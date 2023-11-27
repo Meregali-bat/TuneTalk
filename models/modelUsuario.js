@@ -30,7 +30,6 @@ static async cadastrar(nome, email, senha, fotoPerfil) {
 
 
   static async listarUsuarioPorId(idUsuario) {
-    console.log("idUsuario: " + idUsuario);
     const user = await db.query(
       `SELECT idusuario, nome, fotoPerfil, bio FROM usuario WHERE idusuario = ${idUsuario}`
     );
@@ -42,6 +41,61 @@ static async cadastrar(nome, email, senha, fotoPerfil) {
       `UPDATE usuario SET nome = '${nome}', fotoPerfil = '${fotoPerfil}', bio = '${bio}' WHERE idusuario = ${idUsuario}`
     );
     return user;
+  }
+
+  static async seguirUsuario(idUsuario, idUsuarioSeguido) {
+    const jaEstaSeguindo = await db.query(
+      `SELECT * FROM seguir WHERE usuario_idusuario = ${idUsuario} AND usuario_idusuario1 = ${idUsuarioSeguido}`
+    );
+  
+    if (jaEstaSeguindo.length > 0) {
+      throw new Error('Você já está seguindo este usuário');
+    }
+  
+    const user = await db.query(
+      `INSERT INTO seguir (usuario_idusuario, usuario_idusuario1) VALUES (${idUsuario}, ${idUsuarioSeguido})`
+    );
+  
+    return user;
+  }
+
+  static async deixardeSeguirUsuario(idUsuario, idUsuarioSeguido) {
+    const jaEstaSeguindo = await db.query(
+      `SELECT * FROM seguir WHERE usuario_idusuario = ${idUsuario} AND usuario_idusuario1 = ${idUsuarioSeguido}`
+    );
+  
+    if (jaEstaSeguindo.length === 0) {
+      throw new Error('Você não está seguindo este usuário');
+    }
+  
+    const user = await db.query(
+      `DELETE FROM seguir WHERE usuario_idusuario = ${idUsuario} AND usuario_idusuario1 = ${idUsuarioSeguido}`
+    );
+  
+    return user;
+  }
+
+  static async getSeguindo(idUsuario) {
+    const seguindo = await db.query(`SELECT usuario_idusuario1 FROM seguir WHERE usuario_idusuario = '${idUsuario}'`);
+    return seguindo.map(usuario => usuario.usuario_idusuario1);
+  }
+
+  static async getQuantidadeSeguindo(idUsuario) {
+    const seguindo = await db.query(`
+      SELECT COUNT(usuario_idusuario1) as quantidade 
+      FROM seguir 
+      WHERE usuario_idusuario = '${idUsuario}'
+    `);
+    return seguindo[0].quantidade;
+  }
+  
+  static async getQuantidadeSeguidores(idUsuario) {
+    const seguidores = await db.query(`
+      SELECT COUNT(usuario_idusuario) as quantidade 
+      FROM seguir 
+      WHERE usuario_idusuario1 = '${idUsuario}'
+    `);
+    return seguidores[0].quantidade;
   }
 
 }

@@ -31,7 +31,6 @@ async function getLikes(req, res) {
 async function listarPosts(req, res) {
   posts = await Post.listarPosts();
   likesList = await Post.getLikes(req.session.user.id);
-  console.log(likesList);
   res.render('foryouPage', {
     posts,
     likesList,
@@ -50,11 +49,20 @@ async function verPost(req, res) {
   });
 }
 
+async function listarPostsSeguindo(req, res) {
+  const posts = await Post.listarPostsSeguindo(req.session.user.id);
+  res.render('Seguindo', {
+    posts,
+    usuario : req.session.user
+  });
+}
+
 module.exports = {
   listarPosts,
   darLike,
   removerLike,
   getLikes,
   criarPost, 
-  verPost
+  verPost,
+  listarPostsSeguindo
 };

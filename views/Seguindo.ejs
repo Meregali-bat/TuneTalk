@@ -1,9 +1,9 @@
-  <div class="feeds">
-      <div class="feeds-a">
-        <a href="/foryou"><strong>Foryou</strong></a>
-        <a href="/seguindo">Seguindo</a>
-      </div>
-  </div>
+<div class="feeds">
+    <div class="feeds-a">
+      <a href="/foryou">Foryou</a>
+      <a href="/seguindo"><strong>Seguindo</strong></a>
+    </div>
+</div>
   <div class="posts">
       <% posts.forEach((post) => { %>
       <div class="post">
@@ -94,13 +94,13 @@
     </div>
   </div>
   <body>
-    <script>  
-      let redirect_uri = "https://tunetalk.tech/foryou";
-    </script>
+        <script>  
+        let redirect_uri = "https://tunetalk.tech/seguindo";
+        </script>
     
-    <!-- Api Spotify -->
+       <!-- Api Spotify -->
     <script src="/script/apiSpotify.js"></script>
-    
+
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.7.1/jquery.min.js" integrity="sha512-v2CJ7UaYy4JwqLDIrZUI/4hqeoQieOmAZNXBeQyjo21dadnwR+8ZaIJVT8EE2iyI61OV8e6M8PP2/4hpQINQ/g==" crossorigin="anonymous" referrerpolicy="no-referrer"></script>
     <script>
       $('.like-button').on('click', function(event){

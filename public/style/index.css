@@ -3,6 +3,7 @@
         --texto: #fcfffc;
         --background: #000505;
         --destaque: #2ba84a;
+        --destaque-negativo: #F55B64;
     }
 
     * {
@@ -31,6 +32,36 @@
         width: 100%;
         max-width: 74%;
         margin-left: 13%;
+    }
+
+    .feeds{
+        display: flex;
+        justify-content: center;
+        width: 100%;
+        max-width: 100%;
+        margin-top: 2rem;
+    }
+
+    .feeds-a{
+        display: flex;
+        flex-direction: row;
+        justify-content: space-between;
+        width: 15rem;
+        border: 1px solid var(--linhas);
+        padding: 1rem;
+        border-radius: 32px;
+    }
+
+    .feeds-a strong{
+        color: var(--texto);
+        font-weight: 400;
+        border-bottom: 4px solid var(--destaque);
+        border-radius: 0 0 3px 3px ;
+    }
+
+    .feeds-a a{
+        color: var(--texto);
+        font-size: 1;
     }
 
     .post{
@@ -143,6 +174,7 @@
         border-radius: 50%;
         color: #000;
         font-size: 2rem;
+        cursor: pointer;
     }
 
     #overlay {
@@ -287,7 +319,6 @@
 
     .textoPerfil{
         margin-left: 1rem ;
-        width: 60%;
     }
 
     .textoPerfil h1{
@@ -301,13 +332,28 @@
         text-align: justify;
     }
 
-    .botao-editar-perfil button{
-        padding: .5rem;
-        margin-top: 2rem;
+    .botao-editar-perfil,
+    .botao-seguir,
+    .botao-seguindo{
+        padding: .5rem 1rem ;
         background-color: var(--background);
         border: 1px solid var(--destaque);
         border-radius: 10px;
         color: var(--texto);
+        font-size: 1rem;
+    }
+
+    .botao-seguindo:hover{
+        border: 1px solid var(--destaque-negativo);
+        color: var(--texto);
+    }
+
+    .seguidores{
+        font-size: .8rem !important;
+    }
+
+    .seguidores strong{
+        color: var(--destaque);
         font-size: 1rem;
     }
 
@@ -417,8 +463,11 @@
     }
 
     .post-header{
-        display: flex;
-        align-items: center;
+            display: flex;
+            flex-direction: row;
+            width: 100%;
+            height: 100%;
+            align-items: flex-start;
     }
 
     .foto-coluna{
@@ -434,8 +483,7 @@
         margin: 0;
     }
 
-    a,
-    .post-header{
+    a{
         width: 90%;
         margin-left: 5%;
     }
@@ -489,4 +537,54 @@
     }
 
 }
+
+@media screen and (max-width: 575px) {
+    
+    .post-header{
+        display: flex;
+        flex-direction: row;
+        width: 100%;
+        height: 100%;
+        align-items: flex-start;
+}
+
+        .posts{
+            max-width: 100%;
+            margin-left: 0;
+        }
+    
+        .post-header{
+            display: flex;
+            align-items: center;
+        }
+    
+        .foto-coluna{
+            max-width: 100%;
+            margin-left: 0;
+        }
+        
+        .textoPerfil h1,
+        .textoPerfil span{
+            font-size: .8rem !important;
+        }
+
+        .profile-picture{
+            width: 100px;
+            height: 100px;
+        }
+
+        .botao-editar-perfil{
+            font-size: .8rem !important;
+        }
+        
+        .titulo-album,
+        .titulo-musica{
+            font-size: .8rem !important; 
+        }
+
+        .post{
+            padding: .2rem;
+        }
+
+    }
     

@@ -40,8 +40,6 @@ class Post {
       const time = currentDateTime.toTimeString().slice(0, 5);
       return { date, time };
     }
-  
-    console.log(getCurrentDateTime());
 
     const { date, time } = getCurrentDateTime();
     const dateTime = `${date} ${time}`;
@@ -52,7 +50,6 @@ class Post {
       VALUES 
       ('${this.texto}', '${this.usuario_idusuario}', '${this.likes}', '${this.musicName}', '${this.artistName}', '${this.posterMusica}', '${this.albumName}', '${this.posterAlbum}', '${this.postType}', '${this.releaseDate}', '${this.nota}', '${dateTime}')
     `);
-    console.log(post);
     return post;
   }
 
@@ -63,7 +60,8 @@ class Post {
       nota
       FROM post 
       JOIN usuario ON post.usuario_idusuario = usuario.idusuario
-      ORDER BY post.idpost DESC
+      ORDER BY RAND()
+      LIMIT 20
     `);
   
     return posts.map((post) => ({
@@ -148,8 +146,34 @@ class Post {
       postType: post.postType,
       releaseDate: post.releaseDate,
       numComentarios: post.numComentarios,
+      data: moment(post.data).fromNow(),
     }));
   }
+
+  static async listarPostsSeguindo(idusuario) {
+    const posts = await db.query(`
+      SELECT post.*, usuario.nome AS autor, usuario.fotoPerfil, usuario.idusuario AS autorId,
+      (SELECT COUNT(*) FROM comentarios WHERE comentarios.post_idpost = post.idpost) AS quantidadeComentarios,
+      nota
+      FROM post 
+      JOIN usuario ON post.usuario_idusuario = usuario.idusuario
+      JOIN seguir ON usuario.idusuario = seguir.usuario_idusuario1
+      WHERE seguir.usuario_idusuario = ${idusuario}
+      ORDER BY post.idpost DESC
+    `);
+  
+    return posts.map((post) => ({
+      ...post,
+      posterMusica: post.posterMusica,
+      albumName: post.albumName,
+      posterAlbum: post.posterAlbum,
+      postType: post.postType,
+      releaseDate: post.releaseDate,
+      nota: post.nota,
+      data: moment(post.data).fromNow(),
+    }));
+  }
+
 }
 
 module.exports = Post;

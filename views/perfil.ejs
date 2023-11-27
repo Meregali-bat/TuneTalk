@@ -1,94 +1,124 @@
-<div class="row mt-5" style="margin: 0;">
+<div class="row" style="margin: 0;">
     <div class="col-2"></div>
     <div class="col-md-8">
-        <div class="row mb-5">
-            <div class="col-2">
+      <div class="row p-3" style=" border-left: 1px solid #2A343C; border-right: 1px solid #2A343C; border-bottom: 1px solid #2A343C;">
+        <div class="col-1"></div>
+        <div class="col-2" style="display: flex; justify-content: center; align-items: center;">
                 <img src="<%= usuario.fotoPerfil %>" alt="Foto de perfil do usuário" class="profile-picture">
             </div>
-            <div class="col-8 textoPerfil">
+            <div class="col-6 textoPerfil  p-3" style="display: flex; flex-direction:column; justify-content: center; ">
                 <h1><%= usuario.nome %></h1>
                 <span><%= usuario.bio %></span>
+                <div class="mt-3"> 
+                  <span class="seguidores">Seguidores <strong><%= quantidadeSeguidores %></strong> </span>
+                  <span class="seguidores">Seguindo <strong><%= quantidadeSeguindo %></strong> </span>
+                </div>
             </div>
-            <div class="col-2 botao-editar-perfil">
+            
+            <div class="col-2 " style="display: flex; justify-content: center; align-items: center;">
               <% if (idSessao == idUsuario ) { %>
-                <button>
+                <button class="botao-editar-perfil">
                   <span>Editar perfil</span>
                 </button>
-              <% } %>
+              <% } else { %>
+                <% console.log("BBBBBBBBBBBBBBB: "+seguindoList+" "+ idUsuario) %>
+                <% if (!seguindoList.includes(Number(idUsuario))) { %>
+                  <a href="/perfil/seguir/<%= idUsuario %>">
+                    <button class="botao-seguir">
+                      <span>Seguir</span>
+                    </button>
+                  </a>
+                <% } else { %>
+                  <a href="/perfil/deixar-de-seguir/<%= idUsuario %>">
+                    <button class="botao-seguindo">
+                      <span>Seguindo</span>
+                    </button>
+                  </a>
+                <% } %>
+            <% } %>
             </div>
-        </div>
-        <% posts.forEach((post) => { %>
-          <div class="post">
-           <div class="post-header">
-            <div class="foto-coluna">
-              <a href="/perfil/<%= post.autorId %>">
-                <img src="<%= post.fotoPerfil %>" alt="Foto de perfil do usuário" class="user-profile-picture">
-              </a>
-            </div>
-        <a href="/post/<%= post.idpost %>">
-            <div class="post-coluna">
-              <span class="autor-post"><%= post.autor %></span>
-              <span class="texto-post"><%= post.texto %></span>
-            </div>
-        
-           </div>
-              <% if ( post.postType === 'undefined') { post.postType = 'música'; } %>
-                                  <% if (post.postType === 'album') { %>
-                                    <div class="container-album">
-                                      <img src="<%= post.posterAlbum %>" alt="Poster do álbum" class="album-poster">
-                                      <div class="column">
-                                        <h2 class="titulo-album"><%= post.albumName %></h2>
-                                        <h3 class="artist-name">
-                                          <%= post.artistName %> • <%= post.postType %> • <%= new Date(post.releaseDate).getFullYear() %> • 
-                                          <% for(let i = 0; i < 5; i++) { %>
-                                            <% if(post.nota > i) { %>
-                                              <% if(post.nota > i && post.nota < i+1) { %>
-                                                <i class="bi bi-star-half"></i>
-                                              <% } else { %>
-                                                <i class="bi bi-star-fill"></i>
-                                              <% } %>
+            <div class="col-1"></div>
+            <div style="padding: 2rem;">
+              <% posts.forEach((post) => { %>
+                <div class="post">
+                  <div class="post-header">
+                    <div class="foto-coluna">
+                      <a href="/perfil/<%= post.autorId %>">
+                        <img src="<%= post.fotoPerfil %>" alt="Foto de perfil do usuário" class="user-profile-picture">
+                      </a>
+                    </div>
+                      <a href="/post/<%= post.idpost %>">
+                    <div class="post-coluna">
+                      <div>
+                      <span class="autor-post"><%= post.autor %></span>
+                      <span class="data-post"><%= post.data %> </span>
+                      </div>
+                      <span class="texto-post"><%= post.texto %></span>
+                    </div>
+                
+                  </div>
+                    <% if ( post.postType === 'undefined') { post.postType = 'música'; } %>
+                                        <% if (post.postType === 'album') { %>
+                                          <div class="container-album">
+                                            <img src="<%= post.posterAlbum %>" alt="Poster do álbum" class="album-poster">
+                                            <div class="column">
+                                              <h2 class="titulo-album"><%= post.albumName %></h2>
+                                              <h3 class="artist-name">
+                                                <%= post.artistName %> • <%= post.postType %> • <%= new Date(post.releaseDate).getFullYear() %> • 
+                                                <% for(let i = 0; i < 5; i++) { %>
+                                                  <% if(post.nota > i) { %>
+                                                    <% if(post.nota > i && post.nota < i+1) { %>
+                                                      <i class="bi bi-star-half"></i>
+                                                    <% } else { %>
+                                                      <i class="bi bi-star-fill"></i>
+                                                    <% } %>
+                                                  <% } else { %>
+                                                    <i class="bi bi-star"></i>
+                                                  <% } %>
+                                                <% } %>
+                                              </h3>
+                                            </div>
+                                          </div>
+                                        <% } else { %>
+                                          <div class="container-musica">
+                                            <img src="<%= post.posterMusica %>" alt="Poster da música" class="music-poster">
+                                            <div class="column">
+                                              <h2 class="titulo-musica"><%= post.musicName %></h2>
+                                              <h3 class="artist-name">
+                                                <%= post.artistName %> • <%= post.postType %> • <%= new Date(post.releaseDate).getFullYear() %> •
+                                                <% for(let i = 0; i < 5; i++) { %>
+                                                  <% if(post.nota > i) { %>
+                                                    <% if(post.nota > i && post.nota < i+1) { %>
+                                                      <i class="bi bi-star-half"></i>
+                                                    <% } else { %>
+                                                      <i class="bi bi-star-fill"></i>
+                                                    <% } %>
+                                                  <% } else { %>
+                                                    <i class="bi bi-star"></i>
+                                                  <% } %>
+                                                <% } %>
+                                              </h3> 
+                                            </div>
+                                          </div>
+                                        <% } %>
+                                        <div class="interacoes">
+                                          <button type="button" class="btn botao-interacao" >
+                                            <i class="bi bi-chat"></i> <small class="comment-count"><%= post.quantidadeComentarios %></small>
+                                          </button>
+                                          <a class="likes-count like-button" data-post-id="<%= post.idpost %>" href="<% if(likesList.includes(post.idpost)) { %>/post/descurtir/<%- post.idpost %><% } else { %>/post/curtir/<%- post.idpost %><% } %>">
+                                            <% if(likesList.includes(post.idpost)) { %>
+                                              <i class="bi-heart-fill btn botao-interacao"></i>
                                             <% } else { %>
-                                              <i class="bi bi-star"></i>
+                                              <i class="bi bi-heart btn botao-interacao"></i>
                                             <% } %>
-                                          <% } %>
-                                        </h3>
-                                      </div>
-                                    </div>
-                                  <% } else { %>
-                                    <div class="container-musica">
-                                      <img src="<%= post.posterMusica %>" alt="Poster da música" class="music-poster">
-                                      <div class="column">
-                                        <h2 class="titulo-musica"><%= post.musicName %></h2>
-                                        <h3 class="artist-name">
-                                          <%= post.artistName %> • <%= post.postType %> • <%= new Date(post.releaseDate).getFullYear() %> • 
-                                          <% for(let i = 0; i < 5; i++) { %>
-                                            <% if(post.nota > i) { %>
-                                              <% if(post.nota > i && post.nota < i+1) { %>
-                                                <i class="bi bi-star-half"></i>
-                                              <% } else { %>
-                                                <i class="bi bi-star-fill"></i>
-                                              <% } %>
-                                            <% } else { %>
-                                              <i class="bi bi-star"></i>
-                                            <% } %>
-                                          <% } %>
-                                        </h3> 
-                                      </div>
-                                    </div>
-    
-                                  <% } %>
-                                  <div class="interacoes">
-                                    <button type="button" class="btn botao-interacao" >
-                                      <i class="bi bi-chat"></i> <small class="comment-count"><%= post.quantidadeComentarios %></small>
-                                    </button>
-                                    <a class="likes-count" href="/post/curtir/<%- post.idpost %>"><i class="bi bi-heart btn botao-interacao"></i>
-                                      <%= post.likes %> </small>
-                                  </a>
-                                  </div>
-                                </a>
-                                
-          </div>
-          <% }); %>
+                                            <span class="numero"><%= post.likes %></span>
+                                          </a>
+                                        </div>
+                                      </a>
+                                      
+                </div>
+                <% }); %>
+            </div>
 
         <div id="popup" style="display: none;">
             <form action="/perfil/editar" method="post" enctype="multipart/form-data">
@@ -119,3 +149,32 @@
 
 </div>
 <div class="col-2"></div>
+
+<body>
+  
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.7.1/jquery.min.js" integrity="sha512-v2CJ7UaYy4JwqLDIrZUI/4hqeoQieOmAZNXBeQyjo21dadnwR+8ZaIJVT8EE2iyI61OV8e6M8PP2/4hpQINQ/g==" crossorigin="anonymous" referrerpolicy="no-referrer"></script>
+  <script>
+    $('.like-button').on('click', function(event){
+      event.preventDefault();
+      const postId = $(this).data('post-id');
+      const likeCount = $(this).find('.numero'); 
+      const likeIcon = $(this).find('i');
+      const hasLiked = likeIcon.hasClass('bi-heart-fill');
+      const url = hasLiked ? `/post/descurtir/${postId}` : `/post/curtir/${postId}`;
+      $.ajax({
+        url: url,
+        method: 'GET',
+        success: function(response){
+          likeCount.text(response.likeCount);
+          if(hasLiked){
+            likeIcon.removeClass('bi-heart-fill');
+            likeIcon.addClass('bi-heart');
+          } else {
+            likeIcon.removeClass('bi-heart');
+            likeIcon.addClass('bi-heart-fill');
+          }
+        }
+      })
+    })
+  </script>
+</body>
