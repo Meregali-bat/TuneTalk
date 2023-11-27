@@ -97,17 +97,12 @@ app.get('/login', (req, res) => {
 });
 
 app.post('/login', (req, res) => {
-  console.log(req.body);
   controllerUsuario.autenticar(req, res);
 });
 
 app.get('/pesquisa', (req, res) => {
   controllerUsuario.pesquisar(req, res);
 })
-
-app.get('/artistas', (req, res) => {
-  res.render('artistas');
-});
 
 app.get('/logout', (req, res) => {
   controllerUsuario.logout(req, res);

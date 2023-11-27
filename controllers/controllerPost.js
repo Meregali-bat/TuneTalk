@@ -40,22 +40,38 @@ async function listarPosts(req, res) {
 };
 
 async function verPost(req, res) {
-  const post = posts.find(post => post.idpost == req.params.idpost);
+  const idpost = req.params.idpost;
+
+  if (!idpost) {
+    return;
+  }
+
+  const post = await Post.buscarPorId(idpost);
+
+  if (!post) {
+    return;
+  }
+
   const comentarios = await Comentario.listarComentariosPorId(post.idpost);
   res.render('post', {
-    post,
-    comentarios,
-    usuario : req.session.user
-  });
+  post,
+  comentarios,
+  usuario : req.session.user,
+  fotoPerfil: post.fotoPerfil,
+  nome: post.nome
+});
 }
 
 async function listarPostsSeguindo(req, res) {
   const posts = await Post.listarPostsSeguindo(req.session.user.id);
+  const likesList = await Post.getLikes(req.session.user.id);
   res.render('Seguindo', {
     posts,
-    usuario : req.session.user
+    likesList,
+    usuario: req.session.user,
+    idUsuarioLogado: req.session.user.idUsuario
   });
-}
+};
 
 module.exports = {
   listarPosts,

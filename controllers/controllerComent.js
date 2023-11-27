@@ -11,7 +11,6 @@ async function criarComentario(req, res) {
     await comentario.comentar();
     res.redirect(req.headers.referer);
   } catch (err) {
-    console.error(err);
     res.status(500).send("An error occurred while creating the comment");
   }
 }

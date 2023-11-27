@@ -174,6 +174,20 @@ class Post {
     }));
   }
 
+  static async buscarPorId(idpost) {
+    const posts = await db.query(`
+      SELECT post.*, usuario.fotoPerfil, usuario.nome 
+      FROM post 
+      INNER JOIN usuario ON post.usuario_idusuario = usuario.idusuario 
+      WHERE post.idpost = ${idpost}
+    `);
+    if (posts.length > 0) {
+      return posts[0];
+    } else {
+      return null;
+    }
+  }
+
 }
 
 module.exports = Post;
