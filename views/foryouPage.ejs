@@ -51,7 +51,7 @@
                                   <div class="column">
                                     <h2 class="titulo-musica"><%= post.musicName %></h2>
                                     <h3 class="artist-name">
-                                      <%= post.artistName %> • <%= post.postType %> • <%= new Date(post.releaseDate).getFullYear() %> •
+                                      <%= post.artistName %> • <%= post.postType %> • <%= isNaN(post.releaseDate / 60) ? new Date(post.releaseDate).getFullYear() : Math.round(post.releaseDate / 60) + ' min' %>
                                       <% for(let i = 0; i < 5; i++) { %>
                                         <% if(post.nota > i) { %>
                                           <% if(post.nota > i && post.nota < i+1) { %>
@@ -94,12 +94,8 @@
     </div>
   </div>
   <body>
-    <script>  
-      let redirect_uri = "https://tunetalk.tech/foryou";
-    </script>
-    
     <!-- Api Spotify -->
-    <script src="/script/apiSpotify.js"></script>
+    <script src="/script/apiDeezer.js"></script>
     
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.7.1/jquery.min.js" integrity="sha512-v2CJ7UaYy4JwqLDIrZUI/4hqeoQieOmAZNXBeQyjo21dadnwR+8ZaIJVT8EE2iyI61OV8e6M8PP2/4hpQINQ/g==" crossorigin="anonymous" referrerpolicy="no-referrer"></script>
     <script>
