@@ -4,9 +4,15 @@ function searchFunction(e) {
       .getElementById("search-input")
       .addEventListener("input", function (e) {
         const searchQuery = e.target.value;
-        const url = `https://cors-anywhere.herokuapp.com/https://api.deezer.com/search?q=${encodeURIComponent(searchQuery)}`;
-  
-        fetch(url)
+        const url = `https://deezerdevs-deezer.p.rapidapi.com/search?q=${encodeURIComponent(searchQuery)}`;
+        const options = {
+            method: 'GET',
+            headers: {
+                'X-RapidAPI-Key': '23a8cab7cfmshc44f57269f2dff6p14817fjsn8b61352c895b',
+                'X-RapidAPI-Host': 'deezerdevs-deezer.p.rapidapi.com'
+            }
+        };
+        fetch(url, options)
           .then((response) => response.json())
           .then((data) => {
             document.getElementById("search-results").innerHTML = "";
