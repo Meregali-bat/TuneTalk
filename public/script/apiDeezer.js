@@ -4,7 +4,7 @@ function searchFunction(e) {
       .getElementById("search-input")
       .addEventListener("input", function (e) {
         const searchQuery = e.target.value;
-        const url = `https://api.deezer.com/search?q=${encodeURIComponent(searchQuery)}`;
+        const url = `https://cors-anywhere.herokuapp.com/https://api.deezer.com/search?q=${encodeURIComponent(searchQuery)}`;
   
         fetch(url)
           .then((response) => response.json())
