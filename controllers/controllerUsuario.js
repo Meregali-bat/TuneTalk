@@ -51,6 +51,7 @@ async function listarUsuarioPorId(req, res) {
   const idUsuario = req.params.idUsuario;
   const usuario = await userModel.listarUsuarioPorId(idUsuario);
   const posts = await Post.listarPostsPorIdUsuario(idUsuario);
+  const quantidadePosts = await Post.contarPostsPorIdUsuario(idUsuario);
   const idSessao = req.session.user.id;
   const seguindoList = await userModel.getSeguindo(idSessao);
   const quantidadeSeguindo = await userModel.getQuantidadeSeguindo(idUsuario);
@@ -63,7 +64,8 @@ async function listarUsuarioPorId(req, res) {
     idSessao,
     seguindoList,
     quantidadeSeguindo,
-    quantidadeSeguidores
+    quantidadeSeguidores,
+    quantidadePosts
   });
 }
 

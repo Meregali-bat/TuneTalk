@@ -350,11 +350,13 @@
 
     .seguidores{
         font-size: .8rem !important;
+        margin-right: .4rem;
     }
 
     .seguidores strong{
         color: var(--destaque);
         font-size: 1rem;
+        margin-left: .4rem;
     }
 
     #popup{

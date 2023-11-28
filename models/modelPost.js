@@ -127,6 +127,15 @@ class Post {
     return likes.map(like => like.post_idpost); 
   }
 
+  static async contarPostsPorIdUsuario(idusuario) {
+    const result = await db.query(`
+      SELECT COUNT(*) as quantidadePosts 
+      FROM post 
+      WHERE usuario_idusuario = ${idusuario}
+    `);
+    return result[0].quantidadePosts;
+  }
+
   static async listarPostsPorIdUsuario(idusuario) {
     const posts = await db.query(`
       SELECT post.*, usuario.nome AS autor, usuario.fotoPerfil, usuario.idusuario AS autorId,
