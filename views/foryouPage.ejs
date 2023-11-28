@@ -51,7 +51,7 @@
                                   <div class="column">
                                     <h2 class="titulo-musica"><%= post.musicName %></h2>
                                     <h3 class="artist-name">
-                                      <%= post.artistName %> • <%= post.postType %> • <%= isNaN(post.releaseDate / 60) ? new Date(post.releaseDate).getFullYear() : Math.round(post.releaseDate / 60) + ' min' %>
+                                      <%= post.artistName %> • <%= post.postType %> • <%= isNaN(post.releaseDate / 60) ? new Date(post.releaseDate).getFullYear() : Math.round(post.releaseDate / 60) + ' min' %> •
                                       <% for(let i = 0; i < 5; i++) { %>
                                         <% if(post.nota > i) { %>
                                           <% if(post.nota > i && post.nota < i+1) { %>
