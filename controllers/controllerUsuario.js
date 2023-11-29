@@ -42,7 +42,18 @@ async function cadastrar(req, res) {
     if (resp.error) {
       res.render('cadastro', { error: resp.error });
     } else {
-      res.redirect("/login");
+      
+      const user = await userModel.autenticar(email, senha);
+      if (user.length > 0) {
+        req.session.user = {
+          nome: user[0].nome,
+          id: user[0].idusuario,
+          email: user[0].email,
+        };
+        res.redirect("/foryou");
+      } else {
+        res.render('login', { error: 'Erro ao autenticar o usuário.' });
+      }
     }
   }
 }
