@@ -2,17 +2,17 @@
         <!-- CSS -->
         <link rel="stylesheet" href="/style/login.css">
 </head>
-    <form action="/login" method="post">
-        <div class="email-container mb-3">                     
-            <input type="email" class="container__central__form__email" id="email" name="email" placeholder="exemplo@gmail.com" required>
-        </div>
-        <div class="password-container mb-3">
-            <input type="password" name="senha" id="container__central__form__senha" placeholder="Senha" required>
-            <button style="background: none; margin: 0; color: #000;" type="button" onclick="togglePasswordVisibility('container__central__form__senha', 'toggleIcon1')"> <i id="toggleIcon1" class="bi bi-eye-slash"></i>
-            </button>
-        </div>
-            <button type="submit" class="btn-login">Login</button>
-        <a href="/cadastrar" class="novoUsuario">
-            Não tem uma conta ainda? <br>Cadastre-se aqui
-        </a>
-    </form> 
+<form action="/login" method="post">
+    <div class="email-container mb-3">                     
+        <input type="email" class="container__central__form__email" id="email" name="email" placeholder="exemplo@gmail.com" value="<%= typeof email !== 'undefined' ? email : '' %>" required>
+    </div>
+    <div class="password-container mb-3">
+        <input type="password" name="senha" id="container__central__form__senha" placeholder="Senha" required>
+        <button style="background: none; margin: 0; color: #000;" type="button" onclick="togglePasswordVisibility('container__central__form__senha', 'toggleIcon1')"> <i id="toggleIcon1" class="bi bi-eye-slash"></i>
+        </button>
+    </div>
+    <button type="submit" class="btn-login">Login</button>
+    <a href="/cadastrar" class="novoUsuario">
+        Não tem uma conta ainda? <br>Cadastre-se aqui
+    </a>
+</form>

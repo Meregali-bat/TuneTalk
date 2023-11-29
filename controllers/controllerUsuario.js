@@ -17,7 +17,7 @@ async function autenticar(req, res) {
       };
       res.redirect("/foryou");
     } else {
-      res.render('login', { error: 'Usuário ou senha incorretos.' });
+      res.render('login', { error: 'Usuário ou senha incorretos.', email: req.body.email });
     }
   }
 }
@@ -33,14 +33,14 @@ async function cadastrar(req, res) {
     const hasUppercase = /[A-Z]/.test(senha);
 
     if (!hasSymbol || !hasSixCharacters || !hasUppercase) {
-      res.render('cadastro', { error: 'A senha deve conter pelo menos um símbolo, mais de 6 caracteres e uma letra maiúscula.' });
+      res.render('cadastro', { error: 'A senha deve conter pelo menos um símbolo, mais de 6 caracteres e uma letra maiúscula.', nome, email, fotoPerfil });
       return;
     }
 
     const resp = await userModel.cadastrar(nome, email, senha, fotoPerfil);
 
     if (resp.error) {
-      res.render('cadastro', { error: resp.error });
+      res.render('cadastro', { error: resp.error, nome, email, fotoPerfil });
     } else {
       
       const user = await userModel.autenticar(email, senha);

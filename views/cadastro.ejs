@@ -9,30 +9,28 @@
         <span class="picture__img"></span>
         <input type="file" name="imagem" id="container__central__form__imagem" >
     </label>
-    <input type="file" name="imagem" id="container__central__form__imagem" >
     <div class="nome-container mb-3">                     
-        <input type="text" class="container__central__form__nome" name="nome" placeholder="seu nome" required>   
+        <input type="text" class="container__central__form__nome" name="nome" placeholder="seu nome" value="<%= typeof nome !== 'undefined' ? nome : '' %>" required>   
     </div>  
     <div class="email-container mb-3">                     
-        <input type="email" class="container__central__form__email" id="email" name="email" placeholder="exemplo@gmail.com" required>
+        <input type="email" class="container__central__form__email" id="email" name="email" placeholder="exemplo@gmail.com" value="<%= typeof email !== 'undefined' ? email : '' %>" required>
     </div>
     <div class="password-container mb-3">
-        <input type="password" name="senha" id="container__central__form__senha" placeholder="Senha" required>
-        <button style="background: none; margin: 0; color: #000;" type="button" onclick="togglePasswordVisibility('container__central__form__senha', 'toggleIcon1')"> <i id="toggleIcon1" class="bi bi-eye-slash"></i>
-        </button>
+    <input type="password" name="senha" id="container__central__form__senha" placeholder="Senha" value="<%= typeof senha !== 'undefined' ? senha : '' %>" required>
+    <button style="background: none; margin: 0; color: #000;" type="button" onclick="togglePasswordVisibility('container__central__form__senha', 'toggleIcon1')"> <i id="toggleIcon1" class="bi bi-eye-slash"></i>
+    </button>
     </div>
     <small id="ruleLength" style="color: #4e4e4e;">A senha deve conter no mínimo 6 caracteres.</small>
     <small id="ruleUppercase" style="color: #4e4e4e;">A senha deve conter uma letra maiúscula.</small>
     <small id="ruleSymbol" style="color: #4e4e4e;">A senha deve conter um símbolo.</small>
     <div class="password-container mb-3">
-        <input type="password" id="container__central__form__confirmarSenha" placeholder="Confirmar Senha" required>
-            <button style="background: none; margin: 0; color: #000;" type="button" onclick="togglePasswordVisibility('container__central__form__confirmarSenha', 'toggleIcon2')"><i id="toggleIcon2" class="bi bi-eye-slash"></i>
-            
-            </button>
-        </div>
-        <small id="passwordError" style="color: #ff0000;"></small>
-        <input type="hidden" name="fotoPerfilUrl" id="fotoPerfilUrl">
-        <input type="hidden" name="publicId" id="publicId">
-        <button type="submit" id="container__central__form__button">Criar conta</button>
+        <input type="password" id="container__central__form__confirmarSenha" placeholder="Confirmar Senha" value="<%= typeof confirmarSenha !== 'undefined' ? confirmarSenha : '' %>" required>
+        <button style="background: none; margin: 0; color: #000;" type="button" onclick="togglePasswordVisibility('container__central__form__confirmarSenha', 'toggleIcon2')"><i id="toggleIcon2" class="bi bi-eye-slash"></i>
+        </button>
+    </div>
+    <small id="passwordError" style="color: #ff0000;"></small>
+    <input type="hidden" name="fotoPerfilUrl" id="fotoPerfilUrl">
+    <input type="hidden" name="publicId" id="publicId">
+    <button type="submit" id="container__central__form__button">Criar conta</button>
         <p class="novoUsuario">já tem uma conta? <a class="novoUsuario" href="/login">Faça login aqui</a></p>
 </form> 

@@ -164,20 +164,22 @@ app.post('/perfil/editar', upload.single('foto'), async (req, res) => {
 });
 
 app.post('/cadastrar', upload.single('imagem'), (req, res) => {
-  if (!req.file) {
-    res.render('cadastro', { error: "Nenhuma imagem selecionada" });;
-  }
+  const { nome, email, senha } = req.body;
 
-  cloudinary.uploader.upload(req.file.path, (error, result) => {
-    if (error) {
-      console.error('Erro ao fazer o upload da imagem:', error);
-      res.status(500).send('Erro ao fazer o upload da imagem');
-    } else {
-      req.body.fotoPerfil = result.url;
-      req.body.publicId = result.public_id;
-      controllerUsuario.cadastrar(req, res);
-    }
-  });
+  if (!req.file) {
+    res.render('cadastro', { error: "Nenhuma imagem selecionada", nome, email, senha });
+  } else {
+    cloudinary.uploader.upload(req.file.path, (error, result) => {
+      if (error) {
+        console.error('Erro ao fazer o upload da imagem:', error);
+        res.status(500).send('Erro ao fazer o upload da imagem');
+      } else {
+        req.body.fotoPerfil = result.url;
+        req.body.publicId = result.public_id;
+        controllerUsuario.cadastrar(req, res);
+      }
+    });
+  }
 });
 
 

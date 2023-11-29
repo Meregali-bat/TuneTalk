@@ -68,7 +68,7 @@ let alerts = document.querySelectorAll('.alert');
 alerts.forEach((alert) => {
   setTimeout(() => {
     alert.style.display = 'none';
-  }, 1000);
+  }, 3000);
 });
 
 // Obtenha uma referência aos elementos de regra

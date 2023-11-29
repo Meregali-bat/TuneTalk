@@ -30,7 +30,6 @@
                                 <ul class="dropdown-menu">
                                   <li>
                                       <% if (usuario.id === post.autorId) { %>
-                                      <% console.log('post.id' + post.idpost) %>
                                         <a class="dropdown-item" href="/post/deletar/<%= post.idpost %>">Deletar</a>
                                       <% } else { %>
                                         <a class="dropdown-item" href="#">Denunciar</a>
