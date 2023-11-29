@@ -63,8 +63,7 @@ class Post {
       ORDER BY post.data DESC
       LIMIT 20
     `);
-
-    // Convertendo o array de posts em um Set para remover duplicatas, e depois convertendo de volta para um array
+    
     const uniquePosts = Array.from(new Set(posts.map(post => JSON.stringify(post)))).map(post => JSON.parse(post));
 
     const shuffledPosts = uniquePosts.sort(() => Math.random() - 0.5);
@@ -82,6 +81,8 @@ class Post {
   }
 
   static async deletarPost(idpost) {
+    await db.query(`DELETE FROM comentarios WHERE post_idpost = '${idpost}'`);
+    await db.query(`DELETE FROM curtir WHERE post_idpost = '${idpost}'`);
     const post = await db.query(`DELETE FROM post WHERE idpost = '${idpost}'`);
     return post;
   }

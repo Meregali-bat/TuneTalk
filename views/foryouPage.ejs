@@ -17,10 +17,29 @@
                                   <img src="<%= post.fotoPerfil %>" alt="Foto de perfil do usuário" class="user-profile-picture rounded-circle">
                               </a>
                           </div>
-                          <div class="col">
+                          <div class="col d-flex justify-content-between">
+                            <div>
                               <span class="autor-post"><%= post.autor %></span>
                               <span class="data-post"><%= post.data %> </span>
+                            </div>
+                          
+                            <div class="dropdown">
+                              <a style="color: #fff;" role="button" data-bs-toggle="dropdown" aria-expanded="false">
+                                <i class="bi bi-three-dots-vertical"></i>
+                              </a>
+                              <ul class="dropdown-menu">
+                                <li>
+                                    <% if (usuario.id === post.autorId) { %>
+                                    <% console.log('post.id' + post.idpost) %>
+                                      <a class="dropdown-item" href="/post/deletar/<%= post.idpost %>">Deletar</a>
+                                    <% } else { %>
+                                      <a class="dropdown-item" href="#">Denunciar</a>
+                                    <% } %>
+                                  </li>
+                              </ul>
+                            </div>
                           </div>
+                            
                       </div>
                   </div>
                   <div class="card-body">

@@ -128,6 +128,10 @@ app.get('/perfil/deixar-de-seguir/:idUsuario', (req, res) => {
   controllerUsuario.deixardeSeguirUsuario(req, res);
 });
 
+app.get('/post/deletar/:idpost', (req, res) => {
+  controllerPost.deletarPost(req, res);
+});
+
 app.get("/perfil/:idUsuario", controllerUsuario.listarUsuarioPorId);
 app.get('/foryou', controllerPost.listarPosts);
 app.get('/seguindo', controllerPost.listarPostsSeguindo);

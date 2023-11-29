@@ -99,7 +99,7 @@ async function seguirUsuario(req, res) {
   const usuario = await userModel.seguirUsuario(idUsuario, idUsuarioSeguido);
   const seguindoList = await userModel.getSeguindo(idUsuario);
 
-  res.redirect(`/perfil/${idUsuarioSeguido}`);
+  res.redirect(req.headers.referer || `/perfil/${idUsuarioSeguido}`);
 }
 
 async function deixardeSeguirUsuario(req, res) {
@@ -107,7 +107,7 @@ async function deixardeSeguirUsuario(req, res) {
   const idUsuarioSeguido = req.params.idUsuario;
   const usuario = await userModel.deixardeSeguirUsuario(idUsuario, idUsuarioSeguido);
 
-  res.redirect(`/perfil/${idUsuarioSeguido}`);
+  res.redirect(req.headers.referer || `/perfil/${idUsuarioSeguido}`);
 }
 
 async function getQuantidadeSeguindo(req, res, next) {

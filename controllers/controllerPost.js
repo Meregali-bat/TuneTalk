@@ -34,8 +34,7 @@ async function listarPosts(req, res) {
   res.render('foryouPage', {
     posts,
     likesList,
-    usuario : req.session.user,
-    idUsuarioLogado: req.session.user.idUsuario
+    usuario : req.session.user
   });
 };
 
@@ -73,6 +72,12 @@ async function listarPostsSeguindo(req, res) {
   });
 };
 
+async function deletarPost(req, res) {
+  const idpost = req.params.idpost;
+  await Post.deletarPost(idpost);
+  res.redirect(req.headers.referer || '/foryou');
+}
+
 module.exports = {
   listarPosts,
   darLike,
@@ -80,5 +85,6 @@ module.exports = {
   getLikes,
   criarPost, 
   verPost,
-  listarPostsSeguindo
+  listarPostsSeguindo,
+  deletarPost
 };
