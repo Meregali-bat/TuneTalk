@@ -314,6 +314,7 @@
     .seguidores{
         font-size: .8rem !important;
         margin-right: .4rem;
+        cursor: pointer;
     }
 
     .seguidores strong{
@@ -418,4 +419,20 @@
 
     .nome-texto{
         margin-left: 1rem;
+    }
+
+    .modal-content{
+        background-color: var(--background);
+        border: 1px solid var(--destaque);
+        color: var(--texto);
+    }
+
+    .modal-body{
+        display: flex;
+        flex-direction: column;
+    }
+
+    .modal-header,
+    .modal-footer{
+        border: 0;
     }

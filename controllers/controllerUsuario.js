@@ -67,6 +67,8 @@ async function listarUsuarioPorId(req, res) {
   const seguindoList = await userModel.getSeguindo(idSessao);
   const quantidadeSeguindo = await userModel.getQuantidadeSeguindo(idUsuario);
   const quantidadeSeguidores = await userModel.getQuantidadeSeguidores(idUsuario);
+  const seguidoresList = await userModel.getSeguidores(idUsuario); 
+  const seguindoListNome = await userModel.getSeguindoList(idUsuario);
 
   res.render('perfil', {
     usuario,
@@ -76,7 +78,9 @@ async function listarUsuarioPorId(req, res) {
     seguindoList,
     quantidadeSeguindo,
     quantidadeSeguidores,
-    quantidadePosts
+    quantidadePosts,
+    seguidoresList,
+    seguindoListNome
   });
 }
 
@@ -88,11 +92,6 @@ async function editarPerfil(req, res) {
   res.redirect(`/perfil/${idUsuario}`);
 }
 
-async function getSeguindo(req, res, next) {
-  const seguindoList = await userModel.getSeguindo(req.session.user.id); 
-  res.locals.seguindoList = seguindoList;
-  next();
-}
 
 async function seguirUsuario(req, res) {
   const idUsuario = req.session.user.id;
@@ -131,7 +130,6 @@ module.exports = {
   listarUsuarioPorId,
   editarPerfil,
   seguirUsuario,
-  getSeguindo,
   deixardeSeguirUsuario,
   getQuantidadeSeguidores,
   getQuantidadeSeguindo

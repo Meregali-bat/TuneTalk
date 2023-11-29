@@ -79,6 +79,26 @@ static async cadastrar(nome, email, senha, fotoPerfil) {
     const seguindo = await db.query(`SELECT usuario_idusuario1 FROM seguir WHERE usuario_idusuario = '${idUsuario}'`);
     return seguindo.map(usuario => usuario.usuario_idusuario1);
   }
+  
+  static async getSeguindoList(idUsuario) {
+    const seguindo = await db.query(`
+      SELECT usuario.idusuario, usuario.nome, usuario.fotoPerfil, usuario.bio 
+      FROM seguir 
+      INNER JOIN usuario ON seguir.usuario_idusuario1 = usuario.idusuario 
+      WHERE seguir.usuario_idusuario = '${idUsuario}'
+    `);
+    return seguindo.map(usuario => ({ id: usuario.idusuario, nome: usuario.nome, foto: usuario.fotoPerfil, bio: usuario.bio }));
+  }
+
+  static async getSeguidores(idUsuario) {
+    const seguidores = await db.query(`
+      SELECT usuario.idusuario, usuario.nome, usuario.fotoPerfil, usuario.bio 
+      FROM seguir 
+      INNER JOIN usuario ON seguir.usuario_idusuario = usuario.idusuario 
+      WHERE seguir.usuario_idusuario1 = '${idUsuario}'
+    `);
+    return seguidores.map(usuario => ({ id: usuario.idusuario, nome: usuario.nome, foto: usuario.fotoPerfil, bio: usuario.bio }));
+  }
 
   static async getQuantidadeSeguindo(idUsuario) {
     const seguindo = await db.query(`

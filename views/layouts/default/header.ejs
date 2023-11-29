@@ -9,7 +9,7 @@
             <img src="/img/TuneTalk Logo.svg" alt="Bootstrap" width="70" height="70">
         </a>
         <div>
-            <a class="link-header" href="/perfil/<%= typeof usuario.id !== 'undefined' ? usuario.id : idUsuario %>"><i class="bi bi-person-circle"></i></a>
+            <a class="link-header" href="/perfil/<%= typeof idSessao !== 'undefined' ? idSessao : (typeof usuario.id !== 'undefined' ? usuario.id : idUsuario) %>"><i class="bi bi-person-circle"></i></a>
         </div>
     </div>
 </nav>
