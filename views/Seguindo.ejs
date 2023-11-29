@@ -4,97 +4,104 @@
     <a href="/seguindo"><strong>Seguindo</strong></a>
   </div>
 </div>
-<div class="posts">
+
+<div class="container-xl">
+<div class="row">
   <% posts.forEach((post) => { %>
-  <div class="post">
-    <div class="post-header">
-      <div class="foto-coluna">
-        <a href="/perfil/<%= post.autorId %>">
-          <img src="<%= post.fotoPerfil %>" alt="Foto de perfil do usuário" class="user-profile-picture">
-        </a>
-      </div>
-        <a href="/post/<%= post.idpost %>">
-          <div class="post-coluna">
-            <div>
-            <span class="autor-post"><%= post.autor %></span>
-            <span class="data-post"><%= post.data %> </span>
-            </div>
-            <span class="texto-post"><%= post.texto %></span>
-          </div>
-  
-    </div>
-      <% if ( post.postType === 'undefined') { post.postType = 'música'; } %>
-                          <% if (post.postType === 'album') { %>
-                            <div class="container-album">
-                              <img src="<%= post.posterAlbum %>" alt="Poster do álbum" class="album-poster">
-                              <div class="column">
-                                <h2 class="titulo-album"><%= post.albumName %></h2>
-                                <h3 class="artist-name">
-                                  <%= post.artistName %> • <%= post.postType %> • <%= new Date(post.releaseDate).getFullYear() %> • 
+      <div class="col-lg-10 offset-lg-1">
+          <div class="card mb-3 post">
+              <div class="card-header">
+                  <div class="row">
+                      <div class="col-auto">
+                          <a href="/perfil/<%= post.autorId %>">
+                              <img src="<%= post.fotoPerfil %>" alt="Foto de perfil do usuário" class="user-profile-picture rounded-circle">
+                          </a>
+                      </div>
+                      <div class="col">
+                          <span class="autor-post"><%= post.autor %></span>
+                          <span class="data-post"><%= post.data %> </span>
+                      </div>
+                  </div>
+              </div>
+              <div class="card-body">
+                <a href="/post/<%= post.idpost %>">
+                  <h5 class="card-title texto-post"><%= post.texto %></h5>
+                  <% if (post.postType === 'undefined') { post.postType = 'música'; } %>
+                  <% if (post.postType === 'album') { %>
+                      <div class="container-album">
+                          <img src="<%= post.posterAlbum %>" alt="Poster do álbum" class="album-poster">
+                          <div class="column">
+                              <h2 class="titulo-album"><%= post.albumName %></h2>
+                              <h3 class="artist-name">
+                                <%= post.artistName %> • <%= post.postType %> • <%= isNaN(post.releaseDate / 60) ? new Date(post.releaseDate).getFullYear() : Math.round(post.releaseDate / 60) + ' min' %> • 
                                   <% for(let i = 0; i < 5; i++) { %>
-                                    <% if(post.nota > i) { %>
-                                      <% if(post.nota > i && post.nota < i+1) { %>
-                                        <i class="bi bi-star-half"></i>
+                                      <% if(post.nota > i) { %>
+                                          <% if(post.nota > i && post.nota < i+1) { %>
+                                              <i class="bi bi-star-half"></i>
+                                          <% } else { %>
+                                              <i class="bi bi-star-fill"></i>
+                                          <% } %>
                                       <% } else { %>
-                                        <i class="bi bi-star-fill"></i>
+                                          <i class="bi bi-star"></i>
                                       <% } %>
-                                    <% } else { %>
-                                      <i class="bi bi-star"></i>
-                                    <% } %>
                                   <% } %>
-                                </h3>
-                              </div>
-                            </div>
-                          <% } else { %>
-                            <div class="container-musica">
-                              <img src="<%= post.posterMusica %>" alt="Poster da música" class="music-poster">
-                              <div class="column">
-                                <h2 class="titulo-musica"><%= post.musicName %></h2>
-                                <h3 class="artist-name">
+                              </h3>
+                          </div>
+                      </div>
+                  <% } else { %>
+                      <div class="container-musica">
+                          <img src="<%= post.posterMusica %>" alt="Poster da música" class="music-poster">
+                          <div class="column">
+                              <h2 class="titulo-musica"><%= post.musicName %></h2>
+                              <h3 class="artist-name">
                                   <%= post.artistName %> • <%= post.postType %> • <%= isNaN(post.releaseDate / 60) ? new Date(post.releaseDate).getFullYear() : Math.round(post.releaseDate / 60) + ' min' %> •
                                   <% for(let i = 0; i < 5; i++) { %>
-                                    <% if(post.nota > i) { %>
-                                      <% if(post.nota > i && post.nota < i+1) { %>
-                                        <i class="bi bi-star-half"></i>
+                                      <% if(post.nota > i) { %>
+                                          <% if(post.nota > i && post.nota < i+1) { %>
+                                              <i class="bi bi-star-half"></i>
+                                          <% } else { %>
+                                              <i class="bi bi-star-fill"></i>
+                                          <% } %>
                                       <% } else { %>
-                                        <i class="bi bi-star-fill"></i>
+                                          <i class="bi bi-star"></i>
                                       <% } %>
-                                    <% } else { %>
-                                      <i class="bi bi-star"></i>
-                                    <% } %>
                                   <% } %>
-                                </h3> 
-                              </div>
-                            </div>
-                          <% } %>
-                          <div class="interacoes">
-                            <button type="button" class="btn botao-interacao" >
-                              <i class="bi bi-chat"></i> <small class="comment-count"><%= post.quantidadeComentarios %></small>
-                            </button>
-                            <a class="likes-count like-button" data-post-id="<%= post.idpost %>" href="<% if(likesList.includes(post.idpost)) { %>/post/descurtir/<%- post.idpost %><% } else { %>/post/curtir/<%- post.idpost %><% } %>">
-                              <% if(likesList.includes(post.idpost)) { %>
-                                <i class="bi-heart-fill btn botao-interacao"></i>
-                              <% } else { %>
-                                <i class="bi bi-heart btn botao-interacao"></i>
-                              <% } %>
-                              <span class="numero"><%= post.likes %></span>
-                            </a>
+                              </h3> 
                           </div>
-                        </a>
-                        
-  </div>
+                      </div>
+                  <% } %>
+              </div>
+            </a>  
+              <div class="card-footer">
+                  <div class="interacoes">
+                      <button type="button" class="btn botao-interacao">
+                          <i class="bi bi-chat"></i> <small class="comment-count"><%= post.quantidadeComentarios %></small>
+                      </button>
+                      <a class="likes-count like-button" data-post-id="<%= post.idpost %>" href="<% if(likesList.includes(post.idpost)) { %>/post/descurtir/<%- post.idpost %><% } else { %>/post/curtir/<%- post.idpost %><% } %>">
+                          <% if(likesList.includes(post.idpost)) { %>
+                              <i class="bi-heart-fill btn botao-interacao"></i>
+                          <% } else { %>
+                              <i class="bi bi-heart btn botao-interacao"></i>
+                          <% } %>
+                          <span class="numero"><%= post.likes %></span>
+                      </a>
+                  </div>
+              </div>
+          </div>
+      </div>
   <% }); %>
-  <div class="fixed-bottom mb-3">
-    <span class="botao-criarpost"><i class="bi bi-music-note"></i></span>
-    <div id="overlay"></div>
-    <div id="search-bar">
-        <input type="text" id="search-input" placeholder="Digite a música">
-        <div id="search-results"></div>
-    </div>
+</div>
+
+<div class="fixed-bottom mb-3">
+  <span class="botao-criarpost"><i class="bi bi-music-note"></i></span>
+  <div id="overlay"></div>
+  <div id="search-bar" class="input-group">
+      <input type="text" id="search-input" class="form-control" placeholder="Digite a música">
+      <div id="search-results"></div>
+  </div>
 </div>
 </div>
 <body>
-
 <!-- Api Spotify -->
 <script src="/script/apiDeezer.js"></script>
 

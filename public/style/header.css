@@ -1,9 +1,6 @@
 @import url('https://fonts.googleapis.com/css2?family=EB+Garamond&family=Geologica:wght@300&family=Raleway&display=swap');
 
 .navegacao{
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
     padding: 1rem 3rem  1rem 3rem  ;
     background-color: var(--background);
     color: var(--texto);

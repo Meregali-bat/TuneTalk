@@ -60,11 +60,16 @@ class Post {
       nota
       FROM post 
       JOIN usuario ON post.usuario_idusuario = usuario.idusuario
-      ORDER BY RAND()
+      ORDER BY post.data DESC
       LIMIT 20
     `);
-  
-    return posts.map((post) => ({
+
+    // Convertendo o array de posts em um Set para remover duplicatas, e depois convertendo de volta para um array
+    const uniquePosts = Array.from(new Set(posts.map(post => JSON.stringify(post)))).map(post => JSON.parse(post));
+
+    const shuffledPosts = uniquePosts.sort(() => Math.random() - 0.5);
+
+    return shuffledPosts.map((post) => ({
       ...post,
       posterMusica: post.posterMusica,
       albumName: post.albumName,

@@ -3,15 +3,13 @@
 </head>
 
 
-
-
-    <div class="navegacao">
-        <a href="/" >
-            <div class="logo">
-                <img src="/img/TuneTalk Logo.svg" alt="logo">
-            </div>
+<nav class="navbar navegacao">
+    <div class="container d-flex flex-nowrap justify-content-between">
+        <a class="navbar-brand" href="/">
+            <img src="/img/TuneTalk Logo.svg" alt="Bootstrap" width="70" height="70">
         </a>
         <div>
             <a class="link-header" href="/perfil/<%= typeof usuario.id !== 'undefined' ? usuario.id : idUsuario %>"><i class="bi bi-person-circle"></i></a>
         </div>
     </div>
+</nav>

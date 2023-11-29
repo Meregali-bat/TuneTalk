@@ -25,14 +25,7 @@
     align-items: center;
     }
 
-    .posts{
-        display: flex;
-        flex-direction: column;
-        justify-content: center;
-        width: 100%;
-        max-width: 74%;
-        margin-left: 13%;
-    }
+
 
     .feeds{
         display: flex;
@@ -50,6 +43,7 @@
         border: 1px solid var(--linhas);
         padding: 1rem;
         border-radius: 32px;
+        margin-bottom: 2rem;
     }
 
     .feeds-a strong{
@@ -65,28 +59,10 @@
     }
 
     .post{
-        width: 100%;
-        display: flex;
-        margin-top: 3rem;
-        flex-direction: column; 
-        box-sizing: border-box;
         border: var(--linhas) 1px solid;
-        padding: 2rem;
-        border-radius: 8px;
-    }
-
-    .post-header{
-        display: flex;
-        flex-direction: row;
-        width: 100%;
-        height: 100%;
-        align-items: flex-start;
-    }
-
-    .foto-coluna{
-        height: 100%;
-        max-width: 200px;
+        background-color: var(--background);
         border-radius: 10px;
+        
     }
 
     .user-profile-picture{
@@ -95,28 +71,17 @@
         border-radius: 50%;
     }
 
-    .post-coluna{
-        display: flex;
-        flex-direction: column;
-        width: 90%;
-        height: 100%;
-        min-width: 100%;
-    }
-
-    .data-post{
-        font-size: 1rem;    
-        color: #71767b;
+    .data-post{ 
+        color: var(--linhas);
         margin-left: 1rem;
     }
 
     .autor-post{
-        margin-left:1rem;
         font-size: 1.5rem;
         color: var(--texto);
     }
 
     .texto-post{
-        margin-left:1rem;
         color: var(--texto);
         text-align: justify;
         width: 100%;
@@ -129,7 +94,6 @@
         margin-top: 1rem;
         border-radius: 10px;
         border: 1px solid var(--linhas);
-        margin-left: 4rem;
     }	
 
     .album-poster,
@@ -159,13 +123,14 @@
         flex-direction: row;
         align-items: center;
         justify-content: space-around;
-        width: 100%;
     }
 
     .botao-interacao,
     .likes-count{
         color: var(--destaque);
     }
+
+    /* Aqui acaba a for you */
 
     .botao-criarpost {
         padding: .8rem 1rem .8rem 1rem;
@@ -201,8 +166,6 @@
         background: var(--background);
         padding: 20px;
         border-radius: 5px;
-        width: 80%;
-        max-width: 800px;
         box-sizing: border-box;
 }
 
@@ -456,137 +419,3 @@
     .nome-texto{
         margin-left: 1rem;
     }
-
-@media screen and (max-width: 768px) {  
-
-    .posts{
-        max-width: 100%;
-        margin-left: 0;
-    }
-
-    .post-header{
-            display: flex;
-            flex-direction: row;
-            width: 100%;
-            height: 100%;
-            align-items: flex-start;
-    }
-
-    .foto-coluna{
-        max-width: 100%;
-        margin-left: 0;
-    }
-
-
-    .texto-post,
-    .autor-post{
-        font-size: 1rem;
-        width: 90%;
-        margin: 0;
-    }
-
-    a{
-        width: 90%;
-        margin-left: 5%;
-    }
-
-    .container-album,
-    .container-musica{
-        margin-left: 0;
-    }
-
-    .album-poster,
-    .music-poster{
-        border-radius: 10px 0 0 10px;
-        margin: 0;
-    }
-
-    .column{
-        margin-left: .6rem;
-    }
-
-    .titulo-album,
-    .titulo-musica{
-        padding-right: 0;
-    }
-
-    .interacoes{
-        margin-left: 0;
-    }
-
-    .botao-interacao,
-    .likes-count{
-        margin: 0;
-        width: 30%;
-    }
-
-
-    #search-bar {
-        width: 90%;
-        max-width: 90%;
-    }
-
-    .post-configs textarea{
-        height: 50%;
-    }
-
-    .star-rating label {
-        font-size: 1.3rem;
-      }
-    
-    .btn-postar{
-        margin-top: 5rem;
-    }
-
-}
-
-@media screen and (max-width: 575px) {
-    
-    .post-header{
-        display: flex;
-        flex-direction: row;
-        width: 100%;
-        height: 100%;
-        align-items: flex-start;
-}
-
-        .posts{
-            max-width: 100%;
-            margin-left: 0;
-        }
-    
-        .post-header{
-            display: flex;
-            align-items: center;
-        }
-    
-        .foto-coluna{
-            max-width: 100%;
-            margin-left: 0;
-        }
-        
-        .textoPerfil h1,
-        .textoPerfil span{
-            font-size: .8rem !important;
-        }
-
-        .profile-picture{
-            width: 100px;
-            height: 100px;
-        }
-
-        .botao-editar-perfil{
-            font-size: .8rem !important;
-        }
-        
-        .titulo-album,
-        .titulo-musica{
-            font-size: .8rem !important; 
-        }
-
-        .post{
-            padding: .2rem;
-        }
-
-    }
-    
