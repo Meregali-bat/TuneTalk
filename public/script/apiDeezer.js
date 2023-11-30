@@ -36,10 +36,10 @@ function searchFunction(e) {
                 <div style="display: flex; flex-direction: column; height: 100%;">
     <h2 id="music-name">${track.title} by ${track.artist.name}</h2>
     <div class="post-configs">
-        <img id="foto-musica" src="${track.album.cover_medium}" alt="${track.title}" class="img-fluid rounded" style="max-width: 150px;">
+        <img id="foto-musica" src="${track.album.cover_medium}" alt="${track.title}" class="img-fluid rounded" style="margin-right: 1rem; max-width: 150px;">
         <form action="/create-post" method="post" class="ml-3 d-flex flex-column">
             <div class="form-group">
-                <textarea id="texto" name="texto" class="form-control" rows="3"></textarea>
+                <textarea id="texto" name="texto" class="form-control rounded" rows="6"></textarea>
             </div>
             <input id="musicName" name="musicName" type="hidden" value="${track.title}">
             <input id="artistName" name="artistName" type="hidden" value="${track.artist.name}">
@@ -48,19 +48,19 @@ function searchFunction(e) {
             <input id="releaseDate" name="releaseDate" type="hidden" value="${track.duration}">
             <div class="form-group">
                 <div class="star-rating">
-                    <input type="radio" id="1-star" name="nota" value="1">
+                    <input type="radio" id="1-star" name="nota" value="5">
                     <label for="1-star"><i class="bi bi-star-fill"></i></label>
-                    <input type="radio" id="2-star" name="nota" value="2">
+                    <input type="radio" id="2-star" name="nota" value="4">
                     <label for="2-star"><i class="bi bi-star-fill"></i></label>
                     <input type="radio" id="3-star" name="nota" value="3">
                     <label for="3-star"><i class="bi bi-star-fill"></i></label>
-                    <input type="radio" id="4-star" name="nota" value="4">
+                    <input type="radio" id="4-star" name="nota" value="2">
                     <label for="4-star"><i class="bi bi-star-fill"></i></label>
-                    <input type="radio" id="5-star" name="nota" value="5">
+                    <input type="radio" id="5-star" name="nota" value="1">
                     <label for="5-star"><i class="bi bi-star-fill"></i></label>
                 </div>
             </div>
-            <button type="submit" class="btn btn-primary align-self-center">Postar</button>
+            <button type="submit" class="btn btn-primary align-self-center mt-3">Postar</button>
         </form>
     </div>
 </div>

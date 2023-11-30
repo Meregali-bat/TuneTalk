@@ -12,15 +12,17 @@
               <div class="card mb-3 post">
                   <div class="card-header">
                       <div class="row">
+                        <a href="/perfil/<%= post.autorId %>">
                           <div class="col-auto">
-                              <a href="/perfil/<%= post.autorId %>">
                                   <img src="<%= post.fotoPerfil %>" alt="Foto de perfil do usuário" class="user-profile-picture rounded-circle">
                               </a>
                           </div>
                           <div class="col d-flex justify-content-between">
                             <div>
+                              <a href="/perfil/<%= post.autorId %>">
                               <span class="autor-post"><%= post.autor %></span>
                               <span class="data-post"><%= post.data %> </span>
+                            </a>
                             </div>
                           
                             <div class="dropdown">
@@ -89,12 +91,13 @@
                           </div>
                       <% } %>
                   </div>
-                </a>  
+                  
                   <div class="card-footer">
                       <div class="interacoes">
                           <button type="button" class="btn botao-interacao">
-                              <i class="bi bi-chat"></i> <small class="comment-count"><%= post.quantidadeComentarios %></small>
+                              <i class="bi bi-chat" style="color: #2ba84a;  "></i> <small class="comment-count"style="color: #2ba84a; "><%= post.quantidadeComentarios %></small>
                           </button>
+                        </a>
                           <a class="likes-count like-button" data-post-id="<%= post.idpost %>" href="<% if(likesList.includes(post.idpost)) { %>/post/descurtir/<%- post.idpost %><% } else { %>/post/curtir/<%- post.idpost %><% } %>">
                               <% if(likesList.includes(post.idpost)) { %>
                                   <i class="bi-heart-fill btn botao-interacao"></i>
