@@ -48,7 +48,7 @@ class Post {
       INSERT INTO tunetalk.post 
       (texto, usuario_idusuario, likes, musicName, artistName, posterMusica, albumName, posterAlbum, postType, releaseDate, nota, data) 
       VALUES 
-      ('${this.texto}', '${this.usuario_idusuario}', '${this.likes}', '${this.musicName}', '${this.artistName}', '${this.posterMusica}', '${this.albumName}', '${this.posterAlbum}', '${this.postType}', '${this.releaseDate}', '${this.nota}', '${dateTime}')
+      ("${this.texto}", "${this.usuario_idusuario}", '${this.likes}', "${this.musicName}", "${this.artistName}", '${this.posterMusica}', '${this.albumName}', '${this.posterAlbum}', '${this.postType}', '${this.releaseDate}', '${this.nota}', '${dateTime}')
     `);
     return post;
   }
