@@ -132,11 +132,28 @@ app.get('/post/deletar/:idpost', (req, res) => {
   controllerPost.deletarPost(req, res);
 });
 
-app.get("/perfil/:idUsuario", controllerUsuario.listarUsuarioPorId);
-app.get('/foryou', controllerPost.listarPosts);
-app.get('/seguindo', controllerPost.listarPostsSeguindo);
+app.get("/perfil/:idUsuario", async function(req, res) {
+  const notifications = req.session.user.notifications;
+  await controllerUsuario.listarUsuarioPorId(req, res, notifications);
+});
+
+app.get('/foryou', async function(req, res) {
+  const notifications = req.session.user.notifications;
+  await controllerPost.listarPosts(req, res, notifications);
+});
+
+app.get('/seguindo', async function(req, res) {
+  const notifications = req.session.user.notifications;
+  await controllerPost.listarPostsSeguindo(req, res, notifications);
+});
+
 app.post('/create-post', controllerPost.criarPost);
-app.get('/post/:idpost', controllerPost.verPost, controllerComent.listarComentarios, controllerPost.darLike);
+
+app.get('/post/:idpost', async function(req, res) {
+  const notifications = req.session.user.notifications;
+  await controllerPost.verPost(req, res, notifications);
+}, controllerComent.listarComentarios, controllerPost.darLike);
+
 app.post('/post/:idpost/comentar', controllerComent.criarComentario);
 app.get('/perfil/editar', (req, res) => {
   controllerUsuario.editarPerfil(req, res);

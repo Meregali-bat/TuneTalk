@@ -16,6 +16,12 @@ class Comentario {
       VALUES 
       ('${this.texto}', '${this.likes}', '${this.post_idpost}', '${this.usuario_idusuario}')
     `);
+
+    const post = await db.query(`SELECT * FROM post WHERE idpost = '${this.post_idpost}'`);
+    const autorId = post[0].usuario_idusuario;
+
+  await db.query(`INSERT INTO notificacoes (usuario_idusuario, usuario_idusuario1, tipo, conteudo, data, lida) VALUES ('${autorId}', '${this.usuario_idusuario}', 'comment', 'comentou no seu post', CURRENT_TIMESTAMP, 0)`);
+    
     return comentario;
   }
 

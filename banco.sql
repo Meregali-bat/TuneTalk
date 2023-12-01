@@ -109,3 +109,25 @@ CREATE TABLE IF NOT EXISTS `comentarios_has_comentarios` (
     REFERENCES `comentarios` (`idcomentarios`)
     ON DELETE NO ACTION
     ON UPDATE NO ACTION);
+
+CREATE TABLE IF NOT EXISTS `notificacoes` (
+  `idnotificacoes` INT NOT NULL AUTO_INCREMENT,
+  `usuario_idusuario` INT NOT NULL,
+  `usuario_idusuario1` INT NOT NULL,
+  `tipo` VARCHAR(255) NOT NULL,
+  `conteudo` VARCHAR(255) NOT NULL,
+  `data` TIMESTAMP NOT NULL,
+  `lida` TINYINT NULL,
+  PRIMARY KEY (`idnotificacoes`, `usuario_idusuario`),
+  INDEX `fk_notificacoes_usuario1_idx` (`usuario_idusuario` ASC),
+  CONSTRAINT `fk_notificacoes_usuario1`
+    FOREIGN KEY (`usuario_idusuario`)
+    REFERENCES `usuario` (`idusuario`)
+    ON DELETE NO ACTION
+    ON UPDATE NO ACTION,
+  CONSTRAINT `fk_notificacoes_usuario2`
+    FOREIGN KEY (`usuario_idusuario1`)
+    REFERENCES `usuario` (`idusuario`)
+    ON DELETE NO ACTION
+    ON UPDATE NO ACTION
+);

@@ -28,47 +28,53 @@ async function getLikes(req, res) {
   } 
 
 
-async function listarPosts(req, res) {
-  posts = await Post.listarPosts();
-  likesList = await Post.getLikes(req.session.user.id);
-  res.render('foryouPage', {
-    posts,
-    likesList,
-    usuario : req.session.user
-  });
-};
+  async function listarPosts(req, res, notifications) {
+    posts = await Post.listarPosts();
+    likesList = await Post.getLikes(req.session.user.id);
+    res.render('foryouPage', {
+      posts,
+      likesList,
+      usuario: req.session.user,
+      notifications: notifications
+    });
+  };
 
-async function verPost(req, res) {
-  const idpost = req.params.idpost;
-
-  if (!idpost) {
-    return;
+  async function verPost(req, res) {
+    const idpost = req.params.idpost;
+  
+    if (!idpost) {
+      return;
+    }
+  
+    const post = await Post.buscarPorId(idpost);
+  
+    if (!post) {
+      return;
+    }
+  
+    const comentarios = await Comentario.listarComentariosPorId(post.idpost);
+    const notifications = req.session.user.notifications;
+    res.render('post', {
+      post,
+      comentarios,
+      usuario : req.session.user,
+      fotoPerfil: post.fotoPerfil,
+      nome: post.nome,
+      notifications: notifications
+    });
   }
-
-  const post = await Post.buscarPorId(idpost);
-
-  if (!post) {
-    return;
-  }
-
-  const comentarios = await Comentario.listarComentariosPorId(post.idpost);
-  res.render('post', {
-  post,
-  comentarios,
-  usuario : req.session.user,
-  fotoPerfil: post.fotoPerfil,
-  nome: post.nome
-});
-}
 
 async function listarPostsSeguindo(req, res) {
-  const posts = await Post.listarPostsSeguindo(req.session.user.id);
-  const likesList = await Post.getLikes(req.session.user.id);
+  const idUsuario = req.session.user.id;
+  const posts = await Post.listarPostsSeguindo(idUsuario);
+  const likesList = await Post.getLikes(idUsuario);
+  const notifications = req.session.user.notifications;
   res.render('Seguindo', {
     posts,
     likesList,
     usuario: req.session.user,
-    idUsuarioLogado: req.session.user.idUsuario
+    idUsuarioLogado: idUsuario,
+    notifications: notifications
   });
 };
 

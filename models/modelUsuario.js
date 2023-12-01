@@ -56,6 +56,10 @@ static async cadastrar(nome, email, senha, fotoPerfil) {
       `INSERT INTO seguir (usuario_idusuario, usuario_idusuario1) VALUES (${idUsuario}, ${idUsuarioSeguido})`
     );
   
+    const notification = await db.query(
+      `INSERT INTO notificacoes (usuario_idusuario, usuario_idusuario1, tipo, conteudo, lida) VALUES (${idUsuarioSeguido}, ${idUsuario}, 'new_follower', 'seguiu você', false)`
+    );
+
     return user;
   }
 
@@ -116,6 +120,14 @@ static async cadastrar(nome, email, senha, fotoPerfil) {
       WHERE usuario_idusuario1 = '${idUsuario}'
     `);
     return seguidores[0].quantidade;
+  }
+
+  static async getNotificacoes(idUsuario) {
+    const notificacoes = await db.query(`
+      SELECT * FROM notificacoes 
+      WHERE usuario_idusuario = '${idUsuario}'
+    `);
+    return notificacoes;
   }
 
 }

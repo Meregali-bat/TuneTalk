@@ -9,7 +9,45 @@
             <img src="/img/TuneTalk Logo.svg" alt="Bootstrap" width="70" height="70">
         </a>
         <div>
+            <i id="notification-icon" class="bi bi-bell link-header" data-bs-toggle="modal" data-bs-target="#notification-modal"></i>
             <a class="link-header" href="/perfil/<%= typeof idSessao !== 'undefined' ? idSessao : (typeof usuario.id !== 'undefined' ? usuario.id : idUsuario) %>"><i class="bi bi-person-circle"></i></a>
         </div>
     </div>
 </nav>
+
+<div id="notification-modal" class="modal fade" tabindex="-1" role="dialog">
+    <div class="modal-dialog" role="document">
+      <div class="modal-content">
+        <div class="modal-header">
+          <h5 class="modal-title">Notificações</h5>
+          <button type="button" class="botao-seguindo" style="border: none; font-size: 2rem; " data-bs-dismiss="modal" aria-label="Close">
+            <span aria-hidden="true">&times;</span>
+          </button>
+        </div>
+        <% console.log(notifications) %>
+        <div class="modal-body">
+            <% notifications.forEach(function(notification) { %>
+                <div class="notification-item mb-4" style="display: flex; align-items: center;">
+                  <a href="/perfil/<%= notification.usuario_idusuario1 %>" style="color: #fff; text-decoration: none;">
+                    <img src="<%= notification.fotoPerfil %>" class="profile-picture" style="width: 50px; height: 50px; margin-right: 10px;" alt="<%= notification.nome %>'s profile picture">
+                  </a>
+                  
+                  <div>
+                    <% if (notification.tipo === 'new_follower') { %>
+                      <a href="/perfil/<%= notification.usuario_idusuario1 %>" style="color: #fff; text-decoration: none;">
+                        <strong><%= notification.nome %></strong>
+                        <p style="margin: 0;"><%= notification.conteudo %></p>
+                      </a>
+                    <% } else { %>
+                      <a href="/post/<%= notification.post_id %>" style="color: #fff; text-decoration: none;">
+                        <strong><%= notification.nome %></strong>
+                        <p style="margin: 0;"><%= notification.conteudo %></p>
+                      </a>
+                    <% } %>
+                  </div>
+                </div>
+              <% }); %>
+        </div>
+      </div>
+    </div>
+  </div>

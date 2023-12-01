@@ -103,6 +103,7 @@ class Post {
   
     const curtir = await db.query(`INSERT INTO curtir (post_idpost, post_usuario_idusuario, usuario_idusuario) VALUES ('${idpost}', '${autorId}', '${idusuario}')`);
   
+    await db.query(`INSERT INTO notificacoes (usuario_idusuario, usuario_idusuario1, tipo, conteudo, data, lida, post_id) VALUES ('${autorId}', '${idusuario}', 'like', 'curtiu seu post', CURRENT_TIMESTAMP, 0, '${idpost}')`);
     
     const updatedPost = await db.query(`SELECT * FROM post WHERE idpost = '${idpost}'`);
   

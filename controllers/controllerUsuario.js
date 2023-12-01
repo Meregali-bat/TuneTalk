@@ -1,5 +1,6 @@
 const userModel = require("../models/modelUsuario.js");
 const Post = require("../models/modelPost.js");
+const notificationModel = require("../models/modelNotificacao.js");
 
 function login(req, res) {
   res.render("login");
@@ -15,6 +16,10 @@ async function autenticar(req, res) {
         id: resp[0].idusuario,
         email: resp[0].email,
       };
+      
+      const notifications = await notificationModel.getNotifications(req.session.user.id);
+      req.session.user.notifications = notifications;
+      
       res.redirect("/foryou");
     } else {
       res.render('login', { error: 'Usuário ou senha incorretos.', email: req.body.email });
@@ -58,7 +63,7 @@ async function cadastrar(req, res) {
   }
 }
 
-async function listarUsuarioPorId(req, res) {
+async function listarUsuarioPorId(req, res, notifications) {
   const idUsuario = req.params.idUsuario;
   const usuario = await userModel.listarUsuarioPorId(idUsuario);
   const posts = await Post.listarPostsPorIdUsuario(idUsuario);
@@ -80,7 +85,8 @@ async function listarUsuarioPorId(req, res) {
     quantidadeSeguidores,
     quantidadePosts,
     seguidoresList,
-    seguindoListNome
+    seguindoListNome,
+    notifications: notifications
   });
 }
 
