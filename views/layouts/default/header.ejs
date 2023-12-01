@@ -39,6 +39,7 @@
                         <p style="margin: 0;"><%= notification.conteudo %></p>
                       </a>
                     <% } else { %>
+                        <% console.log(notification) %>
                       <a href="/post/<%= notification.post_id %>" style="color: #fff; text-decoration: none;">
                         <strong><%= notification.nome %></strong>
                         <p style="margin: 0;"><%= notification.conteudo %></p>
