@@ -202,7 +202,8 @@ app.post('/cadastrar', upload.single('imagem'), (req, res) => {
   const { nome, email, senha } = req.body;
 
   if (!req.file) {
-    res.render('cadastro', { error: "Nenhuma imagem selecionada", nome, email, senha });
+    req.body.fotoPerfil = 'https://res.cloudinary.com/dorm41uma/image/upload/v1701558934/jyqonmjasuobge6nmvi4.png';
+    controllerUsuario.cadastrar(req, res);
   } else {
     cloudinary.uploader.upload(req.file.path, (error, result) => {
       if (error) {
