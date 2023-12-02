@@ -10,6 +10,7 @@
         </a>
         <div>
             <i id="notification-icon" class="bi bi-bell link-header" data-bs-toggle="modal" data-bs-target="#notification-modal"></i>
+            <span id="unread-notifications-count" class="notification-badge">0</span>
             <a class="link-header" href="/perfil/<%= typeof idSessao !== 'undefined' ? idSessao : (typeof usuario.id !== 'undefined' ? usuario.id : idUsuario) %>"><i class="bi bi-person-circle"></i></a>
         </div>
     </div>
@@ -24,7 +25,6 @@
             <span aria-hidden="true">&times;</span>
           </button>
         </div>
-        <% console.log(notifications) %>
         <div class="modal-body">
             <% notifications.forEach(function(notification) { %>
                 <div class="notification-item mb-4" style="display: flex; align-items: center;">
@@ -52,3 +52,25 @@
       </div>
     </div>
   </div>
+
+  <script>
+    async function updateUnreadNotificationsCount() {
+      const response = await fetch('/getUnreadNotificationsCount');
+      const count = await response.text();
+      const unreadNotificationsCountElement = document.getElementById('unread-notifications-count');
+      if (count > 0) {
+          unreadNotificationsCountElement.textContent = count;
+          unreadNotificationsCountElement.style.display = 'inline'; // Show the element
+      } else {
+          unreadNotificationsCountElement.textContent = '';
+          unreadNotificationsCountElement.style.display = 'none'; // Hide the element
+      }
+  }
+  
+  document.getElementById('notification-icon').addEventListener('click', function() {
+      fetch('/updateAllNotifications', { method: 'POST' });
+      updateUnreadNotificationsCount();
+  });
+  
+  updateUnreadNotificationsCount();
+  </script>

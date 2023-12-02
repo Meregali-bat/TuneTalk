@@ -28,6 +28,15 @@ class Notificacao {
         return notification;
     }
     
+    static async updateAllNotifications(userId) {
+        await db.query(`UPDATE notificacoes SET lida = true WHERE usuario_idusuario = '${userId}'`);
+    }
+    
+    static async getUnreadNotificationsCount(userId) {
+        const result = await db.query(`SELECT COUNT(*) as count FROM notificacoes WHERE usuario_idusuario = '${userId}' AND lida = false`);
+        return result[0].count;
+    }
+    
     }
 
 module.exports = Notificacao;

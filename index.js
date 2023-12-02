@@ -156,6 +156,16 @@ app.get('/seguindo', async function(req, res) {
 
 app.post('/create-post', controllerPost.criarPost);
 
+app.post('/updateAllNotifications', async (req, res) => {
+  await notificationModel.updateAllNotifications(req.session.user.id);
+  res.sendStatus(200);
+});
+
+app.get('/getUnreadNotificationsCount', async (req, res) => {
+  const count = await notificationModel.getUnreadNotificationsCount(req.session.user.id);
+  res.send(count.toString());
+});
+
 app.get('/post/:idpost', async function(req, res) {
   await fetchNotifications(req);
   const notifications = req.session.user.notifications;
