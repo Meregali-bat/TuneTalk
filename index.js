@@ -10,6 +10,7 @@ const cloudinary = require('cloudinary').v2;
 const bodyParser = require('body-parser');
 const controllerComent = require('./controllers/controllerComent.js');
 require('dotenv').config()
+const notificationModel = require('./models/modelNotificacao.js');
 
 
 cloudinary.config({
@@ -79,7 +80,11 @@ app.use((req, res, next) => {
   }
 });
 
-
+// Funções
+const fetchNotifications = async (req) => {
+  const notifications = await notificationModel.getNotifications(req.session.user.id);
+  req.session.user.notifications = notifications;
+}
 
 // Rotas
 
@@ -138,11 +143,13 @@ app.get("/perfil/:idUsuario", async function(req, res) {
 });
 
 app.get('/foryou', async function(req, res) {
+  await fetchNotifications(req);
   const notifications = req.session.user.notifications;
   await controllerPost.listarPosts(req, res, notifications);
 });
 
 app.get('/seguindo', async function(req, res) {
+  await fetchNotifications(req);
   const notifications = req.session.user.notifications;
   await controllerPost.listarPostsSeguindo(req, res, notifications);
 });
@@ -150,6 +157,7 @@ app.get('/seguindo', async function(req, res) {
 app.post('/create-post', controllerPost.criarPost);
 
 app.get('/post/:idpost', async function(req, res) {
+  await fetchNotifications(req);
   const notifications = req.session.user.notifications;
   await controllerPost.verPost(req, res, notifications);
 }, controllerComent.listarComentarios, controllerPost.darLike);

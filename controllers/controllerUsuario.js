@@ -16,10 +16,7 @@ async function autenticar(req, res) {
         id: resp[0].idusuario,
         email: resp[0].email,
       };
-      
-      const notifications = await notificationModel.getNotifications(req.session.user.id);
-      req.session.user.notifications = notifications;
-      
+
       res.redirect("/foryou");
     } else {
       res.render('login', { error: 'Usuário ou senha incorretos.', email: req.body.email });
@@ -63,7 +60,7 @@ async function cadastrar(req, res) {
   }
 }
 
-async function listarUsuarioPorId(req, res, notifications) {
+async function listarUsuarioPorId(req, res) {
   const idUsuario = req.params.idUsuario;
   const usuario = await userModel.listarUsuarioPorId(idUsuario);
   const posts = await Post.listarPostsPorIdUsuario(idUsuario);
@@ -74,6 +71,7 @@ async function listarUsuarioPorId(req, res, notifications) {
   const quantidadeSeguidores = await userModel.getQuantidadeSeguidores(idUsuario);
   const seguidoresList = await userModel.getSeguidores(idUsuario); 
   const seguindoListNome = await userModel.getSeguindoList(idUsuario);
+  const notifications = await notificationModel.getNotifications(req.session.user.id);
 
   res.render('perfil', {
     usuario,
@@ -86,7 +84,7 @@ async function listarUsuarioPorId(req, res, notifications) {
     quantidadePosts,
     seguidoresList,
     seguindoListNome,
-    notifications: notifications
+    notifications
   });
 }
 

@@ -83,9 +83,10 @@ class Post {
   static async deletarPost(idpost) {
     await db.query(`DELETE FROM comentarios WHERE post_idpost = '${idpost}'`);
     await db.query(`DELETE FROM curtir WHERE post_idpost = '${idpost}'`);
+    await db.query(`DELETE FROM notificacoes WHERE post_id = '${idpost}'`);
     const post = await db.query(`DELETE FROM post WHERE idpost = '${idpost}'`);
     return post;
-  }
+}
 
   static async darLike(idpost, req) {
     const idusuario = req.session.user.id;
