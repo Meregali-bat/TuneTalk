@@ -125,6 +125,8 @@ class Post {
   
     await db.query(`DELETE FROM curtir WHERE post_idpost = '${idpost}' AND usuario_idusuario = '${idusuario}'`);
   
+    await db.query(`DELETE FROM notificacoes WHERE post_id = '${idpost}' AND usuario_idusuario1 = '${idusuario}'`);
+
     const updatedPost = await db.query(`SELECT * FROM post WHERE idpost = '${idpost}'`);
   
     return updatedPost[0].likes;
