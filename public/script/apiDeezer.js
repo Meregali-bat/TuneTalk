@@ -60,7 +60,7 @@ function searchFunction(e) {
                     <label for="5-star"><i class="bi bi-star-fill"></i></label>
                 </div>
             </div>
-            <button type="submit" class="btn btn-primary align-self-center mt-3">Postar</button>
+            <button type="submit" class="btn btn-postar btn-primary align-self-center">Postar</button>
         </form>
     </div>
 </div>
