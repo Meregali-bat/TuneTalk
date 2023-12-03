@@ -433,8 +433,13 @@
         margin-top: 3rem;
         width: 80%;
         margin-left: 10%;
+        padding-right: 10%;
         display: flex;
+        word-break: break-all;
+    }
 
+    .comment:last-of-type {
+        margin-bottom: 20px;
     }
 
     .nome-texto{
