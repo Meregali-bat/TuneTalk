@@ -83,6 +83,10 @@
                 <% } %>
                 <span class="numero"><%= post.likes %></span>
             </a>
+            <button type="button" class="btn botao-interacao" onclick="copyPostUrl('<%= '/post/' + post.idpost %>')">
+                <i class="bi bi-share" style="color: #2ba84a;"></i> <small class="comment-count" style="color: #2ba84a;"></small>
+            </button>
+              
         </div>
     </div>
 </div>
@@ -160,5 +164,16 @@
               btn.children[0].classList.add(playIcon);
           }
       }
+
+      function copyPostUrl(postPath) {
+        var postUrl = window.location.origin + postPath;
+    
+        var textarea = document.createElement('textarea');
+        textarea.value = postUrl;
+        document.body.appendChild(textarea);
+        textarea.select();
+        document.execCommand('copy');
+        document.body.removeChild(textarea);
+    }
 
  </script>
