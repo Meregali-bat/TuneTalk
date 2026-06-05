@@ -5,12 +5,14 @@
 
     --linhas: #7C6C77;
     --texto: #fcfffc;
-    --background: #000505;
-    --destaque: #2ba84a;
+    --muted: #797374
+    --background: #0a0e0d;
+    --background-secondary: #151b19;
+    --destaque: #20b46b;
   }
   
-  @import url('https://fonts.googleapis.com/css2?family=EB+Garamond&family=Geologica:wght@300&family=Raleway&display=swap');
-  
+  @import url('https://fonts.googleapis.com/css2?family=Instrument+Serif:ital@0;1&display=swap');
+
   *{
     margin: 0;
     padding: 0;
@@ -153,4 +155,25 @@ img.picture__img{
     padding: .5rem;
     border-radius: 8px;
     cursor: pointer;
+}
+
+.login-container {
+    display: flex;
+    flex-direction: column;
+    width: 60vw;
+    align-items: center !important;
+    justify-content: center;
+    align-items: start;
+}
+
+span.login-welcome {
+    font-size: 44px;
+    padding: 0px 0px 10px 0px;
+    font-family: "Instrument Serif", serif;
+    letter-spacing: -0.02em;
+    line-height: 1.02;
+}
+
+strong.login-welcome {
+    color: var(--destaque);
 }

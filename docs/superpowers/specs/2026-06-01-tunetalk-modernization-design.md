@@ -48,7 +48,7 @@ Three locations contain hardcoded secrets:
 All must be moved to `.env`. The Spotify and Deezer credentials must additionally be moved server-side (see Phase 4 for full resolution; interim fix: proxy calls through an Express route).
 
 ### 1.3 Weak Password Hashing
-Passwords are hashed with `md5`, which is broken for this purpose. Replace with `bcrypt` (10 salt rounds). Existing users will need to reset passwords or a migration strategy must be applied on next login.
+Passwords are hashed with `md5`, which is broken for this purpose. Replace with `bcrypt` (10 salt rounds). For existing users: on the next successful login (while the old MD5 hash still matches), re-hash the password with bcrypt and update the stored hash transparently. No password resets required.
 
 ### 1.4 `.gitignore`
 Add `.env` and `uploads/` to `.gitignore`. Currently only `node_modules` is ignored.

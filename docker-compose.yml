@@ -1,0 +1,15 @@
+services:
+  db:
+    image: mysql:8
+    container_name: mysql
+    restart: unless-stopped
+    environment:
+      MYSQL_ROOT_PASSWORD: ${DB_PASS}
+      MYSQL_DATABASE: ${DB_NAME}
+    ports:
+      - "3306:3306"
+    volumes:
+      - tunetalk-data:/var/lib/mysql
+      - ./banco.sql:/docker-entrypoint-initdb.d/banco.sql:ro
+volumes:
+    tunetalk-data:
