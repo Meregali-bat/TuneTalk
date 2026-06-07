@@ -45,13 +45,43 @@ class Post {
   
     const { date, time } = getCurrentDateTime();
     const dateTime = `${date} ${time}`;
-  
+    
+    console.log({post_parameters: {
+      p_texto: this.texto ?? null,
+      p_usuario_idusuario: this.usuario_idusuario,
+      p_likes: this.likes,
+      p_musicName: this.musicName,
+      p_artistName: this.artistName ?? null,
+      p_posterMusica: this.posterMusica ?? null,
+      p_albumName: this.albumName ?? null,
+      p_posterAlbum: this.posterAlbum ?? null,
+      p_postType: this.postType ?? null,
+      p_releaseDate: this.releaseDate ?? null,
+      p_nota: this.nota ?? 0,
+      p_data: dateTime,
+      p_musicPreview: this.musicPreview ?? null
+    }})
+
     const post = await db.query(`
       INSERT INTO tunetalk.post 
       (texto, usuario_idusuario, likes, musicName, artistName, posterMusica, albumName, posterAlbum, postType, releaseDate, nota, data, musicPreview) 
       VALUES 
-      ("${this.texto}", "${this.usuario_idusuario}", '${this.likes}', "${this.musicName}", "${this.artistName}", '${this.posterMusica}', '${this.albumName}', '${this.posterAlbum}', '${this.postType}', '${this.releaseDate}', '${this.nota}', '${dateTime}', '${this.musicPreview}')
-    `);
+      (:p_texto, :p_usuario_idusuario, :p_likes, :p_musicName, :p_artistName, :p_posterMusica, :p_albumName, :p_posterAlbum, :p_postType, :p_releaseDate, :p_nota, :p_data, :p_musicPreview)
+    `, {
+      p_texto: this.texto ?? null,
+      p_usuario_idusuario: this.usuario_idusuario,
+      p_likes: this.likes,
+      p_musicName: this.musicName,
+      p_artistName: this.artistName ?? null,
+      p_posterMusica: this.posterMusica ?? null,
+      p_albumName: this.albumName ?? null,
+      p_posterAlbum: this.posterAlbum ?? null,
+      p_postType: this.postType ?? null,
+      p_releaseDate: this.releaseDate ?? null,
+      p_nota: this.nota ?? 0,
+      p_data: dateTime,
+      p_musicPreview: this.musicPreview ?? null
+    });
     return post;
   }
 
@@ -83,32 +113,32 @@ class Post {
   }
 
   static async deletarPost(idpost) {
-    await db.query(`DELETE FROM comentarios WHERE post_idpost = '${idpost}'`);
-    await db.query(`DELETE FROM curtir WHERE post_idpost = '${idpost}'`);
-    await db.query(`DELETE FROM notificacoes WHERE post_id = '${idpost}'`);
-    const post = await db.query(`DELETE FROM post WHERE idpost = '${idpost}'`);
+    await db.query(`DELETE FROM comentarios WHERE post_idpost = :p_idpost`, { p_idpost: idpost });
+    await db.query(`DELETE FROM curtir WHERE post_idpost = :p_idpost`, { p_idpost: idpost });
+    await db.query(`DELETE FROM notificacoes WHERE post_id = :p_idpost`, { p_idpost: idpost });
+    const post = await db.query(`DELETE FROM post WHERE idpost = :p_idpost`, { p_idpost: idpost });
     return post;
 }
 
   static async darLike(idpost, req) {
     const idusuario = req.session.user.id;
   
-    const alreadyLiked = await db.query(`SELECT * FROM curtir WHERE post_idpost = '${idpost}' AND usuario_idusuario = '${idusuario}'`);
+    const alreadyLiked = await db.query(`SELECT 1 FROM curtir WHERE post_idpost = :p_idpost AND usuario_idusuario = :p_idusuario`, { p_idpost: idpost, p_idusuario: idusuario });
   
     if (alreadyLiked.length > 0) {
       return;
     }
   
-    const post = await db.query(`SELECT * FROM post WHERE idpost = '${idpost}'`);
+    const post = await db.query(`SELECT * FROM post WHERE idpost = :p_idpost`, { p_idpost: idpost });
     const autorId = post[0].usuario_idusuario;
   
-    await db.query(`UPDATE post SET likes = likes + 1 WHERE idpost = '${idpost}'`);
+    await db.query(`UPDATE post SET likes = likes + 1 WHERE idpost = :p_idpost`, { p_idpost: idpost });
   
-    const curtir = await db.query(`INSERT INTO curtir (post_idpost, post_usuario_idusuario, usuario_idusuario) VALUES ('${idpost}', '${autorId}', '${idusuario}')`);
+    const curtir = await db.query(`INSERT INTO curtir (post_idpost, post_usuario_idusuario, usuario_idusuario) VALUES (:p_idpost, :p_autorId, :p_idusuario)`, { p_idpost: idpost, p_autorId: autorId, p_idusuario: idusuario });
   
-    await db.query(`INSERT INTO notificacoes (usuario_idusuario, usuario_idusuario1, tipo, conteudo, data, lida, post_id) VALUES ('${autorId}', '${idusuario}', 'like', 'curtiu seu post', CURRENT_TIMESTAMP, 0, '${idpost}')`);
+    await db.query(`INSERT INTO notificacoes (usuario_idusuario, usuario_idusuario1, tipo, conteudo, data, lida, post_id) VALUES (:p_autorId, :p_idusuario, 'like', 'curtiu seu post', CURRENT_TIMESTAMP, 0, :p_idpost)`, { p_autorId: autorId, p_idusuario: idusuario, p_idpost: idpost });
     
-    const updatedPost = await db.query(`SELECT * FROM post WHERE idpost = '${idpost}'`);
+    const updatedPost = await db.query(`SELECT * FROM post WHERE idpost = :p_idpost`, { p_idpost: idpost });
   
 
     return updatedPost[0].likes;
@@ -117,25 +147,25 @@ class Post {
   static async removerLike(idpost, req) {
     const idusuario = req.session.user.id;
   
-    const alreadyLiked = await db.query(`SELECT * FROM curtir WHERE post_idpost = '${idpost}' AND usuario_idusuario = '${idusuario}'`);
+    const alreadyLiked = await db.query(`SELECT * FROM curtir WHERE post_idpost = :p_idpost AND usuario_idusuario = :p_idusuario`, { p_idpost: idpost, p_idusuario: idusuario });
   
     if (alreadyLiked.length === 0) {
       return;
     }
   
-    await db.query(`UPDATE post SET likes = likes - 1 WHERE idpost = '${idpost}'`);
+    await db.query(`UPDATE post SET likes = likes - 1 WHERE idpost = :p_idpost`, { p_idpost: idpost });
   
-    await db.query(`DELETE FROM curtir WHERE post_idpost = '${idpost}' AND usuario_idusuario = '${idusuario}'`);
+    await db.query(`DELETE FROM curtir WHERE post_idpost = :p_idpost AND usuario_idusuario = :p_idusuario`, { p_idpost: idpost, p_idusuario: idusuario });
   
-    await db.query(`DELETE FROM notificacoes WHERE post_id = '${idpost}' AND usuario_idusuario1 = '${idusuario}'`);
+    await db.query(`DELETE FROM notificacoes WHERE post_id = :p_idpost AND usuario_idusuario1 = :p_idusuario`, { p_idpost: idpost, p_idusuario: idusuario });
 
-    const updatedPost = await db.query(`SELECT * FROM post WHERE idpost = '${idpost}'`);
+    const updatedPost = await db.query(`SELECT * FROM post WHERE idpost = :p_idpost`, { p_idpost: idpost });
   
     return updatedPost[0].likes;
   }
 
   static async getLikes(idUsuario) {
-    const likes = await db.query(`SELECT post_idpost FROM curtir WHERE usuario_idusuario = '${idUsuario}'`);
+    const likes = await db.query(`SELECT post_idpost FROM curtir WHERE usuario_idusuario = :p_idusuario`, { p_idusuario: idUsuario });
     return likes.map(like => like.post_idpost); 
   }
 
@@ -143,8 +173,8 @@ class Post {
     const result = await db.query(`
       SELECT COUNT(*) as quantidadePosts 
       FROM post 
-      WHERE usuario_idusuario = ${idusuario}
-    `);
+      WHERE usuario_idusuario = :p_idusuario
+    `, { p_idusuario: idusuario });
     return result[0].quantidadePosts;
   }
 
@@ -155,9 +185,9 @@ class Post {
       nota
       FROM post 
       JOIN usuario ON post.usuario_idusuario = usuario.idusuario
-      WHERE usuario_idusuario = ${idusuario}
+      WHERE usuario_idusuario = :p_idusuario
       ORDER BY post.idpost DESC
-    `);
+    `, { p_idusuario: idusuario });
   
     return posts.map((post) => ({
       ...post,
@@ -179,9 +209,9 @@ class Post {
       FROM post 
       JOIN usuario ON post.usuario_idusuario = usuario.idusuario
       JOIN seguir ON usuario.idusuario = seguir.usuario_idusuario1
-      WHERE seguir.usuario_idusuario = ${idusuario}
+      WHERE seguir.usuario_idusuario = :p_idusuario
       ORDER BY post.idpost DESC
-    `);
+    `, { p_idusuario: idusuario });
   
     return posts.map((post) => ({
       ...post,
@@ -200,8 +230,8 @@ class Post {
       SELECT post.*, usuario.fotoPerfil, usuario.nome 
       FROM post 
       INNER JOIN usuario ON post.usuario_idusuario = usuario.idusuario 
-      WHERE post.idpost = ${idpost}
-    `);
+      WHERE post.idpost = :p_idpost
+    `, { p_idpost: idpost });
     if (posts.length > 0) {
       return posts[0];
     } else {
