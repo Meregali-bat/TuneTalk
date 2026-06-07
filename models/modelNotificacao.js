@@ -15,25 +15,25 @@ class Notificacao {
           `SELECT notificacoes.*, usuario.nome, usuario.fotoPerfil 
            FROM notificacoes 
            INNER JOIN usuario ON notificacoes.usuario_idusuario1 = usuario.idusuario 
-           WHERE notificacoes.usuario_idusuario = ${userId} 
+           WHERE notificacoes.usuario_idusuario = :p_id_usuario 
            ORDER BY notificacoes.idnotificacoes DESC`
-        );
+        , { p_id_usuario: userId });
         return notifications;
       }
     
     static async readNotification(notificationId) {
         const notification = await db.query(
-        `UPDATE notificacoes SET lida = true WHERE idnotificacoes = ${notificationId}`
-        );
+        `UPDATE notificacoes SET lida = true WHERE idnotificacoes = :p_id_notificacao`
+        , { p_id_notificacao: notificationId });
         return notification;
     }
     
     static async updateAllNotifications(userId) {
-        await db.query(`UPDATE notificacoes SET lida = true WHERE usuario_idusuario = '${userId}'`);
+        await db.query(`UPDATE notificacoes SET lida = true WHERE usuario_idusuario = :p_id_usuario`, { p_id_usuario: userId });
     }
     
     static async getUnreadNotificationsCount(userId) {
-        const result = await db.query(`SELECT COUNT(*) as count FROM notificacoes WHERE usuario_idusuario = '${userId}' AND lida = false`);
+        const result = await db.query(`SELECT COUNT(*) as count FROM notificacoes WHERE usuario_idusuario = :p_id_usuario AND lida = false`, { p_id_usuario: userId });
         return result[0].count;
     }
     
