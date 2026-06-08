@@ -8,8 +8,8 @@ function searchFunction(e) {
         const options = {
             method: 'GET',
             headers: {
-                'X-RapidAPI-Key': '23a8cab7cfmshc44f57269f2dff6p14817fjsn8b61352c895b',
-                'X-RapidAPI-Host': 'deezerdevs-deezer.p.rapidapi.com'
+                'X-RapidAPI-Key': process.env.DEEZER_API_KEY,
+                'X-RapidAPI-Host': process.env.DEEZER_API_HOST
             }
         };
         fetch(url, options)

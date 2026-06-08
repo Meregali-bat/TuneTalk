@@ -1,7 +1,7 @@
 let access_token;
 
-const client_id = "321c28ffad9b471997daad9f28d835a9";
-const client_secret = "9255a0a660ab4b76a1805a946c41d127";
+const client_id = process.env.SPOTIFY_CLIENT_ID;
+const client_secret = process.env.SPOTIFY_CLIENT_SECRET;
 const authorization_url = "https://accounts.spotify.com/authorize";
 const token_url = "https://accounts.spotify.com/api/token";
 

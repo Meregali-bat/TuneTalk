@@ -15,12 +15,12 @@ Design completo em `docs/superpowers/specs/2026-06-01-tunetalk-modernization-des
 - [✅] Migrar `models/modelNotificacao.js` — todas as queries para placeholders nomeados `:p_xxx`
 
 ### 1.2 Credenciais expostas
-- [ ] Mover chave RapidAPI (Deezer) de `public/script/apiDeezer.js` para `.env`
-- [ ] Mover `client_id` e `client_secret` do Spotify de `public/script/apiSpotify.js` para `.env`
-- [ ] Mover o `secret` da sessão hardcoded em `index.js` para `.env`
+- [✅] Mover chave RapidAPI (Deezer) de `public/script/apiDeezer.js` para `.env`
+- [✅] Mover `client_id` e `client_secret` do Spotify de `public/script/apiSpotify.js` para `.env`
+- [✅] Mover o `secret` da sessão hardcoded em `index.js` para `.env`
 - [ ] Criar rota Express `/api/music/search` para proxear chamadas Deezer/Spotify (tira credenciais do client-side)
 - [ ] Atualizar `apiDeezer.js` e `apiSpotify.js` para chamar `/api/music/search` em vez da API externa diretamente
-- [ ] Adicionar `.env` e `uploads/` ao `.gitignore`
+- [✅] Adicionar `.env` e `uploads/` ao `.gitignore`
 
 ### 1.3 Hashing de senhas
 - [ ] Instalar `bcrypt`
