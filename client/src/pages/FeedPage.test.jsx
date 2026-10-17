@@ -113,7 +113,7 @@ describe('FeedPage', () => {
     await userEvent.click(screen.getByRole('button', { name: 'Criar post' }));
     await userEvent.type(screen.getByLabelText('Buscar música'), 'help');
     await userEvent.click(await screen.findByRole('button', { name: /Help!/ }));
-    await userEvent.click(screen.getByLabelText('8 de 10'));
+    await userEvent.click(screen.getByRole('button', { name: 'Estrela 4' }));
     await userEvent.click(screen.getByRole('button', { name: 'Publicar' }));
 
     await waitFor(() => expect(postsApi.feed).toHaveBeenCalledTimes(2));

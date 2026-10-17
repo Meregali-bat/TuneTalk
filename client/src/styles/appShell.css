@@ -917,7 +917,7 @@ button.track-row:hover {
   }
 }
 
-/* Campo de nota: cada estrela tem duas metades clicáveis sobre o desenho da estrela. */
+/* Campo de nota: cada estrela é um botão; tocar avança meia → cheia → vazia. */
 .rating-input {
   display: flex;
   flex-direction: column;
@@ -925,48 +925,35 @@ button.track-row:hover {
   gap: .4rem;
 }
 
-.rating-input__controls {
-  display: flex;
-  align-items: center;
-  gap: .75rem;
-}
-
-.rating-input__zero {
-  display: grid;
-  place-items: center;
-  width: 2.25rem;
-  height: 2.25rem;
-  border: 1px solid var(--linhas);
-  border-radius: 50%;
-  color: var(--texto-suave);
-  font-weight: 600;
-  cursor: pointer;
-
-  &.is-checked {
-    border-color: var(--destaque);
-    background: var(--destaque);
-    color: var(--background);
-  }
-
-  &:focus-within {
-    outline: 2px solid var(--destaque-claro);
-    outline-offset: 2px;
-  }
-}
-
 .rating-input__stars {
   display: flex;
-  gap: .2rem;
+  gap: .25rem;
 }
 
 .rating-star {
   position: relative;
   display: inline-block;
-  width: 2.4rem;
-  height: 2.4rem;
-  font-size: 2.4rem;
-  line-height: 1;
+  width: 2.6rem;
+  height: 2.6rem;
+  padding: 0;
+  border: none;
+  border-radius: 6px;
+  background: none;
   color: var(--destaque);
+  font-size: 2.6rem;
+  line-height: 1;
+  cursor: pointer;
+  -webkit-tap-highlight-color: transparent;
+  transition: transform .1s ease;
+
+  &:active {
+    transform: scale(.92);
+  }
+
+  &:focus-visible {
+    outline: 2px solid var(--destaque-claro);
+    outline-offset: 2px;
+  }
 }
 
 .rating-star__empty,
@@ -984,29 +971,7 @@ button.track-row:hover {
 .rating-star__fill {
   height: 100%;
   overflow: hidden;
-  transition: width .1s ease;
-}
-
-.rating-star__half {
-  position: absolute;
-  top: 0;
-  width: 50%;
-  height: 100%;
-  cursor: pointer;
-
-  &:focus-within {
-    outline: 2px solid var(--destaque-claro);
-    outline-offset: 1px;
-    border-radius: 4px;
-  }
-}
-
-.rating-star__half--left {
-  left: 0;
-}
-
-.rating-star__half--right {
-  right: 0;
+  transition: width .12s ease;
 }
 
 .rating-input__caption {

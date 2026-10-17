@@ -14,33 +14,44 @@ const help = { id: 1, titulo: 'Help!', artista: 'The Beatles', capa: 'help.jpg',
 const yesterday = { id: 2, titulo: 'Yesterday', artista: 'The Beatles', capa: 'y.jpg', duracao: 125, preview: null };
 
 describe('StarRatingInput (nota de 0 a 10)', () => {
-  it('cada metade de estrela vale um ponto', async () => {
+  const tap = async (onChange, value, estrela) => {
+    const { unmount } = render(<StarRatingInput value={value} onChange={onChange} />);
+    await userEvent.click(screen.getByRole('button', { name: `Estrela ${estrela}` }));
+    unmount();
+    return onChange.mock.calls.at(-1)[0];
+  };
+
+  it('1 toque deixa meia estrela, 2 enche, 3 esvazia', async () => {
     const onChange = vi.fn();
-    render(<StarRatingInput value={null} onChange={onChange} />);
-
-    await userEvent.click(screen.getByLabelText('7 de 10'));
-    await userEvent.click(screen.getByLabelText('10 de 10'));
-
-    expect(onChange.mock.calls.map(([nota]) => nota)).toEqual([7, 10]);
+    expect(await tap(onChange, null, 1)).toBe(1);
+    expect(await tap(onChange, 1, 1)).toBe(2);
+    expect(await tap(onChange, 2, 1)).toBe(0);
+    expect(await tap(onChange, 0, 1)).toBe(1);
   });
 
-  it('permite dar zero', async () => {
+  it('as estrelas anteriores ficam cheias e o ciclo vale para a estrela tocada', async () => {
     const onChange = vi.fn();
-    render(<StarRatingInput value={null} onChange={onChange} />);
-    await userEvent.click(screen.getByLabelText('0 de 10'));
-    expect(onChange).toHaveBeenCalledWith(0);
+    expect(await tap(onChange, null, 4)).toBe(7);
+    expect(await tap(onChange, 7, 4)).toBe(8);
+    expect(await tap(onChange, 8, 4)).toBe(6);
+    expect(await tap(onChange, 7, 2)).toBe(3);
+    expect(await tap(onChange, 3, 5)).toBe(9);
   });
 
-  it('marca a nota atual e mostra número e descrição', () => {
+  it('não tem botão de zero', () => {
+    render(<StarRatingInput value={null} onChange={() => {}} />);
+    expect(screen.getAllByRole('button')).toHaveLength(5);
+  });
+
+  it('mostra número e descrição da nota atual', () => {
     render(<StarRatingInput value={7} onChange={() => {}} />);
-    expect(screen.getByRole('radiogroup', { name: 'Nota de 0 a 10' })).toBeInTheDocument();
-    expect(screen.getByLabelText('7 de 10')).toBeChecked();
+    expect(screen.getByRole('group', { name: 'Nota de 0 a 10' })).toBeInTheDocument();
     expect(screen.getByText('7/10 · Bom')).toBeInTheDocument();
   });
 
-  it('sem nota explica como escolher', () => {
+  it('sem nota explica como funciona', () => {
     render(<StarRatingInput value={null} onChange={() => {}} />);
-    expect(screen.getByText('Toque nas estrelas: cada metade vale 1 ponto.')).toBeInTheDocument();
+    expect(screen.getByText('Toque numa estrela: 1 toque deixa meia, 2 enche, 3 esvazia.')).toBeInTheDocument();
   });
 });
 
@@ -119,7 +130,8 @@ describe('CreatePost', () => {
     const publicar = screen.getByRole('button', { name: 'Publicar' });
     expect(publicar).toBeDisabled();
 
-    await userEvent.click(screen.getByLabelText('7 de 10'));
+    await userEvent.click(screen.getByRole('button', { name: 'Estrela 4' }));
+    expect(screen.getByText('7/10 · Bom')).toBeInTheDocument();
     expect(publicar).toBeEnabled();
   });
 
@@ -147,7 +159,7 @@ describe('CreatePost', () => {
     await chooseHelp();
 
     await userEvent.type(screen.getByLabelText('O que você achou?'), '  clássico  ');
-    await userEvent.click(screen.getByLabelText('9 de 10'));
+    await userEvent.click(screen.getByRole('button', { name: 'Estrela 5' }));
     await userEvent.click(screen.getByRole('button', { name: 'Publicar' }));
 
     expect(postsApi.create).toHaveBeenCalledWith({
@@ -169,7 +181,8 @@ describe('CreatePost', () => {
     render(<CreatePost onCreated={vi.fn()} />);
     await chooseHelp();
     await userEvent.type(screen.getByLabelText('O que você achou?'), 'ótima');
-    await userEvent.click(screen.getByLabelText('6 de 10'));
+    await userEvent.dblClick(screen.getByRole('button', { name: 'Estrela 3' }));
+    expect(screen.getByText('6/10 · Bom')).toBeInTheDocument();
     await userEvent.click(screen.getByRole('button', { name: 'Publicar' }));
 
     expect(await screen.findByRole('alert')).toHaveTextContent('A nota deve ser um número inteiro de 0 a 10.');
