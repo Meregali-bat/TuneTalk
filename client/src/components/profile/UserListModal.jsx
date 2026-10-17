@@ -8,29 +8,30 @@ export function UserListModal({ open, title, users, seguindoIds, onClose, onFoll
 
   return (
     <Modal open={open} title={title} onClose={onClose} centered>
-      {users.length === 0 && <p>Ninguém por aqui ainda.</p>}
-      {users.map((usuario) => (
-        <div key={usuario.id} className="d-flex justify-content-between mb-3">
-          <Link style={{ color: '#fff' }} to={`/perfil/${usuario.id}`} onClick={onClose}>
-            <div className="d-flex align-items-center">
-              <img
-                src={usuario.fotoPerfil}
-                alt="Foto de perfil do usuário"
-                className="user-profile-picture rounded-circle"
-                style={{ marginRight: '.5rem' }}
-              />
-              <p>{usuario.nome}</p>
-            </div>
-          </Link>
-          {usuario.id !== me.id && (
-            <FollowButton
-              userId={usuario.id}
-              following={seguindoIds.includes(usuario.id)}
-              onChange={onFollowChange}
-            />
-          )}
-        </div>
-      ))}
+      {users.length === 0 && <p className="notif-status">Ninguém por aqui ainda.</p>}
+      {users.length > 0 && (
+        <ul className="user-list">
+          {users.map((usuario) => (
+            <li key={usuario.id} className="user-row">
+              <Link to={`/perfil/${usuario.id}`} className="user-row__link" onClick={onClose}>
+                <img src={usuario.fotoPerfil} alt="" className="user-row__avatar" />
+                <span className="user-row__info">
+                  <span className="user-row__name">{usuario.nome}</span>
+                  {usuario.bio && <span className="user-row__bio">{usuario.bio}</span>}
+                </span>
+              </Link>
+              {usuario.id !== me.id && (
+                <FollowButton
+                  size="sm"
+                  userId={usuario.id}
+                  following={seguindoIds.includes(usuario.id)}
+                  onChange={onFollowChange}
+                />
+              )}
+            </li>
+          ))}
+        </ul>
+      )}
     </Modal>
   );
 }

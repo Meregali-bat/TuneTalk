@@ -1,7 +1,7 @@
 import { useState } from 'react';
 import { usersApi } from '../../api/index.js';
 
-export function FollowButton({ userId, following, onChange }) {
+export function FollowButton({ userId, following, onChange, size = 'md' }) {
   const [pending, setPending] = useState(false);
 
   const toggle = async () => {
@@ -18,11 +18,12 @@ export function FollowButton({ userId, following, onChange }) {
   return (
     <button
       type="button"
-      className={following ? 'botao-seguindo' : 'botao-seguir'}
+      className={`follow-button follow-button--${size}${following ? ' is-following' : ''}`}
+      aria-pressed={following}
       disabled={pending}
       onClick={toggle}
     >
-      <span>{following ? 'Seguindo' : 'Seguir'}</span>
+      {following ? 'Seguindo' : 'Seguir'}
     </button>
   );
 }

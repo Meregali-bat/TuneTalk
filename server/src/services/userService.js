@@ -1,6 +1,8 @@
 import { badRequest, conflict, notFound } from '../errors.js';
 import { USERNAME_MESSAGES, checkUsername } from '../../../shared/usernameRules.js';
 
+export const BIO_MAX = 255;
+
 export function createUserService({ users, follows, postService, notifications }) {
   const findOrFail = async (id) => {
     const user = await users.findById(id);
@@ -53,6 +55,7 @@ export function createUserService({ users, follows, postService, notifications }
         bio: bio ?? atual.bio,
         fotoPerfil: fotoPerfil || atual.fotoPerfil,
       };
+      if ((changes.bio ?? '').length > BIO_MAX) throw badRequest(`A bio pode ter no máximo ${BIO_MAX} caracteres.`);
       // Nomes antigos fora das regras atuais continuam valendo enquanto não forem trocados.
       if (changes.nome !== atual.nome) await assertUsernameAvailable(changes.nome, usuarioId);
       await users.update(usuarioId, changes);

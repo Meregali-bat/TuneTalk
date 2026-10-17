@@ -1,7 +1,20 @@
-import { useEffect, useRef, useState } from 'react';
+import { useEffect, useId, useRef, useState } from 'react';
 import { usersApi } from '../../api/index.js';
+import { Modal } from '../common/Modal.jsx';
+import { USERNAME_MESSAGES, checkUsername } from '../../../../shared/usernameRules.js';
+
+const BIO_MAX = 255;
+
+// Nomes antigos fora das regras atuais continuam valendo enquanto não forem trocados.
+function usernameProblem(nome, original) {
+  if (nome === original) return '';
+  const broken = Object.entries(checkUsername(nome)).find(([, ok]) => !ok);
+  return broken ? USERNAME_MESSAGES[broken[0]] : '';
+}
 
 export function EditProfileModal({ open, usuario, onClose, onSaved }) {
+  const nomeId = useId();
+  const bioId = useId();
   const [nome, setNome] = useState(usuario.nome ?? '');
   const [bio, setBio] = useState(usuario.bio ?? '');
   const [foto, setFoto] = useState(null);
@@ -17,12 +30,13 @@ export function EditProfileModal({ open, usuario, onClose, onSaved }) {
     return () => URL.revokeObjectURL(url);
   }, [foto]);
 
-  if (!open) return null;
+  const problem = usernameProblem(nome.trim(), usuario.nome);
 
   const submit = async (event) => {
     event.preventDefault();
+    if (problem) return;
     const form = new FormData();
-    form.append('nome', nome);
+    form.append('nome', nome.trim());
     form.append('bio', bio);
     if (foto) form.append('foto', foto);
 
@@ -32,51 +46,70 @@ export function EditProfileModal({ open, usuario, onClose, onSaved }) {
       onSaved(await usersApi.updateMe(form));
     } catch (err) {
       setError(err.message);
-    } finally {
       setSaving(false);
     }
   };
 
   return (
-    <>
-      <div id="overlay" style={{ display: 'block', position: 'fixed', width: '100%', height: '100%', top: 0, left: 0, background: 'rgba(0, 0, 0, 0.5)' }} onClick={onClose} />
-      <div id="popup" style={{ display: 'block' }}>
-        <form onSubmit={submit}>
-          <div className="row d-flex">
-            <div className="header-editar-perfil">
-              <div>
-                <button type="button" aria-label="Fechar edição" style={{ background: 'none', border: 'none', color: 'inherit' }} onClick={onClose}>
-                  <i style={{ cursor: 'pointer', fontSize: '1.2rem' }} className="bi bi-x-lg" />
-                </button>
-                <span>Editar perfil</span>
-              </div>
-              <button id="btn-salvar-edicao" type="submit" disabled={saving}>Salvar</button>
-            </div>
-            <div className="img-inputs">
-              <img
-                className="profile-picture"
-                src={preview ?? usuario.fotoPerfil}
-                alt="Foto de perfil"
-                style={{ cursor: 'pointer' }}
-                onClick={() => fileInput.current?.click()}
-              />
-              <input
-                ref={fileInput}
-                type="file"
-                accept="image/*"
-                aria-label="Escolher foto"
-                style={{ display: 'none' }}
-                onChange={(event) => setFoto(event.target.files[0] ?? null)}
-              />
-              <div className="editar-perfil-inputs">
-                {error && <div role="alert" className="alert m-0">{error}</div>}
-                <input type="text" id="nome" aria-label="Nome" value={nome} onChange={(event) => setNome(event.target.value)} />
-                <input type="text" id="bio" aria-label="Bio" value={bio} onChange={(event) => setBio(event.target.value)} />
-              </div>
-            </div>
+    <Modal open={open} title="Editar perfil" onClose={onClose} variant="sheet">
+      <form className="edit-profile" onSubmit={submit}>
+        <div className="edit-profile__photo">
+          <img src={preview ?? usuario.fotoPerfil} alt="Foto de perfil" className="edit-profile__avatar" />
+          <button type="button" className="composer-link" onClick={() => fileInput.current?.click()}>
+            <i className="bi bi-camera" aria-hidden="true" /> Trocar foto
+          </button>
+          <input
+            ref={fileInput}
+            type="file"
+            accept="image/*"
+            aria-label="Trocar foto"
+            className="visually-hidden"
+            tabIndex={-1}
+            onChange={(event) => setFoto(event.target.files[0] ?? null)}
+          />
+        </div>
+
+        <div className="composer-field">
+          <label htmlFor={nomeId}>Nome de usuário</label>
+          <div className="username-field">
+            <span aria-hidden="true">@</span>
+            <input
+              id={nomeId}
+              type="text"
+              autoCapitalize="none"
+              spellCheck="false"
+              maxLength={30}
+              aria-invalid={problem ? true : undefined}
+              aria-describedby={problem ? `${nomeId}-erro` : undefined}
+              value={nome}
+              onChange={(event) => setNome(event.target.value)}
+            />
           </div>
-        </form>
-      </div>
-    </>
+          {problem && <p id={`${nomeId}-erro`} className="field-error">{problem}</p>}
+        </div>
+
+        <div className="composer-field">
+          <label htmlFor={bioId}>Bio</label>
+          <textarea
+            id={bioId}
+            rows={3}
+            maxLength={BIO_MAX}
+            placeholder="Conte o que você gosta de ouvir"
+            value={bio}
+            onChange={(event) => setBio(event.target.value)}
+          />
+          <span className="composer-counter">{bio.length}/{BIO_MAX}</span>
+        </div>
+
+        {error && <p role="alert" className="composer-error">{error}</p>}
+
+        <div className="edit-profile__actions">
+          <button type="button" className="composer-link" onClick={onClose}>Cancelar</button>
+          <button type="submit" className="composer-submit" disabled={saving || Boolean(problem)}>
+            {saving ? 'Salvando…' : 'Salvar'}
+          </button>
+        </div>
+      </form>
+    </Modal>
   );
 }

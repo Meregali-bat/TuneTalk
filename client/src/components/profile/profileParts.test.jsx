@@ -1,5 +1,5 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest';
-import { screen } from '@testing-library/react';
+import { screen, within } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { EditProfileModal } from './EditProfileModal.jsx';
 import { UserListModal } from './UserListModal.jsx';
@@ -19,52 +19,72 @@ describe('EditProfileModal', () => {
     URL.revokeObjectURL = vi.fn();
   });
 
-  it('vem preenchido com os dados atuais', () => {
-    renderWithProviders(<EditProfileModal open usuario={ana} onClose={vi.fn()} onSaved={vi.fn()} />);
-    expect(screen.getByLabelText('Nome')).toHaveValue('Ana');
-    expect(screen.getByLabelText('Bio')).toHaveValue('oi');
-    expect(screen.getByAltText('Foto de perfil')).toHaveAttribute('src', 'ana.png');
+  const renderModal = (props = {}) =>
+    renderWithProviders(<EditProfileModal open usuario={ana} onClose={vi.fn()} onSaved={vi.fn()} {...props} />);
+
+  it('abre como diálogo preenchido com os dados atuais', () => {
+    renderModal();
+    const dialog = screen.getByRole('dialog', { name: 'Editar perfil' });
+    expect(within(dialog).getByLabelText('Nome de usuário')).toHaveValue('Ana');
+    expect(within(dialog).getByLabelText('Bio')).toHaveValue('oi');
+    expect(within(dialog).getByAltText('Foto de perfil')).toHaveAttribute('src', 'ana.png');
+    expect(within(dialog).getByText('2/255')).toBeInTheDocument();
   });
 
   it('mostra a prévia da foto escolhida e salva com FormData', async () => {
-    usersApi.updateMe.mockResolvedValue({ ...ana, nome: 'Ana B' });
+    usersApi.updateMe.mockResolvedValue({ ...ana, nome: 'ana_b' });
     const onSaved = vi.fn();
-    renderWithProviders(<EditProfileModal open usuario={ana} onClose={vi.fn()} onSaved={onSaved} />);
+    renderModal({ onSaved });
 
     const file = new File(['img'], 'nova.png', { type: 'image/png' });
-    await userEvent.upload(screen.getByLabelText('Escolher foto'), file);
+    await userEvent.upload(screen.getByLabelText('Trocar foto'), file);
     expect(screen.getByAltText('Foto de perfil')).toHaveAttribute('src', 'blob:preview');
 
-    await userEvent.clear(screen.getByLabelText('Nome'));
-    await userEvent.type(screen.getByLabelText('Nome'), 'Ana B');
+    await userEvent.clear(screen.getByLabelText('Nome de usuário'));
+    await userEvent.type(screen.getByLabelText('Nome de usuário'), 'ana_b');
     await userEvent.click(screen.getByRole('button', { name: 'Salvar' }));
 
     const form = usersApi.updateMe.mock.calls[0][0];
-    expect(form.get('nome')).toBe('Ana B');
+    expect(form.get('nome')).toBe('ana_b');
     expect(form.get('bio')).toBe('oi');
     expect(form.get('foto')).toBe(file);
-    expect(onSaved).toHaveBeenCalledWith({ ...ana, nome: 'Ana B' });
+    expect(onSaved).toHaveBeenCalledWith({ ...ana, nome: 'ana_b' });
   });
 
   it('não envia foto quando nenhuma foi escolhida', async () => {
     usersApi.updateMe.mockResolvedValue(ana);
-    renderWithProviders(<EditProfileModal open usuario={ana} onClose={vi.fn()} onSaved={vi.fn()} />);
+    renderModal();
     await userEvent.click(screen.getByRole('button', { name: 'Salvar' }));
     expect(usersApi.updateMe.mock.calls[0][0].has('foto')).toBe(false);
   });
 
-  it('mostra o erro do servidor', async () => {
-    usersApi.updateMe.mockRejectedValue(new Error('Erro ao fazer o upload da imagem'));
-    renderWithProviders(<EditProfileModal open usuario={ana} onClose={vi.fn()} onSaved={vi.fn()} />);
-    await userEvent.click(screen.getByRole('button', { name: 'Salvar' }));
-    expect(await screen.findByRole('alert')).toHaveTextContent('Erro ao fazer o upload da imagem');
+  it('avisa as regras quando o nome novo não serve e não deixa salvar', async () => {
+    renderModal();
+    await userEvent.clear(screen.getByLabelText('Nome de usuário'));
+    await userEvent.type(screen.getByLabelText('Nome de usuário'), 'ana b');
+
+    expect(screen.getByText('Use só letras sem acento, números, ponto e underline.')).toBeInTheDocument();
+    expect(screen.getByRole('button', { name: 'Salvar' })).toBeDisabled();
   });
 
-  it('fecha pelo X', async () => {
+  it('limita a bio a 255 caracteres', () => {
+    renderModal();
+    expect(screen.getByLabelText('Bio')).toHaveAttribute('maxLength', '255');
+  });
+
+  it('mostra o erro do servidor', async () => {
+    usersApi.updateMe.mockRejectedValue(new Error('Esse nome de usuário já está em uso.'));
+    renderModal();
+    await userEvent.click(screen.getByRole('button', { name: 'Salvar' }));
+    expect(await screen.findByRole('alert')).toHaveTextContent('Esse nome de usuário já está em uso.');
+  });
+
+  it('fecha pelo X ou por "Cancelar"', async () => {
     const onClose = vi.fn();
-    renderWithProviders(<EditProfileModal open usuario={ana} onClose={onClose} onSaved={vi.fn()} />);
-    await userEvent.click(screen.getByRole('button', { name: 'Fechar edição' }));
-    expect(onClose).toHaveBeenCalled();
+    renderModal({ onClose });
+    await userEvent.click(screen.getByRole('button', { name: 'Fechar' }));
+    await userEvent.click(screen.getByRole('button', { name: 'Cancelar' }));
+    expect(onClose).toHaveBeenCalledTimes(2);
   });
 });
 

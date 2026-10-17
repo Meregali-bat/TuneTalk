@@ -87,6 +87,14 @@ describe('userService', () => {
       expect(updated).toEqual({ id: 1, nome: 'ana_b', bio: 'nova', fotoPerfil: 'nova.png' });
     });
 
+    it('limita a bio a 255 caracteres', async () => {
+      await expect(service.updateProfile(1, { bio: 'a'.repeat(256) })).rejects.toMatchObject({
+        status: 400,
+        message: 'A bio pode ter no máximo 255 caracteres.',
+      });
+      expect(users.update).not.toHaveBeenCalled();
+    });
+
     it('valida o nome novo com as mesmas regras do nome de usuário', async () => {
       await expect(service.updateProfile(1, { nome: 'ana b' })).rejects.toMatchObject({ status: 400 });
       users.isNameTaken.mockResolvedValue(true);
