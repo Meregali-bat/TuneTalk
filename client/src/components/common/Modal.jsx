@@ -1,6 +1,7 @@
 import { useEffect, useId } from 'react';
 
-export function Modal({ open, title, onClose, children, centered = false }) {
+// variant "panel": painel ancorado no canto superior direito (notificações); no celular ocupa a largura.
+export function Modal({ open, title, onClose, children, centered = false, variant = 'dialog' }) {
   const titleId = useId();
 
   useEffect(() => {
@@ -14,6 +15,10 @@ export function Modal({ open, title, onClose, children, centered = false }) {
 
   if (!open) return null;
 
+  const dialogClass = ['modal-dialog', 'app-modal', `app-modal--${variant}`, centered && 'modal-dialog-centered']
+    .filter(Boolean)
+    .join(' ');
+
   return (
     <>
       <div className="modal-backdrop fade show" />
@@ -22,12 +27,12 @@ export function Modal({ open, title, onClose, children, centered = false }) {
         data-testid="modal-backdrop"
         onClick={(event) => event.target === event.currentTarget && onClose()}
       >
-        <div className={`modal-dialog${centered ? ' modal-dialog-centered' : ''}`}>
+        <div className={dialogClass}>
           <div className="modal-content" role="dialog" aria-modal="true" aria-labelledby={titleId}>
             <div className="modal-header">
-              <h5 className="modal-title" id={titleId}>{title}</h5>
-              <button type="button" className="botao-seguindo" style={{ border: 'none' }} aria-label="Fechar" onClick={onClose}>
-                <i style={{ cursor: 'pointer', fontSize: '1.2rem' }} className="bi bi-x-lg" />
+              <h2 className="modal-title" id={titleId}>{title}</h2>
+              <button type="button" className="icon-button" aria-label="Fechar" onClick={onClose}>
+                <i className="bi bi-x-lg" aria-hidden="true" />
               </button>
             </div>
             <div className="modal-body">{children}</div>

@@ -21,12 +21,12 @@ export function LikeButton({ postId, likes, curtido }) {
   return (
     <button
       type="button"
-      className="likes-count like-button btn"
+      className={`post-action like-button${state.curtido ? ' is-active' : ''}`}
       aria-label={state.curtido ? 'Descurtir' : 'Curtir'}
       aria-pressed={state.curtido}
       onClick={toggle}
     >
-      <i className={`${state.curtido ? 'bi-heart-fill' : 'bi bi-heart'} botao-interacao`} />
+      <i className={state.curtido ? 'bi bi-heart-fill' : 'bi bi-heart'} aria-hidden="true" />
       <span className="numero">{state.likes}</span>
     </button>
   );

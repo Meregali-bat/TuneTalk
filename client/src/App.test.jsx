@@ -56,14 +56,14 @@ describe('rotas da aplicação', () => {
 
   it('usuário logado na raiz vai para o feed com o header', async () => {
     renderAt('/');
-    expect(await screen.findByText('Nenhum post por aqui ainda.')).toBeInTheDocument();
+    expect(await screen.findByRole('heading', { name: 'Ainda não há posts' })).toBeInTheDocument();
     expect(screen.getByRole('button', { name: 'Notificações' })).toBeInTheDocument();
     expect(postsApi.feed).toHaveBeenCalledWith('foryou');
   });
 
   it('/seguindo usa o feed seguindo', async () => {
     renderAt('/seguindo');
-    await screen.findByText('Nenhum post por aqui ainda.');
+    await screen.findByRole('heading', { name: 'Nada de quem você segue ainda' });
     expect(postsApi.feed).toHaveBeenCalledWith('seguindo');
   });
 

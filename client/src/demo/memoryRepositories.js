@@ -172,7 +172,9 @@ export function createMemoryRepositories(state, onChange) {
       return state.notificacoes
         .filter((n) => n.destinatarioId === usuarioId)
         .sort(byIdDesc)
-        .map((n) => ({ id: n.id, tipo: n.tipo, conteudo: n.conteudo, lida: n.lida, postId: n.postId, autor: author(n.autorId) }));
+        .map((n) => ({
+          id: n.id, tipo: n.tipo, conteudo: n.conteudo, lida: n.lida, postId: n.postId, data: n.createdAt, autor: author(n.autorId),
+        }));
     },
     async countUnread(usuarioId) {
       return state.notificacoes.filter((n) => n.destinatarioId === usuarioId && !n.lida).length;
@@ -182,7 +184,9 @@ export function createMemoryRepositories(state, onChange) {
       changed();
     },
     async create({ destinatarioId, autorId, tipo, conteudo, postId = null }) {
-      state.notificacoes.push({ id: nextId('notificacoes'), destinatarioId, autorId, tipo, conteudo, lida: false, postId });
+      state.notificacoes.push({
+        id: nextId('notificacoes'), destinatarioId, autorId, tipo, conteudo, lida: false, postId, createdAt: new Date().toISOString(),
+      });
       changed();
     },
     async removeLike(postId, usuarioId) {

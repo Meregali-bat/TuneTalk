@@ -27,14 +27,22 @@ const musicPost = {
 describe('PostCard', () => {
   beforeEach(() => vi.clearAllMocks());
 
-  it('mostra autor, data relativa, texto e dados da música', () => {
+  it('é um artigo identificado pelo autor e pela música', () => {
+    renderWithProviders(<PostCard post={musicPost} />);
+    expect(screen.getByRole('article', { name: 'Post de Bia sobre Help!' })).toBeInTheDocument();
+  });
+
+  it('mostra autor, data relativa em português, texto e dados da música', () => {
     renderWithProviders(<PostCard post={musicPost} />);
 
     expect(screen.getByText('Bia')).toBeInTheDocument();
-    expect(screen.getByText('2 hours ago')).toBeInTheDocument();
+    const time = screen.getByText('há 2 horas');
+    expect(time.tagName).toBe('TIME');
+    expect(time).toHaveAttribute('dateTime', musicPost.data);
     expect(screen.getByText('que som')).toBeInTheDocument();
     expect(screen.getByRole('heading', { name: 'Help!' })).toBeInTheDocument();
-    expect(screen.getByText(/The Beatles • música • 2 min •/)).toBeInTheDocument();
+    expect(screen.getByText('The Beatles • música • 2 min')).toBeInTheDocument();
+    expect(screen.getByLabelText('Nota 4 de 5')).toBeInTheDocument();
     expect(screen.getByAltText('Poster da música')).toHaveAttribute('src', 'help.jpg');
     expect(screen.getByRole('button', { name: 'Tocar prévia' })).toBeInTheDocument();
   });
@@ -50,7 +58,7 @@ describe('PostCard', () => {
       <PostCard post={{ ...musicPost, tipo: 'album', titulo: 'Abbey Road', capa: 'abbey.jpg', releaseDate: '1969-09-', preview: null }} />,
     );
     expect(screen.getByRole('heading', { name: 'Abbey Road' })).toBeInTheDocument();
-    expect(screen.getByText(/The Beatles • album • 1969 •/)).toBeInTheDocument();
+    expect(screen.getByText('The Beatles • álbum • 1969')).toBeInTheDocument();
     expect(screen.getByAltText('Poster do álbum')).toBeInTheDocument();
     expect(screen.queryByRole('button', { name: 'Tocar prévia' })).toBeNull();
   });
@@ -65,6 +73,11 @@ describe('PostCard', () => {
 
     expect(postsApi.remove).toHaveBeenCalledWith(10);
     expect(onDeleted).toHaveBeenCalledWith(10);
+  });
+
+  it('não mostra parágrafo vazio quando o post não tem texto', () => {
+    renderWithProviders(<PostCard post={{ ...musicPost, texto: '' }} />);
+    expect(screen.queryByTestId('post-text')).toBeNull();
   });
 
   it('usa a contagem de comentários informada quando fornecida', () => {

@@ -38,7 +38,7 @@ describe('FeedPage', () => {
 
     expect(await screen.findByText('post 1')).toBeInTheDocument();
     expect(postsApi.feed).toHaveBeenCalledWith('foryou');
-    expect(screen.getByRole('link', { name: 'Foryou' })).toHaveAttribute('aria-current', 'page');
+    expect(screen.getByRole('link', { name: 'Para você' })).toHaveAttribute('aria-current', 'page');
     expect(screen.getByRole('link', { name: 'Seguindo' })).toHaveAttribute('href', '/seguindo');
   });
 
@@ -49,16 +49,46 @@ describe('FeedPage', () => {
     expect(screen.getByRole('link', { name: 'Seguindo' })).toHaveAttribute('aria-current', 'page');
   });
 
-  it('mostra mensagem quando o feed está vazio', async () => {
-    postsApi.feed.mockResolvedValue([]);
-    renderWithProviders(<FeedPage feed="seguindo" />);
-    expect(await screen.findByText('Nenhum post por aqui ainda.')).toBeInTheDocument();
+  it('mostra posts de exemplo carregando enquanto busca', async () => {
+    let resolve;
+    postsApi.feed.mockReturnValue(new Promise((r) => { resolve = r; }));
+    renderWithProviders(<FeedPage feed="foryou" />);
+
+    expect(screen.getByRole('status')).toHaveTextContent('Carregando posts');
+    resolve([post(1)]);
+    expect(await screen.findByText('post 1')).toBeInTheDocument();
+    expect(screen.queryByRole('status')).toBeNull();
   });
 
-  it('mostra erro quando o feed falha', async () => {
-    postsApi.feed.mockRejectedValue(new Error('Erro interno do servidor.'));
+  it('feed "para você" vazio convida a postar', async () => {
+    postsApi.feed.mockResolvedValue([]);
+    renderWithProviders(<FeedPage feed="foryou" />);
+    expect(await screen.findByRole('heading', { name: 'Ainda não há posts' })).toBeInTheDocument();
+    expect(screen.getByRole('button', { name: 'Fazer o primeiro post' })).toBeInTheDocument();
+  });
+
+  it('feed "seguindo" vazio sugere ver os posts para você', async () => {
+    postsApi.feed.mockResolvedValue([]);
+    renderWithProviders(<FeedPage feed="seguindo" />);
+    expect(await screen.findByRole('heading', { name: 'Nada de quem você segue ainda' })).toBeInTheDocument();
+    expect(screen.getByRole('link', { name: 'Ver posts para você' })).toHaveAttribute('href', '/foryou');
+  });
+
+  it('mostra erro quando o feed falha e permite tentar de novo', async () => {
+    postsApi.feed.mockRejectedValueOnce(new Error('Erro interno do servidor.')).mockResolvedValueOnce([post(1)]);
     renderWithProviders(<FeedPage feed="foryou" />);
     expect(await screen.findByRole('alert')).toHaveTextContent('Erro interno do servidor.');
+
+    await userEvent.click(screen.getByRole('button', { name: 'Tentar de novo' }));
+
+    expect(await screen.findByText('post 1')).toBeInTheDocument();
+  });
+
+  it('o botão do estado vazio abre a criação de post', async () => {
+    postsApi.feed.mockResolvedValue([]);
+    renderWithProviders(<FeedPage feed="foryou" />);
+    await userEvent.click(await screen.findByRole('button', { name: 'Fazer o primeiro post' }));
+    expect(screen.getByPlaceholderText('Digite a música')).toBeInTheDocument();
   });
 
   it('remove da lista o post apagado', async () => {

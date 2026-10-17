@@ -113,8 +113,11 @@ function PostForm({ track, onCreated }) {
   );
 }
 
-export function CreatePost({ onCreated }) {
-  const [open, setOpen] = useState(false);
+// Pode ser controlado de fora (open/onOpenChange), ex.: botão do feed vazio; sem isso, controla o próprio estado.
+export function CreatePost({ onCreated, open: controlledOpen, onOpenChange }) {
+  const [internalOpen, setInternalOpen] = useState(false);
+  const open = controlledOpen ?? internalOpen;
+  const setOpen = onOpenChange ?? setInternalOpen;
   const [track, setTrack] = useState(null);
 
   const close = () => {
@@ -128,9 +131,10 @@ export function CreatePost({ onCreated }) {
   };
 
   return (
-    <div className="fixed-bottom mb-3">
-      <button type="button" className="botao-criarpost border-0" aria-label="Criar post" onClick={() => setOpen(true)}>
-        <i className="bi bi-music-note" />
+    <div className="composer">
+      <button type="button" className="composer-fab" aria-label="Criar post" onClick={() => setOpen(true)}>
+        <i className="bi bi-music-note-beamed" aria-hidden="true" />
+        <span className="composer-fab__label" aria-hidden="true">Postar</span>
       </button>
       {open && (
         <>

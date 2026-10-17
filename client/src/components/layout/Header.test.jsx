@@ -9,10 +9,18 @@ vi.mock('../../api/index.js', () => ({
   notificationsApi: { list: vi.fn(), unreadCount: vi.fn(), readAll: vi.fn() },
 }));
 
+const minutesAgo = (n) => new Date(Date.now() - n * 60 * 1000).toISOString();
+
 const notifications = [
-  { id: 1, tipo: 'new_follower', conteudo: 'seguiu você', lida: false, postId: null, autor: { id: 3, nome: 'Bia', fotoPerfil: 'b.png' } },
-  { id: 2, tipo: 'like', conteudo: 'curtiu seu post', lida: false, postId: 10, autor: { id: 4, nome: 'Caio', fotoPerfil: 'c.png' } },
+  { id: 3, tipo: 'comment', conteudo: 'comentou no seu post', lida: false, postId: 10, data: minutesAgo(5), autor: { id: 5, nome: 'duda', fotoPerfil: 'd.png' } },
+  { id: 2, tipo: 'like', conteudo: 'curtiu seu post', lida: false, postId: 10, data: minutesAgo(120), autor: { id: 4, nome: 'caio', fotoPerfil: 'c.png' } },
+  { id: 1, tipo: 'new_follower', conteudo: 'seguiu você', lida: true, postId: null, data: minutesAgo(60 * 30), autor: { id: 3, nome: 'bia', fotoPerfil: 'b.png' } },
 ];
+
+const openPanel = async () => {
+  await userEvent.click(screen.getByRole('button', { name: 'Notificações' }));
+  return screen.findByRole('dialog', { name: 'Notificações' });
+};
 
 describe('Header', () => {
   beforeEach(() => {
@@ -22,8 +30,9 @@ describe('Header', () => {
     notificationsApi.readAll.mockResolvedValue(null);
   });
 
-  it('linka para o perfil do usuário logado', () => {
+  it('tem o logo levando ao feed e o link para o próprio perfil', () => {
     renderWithProviders(<Header />);
+    expect(screen.getByRole('link', { name: 'TuneTalk, início' })).toHaveAttribute('href', '/foryou');
     expect(screen.getByRole('link', { name: 'Meu perfil' })).toHaveAttribute('href', '/perfil/1');
   });
 
@@ -39,30 +48,67 @@ describe('Header', () => {
     expect(screen.queryByTestId('unread-count')).toBeNull();
   });
 
-  it('abrir as notificações lista, marca como lidas e zera o contador', async () => {
+  it('mostra "9+" quando há muitas não lidas', async () => {
+    notificationsApi.unreadCount.mockResolvedValue(14);
     renderWithProviders(<Header />);
-    await screen.findByTestId('unread-count');
-    notificationsApi.unreadCount.mockResolvedValue(0);
-
-    await userEvent.click(screen.getByRole('button', { name: 'Notificações' }));
-
-    const dialog = await screen.findByRole('dialog', { name: 'Notificações' });
-    expect(notificationsApi.readAll).toHaveBeenCalled();
-    await waitFor(() => expect(screen.queryByTestId('unread-count')).toBeNull());
-
-    const follower = within(dialog).getByText('Bia').closest('a');
-    expect(follower).toHaveAttribute('href', '/perfil/3');
-    expect(within(dialog).getByText('seguiu você')).toBeInTheDocument();
-
-    const like = within(dialog).getByText('Caio').closest('a');
-    expect(like).toHaveAttribute('href', '/post/10');
+    expect(await screen.findByTestId('unread-count')).toHaveTextContent('9+');
   });
 
-  it('mostra mensagem quando não há notificações', async () => {
-    notificationsApi.list.mockResolvedValue([]);
-    renderWithProviders(<Header />);
-    await userEvent.click(screen.getByRole('button', { name: 'Notificações' }));
-    expect(await screen.findByText('Nenhuma notificação.')).toBeInTheDocument();
+  describe('painel de notificações', () => {
+    it('lista cada notificação com quem fez, o que fez, quando e o link certo', async () => {
+      renderWithProviders(<Header />);
+      const panel = await openPanel();
+      const items = await within(panel).findAllByRole('listitem');
+
+      expect(items.map((item) => item.textContent)).toEqual([
+        expect.stringContaining('duda comentou no seu post'),
+        expect.stringContaining('caio curtiu seu post'),
+        expect.stringContaining('bia seguiu você'),
+      ]);
+      expect(within(items[0]).getByText('há 5 minutos').tagName).toBe('TIME');
+      expect(within(items[0]).getByRole('link')).toHaveAttribute('href', '/post/10');
+      expect(within(items[2]).getByRole('link')).toHaveAttribute('href', '/perfil/3');
+    });
+
+    it('destaca as que ainda não tinham sido lidas', async () => {
+      renderWithProviders(<Header />);
+      const panel = await openPanel();
+      const items = await within(panel).findAllByRole('listitem');
+
+      expect(within(items[0]).getByText('Não lida')).toBeInTheDocument();
+      expect(within(items[1]).getByText('Não lida')).toBeInTheDocument();
+      expect(within(items[2]).queryByText('Não lida')).toBeNull();
+    });
+
+    it('busca a lista antes de marcar tudo como lido e zera o contador', async () => {
+      const order = [];
+      notificationsApi.list.mockImplementation(async () => { order.push('list'); return notifications; });
+      notificationsApi.readAll.mockImplementation(async () => { order.push('readAll'); });
+      renderWithProviders(<Header />);
+      await screen.findByTestId('unread-count');
+      notificationsApi.unreadCount.mockResolvedValue(0);
+
+      await openPanel();
+
+      await waitFor(() => expect(order).toEqual(['list', 'readAll']));
+      await waitFor(() => expect(screen.queryByTestId('unread-count')).toBeNull());
+    });
+
+    it('mostra estado vazio', async () => {
+      notificationsApi.list.mockResolvedValue([]);
+      renderWithProviders(<Header />);
+      const panel = await openPanel();
+      expect(await within(panel).findByText('Nada por aqui ainda')).toBeInTheDocument();
+    });
+
+    it('fecha ao escolher uma notificação', async () => {
+      renderWithProviders(<Header />);
+      const panel = await openPanel();
+      const [first] = await within(panel).findAllByRole('link');
+      await userEvent.click(first);
+      expect(screen.queryByRole('dialog', { name: 'Notificações' })).toBeNull();
+      expect(screen.getByTestId('location')).toHaveTextContent('/post/10');
+    });
   });
 
   it('o botão sair encerra a sessão e vai para /login', async () => {

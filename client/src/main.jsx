@@ -7,6 +7,7 @@ import './styles/global.css';
 import './styles/public.css';
 import './styles/authForm.css';
 import './styles/app.css';
+import './styles/appShell.css';
 import { App } from './App.jsx';
 
 async function start() {

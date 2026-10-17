@@ -105,7 +105,7 @@ export function ProfilePage() {
         <hr style={{ borderTop: '2px solid #2ba84a' }} />
         <div className="row mt-4">
           {profile.posts.map((post) => (
-            <div key={post.id} className="col-lg-10 offset-lg-1">
+            <div key={post.id} className="col-lg-10 offset-lg-1 mb-3">
               <PostCard post={post} onDeleted={removePost} />
             </div>
           ))}

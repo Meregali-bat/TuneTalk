@@ -30,13 +30,9 @@ export function ShareButton({ postId }) {
   };
 
   return (
-    <button type="button" className="btn botao-interacao" aria-label="Copiar link do post" onClick={share}>
-      <i className="bi bi-share" style={{ color: '#2ba84a' }} />
-      {copied && (
-        <small role="status" className="comment-count" style={{ color: '#2ba84a', marginLeft: '.25rem' }}>
-          Link copiado!
-        </small>
-      )}
+    <button type="button" className="post-action" aria-label="Copiar link do post" onClick={share}>
+      <i className={copied ? 'bi bi-check2' : 'bi bi-share'} aria-hidden="true" />
+      {copied && <span role="status">Link copiado!</span>}
     </button>
   );
 }

@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useState } from 'react';
+import { useCallback, useEffect, useId, useState } from 'react';
 import { Link, useLocation, useNavigate } from 'react-router-dom';
 import { useAuth } from '../../auth/AuthContext.jsx';
 import { notificationsApi } from '../../api/index.js';
@@ -6,12 +6,11 @@ import { Modal } from '../common/Modal.jsx';
 import { NotificationList } from './NotificationList.jsx';
 import { asset } from '../../utils/asset.js';
 
-const iconButtonStyle = { background: 'none', border: 'none', padding: 0 };
-
 export function Header() {
   const { user, logout } = useAuth();
   const { pathname } = useLocation();
   const navigate = useNavigate();
+  const unreadId = useId();
   const [unread, setUnread] = useState(0);
   const [open, setOpen] = useState(false);
   const [notifications, setNotifications] = useState(null);
@@ -20,17 +19,20 @@ export function Header() {
     notificationsApi.unreadCount().then(setUnread).catch(() => {});
   }, []);
 
-  // Atualiza o contador a cada navegação, como acontecia a cada carregamento de página no EJS.
+  // Atualiza o contador a cada navegação.
   useEffect(refreshUnread, [pathname, refreshUnread]);
 
+  // Busca a lista antes de marcar como lidas, para destacar o que é novo.
   const openNotifications = async () => {
     setOpen(true);
     setNotifications(null);
-    const [list] = await Promise.all([
-      notificationsApi.list(),
-      notificationsApi.readAll().then(refreshUnread),
-    ]);
-    setNotifications(list);
+    try {
+      setNotifications(await notificationsApi.list());
+      await notificationsApi.readAll();
+    } catch {
+      setNotifications((current) => current ?? []);
+    }
+    refreshUnread();
   };
 
   const handleLogout = async () => {
@@ -42,29 +44,40 @@ export function Header() {
 
   return (
     <>
-      <nav className="navbar navegacao">
-        <div className="container d-flex flex-nowrap justify-content-between">
-          <Link className="navbar-brand" to="/">
-            <img src={asset('img/tunetalk-logo.svg')} alt="TuneTalk" width="70" height="70" />
+      <div className="app-header">
+        <div className="app-header__inner">
+          <Link to="/foryou" className="app-logo" aria-label="TuneTalk, início">
+            <img src={asset('img/tunetalk-logo.svg')} alt="" />
+            <span>TuneTalk</span>
           </Link>
-          <div className="d-flex align-items-center">
-            <button type="button" className="link-header" style={iconButtonStyle} aria-label="Notificações" onClick={openNotifications}>
-              <i className="bi bi-bell" />
+          <nav className="app-header__actions" aria-label="Conta">
+            <button
+              type="button"
+              className="icon-button app-header__bell"
+              aria-label="Notificações"
+              aria-haspopup="dialog"
+              aria-describedby={unread > 0 ? unreadId : undefined}
+              onClick={openNotifications}
+            >
+              <i className="bi bi-bell" aria-hidden="true" />
+              {unread > 0 && (
+                <span className="app-badge" data-testid="unread-count" aria-hidden="true">
+                  {unread > 9 ? '9+' : unread}
+                </span>
+              )}
             </button>
-            {unread > 0 && (
-              <span className="notification-badge" data-testid="unread-count">{unread}</span>
-            )}
-            <Link className="link-header" to={`/perfil/${user.id}`} aria-label="Meu perfil">
-              <i className="bi bi-person-circle" />
+            {unread > 0 && <span id={unreadId} className="visually-hidden">{unread} não lidas</span>}
+            <Link className="icon-button" to={`/perfil/${user.id}`} aria-label="Meu perfil">
+              <i className="bi bi-person-circle" aria-hidden="true" />
             </Link>
-            <button type="button" className="link-header" style={iconButtonStyle} aria-label="Sair" onClick={handleLogout}>
-              <i className="bi bi-box-arrow-right" />
+            <button type="button" className="icon-button" aria-label="Sair" onClick={handleLogout}>
+              <i className="bi bi-box-arrow-right" aria-hidden="true" />
             </button>
-          </div>
+          </nav>
         </div>
-      </nav>
+      </div>
 
-      <Modal open={open} title="Notificações" onClose={closeModal}>
+      <Modal open={open} title="Notificações" onClose={closeModal} variant="panel">
         <NotificationList notifications={notifications} onNavigate={closeModal} />
       </Modal>
     </>

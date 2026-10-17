@@ -70,9 +70,10 @@ describe('likeRepository, commentRepository e notificationRepository (Postgres)'
 
       const list = await notifications.listForUser(ana.id);
       expect(list).toEqual([
-        { id: expect.any(Number), tipo: 'like', conteudo: 'curtiu seu post', lida: false, postId: post.id, autor: { id: bia.id, nome: 'Bia', fotoPerfil: 'bia.png' } },
-        { id: expect.any(Number), tipo: 'new_follower', conteudo: 'seguiu você', lida: false, postId: null, autor: { id: bia.id, nome: 'Bia', fotoPerfil: 'bia.png' } },
+        { id: expect.any(Number), tipo: 'like', conteudo: 'curtiu seu post', lida: false, postId: post.id, data: expect.any(String), autor: { id: bia.id, nome: 'Bia', fotoPerfil: 'bia.png' } },
+        { id: expect.any(Number), tipo: 'new_follower', conteudo: 'seguiu você', lida: false, postId: null, data: expect.any(String), autor: { id: bia.id, nome: 'Bia', fotoPerfil: 'bia.png' } },
       ]);
+      expect(Date.now() - Date.parse(list[0].data)).toBeLessThan(60_000);
       expect(await notifications.countUnread(ana.id)).toBe(2);
 
       await notifications.markAllRead(ana.id);

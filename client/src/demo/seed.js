@@ -68,9 +68,9 @@ export function createSeed() {
       { seguidorId: 3, seguidoId: 1 }, { seguidorId: 4, seguidoId: 1 }, { seguidorId: 2, seguidoId: 3 },
     ],
     notificacoes: [
-      { id: 1, destinatarioId: 1, autorId: 4, tipo: 'new_follower', conteudo: 'seguiu você', lida: true, postId: null },
-      { id: 2, destinatarioId: 1, autorId: 2, tipo: 'like', conteudo: 'curtiu seu post', lida: false, postId: 4 },
-      { id: 3, destinatarioId: 1, autorId: 2, tipo: 'comment', conteudo: 'comentou no seu post', lida: false, postId: 4 },
+      { id: 1, destinatarioId: 1, autorId: 4, tipo: 'new_follower', conteudo: 'seguiu você', lida: true, postId: null, createdAt: minutesAgo(3000) },
+      { id: 2, destinatarioId: 1, autorId: 2, tipo: 'like', conteudo: 'curtiu seu post', lida: false, postId: 4, createdAt: minutesAgo(90) },
+      { id: 3, destinatarioId: 1, autorId: 2, tipo: 'comment', conteudo: 'comentou no seu post', lida: false, postId: 4, createdAt: minutesAgo(25) },
     ],
   };
 }

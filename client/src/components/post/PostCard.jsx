@@ -1,3 +1,4 @@
+import { useId } from 'react';
 import { Link } from 'react-router-dom';
 import { useAuth } from '../../auth/AuthContext.jsx';
 import { postsApi } from '../../api/index.js';
@@ -9,49 +10,35 @@ import { PlayButton } from './PlayButton.jsx';
 import { ShareButton } from './ShareButton.jsx';
 import { PostMenu } from './PostMenu.jsx';
 
-function MusicMeta({ post }) {
-  return (
-    <h3 className="artist-name">
-      {post.artista} • {post.tipo} • {releaseInfo(post.releaseDate)} • <StarRating nota={post.nota} />
-    </h3>
-  );
-}
+const TIPO_LABEL = { album: 'álbum', 'música': 'música' };
 
-function PostMedia({ post, postUrl }) {
-  if (post.tipo === 'album') {
-    return (
-      <Link to={postUrl} className="container-album">
-        <img src={post.capa} alt="Poster do álbum" className="album-poster" />
-        <div className="column">
-          <h2 className="titulo-album">{post.titulo}</h2>
-          <MusicMeta post={post} />
+function MusicBlock({ post, postUrl }) {
+  const isAlbum = post.tipo === 'album';
+  const meta = [post.artista, TIPO_LABEL[post.tipo], releaseInfo(post.releaseDate)].filter(Boolean).join(' • ');
+
+  return (
+    <div className="post-card__music">
+      <Link to={postUrl} className="post-card__music-link">
+        <img
+          src={post.capa}
+          alt={isAlbum ? 'Poster do álbum' : 'Poster da música'}
+          className="post-card__cover"
+          loading="lazy"
+        />
+        <div className="post-card__music-info">
+          <h2 className="post-card__title">{post.titulo}</h2>
+          <p className="post-card__meta">{meta}</p>
+          <span className="post-card__stars"><StarRating nota={post.nota} /></span>
         </div>
       </Link>
-    );
-  }
-
-  return (
-    <div className="container-musica d-flex">
-      <Link to={postUrl}>
-        <img src={post.capa} alt="Poster da música" className="music-poster" />
-      </Link>
-      <div className="d-flex align-items-center justify-content-between w-100">
-        <Link to={postUrl}>
-          <h2 className="titulo-musica">{post.titulo}</h2>
-          <MusicMeta post={post} />
-        </Link>
-        {post.preview && (
-          <div className="botao-play ml-auto" style={{ marginRight: '1rem' }}>
-            <PlayButton src={post.preview} />
-          </div>
-        )}
-      </div>
+      {!isAlbum && post.preview && <PlayButton src={post.preview} />}
     </div>
   );
 }
 
 export function PostCard({ post, onDeleted, commentCount = post.quantidadeComentarios, showMenu = true }) {
   const { user } = useAuth();
+  const authorId = useId();
   const postUrl = `/post/${post.id}`;
   const profileUrl = `/perfil/${post.autor.id}`;
 
@@ -61,43 +48,34 @@ export function PostCard({ post, onDeleted, commentCount = post.quantidadeComent
   };
 
   return (
-    <div className="card mb-3 post">
-      <div className="card-header">
-        <div className="row">
-          <div className="col-auto">
-            <Link to={profileUrl}>
-              <img src={post.autor.fotoPerfil} alt="Foto de perfil do usuário" className="user-profile-picture rounded-circle" />
-            </Link>
-          </div>
-          <div className="col d-flex justify-content-between">
-            <div>
-              <Link to={profileUrl}>
-                <span className="autor-post">{post.autor.nome}</span>
-              </Link>{' '}
-              <span className="data-post">{relativeTime(post.data)}</span>
-            </div>
-            {showMenu && <PostMenu isOwner={user?.id === post.autor.id} onDelete={handleDelete} />}
-          </div>
-        </div>
-      </div>
-
-      <div className="card-body">
-        <Link to={postUrl}>
-          <h5 className="card-title texto-post">{post.texto}</h5>
+    <article className="post-card" aria-label={`Post de ${post.autor.nome} sobre ${post.titulo}`}>
+      <header className="post-card__header">
+        <Link to={profileUrl} className="post-card__avatar" tabIndex={-1} aria-hidden="true">
+          <img src={post.autor.fotoPerfil} alt="" />
         </Link>
-        <PostMedia post={post} postUrl={postUrl} />
-      </div>
-
-      <div className="card-footer">
-        <div className="interacoes">
-          <Link to={postUrl} className="btn botao-interacao" aria-label={`Comentários: ${commentCount}`}>
-            <i className="bi bi-chat" style={{ color: '#2ba84a' }} />{' '}
-            <small className="comment-count" style={{ color: '#2ba84a' }}>{commentCount}</small>
-          </Link>
-          <LikeButton postId={post.id} likes={post.likes} curtido={post.curtido} />
-          <ShareButton postId={post.id} />
+        <div className="post-card__who">
+          <Link to={profileUrl} className="post-card__author" id={authorId}>{post.autor.nome}</Link>
+          <time className="post-card__time" dateTime={post.data}>{relativeTime(post.data)}</time>
         </div>
-      </div>
-    </div>
+        {showMenu && <PostMenu isOwner={user?.id === post.autor.id} onDelete={handleDelete} />}
+      </header>
+
+      {post.texto && (
+        <Link to={postUrl} className="post-card__text" data-testid="post-text">
+          <p>{post.texto}</p>
+        </Link>
+      )}
+
+      <MusicBlock post={post} postUrl={postUrl} />
+
+      <footer className="post-card__actions">
+        <Link to={postUrl} className="post-action" aria-label={`Comentários: ${commentCount}`}>
+          <i className="bi bi-chat" aria-hidden="true" />
+          <span>{commentCount}</span>
+        </Link>
+        <LikeButton postId={post.id} likes={post.likes} curtido={post.curtido} />
+        <ShareButton postId={post.id} />
+      </footer>
+    </article>
   );
 }

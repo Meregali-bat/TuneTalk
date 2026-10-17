@@ -25,11 +25,11 @@ export function PlayButton({ src }) {
       <audio ref={audioRef} src={src} preload="none" onEnded={() => setPlaying(false)} />
       <button
         type="button"
-        className="play-pause-btn"
+        className={`play-button${playing ? ' is-playing' : ''}`}
         aria-label={playing ? 'Pausar prévia' : 'Tocar prévia'}
         onClick={toggle}
       >
-        <i className={playing ? 'bi bi-pause-fill' : 'bi bi-play-fill'} />
+        <i className={playing ? 'bi bi-pause-fill' : 'bi bi-play-fill'} aria-hidden="true" />
       </button>
     </>
   );

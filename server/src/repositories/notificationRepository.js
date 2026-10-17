@@ -1,7 +1,9 @@
+const toNotification = ({ createdAt, ...rest }) => ({ ...rest, data: createdAt.toISOString() });
+
 export function createNotificationRepository(prisma) {
   return {
-    listForUser(usuarioId) {
-      return prisma.notificacao.findMany({
+    async listForUser(usuarioId) {
+      const rows = await prisma.notificacao.findMany({
         where: { destinatarioId: usuarioId },
         orderBy: { id: 'desc' },
         select: {
@@ -10,9 +12,11 @@ export function createNotificationRepository(prisma) {
           conteudo: true,
           lida: true,
           postId: true,
+          createdAt: true,
           autor: { select: { id: true, nome: true, fotoPerfil: true } },
         },
       });
+      return rows.map(toNotification);
     },
 
     countUnread(usuarioId) {

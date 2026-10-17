@@ -19,27 +19,27 @@ export function PostMenu({ isOwner, onDelete }) {
   };
 
   return (
-    <div className="dropdown" ref={ref}>
+    <div className="post-menu" ref={ref}>
       <button
         type="button"
-        className="btn p-0 border-0"
-        style={{ color: '#fff' }}
+        className="icon-button"
         aria-label="Opções do post"
+        aria-haspopup="menu"
         aria-expanded={open}
         onClick={() => setOpen((o) => !o)}
       >
-        <i className="bi bi-three-dots-vertical" />
+        <i className="bi bi-three-dots" aria-hidden="true" />
       </button>
       {open && (
-        <ul className="dropdown-menu dropdown-menu-end show" role="menu" style={{ right: 0 }}>
-          <li>
+        <ul className="post-menu__list" role="menu">
+          <li role="none">
             {isOwner ? (
-              <button type="button" role="menuitem" className="dropdown-item" onClick={() => select(onDelete)}>
-                Deletar
+              <button type="button" role="menuitem" className="post-menu__item is-danger" onClick={() => select(onDelete)}>
+                <i className="bi bi-trash3" aria-hidden="true" /> Deletar
               </button>
             ) : (
-              <button type="button" role="menuitem" className="dropdown-item" onClick={() => select()}>
-                Denunciar
+              <button type="button" role="menuitem" className="post-menu__item" onClick={() => select()}>
+                <i className="bi bi-flag" aria-hidden="true" /> Denunciar
               </button>
             )}
           </li>
