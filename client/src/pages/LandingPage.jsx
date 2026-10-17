@@ -1,12 +1,13 @@
 import { useEffect } from 'react';
 import AOS from 'aos';
 import 'aos/dist/aos.css';
+import { asset } from '../utils/asset.js';
 
 const blocks = [
-  { text: 'Debater livremente sobre músicas', img: '/img/debateIMG.jpg', n: 'first', imageFirst: true, textAos: 'fade-down-left', imgAos: 'fade-up-right' },
-  { text: 'compartilhar sua banda ou artista favorito', img: '/img/albunsIMG.png', n: 'second', imageFirst: false, textAos: 'fade-up-right', imgAos: 'fade-up-left' },
-  { text: 'Personalizar seu perfil como quiser', img: '/img/betles.png', n: 'third', imageFirst: true, textAos: 'fade-down-left', imgAos: 'fade-up-right' },
-  { text: 'Conhecer músicas e artistas novos', img: '/img/musicasIMG.jpg', n: 'fourth', imageFirst: false, textAos: 'fade-right', imgAos: 'fade-up-right' },
+  { text: 'Debater livremente sobre músicas', img: asset('img/debateIMG.jpg'), n: 'first', imageFirst: true, textAos: 'fade-down-left', imgAos: 'fade-up-right' },
+  { text: 'compartilhar sua banda ou artista favorito', img: asset('img/albunsIMG.png'), n: 'second', imageFirst: false, textAos: 'fade-up-right', imgAos: 'fade-up-left' },
+  { text: 'Personalizar seu perfil como quiser', img: asset('img/betles.png'), n: 'third', imageFirst: true, textAos: 'fade-down-left', imgAos: 'fade-up-right' },
+  { text: 'Conhecer músicas e artistas novos', img: asset('img/musicasIMG.jpg'), n: 'fourth', imageFirst: false, textAos: 'fade-right', imgAos: 'fade-up-right' },
 ];
 
 export function LandingPage() {

@@ -38,6 +38,7 @@ Os ids são preservados, então links antigos (`/post/123`, `/perfil/11`) contin
 | `npm run db:migrate:dev` | cria uma migration nova após mudar o `schema.prisma` |
 | `npm run db:import` | importa um dump do MySQL antigo |
 | `npm run db:studio` | abre o Prisma Studio para ver os dados |
+| `npm run build:demo` | gera a demo que roda só no navegador (backend fake com os serviços reais e dados fictícios) em `dist-demo/` |
 
 ## Arquitetura
 
@@ -62,6 +63,7 @@ client/src/
   hooks/                useAsync, useDebouncedValue
   components/           post/, profile/, layout/, common/
   pages/                Landing, Login, Cadastro, Feed, Perfil, Post
+  demo/                 backend fake da demo: serviços reais + repositórios em memória
   styles/               CSS original escopado por layout (.layout-app / .layout-public)
 ```
 

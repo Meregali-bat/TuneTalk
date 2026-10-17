@@ -21,8 +21,12 @@ export function ShareButton({ postId }) {
   }, [copied]);
 
   const share = async () => {
-    await copyToClipboard(`${window.location.origin}/post/${postId}`);
-    setCopied(true);
+    try {
+      await copyToClipboard(`${window.location.origin}/post/${postId}`);
+      setCopied(true);
+    } catch {
+      // sem permissão de clipboard: não há o que mostrar
+    }
   };
 
   return (

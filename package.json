@@ -9,6 +9,7 @@
     "dev:server": "nodemon --watch server/src server/src/index.js",
     "dev:client": "vite",
     "build": "vite build",
+    "build:demo": "vite build --mode demo && node scripts/build-demo-page.js",
     "start": "NODE_ENV=production node server/src/index.js",
     "postinstall": "prisma generate",
     "db:migrate": "prisma migrate deploy",

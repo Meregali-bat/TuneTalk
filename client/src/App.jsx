@@ -36,12 +36,13 @@ export function AppRoutes() {
   );
 }
 
-export function App() {
+export function App({ router: Router = BrowserRouter, children }) {
   return (
     <AuthProvider>
-      <BrowserRouter>
+      <Router>
+        {children}
         <AppRoutes />
-      </BrowserRouter>
+      </Router>
     </AuthProvider>
   );
 }

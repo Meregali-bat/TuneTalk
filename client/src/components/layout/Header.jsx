@@ -4,6 +4,7 @@ import { useAuth } from '../../auth/AuthContext.jsx';
 import { notificationsApi } from '../../api/index.js';
 import { Modal } from '../common/Modal.jsx';
 import { NotificationList } from './NotificationList.jsx';
+import { asset } from '../../utils/asset.js';
 
 const iconButtonStyle = { background: 'none', border: 'none', padding: 0 };
 
@@ -44,7 +45,7 @@ export function Header() {
       <nav className="navbar navegacao">
         <div className="container d-flex flex-nowrap justify-content-between">
           <Link className="navbar-brand" to="/">
-            <img src="/img/TuneTalk Logo.svg" alt="TuneTalk" width="70" height="70" />
+            <img src={asset('img/tunetalk-logo.svg')} alt="TuneTalk" width="70" height="70" />
           </Link>
           <div className="d-flex align-items-center">
             <button type="button" className="link-header" style={iconButtonStyle} aria-label="Notificações" onClick={openNotifications}>

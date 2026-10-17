@@ -1,5 +1,6 @@
 import { Link, Outlet } from 'react-router-dom';
 import { Header } from './Header.jsx';
+import { asset } from '../../utils/asset.js';
 
 export function PublicLayout({ authForm = false }) {
   return (
@@ -8,7 +9,7 @@ export function PublicLayout({ authForm = false }) {
         <div className="navegacao">
           <Link to="/" className="link-header">
             <div className="logo">
-              <img src="/img/TuneTalk Logo.svg" alt="logo" />
+              <img src={asset('img/tunetalk-logo.svg')} alt="logo" />
               <span className="titulo-logo">TuneTalk</span>
             </div>
           </Link>
