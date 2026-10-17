@@ -32,6 +32,12 @@ export function apiNotFound(req, res) {
   res.status(404).json({ error: 'Rota não encontrada.' });
 }
 
+// Erros conhecidos do Prisma que representam falhas do cliente, não do servidor.
+const PRISMA_ERRORS = {
+  P2002: { status: 409, message: 'Registro duplicado.' },
+  P2025: { status: 404, message: 'Não encontrado.' },
+};
+
 // eslint-disable-next-line no-unused-vars
 export function errorHandler(err, req, res, next) {
   if (err instanceof HttpError) {
@@ -39,6 +45,10 @@ export function errorHandler(err, req, res, next) {
   }
   if (err instanceof multer.MulterError) {
     return res.status(400).json({ error: 'Arquivo inválido.' });
+  }
+  const prismaError = PRISMA_ERRORS[err?.name === 'PrismaClientKnownRequestError' && err.code];
+  if (prismaError) {
+    return res.status(prismaError.status).json({ error: prismaError.message });
   }
   console.error(err);
   res.status(500).json({ error: 'Erro interno do servidor.' });

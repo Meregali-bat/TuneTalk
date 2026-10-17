@@ -1,179 +1,125 @@
-import { describe, it, expect, vi, beforeEach } from 'vitest';
-import { createPostRepository, toPost } from '../../src/repositories/postRepository.js';
+import { describe, it, expect, beforeAll, beforeEach, afterAll } from 'vitest';
+import { createTestDatabase, seed } from '../helpers/testDatabase.js';
+import { createPostRepository } from '../../src/repositories/postRepository.js';
 
-const musicRow = {
-  idpost: 10,
-  texto: 'que som',
-  likes: 3,
-  musicName: 'Help!',
-  artistName: 'The Beatles',
-  posterMusica: 'help.jpg',
-  albumName: null,
-  posterAlbum: null,
-  postType: 'música',
-  releaseDate: '138',
-  usuario_idusuario: 7,
-  nota: 4.5,
-  data: new Date('2024-01-01T10:00:00Z'),
-  musicPreview: 'help.mp3',
-  autor: 'Ana',
-  fotoPerfil: 'ana.png',
-  autorId: 7,
-  quantidadeComentarios: 2,
-};
-
-describe('toPost', () => {
-  it('converte uma linha de música no formato da API', () => {
-    expect(toPost(musicRow)).toEqual({
-      id: 10,
-      texto: 'que som',
-      likes: 3,
-      nota: 4.5,
-      data: '2024-01-01T10:00:00.000Z',
-      quantidadeComentarios: 2,
-      tipo: 'música',
-      titulo: 'Help!',
-      artista: 'The Beatles',
-      capa: 'help.jpg',
-      releaseDate: '138',
-      preview: 'help.mp3',
-      autor: { id: 7, nome: 'Ana', fotoPerfil: 'ana.png' },
-    });
-  });
-
-  it('usa nome e capa do álbum quando o post é de álbum', () => {
-    const post = toPost({
-      ...musicRow,
-      postType: 'album',
-      musicName: null,
-      posterMusica: null,
-      albumName: 'Abbey Road',
-      posterAlbum: 'abbey.jpg',
-      musicPreview: null,
-    });
-    expect(post).toMatchObject({ tipo: 'album', titulo: 'Abbey Road', capa: 'abbey.jpg', preview: null });
-  });
-
-  it('trata postType ausente ou "undefined" como música', () => {
-    expect(toPost({ ...musicRow, postType: 'undefined' }).tipo).toBe('música');
-    expect(toPost({ ...musicRow, postType: null }).tipo).toBe('música');
-  });
-
-  it('aceita linhas sem o alias "autor" (usa nome) e sem contagem de comentários', () => {
-    const { autor, autorId, quantidadeComentarios, ...rest } = musicRow;
-    const post = toPost({ ...rest, nome: 'Ana' });
-    expect(post.autor).toEqual({ id: 7, nome: 'Ana', fotoPerfil: 'ana.png' });
-    expect(post.quantidadeComentarios).toBe(0);
-  });
-});
-
-describe('postRepository', () => {
+describe('postRepository (Postgres)', () => {
   let db;
   let repo;
+  let factory;
+  let ana;
+  let bia;
 
-  beforeEach(() => {
-    db = { query: vi.fn() };
-    repo = createPostRepository(db);
+  beforeAll(async () => {
+    db = await createTestDatabase();
+    repo = createPostRepository(db.prisma);
+  });
+  beforeEach(async () => {
+    await db.reset();
+    factory = seed(db.prisma);
+    ana = await factory.user({ nome: 'Ana', fotoPerfil: 'ana.png' });
+    bia = await factory.user({ nome: 'Bia' });
+  });
+  afterAll(() => db.close());
+
+  describe('create + findById', () => {
+    it('grava uma música e devolve no formato da API, com contagens', async () => {
+      const data = new Date('2024-01-01T10:00:00Z');
+      const id = await repo.create({
+        autorId: ana.id,
+        texto: 'que som',
+        musicName: 'Help!',
+        artistName: 'The Beatles',
+        posterMusica: 'help.jpg',
+        postType: 'música',
+        releaseDate: '138',
+        nota: '4.5',
+        musicPreview: 'help.mp3',
+        data,
+      });
+      await db.prisma.curtida.create({ data: { postId: id, usuarioId: bia.id } });
+      await db.prisma.comentario.create({ data: { postId: id, autorId: bia.id, texto: 'oi' } });
+
+      expect(await repo.findById(id)).toEqual({
+        id,
+        texto: 'que som',
+        likes: 1,
+        nota: 4.5,
+        data: '2024-01-01T10:00:00.000Z',
+        quantidadeComentarios: 1,
+        tipo: 'música',
+        titulo: 'Help!',
+        artista: 'The Beatles',
+        capa: 'help.jpg',
+        releaseDate: '138',
+        preview: 'help.mp3',
+        autor: { id: ana.id, nome: 'Ana', fotoPerfil: 'ana.png' },
+      });
+    });
+
+    it('usa título e capa do álbum para posts de álbum', async () => {
+      const id = await repo.create({
+        autorId: ana.id, albumName: 'Abbey Road', posterAlbum: 'abbey.jpg', postType: 'album', releaseDate: '1969-09-26', data: new Date(),
+      });
+      expect(await repo.findById(id)).toMatchObject({ tipo: 'album', titulo: 'Abbey Road', capa: 'abbey.jpg', preview: null });
+    });
+
+    it('trata postType ausente ou "undefined" como música', async () => {
+      const a = await factory.post(ana.id, { postType: null });
+      const b = await factory.post(ana.id, { postType: 'undefined' });
+      expect((await repo.findById(a.id)).tipo).toBe('música');
+      expect((await repo.findById(b.id)).tipo).toBe('música');
+    });
+
+    it('usa texto vazio e nota 0 quando não informados', async () => {
+      const id = await repo.create({ autorId: ana.id, musicName: 'x', data: new Date() });
+      expect(await repo.findById(id)).toMatchObject({ texto: '', nota: 0 });
+    });
+
+    it('findById devolve null para post inexistente', async () => {
+      expect(await repo.findById(9999)).toBeNull();
+    });
   });
 
-  it('listLatest busca os 20 mais recentes', async () => {
-    db.query.mockResolvedValue([musicRow]);
+  it('listLatest devolve os 20 mais recentes, do mais novo para o mais antigo', async () => {
+    for (let i = 0; i < 22; i++) {
+      await factory.post(ana.id, { texto: `p${i}`, createdAt: new Date(Date.UTC(2024, 0, i + 1)) });
+    }
     const posts = await repo.listLatest();
-    expect(db.query.mock.calls[0][0]).toMatch(/ORDER BY post\.data DESC\s+LIMIT 20/);
-    expect(posts).toEqual([toPost(musicRow)]);
+    expect(posts).toHaveLength(20);
+    expect(posts[0].texto).toBe('p21');
+    expect(posts[19].texto).toBe('p2');
   });
 
-  it('listByAuthor filtra pelo autor', async () => {
-    db.query.mockResolvedValue([musicRow]);
-    expect(await repo.listByAuthor(7)).toEqual([toPost(musicRow)]);
-    expect(db.query).toHaveBeenCalledWith(expect.stringMatching(/WHERE usuario_idusuario = :p_idusuario/), { p_idusuario: 7 });
+  it('listByAuthor devolve só os posts do autor, mais novos primeiro', async () => {
+    const p1 = await factory.post(ana.id);
+    await factory.post(bia.id);
+    const p3 = await factory.post(ana.id);
+    expect((await repo.listByAuthor(ana.id)).map((p) => p.id)).toEqual([p3.id, p1.id]);
   });
 
-  it('listFromFollowed junta com a tabela seguir', async () => {
-    db.query.mockResolvedValue([musicRow]);
-    expect(await repo.listFromFollowed(1)).toEqual([toPost(musicRow)]);
-    expect(db.query).toHaveBeenCalledWith(expect.stringMatching(/JOIN seguir/), { p_idusuario: 1 });
+  it('listFromFollowed devolve posts de quem o usuário segue', async () => {
+    const caio = await factory.user();
+    const deBia = await factory.post(bia.id);
+    await factory.post(caio.id);
+    await factory.post(ana.id);
+    await db.prisma.seguimento.create({ data: { seguidorId: ana.id, seguidoId: bia.id } });
+
+    expect((await repo.listFromFollowed(ana.id)).map((p) => p.id)).toEqual([deBia.id]);
   });
 
-  describe('findById', () => {
-    it('devolve o post', async () => {
-      db.query.mockResolvedValue([musicRow]);
-      expect(await repo.findById(10)).toEqual(toPost(musicRow));
-      expect(db.query).toHaveBeenCalledWith(expect.any(String), { p_idpost: 10 });
+  it('remove apaga o post junto com comentários, curtidas e notificações (cascade)', async () => {
+    const post = await factory.post(ana.id);
+    await db.prisma.curtida.create({ data: { postId: post.id, usuarioId: bia.id } });
+    await db.prisma.comentario.create({ data: { postId: post.id, autorId: bia.id, texto: 'oi' } });
+    await db.prisma.notificacao.create({
+      data: { postId: post.id, destinatarioId: ana.id, autorId: bia.id, tipo: 'like', conteudo: 'curtiu seu post' },
     });
 
-    it('devolve null quando não existe', async () => {
-      db.query.mockResolvedValue([]);
-      expect(await repo.findById(10)).toBeNull();
-    });
-  });
+    await repo.remove(post.id);
 
-  it('create grava os campos de música e de álbum', async () => {
-    db.query.mockResolvedValue({ insertId: 11 });
-    const data = new Date('2024-02-02T00:00:00Z');
-
-    const id = await repo.create({
-      autorId: 7,
-      texto: 'oi',
-      musicName: 'Help!',
-      artistName: 'Beatles',
-      posterMusica: 'p.jpg',
-      postType: 'música',
-      releaseDate: '138',
-      nota: '4',
-      musicPreview: 'x.mp3',
-      data,
-    });
-
-    expect(id).toBe(11);
-    expect(db.query).toHaveBeenCalledWith(expect.stringMatching(/INSERT INTO post/), {
-      p_texto: 'oi',
-      p_usuario_idusuario: 7,
-      p_likes: 0,
-      p_musicName: 'Help!',
-      p_artistName: 'Beatles',
-      p_posterMusica: 'p.jpg',
-      p_albumName: null,
-      p_posterAlbum: null,
-      p_postType: 'música',
-      p_releaseDate: '138',
-      p_nota: '4',
-      p_data: data,
-      p_musicPreview: 'x.mp3',
-    });
-  });
-
-  it('create usa nota 0 e texto vazio quando não informados', async () => {
-    db.query.mockResolvedValue({ insertId: 1 });
-    await repo.create({ autorId: 7, data: new Date() });
-    expect(db.query.mock.calls[0][1]).toMatchObject({ p_nota: 0, p_texto: '' });
-  });
-
-  it('remove apaga comentários, curtidas, notificações e o post', async () => {
-    db.query.mockResolvedValue({});
-    await repo.remove(10);
-    const sqls = db.query.mock.calls.map(([sql]) => sql);
-    expect(sqls).toEqual([
-      expect.stringMatching(/DELETE FROM comentarios/),
-      expect.stringMatching(/DELETE FROM curtir/),
-      expect.stringMatching(/DELETE FROM notificacoes/),
-      expect.stringMatching(/DELETE FROM post/),
-    ]);
-    db.query.mock.calls.forEach(([, params]) => expect(params).toEqual({ p_idpost: 10 }));
-  });
-
-  it('incrementLikes / decrementLikes atualizam o contador e devolvem o novo valor', async () => {
-    db.query.mockResolvedValueOnce({}).mockResolvedValueOnce([{ likes: 4 }]);
-    expect(await repo.incrementLikes(10)).toBe(4);
-    expect(db.query.mock.calls[0][0]).toMatch(/likes = likes \+ 1/);
-
-    db.query.mockResolvedValueOnce({}).mockResolvedValueOnce([{ likes: 3 }]);
-    expect(await repo.decrementLikes(10)).toBe(3);
-    expect(db.query.mock.calls[2][0]).toMatch(/likes = GREATEST\(likes - 1, 0\)/);
-  });
-
-  it('getLikeCount devolve as curtidas atuais', async () => {
-    db.query.mockResolvedValue([{ likes: 8 }]);
-    expect(await repo.getLikeCount(10)).toBe(8);
+    expect(await repo.findById(post.id)).toBeNull();
+    expect(await db.prisma.curtida.count()).toBe(0);
+    expect(await db.prisma.comentario.count()).toBe(0);
+    expect(await db.prisma.notificacao.count()).toBe(0);
   });
 });

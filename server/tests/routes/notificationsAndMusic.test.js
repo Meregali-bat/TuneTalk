@@ -47,4 +47,22 @@ describe('rotas /api/notifications e /api/music', () => {
     expect(res.status).toBe(404);
     expect(res.body).toEqual({ error: 'Rota não encontrada.' });
   });
+
+  describe('erros do Prisma', () => {
+    const prismaError = (code) => Object.assign(new Error(`prisma ${code}`), { name: 'PrismaClientKnownRequestError', code });
+
+    it('violação de unicidade (P2002) vira 409', async () => {
+      deps.notifications.markAllRead.mockRejectedValue(prismaError('P2002'));
+      const res = await agent.post('/api/notifications/read-all');
+      expect(res.status).toBe(409);
+      expect(res.body).toEqual({ error: 'Registro duplicado.' });
+    });
+
+    it('registro inexistente (P2025) vira 404', async () => {
+      deps.notifications.markAllRead.mockRejectedValue(prismaError('P2025'));
+      const res = await agent.post('/api/notifications/read-all');
+      expect(res.status).toBe(404);
+      expect(res.body).toEqual({ error: 'Não encontrado.' });
+    });
+  });
 });

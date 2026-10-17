@@ -1,15 +1,16 @@
 services:
   db:
-    image: mysql:8
-    container_name: mysql
+    image: postgres:16
+    container_name: tunetalk-postgres
     restart: unless-stopped
     environment:
-      MYSQL_ROOT_PASSWORD: ${DB_PASS}
-      MYSQL_DATABASE: ${DB_NAME}
+      POSTGRES_USER: ${DB_USER:-tunetalk}
+      POSTGRES_PASSWORD: ${DB_PASS:-tunetalk}
+      POSTGRES_DB: ${DB_NAME:-tunetalk}
     ports:
-      - "3306:3306"
+      - "5432:5432"
     volumes:
-      - tunetalk-data:/var/lib/mysql
-      - ./banco.sql:/docker-entrypoint-initdb.d/banco.sql:ro
+      - tunetalk-pgdata:/var/lib/postgresql/data
+
 volumes:
-    tunetalk-data:
+  tunetalk-pgdata:

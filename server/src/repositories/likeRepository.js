@@ -1,34 +1,27 @@
-export function createLikeRepository(db) {
+export function createLikeRepository(prisma) {
+  const key = (postId, usuarioId) => ({ postId_usuarioId: { postId, usuarioId } });
+
   return {
     async hasLiked(postId, usuarioId) {
-      const rows = await db.query(
-        'SELECT 1 FROM curtir WHERE post_idpost = :p_idpost AND usuario_idusuario = :p_idusuario',
-        { p_idpost: postId, p_idusuario: usuarioId },
-      );
-      return rows.length > 0;
+      const like = await prisma.curtida.findUnique({ where: key(postId, usuarioId) });
+      return like !== null;
     },
 
-    async add({ postId, autorId, usuarioId }) {
-      await db.query(
-        `INSERT INTO curtir (post_idpost, post_usuario_idusuario, usuario_idusuario)
-         VALUES (:p_idpost, :p_autorId, :p_idusuario)`,
-        { p_idpost: postId, p_autorId: autorId, p_idusuario: usuarioId },
-      );
+    async add({ postId, usuarioId }) {
+      await prisma.curtida.create({ data: { postId, usuarioId } });
     },
 
     async remove(postId, usuarioId) {
-      await db.query(
-        'DELETE FROM curtir WHERE post_idpost = :p_idpost AND usuario_idusuario = :p_idusuario',
-        { p_idpost: postId, p_idusuario: usuarioId },
-      );
+      await prisma.curtida.delete({ where: key(postId, usuarioId) });
     },
 
     async likedPostIds(usuarioId) {
-      const rows = await db.query(
-        'SELECT post_idpost FROM curtir WHERE usuario_idusuario = :p_idusuario',
-        { p_idusuario: usuarioId },
-      );
-      return rows.map((row) => row.post_idpost);
+      const rows = await prisma.curtida.findMany({ where: { usuarioId }, select: { postId: true } });
+      return rows.map((row) => row.postId);
+    },
+
+    countByPost(postId) {
+      return prisma.curtida.count({ where: { postId } });
     },
   };
 }

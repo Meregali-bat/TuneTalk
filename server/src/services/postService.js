@@ -79,10 +79,9 @@ export function createPostService({
       const post = await findOrFail(postId);
       if (await likes.hasLiked(postId, usuarioId)) return post.likes;
 
-      await likes.add({ postId, autorId: post.autor.id, usuarioId });
-      const total = await posts.incrementLikes(postId);
+      await likes.add({ postId, usuarioId });
       await notifyAuthor(post, usuarioId, 'like', 'curtiu seu post');
-      return total;
+      return likes.countByPost(postId);
     },
 
     async unlike(postId, usuarioId) {
@@ -90,9 +89,8 @@ export function createPostService({
       if (!(await likes.hasLiked(postId, usuarioId))) return post.likes;
 
       await likes.remove(postId, usuarioId);
-      const total = await posts.decrementLikes(postId);
       await notifications.removeLike(postId, usuarioId);
-      return total;
+      return likes.countByPost(postId);
     },
 
     async comment(postId, usuarioId, texto) {

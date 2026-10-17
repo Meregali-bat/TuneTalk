@@ -1,6 +1,5 @@
 import { describe, it, expect, vi } from 'vitest';
 import { createCloudinaryUploader } from '../src/infra/cloudinaryUploader.js';
-import { createDatabase } from '../src/infra/database.js';
 import { loadConfig } from '../src/config.js';
 
 describe('cloudinaryUploader', () => {
@@ -31,32 +30,18 @@ describe('cloudinaryUploader', () => {
   });
 });
 
-describe('database', () => {
-  it('executa a query no pool e devolve só as linhas', async () => {
-    const pool = { execute: vi.fn().mockResolvedValue([[{ id: 1 }], []]) };
-    const db = createDatabase(pool);
-    expect(await db.query('SELECT 1', { a: 1 })).toEqual([{ id: 1 }]);
-    expect(pool.execute).toHaveBeenCalledWith('SELECT 1', { a: 1 });
-  });
-
-  it('usa parâmetros vazios por padrão', async () => {
-    const pool = { execute: vi.fn().mockResolvedValue([[], []]) };
-    await createDatabase(pool).query('SELECT 1');
-    expect(pool.execute).toHaveBeenCalledWith('SELECT 1', {});
-  });
-});
-
 describe('loadConfig', () => {
   it('lê as variáveis de ambiente com padrões razoáveis', () => {
-    const config = loadConfig({ PORT: '4000', DB_HOST: 'db', SESSION_SECRET: 's' });
+    const config = loadConfig({ PORT: '4000', DATABASE_URL: 'postgresql://u:p@db:5432/tunetalk', SESSION_SECRET: 's' });
     expect(config.port).toBe(4000);
-    expect(config.db.host).toBe('db');
+    expect(config.databaseUrl).toBe('postgresql://u:p@db:5432/tunetalk');
     expect(config.sessionSecret).toBe('s');
     expect(config.isProduction).toBe(false);
   });
 
-  it('exige SESSION_SECRET em produção', () => {
-    expect(() => loadConfig({ NODE_ENV: 'production' })).toThrow(/SESSION_SECRET/);
+  it('exige SESSION_SECRET e DATABASE_URL em produção', () => {
+    expect(() => loadConfig({ NODE_ENV: 'production', DATABASE_URL: 'x' })).toThrow(/SESSION_SECRET/);
+    expect(() => loadConfig({ NODE_ENV: 'production', SESSION_SECRET: 's' })).toThrow(/DATABASE_URL/);
   });
 
   it('usa porta 3000 por padrão', () => {
@@ -64,7 +49,7 @@ describe('loadConfig', () => {
   });
 
   it('só marca o cookie de sessão como secure quando COOKIE_SECURE=true', () => {
-    expect(loadConfig({ NODE_ENV: 'production', SESSION_SECRET: 's' }).secureCookies).toBe(false);
+    expect(loadConfig({ NODE_ENV: 'production', SESSION_SECRET: 's', DATABASE_URL: 'x' }).secureCookies).toBe(false);
     expect(loadConfig({ COOKIE_SECURE: 'true' }).secureCookies).toBe(true);
   });
 });

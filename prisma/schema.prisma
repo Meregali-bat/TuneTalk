@@ -1,0 +1,120 @@
+generator client {
+  provider            = "prisma-client"
+  output              = "../server/src/generated/prisma"
+  moduleFormat        = "esm"
+  importFileExtension = "ts"
+}
+
+datasource db {
+  provider = "postgresql"
+}
+
+enum TipoNotificacao {
+  like
+  comment
+  new_follower
+}
+
+model Usuario {
+  id         Int     @id @default(autoincrement())
+  nome       String  @db.VarChar(45)
+  email      String  @unique @db.VarChar(100)
+  senha      String  @db.VarChar(65)
+  fotoPerfil String? @map("foto_perfil") @db.VarChar(255)
+  bio        String? @db.VarChar(255)
+  admin      Boolean @default(false)
+
+  posts                 Post[]
+  comentarios           Comentario[]
+  curtidas              Curtida[]
+  seguindo              Seguimento[]  @relation("seguidor")
+  seguidores            Seguimento[]  @relation("seguido")
+  notificacoesRecebidas Notificacao[] @relation("destinatario")
+  notificacoesEnviadas  Notificacao[] @relation("autor")
+
+  @@map("usuarios")
+}
+
+model Post {
+  id           Int      @id @default(autoincrement())
+  texto        String   @db.VarChar(5000)
+  musicName    String?  @map("music_name") @db.VarChar(255)
+  artistName   String?  @map("artist_name") @db.VarChar(255)
+  posterMusica String?  @map("poster_musica") @db.VarChar(255)
+  albumName    String?  @map("album_name") @db.VarChar(255)
+  posterAlbum  String?  @map("poster_album") @db.VarChar(255)
+  postType     String?  @map("post_type") @db.VarChar(20)
+  // Faixas guardam a duração em segundos; álbuns, a data de lançamento.
+  releaseDate  String?  @map("release_date") @db.VarChar(20)
+  nota         Float    @default(0)
+  musicPreview String?  @map("music_preview") @db.VarChar(2000)
+  createdAt    DateTime @default(now()) @map("created_at")
+  autorId      Int      @map("autor_id")
+
+  autor        Usuario       @relation(fields: [autorId], references: [id], onDelete: Cascade)
+  comentarios  Comentario[]
+  curtidas     Curtida[]
+  notificacoes Notificacao[]
+
+  @@index([autorId])
+  @@index([createdAt])
+  @@map("posts")
+}
+
+model Comentario {
+  id        Int      @id @default(autoincrement())
+  texto     String   @db.VarChar(500)
+  createdAt DateTime @default(now()) @map("created_at")
+  postId    Int      @map("post_id")
+  autorId   Int      @map("autor_id")
+
+  post  Post    @relation(fields: [postId], references: [id], onDelete: Cascade)
+  autor Usuario @relation(fields: [autorId], references: [id], onDelete: Cascade)
+
+  @@index([postId])
+  @@map("comentarios")
+}
+
+model Curtida {
+  postId    Int      @map("post_id")
+  usuarioId Int      @map("usuario_id")
+  createdAt DateTime @default(now()) @map("created_at")
+
+  post    Post    @relation(fields: [postId], references: [id], onDelete: Cascade)
+  usuario Usuario @relation(fields: [usuarioId], references: [id], onDelete: Cascade)
+
+  @@id([postId, usuarioId])
+  @@index([usuarioId])
+  @@map("curtidas")
+}
+
+model Seguimento {
+  seguidorId Int      @map("seguidor_id")
+  seguidoId  Int      @map("seguido_id")
+  createdAt  DateTime @default(now()) @map("created_at")
+
+  seguidor Usuario @relation("seguidor", fields: [seguidorId], references: [id], onDelete: Cascade)
+  seguido  Usuario @relation("seguido", fields: [seguidoId], references: [id], onDelete: Cascade)
+
+  @@id([seguidorId, seguidoId])
+  @@index([seguidoId])
+  @@map("seguimentos")
+}
+
+model Notificacao {
+  id             Int             @id @default(autoincrement())
+  tipo           TipoNotificacao
+  conteudo       String          @db.VarChar(255)
+  lida           Boolean         @default(false)
+  createdAt      DateTime        @default(now()) @map("created_at")
+  destinatarioId Int             @map("destinatario_id")
+  autorId        Int             @map("autor_id")
+  postId         Int?            @map("post_id")
+
+  destinatario Usuario @relation("destinatario", fields: [destinatarioId], references: [id], onDelete: Cascade)
+  autor        Usuario @relation("autor", fields: [autorId], references: [id], onDelete: Cascade)
+  post         Post?   @relation(fields: [postId], references: [id], onDelete: Cascade)
+
+  @@index([destinatarioId, lida])
+  @@map("notificacoes")
+}

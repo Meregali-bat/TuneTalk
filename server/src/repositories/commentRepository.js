@@ -1,30 +1,19 @@
-const toComment = (row) => ({
-  id: row.idcomentarios,
-  texto: row.texto,
-  autor: { id: row.usuario_idusuario, nome: row.nome, fotoPerfil: row.fotoPerfil },
-});
-
-export function createCommentRepository(db) {
+export function createCommentRepository(prisma) {
   return {
     async create({ postId, usuarioId, texto }) {
-      const result = await db.query(
-        `INSERT INTO comentarios (texto, likes, post_idpost, usuario_idusuario)
-         VALUES (:p_texto, :p_likes, :p_post_idpost, :p_usuario_idusuario)`,
-        { p_texto: texto, p_likes: 0, p_post_idpost: postId, p_usuario_idusuario: usuarioId },
-      );
-      return result.insertId;
+      const comment = await prisma.comentario.create({
+        data: { postId, autorId: usuarioId, texto },
+        select: { id: true },
+      });
+      return comment.id;
     },
 
-    async listByPost(postId) {
-      const rows = await db.query(
-        `SELECT comentarios.*, usuario.fotoPerfil, usuario.nome
-         FROM comentarios
-         INNER JOIN usuario ON comentarios.usuario_idusuario = usuario.idusuario
-         WHERE comentarios.post_idpost = :p_idpost
-         ORDER BY comentarios.idcomentarios DESC`,
-        { p_idpost: postId },
-      );
-      return rows.map(toComment);
+    listByPost(postId) {
+      return prisma.comentario.findMany({
+        where: { postId },
+        orderBy: { id: 'desc' },
+        select: { id: true, texto: true, autor: { select: { id: true, nome: true, fotoPerfil: true } } },
+      });
     },
   };
 }

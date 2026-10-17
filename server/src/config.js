@@ -6,6 +6,9 @@ export function loadConfig(env = process.env) {
   if (isProduction && !env.SESSION_SECRET) {
     throw new Error('Defina SESSION_SECRET no ambiente de produção.');
   }
+  if (isProduction && !env.DATABASE_URL) {
+    throw new Error('Defina DATABASE_URL no ambiente de produção.');
+  }
 
   return {
     isProduction,
@@ -14,12 +17,7 @@ export function loadConfig(env = process.env) {
     // Ative quando o app estiver atrás de HTTPS; com HTTP puro o navegador descartaria o cookie.
     secureCookies: env.COOKIE_SECURE === 'true',
     defaultProfilePhoto: env.DEFAULT_PROFILE_PHOTO || DEFAULT_PROFILE_PHOTO,
-    db: {
-      host: env.DB_HOST,
-      user: env.DB_USER,
-      database: env.DB_NAME,
-      password: env.DB_PASS,
-    },
+    databaseUrl: env.DATABASE_URL,
     cloudinary: {
       cloud_name: env.CLOUDINARY_CLOUD_NAME,
       api_key: env.CLOUDINARY_API_KEY,

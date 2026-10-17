@@ -1,76 +1,49 @@
-import { toPublicUser } from './userRepository.js';
+import { PUBLIC_USER_SELECT } from './userRepository.js';
 
-export function createFollowRepository(db) {
-  const pair = (seguidorId, seguidoId) => ({ p_id_usuario: seguidorId, p_id_usuario1: seguidoId });
+export function createFollowRepository(prisma) {
+  const pair = (seguidorId, seguidoId) => ({ seguidorId_seguidoId: { seguidorId, seguidoId } });
 
   return {
     async isFollowing(seguidorId, seguidoId) {
-      const rows = await db.query(
-        `SELECT usuario_idusuario FROM seguir
-         WHERE usuario_idusuario = :p_id_usuario AND usuario_idusuario1 = :p_id_usuario1`,
-        pair(seguidorId, seguidoId),
-      );
-      return rows.length > 0;
+      const follow = await prisma.seguimento.findUnique({ where: pair(seguidorId, seguidoId) });
+      return follow !== null;
     },
 
     async follow(seguidorId, seguidoId) {
-      await db.query(
-        'INSERT INTO seguir (usuario_idusuario, usuario_idusuario1) VALUES (:p_id_usuario, :p_id_usuario1)',
-        pair(seguidorId, seguidoId),
-      );
+      await prisma.seguimento.create({ data: { seguidorId, seguidoId } });
     },
 
     async unfollow(seguidorId, seguidoId) {
-      await db.query(
-        'DELETE FROM seguir WHERE usuario_idusuario = :p_id_usuario AND usuario_idusuario1 = :p_id_usuario1',
-        pair(seguidorId, seguidoId),
-      );
+      await prisma.seguimento.delete({ where: pair(seguidorId, seguidoId) });
     },
 
     async followingIds(usuarioId) {
-      const rows = await db.query(
-        'SELECT usuario_idusuario1 FROM seguir WHERE usuario_idusuario = :p_id_usuario',
-        { p_id_usuario: usuarioId },
-      );
-      return rows.map((row) => row.usuario_idusuario1);
+      const rows = await prisma.seguimento.findMany({ where: { seguidorId: usuarioId }, select: { seguidoId: true } });
+      return rows.map((row) => row.seguidoId);
     },
 
     async listFollowing(usuarioId) {
-      const rows = await db.query(
-        `SELECT usuario.idusuario, usuario.nome, usuario.fotoPerfil, usuario.bio
-         FROM seguir
-         INNER JOIN usuario ON seguir.usuario_idusuario1 = usuario.idusuario
-         WHERE seguir.usuario_idusuario = :p_id_usuario`,
-        { p_id_usuario: usuarioId },
-      );
-      return rows.map(toPublicUser);
+      const rows = await prisma.seguimento.findMany({
+        where: { seguidorId: usuarioId },
+        select: { seguido: { select: PUBLIC_USER_SELECT } },
+      });
+      return rows.map((row) => row.seguido);
     },
 
     async listFollowers(usuarioId) {
-      const rows = await db.query(
-        `SELECT usuario.idusuario, usuario.nome, usuario.fotoPerfil, usuario.bio
-         FROM seguir
-         INNER JOIN usuario ON seguir.usuario_idusuario = usuario.idusuario
-         WHERE seguir.usuario_idusuario1 = :p_id_usuario1`,
-        { p_id_usuario1: usuarioId },
-      );
-      return rows.map(toPublicUser);
+      const rows = await prisma.seguimento.findMany({
+        where: { seguidoId: usuarioId },
+        select: { seguidor: { select: PUBLIC_USER_SELECT } },
+      });
+      return rows.map((row) => row.seguidor);
     },
 
-    async countFollowing(usuarioId) {
-      const rows = await db.query(
-        'SELECT COUNT(usuario_idusuario1) AS quantidade FROM seguir WHERE usuario_idusuario = :p_id_usuario',
-        { p_id_usuario: usuarioId },
-      );
-      return Number(rows[0].quantidade);
+    countFollowing(usuarioId) {
+      return prisma.seguimento.count({ where: { seguidorId: usuarioId } });
     },
 
-    async countFollowers(usuarioId) {
-      const rows = await db.query(
-        'SELECT COUNT(usuario_idusuario) AS quantidade FROM seguir WHERE usuario_idusuario1 = :p_id_usuario1',
-        { p_id_usuario1: usuarioId },
-      );
-      return Number(rows[0].quantidade);
+    countFollowers(usuarioId) {
+      return prisma.seguimento.count({ where: { seguidoId: usuarioId } });
     },
   };
 }

@@ -61,17 +61,18 @@ Design completo em `docs/superpowers/specs/2026-06-01-tunetalk-modernization-des
 
 ## Fase 3 — Prisma (Express + EJS + JWT)
 
-- [ ] Instalar `prisma` e `@prisma/client`
-- [ ] Rodar `npx prisma init` e configurar `DATABASE_URL` no `.env`
-- [ ] Rodar `npx prisma db pull` para gerar o `schema.prisma` a partir do banco existente
-- [ ] Revisar e completar relações no `schema.prisma` (Post→Usuario, Curtir→Post+Usuario, etc.)
-- [ ] Criar `lib/prisma.js` com singleton do `PrismaClient`
-- [ ] Reescrever `models/modelUsuario.js` usando Prisma Client (manter assinaturas de função)
-- [ ] Reescrever `models/modelPost.js` usando Prisma Client — substituir classe por funções exportadas
-- [ ] Reescrever `models/modelComentario.js` usando Prisma Client
-- [ ] Reescrever `models/modelNotificacao.js` usando Prisma Client
-- [ ] Deletar `models/dbModel.js`
-- [ ] Rodar `npx prisma migrate dev --name init` para criar a primeira migration versionada
+- [✅] Instalar `prisma` e `@prisma/client`
+- [✅] Rodar `npx prisma init` e configurar `DATABASE_URL` no `.env`
+- [✅] Escrever o `schema.prisma` (em vez de `db pull`): migração de MySQL para **PostgreSQL**, com modelo limpo e cascades
+- [✅] Revisar e completar relações no `schema.prisma` (Post→Usuario, Curtir→Post+Usuario, etc.)
+- [✅] Criar `lib/prisma.js` com singleton do `PrismaClient`
+- [✅] Reescrever `models/modelUsuario.js` usando Prisma Client (manter assinaturas de função)
+- [✅] Reescrever `models/modelPost.js` usando Prisma Client — substituir classe por funções exportadas
+- [✅] Reescrever `models/modelComentario.js` usando Prisma Client
+- [✅] Reescrever `models/modelNotificacao.js` usando Prisma Client
+- [✅] Deletar `models/dbModel.js` (substituído por `server/src/infra/prisma.js`)
+- [✅] Script `npm run db:import` para trazer os dados do MySQL (`banco.sql`) preservando ids
+- [✅] Rodar `npx prisma migrate dev --name init` para criar a primeira migration versionada
 
 ---
 

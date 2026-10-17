@@ -19,14 +19,13 @@ describe('postService', () => {
       findById: vi.fn().mockResolvedValue(post(1, 2, { likes: 5 })),
       create: vi.fn().mockResolvedValue(42),
       remove: vi.fn(),
-      incrementLikes: vi.fn().mockResolvedValue(6),
-      decrementLikes: vi.fn().mockResolvedValue(4),
     };
     likes = {
       likedPostIds: vi.fn().mockResolvedValue([2, 3]),
       hasLiked: vi.fn().mockResolvedValue(false),
       add: vi.fn(),
       remove: vi.fn(),
+      countByPost: vi.fn().mockResolvedValue(6),
     };
     comments = {
       listByPost: vi.fn().mockResolvedValue([{ id: 9 }]),
@@ -119,10 +118,10 @@ describe('postService', () => {
   });
 
   describe('like', () => {
-    it('registra a curtida, incrementa e notifica o autor', async () => {
+    it('registra a curtida, devolve o total contado e notifica o autor', async () => {
       expect(await service.like(1, 7)).toBe(6);
-      expect(likes.add).toHaveBeenCalledWith({ postId: 1, autorId: 2, usuarioId: 7 });
-      expect(posts.incrementLikes).toHaveBeenCalledWith(1);
+      expect(likes.add).toHaveBeenCalledWith({ postId: 1, usuarioId: 7 });
+      expect(likes.countByPost).toHaveBeenCalledWith(1);
       expect(notifications.create).toHaveBeenCalledWith({
         destinatarioId: 2,
         autorId: 7,
@@ -141,7 +140,6 @@ describe('postService', () => {
       likes.hasLiked.mockResolvedValue(true);
       expect(await service.like(1, 7)).toBe(5);
       expect(likes.add).not.toHaveBeenCalled();
-      expect(posts.incrementLikes).not.toHaveBeenCalled();
     });
 
     it('lança 404 para post inexistente', async () => {
@@ -151,11 +149,11 @@ describe('postService', () => {
   });
 
   describe('unlike', () => {
-    it('remove a curtida, decrementa e apaga a notificação', async () => {
+    it('remove a curtida, devolve o total contado e apaga a notificação', async () => {
       likes.hasLiked.mockResolvedValue(true);
+      likes.countByPost.mockResolvedValue(4);
       expect(await service.unlike(1, 7)).toBe(4);
       expect(likes.remove).toHaveBeenCalledWith(1, 7);
-      expect(posts.decrementLikes).toHaveBeenCalledWith(1);
       expect(notifications.removeLike).toHaveBeenCalledWith(1, 7);
     });
 
