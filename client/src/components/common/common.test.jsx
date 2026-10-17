@@ -26,6 +26,20 @@ describe('Modal', () => {
     expect(onClose).toHaveBeenCalledTimes(3);
   });
 
+  it('trava a rolagem da página de trás enquanto está aberto', () => {
+    const { rerender } = render(<Modal open title="T" onClose={vi.fn()}>x</Modal>);
+    expect(document.body).toHaveClass('modal-open');
+    rerender(<Modal open={false} title="T" onClose={vi.fn()}>x</Modal>);
+    expect(document.body).not.toHaveClass('modal-open');
+  });
+
+  it('a variante "sheet" acompanha a área visível acima do teclado', () => {
+    window.visualViewport = { height: 400, offsetTop: 0, addEventListener() {}, removeEventListener() {} };
+    render(<Modal open title="T" onClose={vi.fn()} variant="sheet">x</Modal>);
+    expect(document.documentElement.style.getPropertyValue('--vvh')).toBe('400px');
+    delete window.visualViewport;
+  });
+
   it('clicar dentro do conteúdo não fecha', async () => {
     const onClose = vi.fn();
     render(<Modal open title="T" onClose={onClose}><p>dentro</p></Modal>);

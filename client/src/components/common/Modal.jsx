@@ -1,6 +1,8 @@
 import { useEffect, useId } from 'react';
+import { useVisualViewportVars } from '../../hooks/useVisualViewport.js';
 
 // variant "panel": painel ancorado no canto superior direito (notificações); no celular ocupa a largura.
+// variant "sheet": no celular ocupa a tela a partir do topo e encolhe para caber acima do teclado.
 export function Modal({ open, title, onClose, children, centered = false, variant = 'dialog' }) {
   const titleId = useId();
 
@@ -12,6 +14,15 @@ export function Modal({ open, title, onClose, children, centered = false, varian
     document.addEventListener('keydown', closeOnEscape);
     return () => document.removeEventListener('keydown', closeOnEscape);
   }, [open, onClose]);
+
+  // Trava a rolagem da página de trás (classe do Bootstrap: overflow hidden no body).
+  useEffect(() => {
+    if (!open) return undefined;
+    document.body.classList.add('modal-open');
+    return () => document.body.classList.remove('modal-open');
+  }, [open]);
+
+  useVisualViewportVars(open && variant === 'sheet');
 
   if (!open) return null;
 
