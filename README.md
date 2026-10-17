@@ -76,13 +76,12 @@ para testar rotas sem banco e serviços sem HTTP.
 | --- | --- | --- |
 | GET | `/api/auth/me` | usuário da sessão (401 se deslogado) |
 | POST | `/api/auth/login` | `{ email, senha }` |
-| POST | `/api/auth/register` | multipart: `nome`, `email`, `senha`, `imagem?` |
+| POST | `/api/auth/register` | `{ email, senha }` |
 | POST | `/api/auth/logout` | encerra a sessão |
 | GET | `/api/posts?feed=foryou\|seguindo` | feed |
-| POST | `/api/posts` | cria post |
-| GET / DELETE | `/api/posts/:id` | detalhe com comentários / apagar (só o autor) |
+| POST | `/api/posts` | cria post; com `parentId` vira comentário. Música opcional (com música, `nota` de 0 a 10 é obrigatória) |
+| GET / DELETE | `/api/posts/:id` | `{ post, pai, respostas }` / apagar com as respostas (só o autor) |
 | POST / DELETE | `/api/posts/:id/like` | curtir / descurtir → `{ likes }` |
-| POST | `/api/posts/:id/comments` | `{ texto }` |
 | GET | `/api/users/:id` | perfil, posts, seguidores e seguindo |
 | PUT | `/api/users/me` | multipart: `nome`, `bio`, `foto?` |
 | POST / DELETE | `/api/users/:id/follow` | seguir / deixar de seguir |

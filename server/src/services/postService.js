@@ -20,10 +20,16 @@ export function fisherYatesShuffle(list) {
 const pick = (source, fields) =>
   Object.fromEntries(fields.filter((f) => source[f] !== undefined).map((f) => [f, source[f]]));
 
+const parseParentId = (value) => {
+  if (value === undefined || value === null || value === '') return undefined;
+  const id = Number(value);
+  if (!Number.isInteger(id) || id <= 0) throw badRequest('Post respondido inválido.');
+  return id;
+};
+
 export function createPostService({
   posts,
   likes,
-  comments,
   notifications,
   shuffle = fisherYatesShuffle,
   now = () => new Date(),
@@ -59,23 +65,37 @@ export function createPostService({
 
     async get(postId, viewerId) {
       const post = await findOrFail(postId);
-      const [curtido, comentarios] = await Promise.all([
+      const [curtido, pai, respostas] = await Promise.all([
         likes.hasLiked(postId, viewerId),
-        comments.listByPost(postId),
+        post.parentId ? posts.findById(post.parentId) : null,
+        posts.listReplies(postId),
       ]);
-      return { post: { ...post, curtido }, comentarios };
+      const [paiMarcado = null] = pai ? await markLiked([pai], viewerId) : [];
+      return { post: { ...post, curtido }, pai: paiMarcado, respostas: await markLiked(respostas, viewerId) };
     },
 
+    // Serve para posts e respostas (com parentId). A música é opcional; com ela, a nota é obrigatória.
     async create(autorId, body) {
       const data = pick(body, CREATE_FIELDS);
-      if (!data.musicName && !data.albumName) throw badRequest('Escolha uma música ou álbum.');
+      if (data.texto !== undefined) data.texto = String(data.texto).trim();
+      const parentId = parseParentId(body.parentId);
+      const hasMusic = Boolean(data.musicName || data.albumName);
 
-      const nota = parseNota(data.nota);
-      if (nota === null) throw badRequest('Dê uma nota de 0 a 10.');
-      if (!isValidNota(nota)) throw badRequest('A nota deve ser um número inteiro de 0 a 10.');
+      if (hasMusic) {
+        const nota = parseNota(data.nota);
+        if (nota === null) throw badRequest('Dê uma nota de 0 a 10.');
+        if (!isValidNota(nota)) throw badRequest('A nota deve ser um número inteiro de 0 a 10.');
+        data.nota = nota;
+      } else {
+        if (!data.texto) throw badRequest('Escreva algo ou escolha uma música.');
+        data.nota = null;
+      }
       if ((data.texto ?? '').length > TEXTO_MAX) throw badRequest(`O texto pode ter no máximo ${TEXTO_MAX} caracteres.`);
 
-      return posts.create({ ...data, nota, autorId, data: now() });
+      const pai = parentId === undefined ? null : await findOrFail(parentId);
+      const id = await posts.create({ ...data, ...(pai && { parentId }), autorId, data: now() });
+      if (pai) await notifyAuthor(pai, autorId, 'comment', 'comentou no seu post');
+      return id;
     },
 
     async remove(postId, usuarioId) {
@@ -100,16 +120,6 @@ export function createPostService({
       await likes.remove(postId, usuarioId);
       await notifications.removeLike(postId, usuarioId);
       return likes.countByPost(postId);
-    },
-
-    async comment(postId, usuarioId, texto) {
-      const clean = (texto ?? '').trim();
-      if (!clean) throw badRequest('O comentário não pode ser vazio.');
-
-      const post = await findOrFail(postId);
-      const id = await comments.create({ postId, usuarioId, texto: clean });
-      await notifyAuthor(post, usuarioId, 'comment', 'comentou no seu post');
-      return id;
     },
   };
 }

@@ -17,7 +17,6 @@ describe('endpoints da API', () => {
     ['postsApi.remove', () => postsApi.remove(3), ['/posts/3', { method: 'DELETE' }]],
     ['postsApi.like', () => postsApi.like(3), ['/posts/3/like', { method: 'POST' }]],
     ['postsApi.unlike', () => postsApi.unlike(3), ['/posts/3/like', { method: 'DELETE' }]],
-    ['postsApi.comment', () => postsApi.comment(3, 'oi'), ['/posts/3/comments', { method: 'POST', body: { texto: 'oi' } }]],
     ['usersApi.profile', () => usersApi.profile(2), ['/users/2']],
     ['usersApi.follow', () => usersApi.follow(2), ['/users/2/follow', { method: 'POST' }]],
     ['usersApi.unfollow', () => usersApi.unfollow(2), ['/users/2/follow', { method: 'DELETE' }]],

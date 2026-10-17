@@ -63,9 +63,12 @@ describe('CreatePost', () => {
   });
 
   const open = () => userEvent.click(screen.getByRole('button', { name: 'Criar post' }));
+  const texto = () => screen.getByLabelText('O que você quer dizer?');
+  const addMusic = () => userEvent.click(screen.getByRole('button', { name: 'Adicionar música' }));
   const search = (term) => userEvent.type(screen.getByLabelText('Buscar música'), term);
   const chooseHelp = async () => {
     await open();
+    await addMusic();
     await search('help');
     await userEvent.click(await screen.findByRole('button', { name: /Help!/ }));
   };
@@ -75,18 +78,53 @@ describe('CreatePost', () => {
     expect(screen.queryByRole('dialog')).toBeNull();
   });
 
-  it('abre o diálogo "Novo post" com a busca focada e uma dica', async () => {
+  it('abre o diálogo "Novo post" com o texto focado e "Publicar" desligado enquanto vazio', async () => {
     render(<CreatePost onCreated={vi.fn()} />);
     await open();
 
     expect(screen.getByRole('dialog', { name: 'Novo post' })).toBeInTheDocument();
+    expect(texto()).toHaveFocus();
+    expect(screen.getByRole('button', { name: 'Publicar' })).toBeDisabled();
+  });
+
+  it('publica só texto, sem música, fecha e avisa o feed', async () => {
+    const onCreated = vi.fn();
+    render(<CreatePost onCreated={onCreated} />);
+    await open();
+
+    await userEvent.type(texto(), '  alguém vai no show sábado?  ');
+    await userEvent.click(screen.getByRole('button', { name: 'Publicar' }));
+
+    expect(postsApi.create).toHaveBeenCalledWith({ texto: 'alguém vai no show sábado?' });
+    await waitFor(() => expect(onCreated).toHaveBeenCalled());
+    expect(screen.queryByRole('dialog')).toBeNull();
+  });
+
+  it('conta os caracteres do texto', async () => {
+    render(<CreatePost onCreated={vi.fn()} />);
+    await open();
+    await userEvent.type(texto(), 'clássico');
+    expect(screen.getByText('8/500')).toBeInTheDocument();
+    expect(texto()).toHaveAttribute('maxLength', '500');
+  });
+
+  it('"Adicionar música" abre a busca focada; "Voltar" volta sem perder o texto', async () => {
+    render(<CreatePost onCreated={vi.fn()} />);
+    await open();
+    await userEvent.type(texto(), 'rascunho');
+    await addMusic();
+
     expect(screen.getByLabelText('Buscar música')).toHaveFocus();
     expect(screen.getByText('Digite o nome de uma música ou artista.')).toBeInTheDocument();
+
+    await userEvent.click(screen.getByRole('button', { name: 'Voltar' }));
+    expect(texto()).toHaveValue('rascunho');
   });
 
   it('busca com debounce e lista as faixas com artista e duração', async () => {
     render(<CreatePost onCreated={vi.fn()} />);
     await open();
+    await addMusic();
     await search('help');
 
     const results = await screen.findByRole('list', { name: 'Resultados' });
@@ -100,6 +138,7 @@ describe('CreatePost', () => {
     musicApi.search.mockReturnValue(new Promise(() => {}));
     render(<CreatePost onCreated={vi.fn()} />);
     await open();
+    await addMusic();
     await search('help');
     expect(await screen.findByRole('status')).toHaveTextContent('Buscando…');
   });
@@ -108,6 +147,7 @@ describe('CreatePost', () => {
     musicApi.search.mockResolvedValue([]);
     render(<CreatePost onCreated={vi.fn()} />);
     await open();
+    await addMusic();
     await search('xyz');
     expect(await screen.findByText('Nada encontrado para “xyz”.')).toBeInTheDocument();
   });
@@ -116,11 +156,12 @@ describe('CreatePost', () => {
     musicApi.search.mockRejectedValue(new Error('offline'));
     render(<CreatePost onCreated={vi.fn()} />);
     await open();
+    await addMusic();
     await search('help');
     expect(await screen.findByRole('alert')).toHaveTextContent('Não foi possível buscar agora. Tente de novo.');
   });
 
-  it('escolher a faixa leva à avaliação; publicar só depois de dar a nota', async () => {
+  it('com música escolhida, publicar só depois de dar a nota', async () => {
     render(<CreatePost onCreated={vi.fn()} />);
     await chooseHelp();
 
@@ -135,14 +176,6 @@ describe('CreatePost', () => {
     expect(publicar).toBeEnabled();
   });
 
-  it('conta os caracteres do texto', async () => {
-    render(<CreatePost onCreated={vi.fn()} />);
-    await chooseHelp();
-    await userEvent.type(screen.getByLabelText('O que você achou?'), 'clássico');
-    expect(screen.getByText('8/500')).toBeInTheDocument();
-    expect(screen.getByLabelText('O que você achou?')).toHaveAttribute('maxLength', '500');
-  });
-
   it('"Trocar música" volta para a busca com os resultados de antes', async () => {
     render(<CreatePost onCreated={vi.fn()} />);
     await chooseHelp();
@@ -153,12 +186,23 @@ describe('CreatePost', () => {
     expect(screen.getByRole('button', { name: /Yesterday/ })).toBeInTheDocument();
   });
 
-  it('publica com a nota de 0 a 10, fecha e avisa o feed', async () => {
-    const onCreated = vi.fn();
-    render(<CreatePost onCreated={onCreated} />);
+  it('"Remover música" tira a música e a nota', async () => {
+    render(<CreatePost onCreated={vi.fn()} />);
+    await chooseHelp();
+    await userEvent.click(screen.getByRole('button', { name: 'Estrela 4' }));
+
+    await userEvent.click(screen.getByRole('button', { name: 'Remover música' }));
+
+    expect(screen.queryByRole('group', { name: 'Música escolhida' })).toBeNull();
+    expect(screen.queryByRole('group', { name: 'Nota de 0 a 10' })).toBeNull();
+    expect(screen.getByRole('button', { name: 'Adicionar música' })).toBeInTheDocument();
+  });
+
+  it('publica com a música e a nota de 0 a 10', async () => {
+    render(<CreatePost onCreated={vi.fn()} />);
     await chooseHelp();
 
-    await userEvent.type(screen.getByLabelText('O que você achou?'), '  clássico  ');
+    await userEvent.type(texto(), '  clássico  ');
     await userEvent.click(screen.getByRole('button', { name: 'Estrela 5' }));
     await userEvent.click(screen.getByRole('button', { name: 'Publicar' }));
 
@@ -172,31 +216,31 @@ describe('CreatePost', () => {
       musicPreview: 'help.mp3',
       nota: 9,
     });
-    await waitFor(() => expect(onCreated).toHaveBeenCalled());
-    expect(screen.queryByRole('dialog')).toBeNull();
   });
 
   it('mostra o erro do servidor e mantém o que foi preenchido', async () => {
     postsApi.create.mockRejectedValue(new Error('A nota deve ser um número inteiro de 0 a 10.'));
     render(<CreatePost onCreated={vi.fn()} />);
     await chooseHelp();
-    await userEvent.type(screen.getByLabelText('O que você achou?'), 'ótima');
+    await userEvent.type(texto(), 'ótima');
     await userEvent.dblClick(screen.getByRole('button', { name: 'Estrela 3' }));
     expect(screen.getByText('6/10 · Bom')).toBeInTheDocument();
     await userEvent.click(screen.getByRole('button', { name: 'Publicar' }));
 
     expect(await screen.findByRole('alert')).toHaveTextContent('A nota deve ser um número inteiro de 0 a 10.');
-    expect(screen.getByLabelText('O que você achou?')).toHaveValue('ótima');
+    expect(texto()).toHaveValue('ótima');
     expect(screen.getByRole('button', { name: 'Publicar' })).toBeEnabled();
   });
 
   it('fechar descarta o rascunho', async () => {
     render(<CreatePost onCreated={vi.fn()} />);
     await chooseHelp();
+    await userEvent.type(texto(), 'rascunho');
     await userEvent.click(screen.getByRole('button', { name: 'Fechar' }));
     expect(screen.queryByRole('dialog')).toBeNull();
 
     await open();
-    expect(screen.getByLabelText('Buscar música')).toHaveValue('');
+    expect(texto()).toHaveValue('');
+    expect(screen.queryByRole('group', { name: 'Música escolhida' })).toBeNull();
   });
 });

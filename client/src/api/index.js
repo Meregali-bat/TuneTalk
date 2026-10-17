@@ -10,11 +10,11 @@ export const authApi = {
 export const postsApi = {
   feed: (feed) => request(`/posts?feed=${feed}`),
   get: (id) => request(`/posts/${id}`),
+  // Comentários também são criados aqui, com parentId.
   create: (post) => request('/posts', { method: 'POST', body: post }),
   remove: (id) => request(`/posts/${id}`, { method: 'DELETE' }),
   like: async (id) => (await request(`/posts/${id}/like`, { method: 'POST' })).likes,
   unlike: async (id) => (await request(`/posts/${id}/like`, { method: 'DELETE' })).likes,
-  comment: (id, texto) => request(`/posts/${id}/comments`, { method: 'POST', body: { texto } }),
 };
 
 export const usersApi = {

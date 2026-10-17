@@ -39,7 +39,8 @@ function MusicBlock({ post, postUrl }) {
   );
 }
 
-export function PostCard({ post, onDeleted, commentCount = post.quantidadeComentarios, showMenu = true }) {
+// variant: "feed" (padrão), "detail" (post aberto na página dele) ou "reply" (resposta dentro de um post).
+export function PostCard({ post, onDeleted, commentCount = post.quantidadeComentarios, showMenu = true, variant = 'feed' }) {
   const { user } = useAuth();
   const authorId = useId();
   const postUrl = `/post/${post.id}`;
@@ -51,7 +52,10 @@ export function PostCard({ post, onDeleted, commentCount = post.quantidadeComent
   };
 
   return (
-    <article className="post-card" aria-label={`Post de ${post.autor.nome} sobre ${post.titulo}`}>
+    <article
+      className={`post-card post-card--${variant}`}
+      aria-label={post.titulo ? `Post de ${post.autor.nome} sobre ${post.titulo}` : `Post de ${post.autor.nome}`}
+    >
       <header className="post-card__header">
         <Link to={profileUrl} className="post-card__avatar" tabIndex={-1} aria-hidden="true">
           <img src={post.autor.fotoPerfil} alt="" />
@@ -63,13 +67,16 @@ export function PostCard({ post, onDeleted, commentCount = post.quantidadeComent
         {showMenu && <PostMenu isOwner={user?.id === post.autor.id} onDelete={handleDelete} />}
       </header>
 
-      {post.texto && (
+      {post.texto && variant === 'detail' && (
+        <div className="post-card__text" data-testid="post-text"><p>{post.texto}</p></div>
+      )}
+      {post.texto && variant !== 'detail' && (
         <Link to={postUrl} className="post-card__text" data-testid="post-text">
           <p>{post.texto}</p>
         </Link>
       )}
 
-      <MusicBlock post={post} postUrl={postUrl} />
+      {post.titulo && <MusicBlock post={post} postUrl={postUrl} />}
 
       <footer className="post-card__actions">
         <Link to={postUrl} className="post-action" aria-label={`Comentários: ${commentCount}`}>

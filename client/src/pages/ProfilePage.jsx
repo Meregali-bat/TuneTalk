@@ -12,9 +12,11 @@ import { EditProfileModal } from '../components/profile/EditProfileModal.jsx';
 const formatMedia = (valor) =>
   valor.toLocaleString('pt-BR', { minimumFractionDigits: 1, maximumFractionDigits: 1 });
 
+// Só posts com música têm nota.
 function notaMedia(posts) {
-  if (posts.length === 0) return null;
-  return posts.reduce((soma, post) => soma + post.nota, 0) / posts.length;
+  const notas = posts.map((post) => post.nota).filter((nota) => nota !== null && nota !== undefined);
+  if (notas.length === 0) return null;
+  return notas.reduce((soma, nota) => soma + nota, 0) / notas.length;
 }
 
 function ProfileSkeleton() {

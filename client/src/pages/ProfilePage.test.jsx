@@ -62,6 +62,22 @@ describe('ProfilePage', () => {
     expect(screen.getByText('post 10')).toBeInTheDocument();
   });
 
+  it('a nota média ignora posts sem música', async () => {
+    const soTexto = { ...post(12, null), titulo: null, tipo: null };
+    usersApi.profile.mockResolvedValue(profile({ posts: [post(10, 8), soTexto], quantidadePosts: 2 }));
+    renderProfile();
+    const stats = await screen.findByRole('list', { name: 'Números do perfil' });
+    expect(stats).toHaveTextContent('8,0Nota média');
+  });
+
+  it('sem posts com nota não mostra nota média', async () => {
+    const soTexto = { ...post(12, null), titulo: null, tipo: null };
+    usersApi.profile.mockResolvedValue(profile({ posts: [soTexto], quantidadePosts: 1 }));
+    renderProfile();
+    await screen.findByRole('heading', { level: 1, name: 'bia' });
+    expect(screen.queryByText('Nota média')).toBeNull();
+  });
+
   it('sem posts não mostra nota média', async () => {
     usersApi.profile.mockResolvedValue(profile({ posts: [], quantidadePosts: 0 }));
     renderProfile();

@@ -47,14 +47,22 @@ describe('API fake da demo (serviços reais + banco em memória)', () => {
     expect(liked.body.likes).toBe(post.likes + (post.curtido ? 0 : 1));
     expect((await call('DELETE', `/posts/${post.id}/like`)).body.likes).toBe(post.likes - (post.curtido ? 1 : 0));
 
-    expect((await call('POST', `/posts/${post.id}/comments`, JSON.stringify({ texto: '  ' }))).status).toBe(400);
-    expect((await call('POST', `/posts/${post.id}/comments`, JSON.stringify({ texto: 'massa' }))).status).toBe(201);
-    expect((await call('GET', `/posts/${post.id}`)).body.comentarios[0].texto).toBe('massa');
+    const comentar = (texto) => call('POST', '/posts', JSON.stringify({ texto, parentId: post.id }));
+    expect((await comentar('  ')).status).toBe(400);
+    expect((await comentar('massa')).status).toBe(201);
+    const thread = (await call('GET', `/posts/${post.id}`)).body;
+    expect(thread.respostas.at(-1)).toMatchObject({ texto: 'massa', parentId: post.id, titulo: null, nota: null });
+    expect(thread.post.quantidadeComentarios).toBe(thread.respostas.length);
+    expect((await call('GET', '/posts?feed=foryou')).body.some((p) => p.texto === 'massa')).toBe(false);
 
     const created = await call('POST', '/posts', JSON.stringify({ texto: 'novo', musicName: 'Help!', artistName: 'The Beatles', postType: 'música', nota: 5 }));
     expect(created.status).toBe(201);
     const meus = (await call('GET', `/users/${api.currentUserId()}`)).body.posts;
     expect(meus[0]).toMatchObject({ id: created.body.id, texto: 'novo', titulo: 'Help!' });
+
+    const soTexto = await call('POST', '/posts', JSON.stringify({ texto: 'só texto' }));
+    expect(soTexto.status).toBe(201);
+    expect((await call('GET', `/posts/${soTexto.body.id}`)).body.post).toMatchObject({ texto: 'só texto', titulo: null, nota: null });
   });
 
   it('não deixa apagar post de outra pessoa', async () => {

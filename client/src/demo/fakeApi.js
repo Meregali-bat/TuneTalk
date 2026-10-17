@@ -10,7 +10,7 @@ import { avatar } from './art.js';
 
 export { DEMO_LOGIN };
 
-const STORAGE_KEY = 'tunetalk-demo-v4';
+const STORAGE_KEY = 'tunetalk-demo-v5';
 
 const readState = (storage) => {
   try {
@@ -50,7 +50,7 @@ export function createFakeApi({ storage = globalThis.localStorage } = {}) {
   const build = () => {
     const repos = createMemoryRepositories(state, () => writeState(storage, state));
     const postService = createPostService({
-      posts: repos.posts, likes: repos.likes, comments: repos.comments, notifications: repos.notifications,
+      posts: repos.posts, likes: repos.likes, notifications: repos.notifications,
     });
     services = {
       auth: createAuthService({ users: repos.users }),
@@ -102,7 +102,6 @@ export function createFakeApi({ storage = globalThis.localStorage } = {}) {
     ['DELETE', /^\/posts\/(\d+)$/, async ({ id }) => { await services.posts.remove(id, me()); return noContent(); }],
     ['POST', /^\/posts\/(\d+)\/like$/, async ({ id }) => ok({ likes: await services.posts.like(id, me()) })],
     ['DELETE', /^\/posts\/(\d+)\/like$/, async ({ id }) => ok({ likes: await services.posts.unlike(id, me()) })],
-    ['POST', /^\/posts\/(\d+)\/comments$/, async ({ id, body }) => ok({ id: await services.posts.comment(id, me(), body.texto) }, 201)],
 
     ['PUT', /^\/users\/me\/username$/, async ({ body }) => {
       const { nome } = await services.users.setUsername(signedIn(), body.nome);

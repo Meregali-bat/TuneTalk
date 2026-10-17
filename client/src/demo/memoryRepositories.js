@@ -26,10 +26,11 @@ export function createMemoryRepositories(state, onChange) {
     autor: author(post.autorId),
     _count: {
       curtidas: state.curtidas.filter((c) => c.postId === post.id).length,
-      comentarios: state.comentarios.filter((c) => c.postId === post.id).length,
+      respostas: state.posts.filter((p) => p.parentId === post.id).length,
     },
   });
   const byIdDesc = (a, b) => b.id - a.id;
+  const topLevel = () => state.posts.filter((p) => !p.parentId);
 
   const same = (a, b) => (a ?? '').toLowerCase() === (b ?? '').toLowerCase();
 
@@ -91,14 +92,20 @@ export function createMemoryRepositories(state, onChange) {
 
   const posts = {
     async listLatest() {
-      return [...state.posts].sort((a, b) => b.createdAt.localeCompare(a.createdAt)).slice(0, 20).map(postRow);
+      return topLevel().sort((a, b) => b.createdAt.localeCompare(a.createdAt)).slice(0, 20).map(postRow);
     },
     async listByAuthor(autorId) {
-      return state.posts.filter((p) => p.autorId === autorId).sort(byIdDesc).map(postRow);
+      return topLevel().filter((p) => p.autorId === autorId).sort(byIdDesc).map(postRow);
     },
     async listFromFollowed(usuarioId) {
       const followed = new Set(await follows.followingIds(usuarioId));
-      return state.posts.filter((p) => followed.has(p.autorId)).sort(byIdDesc).map(postRow);
+      return topLevel().filter((p) => followed.has(p.autorId)).sort(byIdDesc).map(postRow);
+    },
+    async listReplies(parentId) {
+      return state.posts
+        .filter((p) => p.parentId === parentId)
+        .sort((a, b) => a.createdAt.localeCompare(b.createdAt) || a.id - b.id)
+        .map(postRow);
     },
     async findById(id) {
       const post = state.posts.find((p) => p.id === id);
@@ -106,10 +113,11 @@ export function createMemoryRepositories(state, onChange) {
     },
     async create(post) {
       const id = nextId('posts');
-      const nota = Number(post.nota);
+      const nota = post.nota == null ? null : Number(post.nota);
       state.posts.push({
         id,
         autorId: post.autorId,
+        parentId: post.parentId ?? null,
         texto: post.texto ?? '',
         musicName: post.musicName ?? null,
         artistName: post.artistName ?? null,
@@ -118,17 +126,28 @@ export function createMemoryRepositories(state, onChange) {
         posterAlbum: post.posterAlbum ?? null,
         postType: post.postType ?? null,
         releaseDate: post.releaseDate == null ? null : String(post.releaseDate),
-        nota: Number.isFinite(nota) ? nota : 0,
+        nota: Number.isFinite(nota) ? nota : null,
         musicPreview: post.musicPreview ?? null,
         createdAt: post.data.toISOString(),
       });
       return changed(id);
     },
+    // Como o ON DELETE CASCADE do banco: leva junto as respostas, e as respostas delas.
     async remove(id) {
-      state.posts = state.posts.filter((p) => p.id !== id);
-      state.comentarios = state.comentarios.filter((c) => c.postId !== id);
-      state.curtidas = state.curtidas.filter((c) => c.postId !== id);
-      state.notificacoes = state.notificacoes.filter((n) => n.postId !== id);
+      const removed = new Set([id]);
+      let grew = true;
+      while (grew) {
+        grew = false;
+        for (const p of state.posts) {
+          if (p.parentId && removed.has(p.parentId) && !removed.has(p.id)) {
+            removed.add(p.id);
+            grew = true;
+          }
+        }
+      }
+      state.posts = state.posts.filter((p) => !removed.has(p.id));
+      state.curtidas = state.curtidas.filter((c) => !removed.has(c.postId));
+      state.notificacoes = state.notificacoes.filter((n) => !removed.has(n.postId));
       changed();
     },
   };
@@ -150,20 +169,6 @@ export function createMemoryRepositories(state, onChange) {
     },
     async countByPost(postId) {
       return state.curtidas.filter((c) => c.postId === postId).length;
-    },
-  };
-
-  const comments = {
-    async create({ postId, usuarioId, texto }) {
-      const id = nextId('comentarios');
-      state.comentarios.push({ id, postId, autorId: usuarioId, texto });
-      return changed(id);
-    },
-    async listByPost(postId) {
-      return state.comentarios
-        .filter((c) => c.postId === postId)
-        .sort(byIdDesc)
-        .map((c) => ({ id: c.id, texto: c.texto, autor: author(c.autorId) }));
     },
   };
 
@@ -195,5 +200,5 @@ export function createMemoryRepositories(state, onChange) {
     },
   };
 
-  return { users, follows, posts, likes, comments, notifications };
+  return { users, follows, posts, likes, notifications };
 }

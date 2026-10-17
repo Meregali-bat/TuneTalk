@@ -81,6 +81,24 @@ describe('PostCard', () => {
     expect(screen.queryByTestId('post-text')).toBeNull();
   });
 
+  describe('sem música', () => {
+    const textPost = { ...musicPost, tipo: null, titulo: null, artista: null, capa: null, nota: null, preview: null };
+
+    it('é identificado só pelo autor e não mostra bloco de música nem nota', () => {
+      renderWithProviders(<PostCard post={textPost} />);
+      expect(screen.getByRole('article', { name: 'Post de Bia' })).toBeInTheDocument();
+      expect(screen.getByText('que som')).toBeInTheDocument();
+      expect(screen.queryByRole('img', { name: /Poster/ })).toBeNull();
+      expect(screen.queryByText(/\/10/)).toBeNull();
+    });
+  });
+
+  it('no destaque (página do post) o texto não é link', () => {
+    renderWithProviders(<PostCard post={musicPost} variant="detail" />);
+    expect(screen.getByText('que som').closest('a')).toBeNull();
+    expect(screen.getByRole('article')).toHaveClass('post-card--detail');
+  });
+
   it('usa a contagem de comentários informada quando fornecida', () => {
     renderWithProviders(<PostCard post={musicPost} commentCount={5} />);
     expect(screen.getByRole('link', { name: /Comentários: 5/ })).toBeInTheDocument();

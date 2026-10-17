@@ -26,7 +26,6 @@ model Usuario {
   admin      Boolean @default(false)
 
   posts                 Post[]
-  comentarios           Comentario[]
   curtidas              Curtida[]
   seguindo              Seguimento[]  @relation("seguidor")
   seguidores            Seguimento[]  @relation("seguido")
@@ -36,6 +35,7 @@ model Usuario {
   @@map("usuarios")
 }
 
+// Comentários também são posts: uma resposta aponta para o post pai e pode ter música ou não.
 model Post {
   id           Int      @id @default(autoincrement())
   texto        String   @db.VarChar(5000)
@@ -47,34 +47,23 @@ model Post {
   postType     String?  @map("post_type") @db.VarChar(20)
   // Faixas guardam a duração em segundos; álbuns, a data de lançamento.
   releaseDate  String?  @map("release_date") @db.VarChar(20)
-  // De 0 a 10: cada ponto é meia estrela.
-  nota         Int      @default(0)
+  // De 0 a 10: cada ponto é meia estrela. Vazia quando o post não tem música.
+  nota         Int?
   musicPreview String?  @map("music_preview") @db.VarChar(2000)
   createdAt    DateTime @default(now()) @map("created_at")
   autorId      Int      @map("autor_id")
+  parentId     Int?     @map("parent_id")
 
   autor        Usuario       @relation(fields: [autorId], references: [id], onDelete: Cascade)
-  comentarios  Comentario[]
+  pai          Post?         @relation("respostas", fields: [parentId], references: [id], onDelete: Cascade)
+  respostas    Post[]        @relation("respostas")
   curtidas     Curtida[]
   notificacoes Notificacao[]
 
   @@index([autorId])
   @@index([createdAt])
+  @@index([parentId])
   @@map("posts")
-}
-
-model Comentario {
-  id        Int      @id @default(autoincrement())
-  texto     String   @db.VarChar(500)
-  createdAt DateTime @default(now()) @map("created_at")
-  postId    Int      @map("post_id")
-  autorId   Int      @map("autor_id")
-
-  post  Post    @relation(fields: [postId], references: [id], onDelete: Cascade)
-  autor Usuario @relation(fields: [autorId], references: [id], onDelete: Cascade)
-
-  @@index([postId])
-  @@map("comentarios")
 }
 
 model Curtida {

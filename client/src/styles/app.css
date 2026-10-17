@@ -1,97 +1,10 @@
-/* Estilos das páginas autenticadas (antes: header.css + index.css). */
+/* Base da área logada (antes: header.css + index.css). O resto do visual está em appShell.css. */
 .layout-app {
-  /* variáveis e estilos de body do CSS original */
-
-        --linhas: #2A343C;
-        --texto: #fcfffc;
-        --background: #000505;
-        --destaque: #2ba84a;
-        --destaque-negativo: #F55B64;
-    
-
-        background-color: var(--background);
-        font-family: 'Geologica', sans-serif;
-    
   min-height: 100vh;
+  background-color: #000505;
+  font-family: 'Geologica', sans-serif;
 
-/* --- index.css: partes ainda usadas por perfil, página do post e criação de post --- */
-    a{
-        text-decoration: none;
-    }
-
-    .user-profile-picture{
-        width: 50px;
-        height: 50px;
-        border-radius: 50%;
-    }
-
-    /* Aqui acaba a for you */
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-    
-    
-    
-    
-    .comentario-form{
-        display: flex;
-        flex-direction: row;
-        width: 100%;
-        margin-top: 1rem;
-        justify-content: space-between;
-    }
-
-    .comment-input{
-        width: 80%;
-        padding: 1rem;
-        background-color: var(--background);
-        border: 1px solid var(--destaque);
-        color: var(--texto);
-        border-radius: 8px;
-    }
-
-    .comment-button{
-        width: 15%;
-        background-color: var(--background);
-        border: 1px solid var(--destaque);
-        color: var(--texto);
-        border-radius: 64px;
-    }
-
-    .comment{
-        color: var(--texto);
-        margin-top: 3rem;
-        width: 80%;
-        margin-left: 10%;
-        padding-right: 10%;
-        display: flex;
-        word-break: break-all;
-    }
-
-    .comment:last-of-type {
-        margin-bottom: 20px;
-    }
-
-    .nome-texto{
-        margin-left: 1rem;
-    }
-
-
-
-
-
+  a {
+    text-decoration: none;
+  }
 }

@@ -88,12 +88,15 @@ describe('rotas /api/posts', () => {
     expect(deps.postService.unlike).toHaveBeenCalledWith(3, 1);
   });
 
-  it('POST /api/posts/:id/comments comenta', async () => {
-    deps.postService.comment.mockResolvedValue(9);
-    const res = await agent.post('/api/posts/3/comments').send({ texto: 'massa' });
+  it('POST /api/posts com parentId cria uma resposta (comentário)', async () => {
+    deps.postService.create.mockResolvedValue(9);
+    const res = await agent.post('/api/posts').send({ texto: 'massa', parentId: 3 });
     expect(res.status).toBe(201);
-    expect(res.body).toEqual({ id: 9 });
-    expect(deps.postService.comment).toHaveBeenCalledWith(3, 1, 'massa');
+    expect(deps.postService.create).toHaveBeenCalledWith(1, { texto: 'massa', parentId: 3 });
+  });
+
+  it('a rota antiga de comentários não existe mais', async () => {
+    await agent.post('/api/posts/3/comments').send({ texto: 'massa' }).expect(404);
   });
 
   it('erros inesperados viram 500 sem vazar detalhes', async () => {

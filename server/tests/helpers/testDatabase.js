@@ -6,7 +6,7 @@ import { PrismaClient } from '../../src/generated/prisma/client.ts';
 
 const migrationsDir = path.resolve(import.meta.dirname, '../../../prisma/migrations');
 
-const TABLES = ['notificacoes', 'curtidas', 'comentarios', 'seguimentos', 'posts', 'usuarios'];
+const TABLES = ['notificacoes', 'curtidas', 'seguimentos', 'posts', 'usuarios'];
 
 /**
  * Postgres em memória (PGlite) com as migrations reais aplicadas.
@@ -47,5 +47,7 @@ export function seed(prisma) {
       prisma.post.create({
         data: { autorId, texto: 'texto', musicName: 'Help!', artistName: 'The Beatles', postType: 'música', nota: 8, ...data },
       }),
+    reply: (parentId, autorId, data = {}) =>
+      prisma.post.create({ data: { parentId, autorId, texto: 'resposta', ...data } }),
   };
 }

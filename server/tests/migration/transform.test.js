@@ -38,8 +38,9 @@ describe('transformLegacyData', () => {
       posterAlbum: null, postType: 'música', releaseDate: '138', nota: 8, musicPreview: 'x.mp3',
       createdAt: new Date('2023-12-01T15:30:00Z'),
     }]);
-    expect(data.comentarios).toEqual([
-      { id: 5, texto: 'oi', postId: 10, autorId: 2, createdAt: new Date('2023-12-01T15:30:00Z') },
+    // Comentários viram respostas: posts sem música com o post comentado como pai.
+    expect(data.respostas).toEqual([
+      { id: 11, parentId: 10, autorId: 2, texto: 'oi', nota: null, createdAt: new Date('2023-12-01T15:30:00Z') },
     ]);
     expect(data.curtidas).toEqual([{ postId: 10, usuarioId: 2 }]);
     expect(data.seguimentos).toEqual([{ seguidorId: 2, seguidoId: 1 }]);
@@ -62,7 +63,7 @@ describe('transformLegacyData', () => {
     }));
 
     expect(data.posts.map((p) => p.id)).toEqual([10]);
-    expect(data.comentarios).toEqual([]);
+    expect(data.respostas).toEqual([]);
     expect(data.curtidas).toEqual([]);
     expect(data.seguimentos).toEqual([]);
     expect(data.notificacoes).toEqual([]);
@@ -101,6 +102,17 @@ describe('transformLegacyData', () => {
     expect(data.posts.map((p) => p.nota)).toEqual([0, 6, 10, 0]);
   });
 
+  it('numera as respostas depois do maior id de post, na ordem dos comentários', () => {
+    const { data } = transformLegacyData(legacy({
+      post: table([post(10, 1), post(30, 2)]),
+      comentarios: table([
+        { idcomentarios: 9, texto: 'b', likes: 0, post_idpost: 10, usuario_idusuario: 1 },
+        { idcomentarios: 4, texto: 'a', likes: 0, post_idpost: 30, usuario_idusuario: 2 },
+      ]),
+    }));
+    expect(data.respostas.map((r) => [r.id, r.texto, r.parentId])).toEqual([[31, 'a', 30], [32, 'b', 10]]);
+  });
+
   it('remove curtidas e seguimentos repetidos', () => {
     const { data } = transformLegacyData(legacy({
       curtir: table([
@@ -121,7 +133,7 @@ describe('transformLegacyData', () => {
 
   it('resume quantos registros entram de cada tabela', () => {
     expect(transformLegacyData(legacy()).report.imported).toEqual({
-      usuarios: 2, posts: 1, comentarios: 1, curtidas: 1, seguimentos: 1, notificacoes: 2,
+      usuarios: 2, posts: 1, respostas: 1, curtidas: 1, seguimentos: 1, notificacoes: 2,
     });
   });
 });

@@ -6,7 +6,6 @@ const post = (id, autorId = 2, extra = {}) => ({ id, likes: 0, autor: { id: auto
 describe('postService', () => {
   let posts;
   let likes;
-  let comments;
   let notifications;
   let service;
   const now = new Date('2024-05-05T12:00:00Z');
@@ -17,6 +16,7 @@ describe('postService', () => {
       listFromFollowed: vi.fn().mockResolvedValue([post(3)]),
       listByAuthor: vi.fn().mockResolvedValue([post(4)]),
       findById: vi.fn().mockResolvedValue(post(1, 2, { likes: 5 })),
+      listReplies: vi.fn().mockResolvedValue([post(8, 3, { parentId: 1 }), post(9, 7, { parentId: 1 })]),
       create: vi.fn().mockResolvedValue(42),
       remove: vi.fn(),
     };
@@ -27,15 +27,10 @@ describe('postService', () => {
       remove: vi.fn(),
       countByPost: vi.fn().mockResolvedValue(6),
     };
-    comments = {
-      listByPost: vi.fn().mockResolvedValue([{ id: 9 }]),
-      create: vi.fn().mockResolvedValue(9),
-    };
     notifications = { create: vi.fn(), removeLike: vi.fn() };
     service = createPostService({
       posts,
       likes,
-      comments,
       notifications,
       shuffle: (list) => [...list].reverse(),
       now: () => now,
@@ -63,10 +58,30 @@ describe('postService', () => {
   });
 
   describe('get', () => {
-    it('devolve o post com comentários e se foi curtido', async () => {
+    it('devolve o post e as respostas, marcando o que quem vê curtiu', async () => {
       likes.hasLiked.mockResolvedValue(true);
+      likes.likedPostIds.mockResolvedValue([9]);
       const result = await service.get(1, 7);
-      expect(result).toEqual({ post: { ...post(1, 2, { likes: 5 }), curtido: true }, comentarios: [{ id: 9 }] });
+
+      expect(posts.listReplies).toHaveBeenCalledWith(1);
+      expect(result).toEqual({
+        post: { ...post(1, 2, { likes: 5 }), curtido: true },
+        pai: null,
+        respostas: [
+          { ...post(8, 3, { parentId: 1 }), curtido: false },
+          { ...post(9, 7, { parentId: 1 }), curtido: true },
+        ],
+      });
+    });
+
+    it('quando é uma resposta, devolve também o post pai', async () => {
+      posts.findById.mockImplementation(async (id) => (id === 8 ? post(8, 3, { parentId: 1 }) : post(1)));
+      posts.listReplies.mockResolvedValue([]);
+
+      const result = await service.get(8, 7);
+
+      expect(result.post.id).toBe(8);
+      expect(result.pai).toEqual({ ...post(1), curtido: false });
     });
 
     it('lança 404 quando o post não existe', async () => {
@@ -102,7 +117,7 @@ describe('postService', () => {
       expect(posts.create.mock.calls.map(([post]) => post.nota)).toEqual([0, 1, 9, 10, 10]);
     });
 
-    it('exige a nota', async () => {
+    it('com música, exige a nota', async () => {
       await expect(service.create(7, { musicName: 'x' })).rejects.toMatchObject({
         status: 400,
         message: 'Dê uma nota de 0 a 10.',
@@ -126,8 +141,53 @@ describe('postService', () => {
       });
     });
 
-    it('exige uma música ou um álbum', async () => {
-      await expect(service.create(7, { texto: 'sem música', nota: 5 })).rejects.toMatchObject({ status: 400 });
+    it('a música é opcional: sem ela o post é só texto e fica sem nota', async () => {
+      await service.create(7, { texto: '  bom dia  ', nota: 8 });
+      expect(posts.create).toHaveBeenCalledWith({ texto: 'bom dia', nota: null, autorId: 7, data: now });
+    });
+
+    it('sem música, exige texto', async () => {
+      await expect(service.create(7, { texto: '   ' })).rejects.toMatchObject({
+        status: 400,
+        message: 'Escreva algo ou escolha uma música.',
+      });
+      expect(posts.create).not.toHaveBeenCalled();
+    });
+
+    describe('respostas (comentários)', () => {
+      it('grava a resposta ligada ao post pai e notifica o autor dele', async () => {
+        await service.create(7, { texto: 'concordo', parentId: '1' });
+
+        expect(posts.findById).toHaveBeenCalledWith(1);
+        expect(posts.create).toHaveBeenCalledWith({ texto: 'concordo', nota: null, parentId: 1, autorId: 7, data: now });
+        expect(notifications.create).toHaveBeenCalledWith({
+          destinatarioId: 2,
+          autorId: 7,
+          tipo: 'comment',
+          conteudo: 'comentou no seu post',
+          postId: 1,
+        });
+      });
+
+      it('a resposta também pode ter música e nota', async () => {
+        await service.create(7, { parentId: 1, musicName: 'Help!', nota: 6 });
+        expect(posts.create.mock.calls[0][0]).toMatchObject({ parentId: 1, musicName: 'Help!', nota: 6 });
+      });
+
+      it('não notifica quem responde o próprio post', async () => {
+        await service.create(2, { texto: 'eu de novo', parentId: 1 });
+        expect(notifications.create).not.toHaveBeenCalled();
+      });
+
+      it('lança 404 quando o post pai não existe', async () => {
+        posts.findById.mockResolvedValue(null);
+        await expect(service.create(7, { texto: 'oi', parentId: 1 })).rejects.toMatchObject({ status: 404 });
+        expect(posts.create).not.toHaveBeenCalled();
+      });
+
+      it('rejeita parentId inválido', async () => {
+        await expect(service.create(7, { texto: 'oi', parentId: 'abc' })).rejects.toMatchObject({ status: 400 });
+      });
     });
   });
 
@@ -191,30 +251,6 @@ describe('postService', () => {
     it('é idempotente: se não curtiu, só devolve a contagem atual', async () => {
       expect(await service.unlike(1, 7)).toBe(5);
       expect(likes.remove).not.toHaveBeenCalled();
-    });
-  });
-
-  describe('comment', () => {
-    it('cria o comentário e notifica o autor', async () => {
-      expect(await service.comment(1, 7, '  massa  ')).toBe(9);
-      expect(comments.create).toHaveBeenCalledWith({ postId: 1, usuarioId: 7, texto: 'massa' });
-      expect(notifications.create).toHaveBeenCalledWith({
-        destinatarioId: 2,
-        autorId: 7,
-        tipo: 'comment',
-        conteudo: 'comentou no seu post',
-        postId: 1,
-      });
-    });
-
-    it('rejeita texto vazio', async () => {
-      await expect(service.comment(1, 7, '   ')).rejects.toMatchObject({ status: 400 });
-      expect(comments.create).not.toHaveBeenCalled();
-    });
-
-    it('lança 404 para post inexistente', async () => {
-      posts.findById.mockResolvedValue(null);
-      await expect(service.comment(1, 7, 'oi')).rejects.toMatchObject({ status: 404 });
     });
   });
 });

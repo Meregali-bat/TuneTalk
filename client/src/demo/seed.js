@@ -33,9 +33,14 @@ const albumPost = (id, autorId, albumName, artistName, releaseDate, texto, nota,
   musicName: null, posterMusica: null, musicPreview: null,
 });
 
+const reply = (id, parentId, autorId, texto, minutes) => ({
+  id, parentId, autorId, texto, nota: null, createdAt: minutesAgo(minutes), postType: null,
+  musicName: null, artistName: null, posterMusica: null, releaseDate: null, musicPreview: null, albumName: null, posterAlbum: null,
+});
+
 export function createSeed() {
   return {
-    seq: { usuarios: 4, posts: 8, comentarios: 4, notificacoes: 3 },
+    seq: { usuarios: 4, posts: 14, notificacoes: 3 },
     session: null,
     usuarios: [
       user(1, 'ana.souza', DEMO_LOGIN.email, 'MPB de manhã, rock à noite'),
@@ -52,12 +57,13 @@ export function createSeed() {
       albumPost(6, 2, 'Abbey Road', 'The Beatles', '1969-09-26', 'O lado B é uma obra-prima.', 10, 2900),
       musicPost(7, 4, 'Tempo Perdido', 'Clássico absoluto do rock nacional.', 7, 4300),
       musicPost(8, 1, 'Velha Infância', 'Música que abraça.', 7, 8000),
-    ],
-    comentarios: [
-      { id: 1, postId: 1, autorId: 1, texto: 'Concordo demais!' },
-      { id: 2, postId: 1, autorId: 3, texto: 'A versão ao vivo também é ótima.' },
-      { id: 3, postId: 4, autorId: 2, texto: 'Elis e Tom juntos, não tem como errar.' },
-      { id: 4, postId: 2, autorId: 4, texto: 'Preciso ouvir esse inteiro.' },
+      // Comentários são posts com pai; podem ter música ou não.
+      reply(9, 1, 1, 'Concordo demais!', 30),
+      reply(10, 1, 3, 'A versão ao vivo também é ótima.', 29),
+      { ...musicPost(11, 4, 'Come Together', 'Se curtiu essa, ouve essa também.', 9, 28), parentId: 1 },
+      reply(12, 4, 2, 'Elis e Tom juntos, não tem como errar.', 25),
+      reply(13, 2, 4, 'Preciso ouvir esse inteiro.', 170),
+      reply(14, 10, 1, 'Qual versão? A do Shea Stadium?', 20),
     ],
     curtidas: [
       { postId: 1, usuarioId: 1 }, { postId: 1, usuarioId: 3 }, { postId: 2, usuarioId: 2 }, { postId: 4, usuarioId: 2 },

@@ -18,6 +18,7 @@ export function createPostRoutes({ postService }) {
     res.json(await loadFeed(currentUserId(req)));
   }));
 
+  // Comentários são posts com parentId no corpo.
   router.post('/', asyncRoute(async (req, res) => {
     const id = await postService.create(currentUserId(req), req.body);
     res.status(201).json({ id });
@@ -38,11 +39,6 @@ export function createPostRoutes({ postService }) {
 
   router.delete('/:id/like', asyncRoute(async (req, res) => {
     res.json({ likes: await postService.unlike(req.params.id, currentUserId(req)) });
-  }));
-
-  router.post('/:id/comments', asyncRoute(async (req, res) => {
-    const id = await postService.comment(req.params.id, currentUserId(req), req.body.texto);
-    res.status(201).json({ id });
   }));
 
   return router;

@@ -77,15 +77,20 @@ export function transformLegacyData(tables) {
     return null;
   };
 
-  const comentarios = [];
-  for (const row of rowsOf(tables, 'comentarios')) {
+  // Comentários viram respostas (posts com pai). Os ids continuam depois do maior id de post.
+  const respostas = [];
+  let nextPostId = Math.max(0, ...posts.map((p) => p.id));
+  const comentariosEmOrdem = [...rowsOf(tables, 'comentarios')].sort((a, b) => a.idcomentarios - b.idcomentarios);
+  for (const row of comentariosEmOrdem) {
     const motivo = missing([['post', row.post_idpost], ['usuario', row.usuario_idusuario]]);
     if (motivo) { skip('comentarios', row.idcomentarios, motivo); continue; }
-    comentarios.push({
-      id: row.idcomentarios,
-      texto: row.texto,
-      postId: row.post_idpost,
+    nextPostId += 1;
+    respostas.push({
+      id: nextPostId,
+      parentId: row.post_idpost,
       autorId: row.usuario_idusuario,
+      texto: row.texto,
+      nota: null,
       // O banco antigo não guardava a data do comentário; usamos a do post.
       createdAt: postsById.get(row.post_idpost).createdAt,
     });
@@ -137,7 +142,7 @@ export function transformLegacyData(tables) {
     });
   }
 
-  const data = { usuarios, posts, comentarios, curtidas, seguimentos, notificacoes };
+  const data = { usuarios, posts, respostas, curtidas, seguimentos, notificacoes };
   const imported = Object.fromEntries(Object.entries(data).map(([name, list]) => [name, list.length]));
   return { data, report: { imported, skipped, adjusted } };
 }

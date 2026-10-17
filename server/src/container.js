@@ -6,7 +6,6 @@ import { createCloudinaryUploader } from './infra/cloudinaryUploader.js';
 import { createUserRepository } from './repositories/userRepository.js';
 import { createPostRepository } from './repositories/postRepository.js';
 import { createLikeRepository } from './repositories/likeRepository.js';
-import { createCommentRepository } from './repositories/commentRepository.js';
 import { createFollowRepository } from './repositories/followRepository.js';
 import { createNotificationRepository } from './repositories/notificationRepository.js';
 import { createAuthService } from './services/authService.js';
@@ -24,11 +23,10 @@ export function buildContainer(config) {
   const users = createUserRepository(prisma);
   const posts = createPostRepository(prisma);
   const likes = createLikeRepository(prisma);
-  const comments = createCommentRepository(prisma);
   const follows = createFollowRepository(prisma);
   const notifications = createNotificationRepository(prisma);
 
-  const postService = createPostService({ posts, likes, comments, notifications });
+  const postService = createPostService({ posts, likes, notifications });
 
   return {
     authService: createAuthService({ users }),

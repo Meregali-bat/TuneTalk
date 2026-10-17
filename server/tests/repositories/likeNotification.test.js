@@ -1,13 +1,11 @@
 import { describe, it, expect, beforeAll, beforeEach, afterAll } from 'vitest';
 import { createTestDatabase, seed } from '../helpers/testDatabase.js';
 import { createLikeRepository } from '../../src/repositories/likeRepository.js';
-import { createCommentRepository } from '../../src/repositories/commentRepository.js';
 import { createNotificationRepository } from '../../src/repositories/notificationRepository.js';
 
-describe('likeRepository, commentRepository e notificationRepository (Postgres)', () => {
+describe('likeRepository e notificationRepository (Postgres)', () => {
   let db;
   let likes;
-  let comments;
   let notifications;
   let ana;
   let bia;
@@ -16,7 +14,6 @@ describe('likeRepository, commentRepository e notificationRepository (Postgres)'
   beforeAll(async () => {
     db = await createTestDatabase();
     likes = createLikeRepository(db.prisma);
-    comments = createCommentRepository(db.prisma);
     notifications = createNotificationRepository(db.prisma);
   });
   beforeEach(async () => {
@@ -47,18 +44,6 @@ describe('likeRepository, commentRepository e notificationRepository (Postgres)'
       await likes.add({ postId: outro.id, usuarioId: bia.id });
       expect((await likes.likedPostIds(bia.id)).sort()).toEqual([post.id, outro.id].sort());
       expect(await likes.likedPostIds(ana.id)).toEqual([]);
-    });
-  });
-
-  describe('comments', () => {
-    it('create e listByPost (mais novos primeiro, com autor)', async () => {
-      const first = await comments.create({ postId: post.id, usuarioId: bia.id, texto: 'primeiro' });
-      const second = await comments.create({ postId: post.id, usuarioId: ana.id, texto: 'segundo' });
-
-      expect(await comments.listByPost(post.id)).toEqual([
-        { id: second, texto: 'segundo', autor: { id: ana.id, nome: 'Ana', fotoPerfil: 'ana.png' } },
-        { id: first, texto: 'primeiro', autor: { id: bia.id, nome: 'Bia', fotoPerfil: 'bia.png' } },
-      ]);
     });
   });
 

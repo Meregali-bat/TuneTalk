@@ -1,25 +1,31 @@
 const POST_INCLUDE = {
   autor: { select: { id: true, nome: true, fotoPerfil: true } },
-  _count: { select: { comentarios: true, curtidas: true } },
+  _count: { select: { respostas: true, curtidas: true } },
 };
+
+// Feeds e perfis mostram só posts principais; respostas aparecem dentro do post pai.
+const TOP_LEVEL = { parentId: null };
 
 const normalizeType = (postType) => (postType === 'album' ? 'album' : 'música');
 
 const toNota = (nota) => {
+  if (nota === null || nota === undefined) return null;
   const value = Number(nota);
-  return Number.isFinite(value) ? value : 0;
+  return Number.isFinite(value) ? value : null;
 };
 
 export function toPost(row) {
-  const tipo = normalizeType(row.postType);
+  const hasMusic = Boolean(row.musicName || row.albumName);
+  const tipo = hasMusic ? normalizeType(row.postType) : null;
   const isAlbum = tipo === 'album';
   return {
     id: row.id,
+    parentId: row.parentId ?? null,
     texto: row.texto,
     likes: row._count.curtidas,
-    nota: row.nota,
+    nota: row.nota ?? null,
     data: row.createdAt.toISOString(),
-    quantidadeComentarios: row._count.comentarios,
+    quantidadeComentarios: row._count.respostas,
     tipo,
     titulo: isAlbum ? row.albumName : row.musicName,
     artista: row.artistName,
@@ -35,18 +41,23 @@ export function createPostRepository(prisma) {
 
   return {
     listLatest() {
-      return findPosts({ orderBy: { createdAt: 'desc' }, take: 20 });
+      return findPosts({ where: TOP_LEVEL, orderBy: { createdAt: 'desc' }, take: 20 });
     },
 
     listByAuthor(autorId) {
-      return findPosts({ where: { autorId }, orderBy: { id: 'desc' } });
+      return findPosts({ where: { ...TOP_LEVEL, autorId }, orderBy: { id: 'desc' } });
     },
 
     listFromFollowed(usuarioId) {
       return findPosts({
-        where: { autor: { seguidores: { some: { seguidorId: usuarioId } } } },
+        where: { ...TOP_LEVEL, autor: { seguidores: { some: { seguidorId: usuarioId } } } },
         orderBy: { id: 'desc' },
       });
+    },
+
+    // Em ordem de conversa: a primeira resposta fica no topo.
+    listReplies(parentId) {
+      return findPosts({ where: { parentId }, orderBy: [{ createdAt: 'asc' }, { id: 'asc' }] });
     },
 
     async findById(id) {
@@ -58,6 +69,7 @@ export function createPostRepository(prisma) {
       const created = await prisma.post.create({
         data: {
           autorId: post.autorId,
+          parentId: post.parentId ?? null,
           texto: post.texto ?? '',
           musicName: post.musicName ?? null,
           artistName: post.artistName ?? null,
@@ -75,7 +87,7 @@ export function createPostRepository(prisma) {
       return created.id;
     },
 
-    // Comentários, curtidas e notificações do post são apagados em cascata pelo banco.
+    // Respostas (e as respostas delas), curtidas e notificações são apagadas em cascata pelo banco.
     async remove(id) {
       await prisma.post.delete({ where: { id } });
     },

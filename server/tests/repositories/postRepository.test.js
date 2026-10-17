@@ -37,10 +37,11 @@ describe('postRepository (Postgres)', () => {
         data,
       });
       await db.prisma.curtida.create({ data: { postId: id, usuarioId: bia.id } });
-      await db.prisma.comentario.create({ data: { postId: id, autorId: bia.id, texto: 'oi' } });
+      await factory.reply(id, bia.id, { texto: 'oi' });
 
       expect(await repo.findById(id)).toEqual({
         id,
+        parentId: null,
         texto: 'que som',
         likes: 1,
         nota: 9,
@@ -75,6 +76,15 @@ describe('postRepository (Postgres)', () => {
       expect(await repo.findById(id)).toMatchObject({ texto: '', nota: 0 });
     });
 
+    it('grava uma resposta sem música: sem tipo, título nem nota', async () => {
+      const pai = await factory.post(ana.id);
+      const id = await repo.create({ autorId: bia.id, parentId: pai.id, texto: 'concordo', data: new Date() });
+
+      expect(await repo.findById(id)).toMatchObject({
+        parentId: pai.id, texto: 'concordo', tipo: null, titulo: null, artista: null, capa: null, nota: null,
+      });
+    });
+
     it('findById devolve null para post inexistente', async () => {
       expect(await repo.findById(9999)).toBeNull();
     });
@@ -88,6 +98,31 @@ describe('postRepository (Postgres)', () => {
     expect(posts).toHaveLength(20);
     expect(posts[0].texto).toBe('p21');
     expect(posts[19].texto).toBe('p2');
+  });
+
+  it('os feeds e o perfil não mostram respostas', async () => {
+    const pai = await factory.post(bia.id);
+    await factory.reply(pai.id, ana.id);
+    await factory.reply(pai.id, bia.id);
+    await db.prisma.seguimento.create({ data: { seguidorId: ana.id, seguidoId: bia.id } });
+
+    expect((await repo.listLatest()).map((p) => p.id)).toEqual([pai.id]);
+    expect(await repo.listByAuthor(ana.id)).toEqual([]);
+    expect((await repo.listFromFollowed(ana.id)).map((p) => p.id)).toEqual([pai.id]);
+  });
+
+  it('listReplies devolve as respostas diretas, mais antigas primeiro, com suas contagens', async () => {
+    const pai = await factory.post(ana.id);
+    const primeira = await factory.reply(pai.id, bia.id, { createdAt: new Date('2024-01-01T10:00:00Z') });
+    const segunda = await factory.reply(pai.id, ana.id, { createdAt: new Date('2024-01-01T11:00:00Z') });
+    await factory.reply(primeira.id, ana.id);
+    await factory.reply((await factory.post(bia.id)).id, ana.id);
+
+    const respostas = await repo.listReplies(pai.id);
+    expect(respostas.map((p) => [p.id, p.parentId, p.quantidadeComentarios])).toEqual([
+      [primeira.id, pai.id, 1],
+      [segunda.id, pai.id, 0],
+    ]);
   });
 
   it('listByAuthor devolve só os posts do autor, mais novos primeiro', async () => {
@@ -107,10 +142,11 @@ describe('postRepository (Postgres)', () => {
     expect((await repo.listFromFollowed(ana.id)).map((p) => p.id)).toEqual([deBia.id]);
   });
 
-  it('remove apaga o post junto com comentários, curtidas e notificações (cascade)', async () => {
+  it('remove apaga o post junto com respostas, curtidas e notificações (cascade)', async () => {
     const post = await factory.post(ana.id);
     await db.prisma.curtida.create({ data: { postId: post.id, usuarioId: bia.id } });
-    await db.prisma.comentario.create({ data: { postId: post.id, autorId: bia.id, texto: 'oi' } });
+    const resposta = await factory.reply(post.id, bia.id);
+    await factory.reply(resposta.id, ana.id);
     await db.prisma.notificacao.create({
       data: { postId: post.id, destinatarioId: ana.id, autorId: bia.id, tipo: 'like', conteudo: 'curtiu seu post' },
     });
@@ -119,7 +155,7 @@ describe('postRepository (Postgres)', () => {
 
     expect(await repo.findById(post.id)).toBeNull();
     expect(await db.prisma.curtida.count()).toBe(0);
-    expect(await db.prisma.comentario.count()).toBe(0);
+    expect(await db.prisma.post.count()).toBe(0);
     expect(await db.prisma.notificacao.count()).toBe(0);
   });
 });
