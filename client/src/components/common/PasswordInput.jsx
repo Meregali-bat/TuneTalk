@@ -4,11 +4,11 @@ export function PasswordInput(props) {
   const [visible, setVisible] = useState(false);
 
   return (
-    <div className="password-container mb-3">
+    <div className="password-field">
       <input {...props} type={visible ? 'text' : 'password'} />
       <button
         type="button"
-        style={{ background: 'none', margin: 0, color: '#000' }}
+        className="password-field__toggle"
         aria-label={visible ? 'Ocultar senha' : 'Mostrar senha'}
         onClick={() => setVisible((v) => !v)}
       >

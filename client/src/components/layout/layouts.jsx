@@ -2,7 +2,7 @@ import { Link, Outlet } from 'react-router-dom';
 import { Header } from './Header.jsx';
 import { asset } from '../../utils/asset.js';
 
-export function PublicLayout({ authForm = false }) {
+export function PublicLayout({ authForm = false, showLinks = true }) {
   return (
     <div className={`layout-public${authForm ? ' auth-form' : ''}`}>
       <header>
@@ -11,10 +11,12 @@ export function PublicLayout({ authForm = false }) {
             <img src={asset('img/tunetalk-logo.svg')} alt="" />
             <span className="titulo-logo">TuneTalk</span>
           </Link>
-          <div className="navegacao__links">
-            <Link className="link-header" to="/login">Entrar</Link>
-            <Link className="link-header link-header--cta" to="/cadastrar">Cadastrar</Link>
-          </div>
+          {showLinks && (
+            <div className="navegacao__links">
+              <Link className="link-header" to="/login">Entrar</Link>
+              <Link className="link-header link-header--cta" to="/cadastrar">Cadastrar</Link>
+            </div>
+          )}
         </nav>
       </header>
       <main>

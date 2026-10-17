@@ -16,19 +16,29 @@ describe('userRepository (Postgres)', () => {
   beforeEach(() => db.reset());
   afterAll(() => db.close());
 
-  it('create grava a senha em md5 e devolve o id', async () => {
-    const id = await repo.create({ nome: 'Ana', email: 'ana@x.com', senha: 'Senha!1', fotoPerfil: 'f.png' });
+  it('create grava a senha em md5, sem nome de usuário, e devolve o id', async () => {
+    const id = await repo.create({ email: 'ana@x.com', senha: 'Senha!1', fotoPerfil: 'f.png' });
 
     const saved = await db.prisma.usuario.findUnique({ where: { id } });
-    expect(saved).toMatchObject({ nome: 'Ana', email: 'ana@x.com', senha: md5('Senha!1'), fotoPerfil: 'f.png' });
+    expect(saved).toMatchObject({ nome: null, email: 'ana@x.com', senha: md5('Senha!1'), fotoPerfil: 'f.png' });
+    expect(await repo.findById(id)).toMatchObject({ id, nome: null });
   });
 
   describe('findByCredentials', () => {
-    beforeEach(() => repo.create({ nome: 'Ana', email: 'ana@x.com', senha: 'Senha!1', fotoPerfil: 'f.png' }));
+    beforeEach(async () => {
+      const id = await repo.create({ email: 'ana@x.com', senha: 'Senha!1', fotoPerfil: 'f.png' });
+      await repo.update(id, { nome: 'Ana' });
+    });
 
     it('devolve o usuário (sem a senha) quando email e senha batem', async () => {
       const user = await repo.findByCredentials('ana@x.com', 'Senha!1');
       expect(user).toEqual({ id: expect.any(Number), nome: 'Ana', email: 'ana@x.com', fotoPerfil: 'f.png', bio: null });
+    });
+
+    it('encontra o email ignorando maiúsculas (inclusive emails antigos gravados com maiúscula)', async () => {
+      await factory.user({ email: 'Legado@X.com', senha: md5('Senha!1') });
+      expect(await repo.findByCredentials('ANA@x.com', 'Senha!1')).toMatchObject({ nome: 'Ana' });
+      expect(await repo.findByCredentials('legado@x.com', 'Senha!1')).toMatchObject({ email: 'Legado@X.com' });
     });
 
     it('devolve null com senha errada ou email inexistente', async () => {
@@ -37,11 +47,22 @@ describe('userRepository (Postgres)', () => {
     });
   });
 
-  it('existsByNameOrEmail detecta nome ou email já usados', async () => {
-    await factory.user({ nome: 'Ana', email: 'ana@x.com' });
-    expect(await repo.existsByNameOrEmail('Ana', 'outro@x.com')).toBe(true);
-    expect(await repo.existsByNameOrEmail('Outra', 'ana@x.com')).toBe(true);
-    expect(await repo.existsByNameOrEmail('Outra', 'outro@x.com')).toBe(false);
+  it('existsByEmail detecta email já cadastrado, ignorando maiúsculas', async () => {
+    await factory.user({ email: 'Ana@x.com' });
+    expect(await repo.existsByEmail('ana@x.com')).toBe(true);
+    expect(await repo.existsByEmail('outro@x.com')).toBe(false);
+  });
+
+  it('isNameTaken ignora maiúsculas e o próprio usuário', async () => {
+    const ana = await factory.user({ nome: 'ana.souza' });
+    expect(await repo.isNameTaken('Ana.Souza')).toBe(true);
+    expect(await repo.isNameTaken('ana.souza', ana.id)).toBe(false);
+    expect(await repo.isNameTaken('bia')).toBe(false);
+  });
+
+  it('o banco não aceita dois usuários com o mesmo nome', async () => {
+    await factory.user({ nome: 'ana' });
+    await expect(factory.user({ nome: 'ana' })).rejects.toMatchObject({ code: 'P2002' });
   });
 
   it('findById devolve o usuário público ou null', async () => {

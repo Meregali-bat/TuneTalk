@@ -29,10 +29,18 @@ describe('endpoints da API', () => {
     expect(request).toHaveBeenCalledWith(...args);
   });
 
-  it('authApi.register e usersApi.updateMe enviam FormData', async () => {
+  it('authApi.register envia só email e senha', async () => {
+    await authApi.register({ email: 'a@a.com', senha: 's' });
+    expect(request).toHaveBeenCalledWith('/auth/register', { method: 'POST', body: { email: 'a@a.com', senha: 's' } });
+  });
+
+  it('usersApi.setUsername define o nome de usuário', async () => {
+    await usersApi.setUsername('ana');
+    expect(request).toHaveBeenCalledWith('/users/me/username', { method: 'PUT', body: { nome: 'ana' } });
+  });
+
+  it('usersApi.updateMe envia FormData', async () => {
     const form = new FormData();
-    await authApi.register(form);
-    expect(request).toHaveBeenCalledWith('/auth/register', { method: 'POST', form });
     await usersApi.updateMe(form);
     expect(request).toHaveBeenCalledWith('/users/me', { method: 'PUT', form });
   });

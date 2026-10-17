@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest';
-import { checkPassword, isPasswordValid } from '../../../shared/passwordRules.js';
+import { checkPassword, isPasswordValid, PASSWORD_RULES } from '../../../shared/passwordRules.js';
 
 describe('passwordRules', () => {
   it('indica quais regras foram cumpridas', () => {
@@ -14,5 +14,9 @@ describe('passwordRules', () => {
     expect(isPasswordValid('abcde!')).toBe(false);
     expect(isPasswordValid('Abcdef')).toBe(false);
     expect(isPasswordValid(undefined)).toBe(false);
+  });
+
+  it('descreve as regras para a interface', () => {
+    expect(PASSWORD_RULES.map(([key]) => key)).toEqual(['length', 'uppercase', 'symbol']);
   });
 });

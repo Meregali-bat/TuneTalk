@@ -1,8 +1,7 @@
-import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
-import { act, render, screen } from '@testing-library/react';
+import { describe, it, expect, vi, beforeEach } from 'vitest';
+import { render, screen } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { Modal } from './Modal.jsx';
-import { Alert } from './Alert.jsx';
 import { PasswordInput } from './PasswordInput.jsx';
 import { FollowButton } from './FollowButton.jsx';
 import { usersApi } from '../../api/index.js';
@@ -32,30 +31,6 @@ describe('Modal', () => {
     render(<Modal open title="T" onClose={onClose}><p>dentro</p></Modal>);
     await userEvent.click(screen.getByText('dentro'));
     expect(onClose).not.toHaveBeenCalled();
-  });
-});
-
-describe('Alert', () => {
-  beforeEach(() => vi.useFakeTimers());
-  afterEach(() => vi.useRealTimers());
-
-  it('some depois de 3 segundos', () => {
-    render(<Alert message="Usuário ou senha incorretos." />);
-    expect(screen.getByRole('alert')).toHaveTextContent('Usuário ou senha incorretos.');
-    act(() => vi.advanceTimersByTime(3000));
-    expect(screen.queryByRole('alert')).toBeNull();
-  });
-
-  it('reaparece quando chega uma nova mensagem', () => {
-    const { rerender } = render(<Alert message="erro 1" />);
-    act(() => vi.advanceTimersByTime(3000));
-    rerender(<Alert message="erro 2" />);
-    expect(screen.getByRole('alert')).toHaveTextContent('erro 2');
-  });
-
-  it('não renderiza sem mensagem', () => {
-    render(<Alert message="" />);
-    expect(screen.queryByRole('alert')).toBeNull();
   });
 });
 

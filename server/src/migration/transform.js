@@ -10,10 +10,12 @@ const rowsOf = (tables, name) => tables[name]?.rows ?? [];
 
 export function transformLegacyData(tables) {
   const skipped = [];
+  const adjusted = [];
   const skip = (tabela, id, motivo) => skipped.push({ tabela, id, motivo });
 
   const usuarios = [];
   const emails = new Map();
+  const nomes = new Set();
   for (const row of rowsOf(tables, 'usuario')) {
     const email = row.email.trim().toLowerCase();
     if (emails.has(email)) {
@@ -21,9 +23,17 @@ export function transformLegacyData(tables) {
       continue;
     }
     emails.set(email, row.idusuario);
+    // O nome passou a ser único: quem repete um nome anterior fica sem nome e escolhe outro ao entrar.
+    let nome = row.nome;
+    if (nomes.has(nome.trim().toLowerCase())) {
+      adjusted.push({ tabela: 'usuario', id: row.idusuario, motivo: `nome "${nome}" repetido; vai escolher outro no próximo login` });
+      nome = null;
+    } else {
+      nomes.add(nome.trim().toLowerCase());
+    }
     usuarios.push({
       id: row.idusuario,
-      nome: row.nome,
+      nome,
       email: row.email.trim(),
       senha: row.senha,
       fotoPerfil: row.fotoPerfil,
@@ -128,5 +138,5 @@ export function transformLegacyData(tables) {
 
   const data = { usuarios, posts, comentarios, curtidas, seguimentos, notificacoes };
   const imported = Object.fromEntries(Object.entries(data).map(([name, list]) => [name, list.length]));
-  return { data, report: { imported, skipped } };
+  return { data, report: { imported, skipped, adjusted } };
 }

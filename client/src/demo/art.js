@@ -11,7 +11,7 @@ const toDataUri = (svg) => `data:image/svg+xml;charset=utf-8,${encodeURIComponen
 
 export function avatar(nome) {
   const [light, dark] = PALETTES[hash(nome) % PALETTES.length];
-  const initials = nome.split(/\s+/).map((part) => part[0]).slice(0, 2).join('').toUpperCase();
+  const initials = nome.split(/[\s._]+/).filter(Boolean).map((part) => part[0]).slice(0, 2).join('').toUpperCase();
   return toDataUri(
     `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100"><rect width="100" height="100" fill="${dark}"/>`
     + `<text x="50" y="62" font-family="sans-serif" font-size="38" font-weight="700" fill="${light}" text-anchor="middle">${escape(initials)}</text></svg>`,

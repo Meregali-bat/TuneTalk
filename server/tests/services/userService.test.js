@@ -15,6 +15,7 @@ describe('userService', () => {
     users = {
       findById: vi.fn(async (id) => ({ 1: ana, 2: bia })[id] ?? null),
       update: vi.fn(),
+      isNameTaken: vi.fn().mockResolvedValue(false),
     };
     follows = {
       isFollowing: vi.fn().mockResolvedValue(false),
@@ -54,11 +55,50 @@ describe('userService', () => {
     });
   });
 
+  describe('setUsername', () => {
+    it('grava o nome de usuário sem espaços em volta', async () => {
+      expect(await service.setUsername(1, '  ana.souza ')).toEqual({ id: 1, nome: 'ana.souza' });
+      expect(users.isNameTaken).toHaveBeenCalledWith('ana.souza', 1);
+      expect(users.update).toHaveBeenCalledWith(1, { nome: 'ana.souza' });
+    });
+
+    it('rejeita nome fora das regras com a regra que faltou', async () => {
+      await expect(service.setUsername(1, 'an')).rejects.toMatchObject({ status: 400, message: 'Use de 3 a 30 caracteres.' });
+      await expect(service.setUsername(1, 'ana souza')).rejects.toMatchObject({
+        status: 400,
+        message: 'Use só letras sem acento, números, ponto e underline.',
+      });
+      expect(users.update).not.toHaveBeenCalled();
+    });
+
+    it('rejeita nome já usado por outra pessoa', async () => {
+      users.isNameTaken.mockResolvedValue(true);
+      await expect(service.setUsername(1, 'bia')).rejects.toMatchObject({
+        status: 409,
+        message: 'Esse nome de usuário já está em uso.',
+      });
+    });
+  });
+
   describe('updateProfile', () => {
     it('atualiza nome, bio e foto', async () => {
-      const updated = await service.updateProfile(1, { nome: 'Ana B', bio: 'nova', fotoPerfil: 'nova.png' });
-      expect(users.update).toHaveBeenCalledWith(1, { nome: 'Ana B', bio: 'nova', fotoPerfil: 'nova.png' });
-      expect(updated).toEqual({ id: 1, nome: 'Ana B', bio: 'nova', fotoPerfil: 'nova.png' });
+      const updated = await service.updateProfile(1, { nome: 'ana_b', bio: 'nova', fotoPerfil: 'nova.png' });
+      expect(users.update).toHaveBeenCalledWith(1, { nome: 'ana_b', bio: 'nova', fotoPerfil: 'nova.png' });
+      expect(updated).toEqual({ id: 1, nome: 'ana_b', bio: 'nova', fotoPerfil: 'nova.png' });
+    });
+
+    it('valida o nome novo com as mesmas regras do nome de usuário', async () => {
+      await expect(service.updateProfile(1, { nome: 'ana b' })).rejects.toMatchObject({ status: 400 });
+      users.isNameTaken.mockResolvedValue(true);
+      await expect(service.updateProfile(1, { nome: 'bia' })).rejects.toMatchObject({ status: 409 });
+      expect(users.update).not.toHaveBeenCalled();
+    });
+
+    it('não revalida um nome antigo que não mudou (mesmo fora das regras novas)', async () => {
+      users.findById.mockResolvedValue({ ...ana, nome: 'Ana Souza' });
+      await service.updateProfile(1, { nome: 'Ana Souza', bio: 'x' });
+      expect(users.isNameTaken).not.toHaveBeenCalled();
+      expect(users.update).toHaveBeenCalledWith(1, { nome: 'Ana Souza', bio: 'x', fotoPerfil: 'ana.png' });
     });
 
     it('mantém a foto e o nome atuais quando não enviados', async () => {

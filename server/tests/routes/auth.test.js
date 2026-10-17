@@ -51,48 +51,28 @@ describe('rotas /api/auth', () => {
 
   describe('POST /api/auth/register', () => {
     beforeEach(() => {
-      deps.authService.register.mockResolvedValue({ id: 5, nome: 'Bia', email: 'bia@x.com' });
+      deps.authService.register.mockResolvedValue({ id: 5, nome: null, email: 'bia@x.com' });
     });
 
-    it('cadastra com foto padrão quando não há imagem e já loga', async () => {
+    it('cria a conta só com email e senha (foto padrão) e já abre a sessão', async () => {
       const agent = request.agent(app);
-      const res = await agent
-        .post('/api/auth/register')
-        .field('nome', 'Bia')
-        .field('email', 'bia@x.com')
-        .field('senha', 'Senha!1');
+      const res = await agent.post('/api/auth/register').send({ email: 'bia@x.com', senha: 'Senha!1' });
 
       expect(res.status).toBe(201);
-      expect(res.body).toEqual({ id: 5, nome: 'Bia', email: 'bia@x.com' });
+      expect(res.body).toEqual({ id: 5, nome: null, email: 'bia@x.com' });
       expect(deps.authService.register).toHaveBeenCalledWith({
-        nome: 'Bia',
         email: 'bia@x.com',
         senha: 'Senha!1',
         fotoPerfil: 'default.png',
       });
-      expect(deps.uploader.upload).not.toHaveBeenCalled();
-      await agent.get('/api/auth/me').expect(200);
-    });
-
-    it('envia a imagem para o uploader e usa a URL devolvida', async () => {
-      deps.uploader.upload.mockResolvedValue('https://cdn/foto.png');
-      const res = await request(app)
-        .post('/api/auth/register')
-        .field('nome', 'Bia')
-        .field('email', 'bia@x.com')
-        .field('senha', 'Senha!1')
-        .attach('imagem', Buffer.from('fake-image'), 'foto.png');
-
-      expect(res.status).toBe(201);
-      expect(deps.uploader.upload).toHaveBeenCalledWith(expect.any(Buffer));
-      expect(deps.authService.register.mock.calls[0][0].fotoPerfil).toBe('https://cdn/foto.png');
+      expect((await agent.get('/api/auth/me')).body).toEqual({ id: 5, nome: null, email: 'bia@x.com' });
     });
 
     it('propaga erros de validação', async () => {
-      deps.authService.register.mockRejectedValue(new HttpError(409, 'Já existe um usuário com o mesmo nome ou email'));
-      const res = await request(app).post('/api/auth/register').field('nome', 'Bia');
+      deps.authService.register.mockRejectedValue(new HttpError(409, 'Já existe uma conta com esse email.'));
+      const res = await request(app).post('/api/auth/register').send({ email: 'bia@x.com', senha: 'Senha!1' });
       expect(res.status).toBe(409);
-      expect(res.body.error).toBe('Já existe um usuário com o mesmo nome ou email');
+      expect(res.body.error).toBe('Já existe uma conta com esse email.');
     });
   });
 });

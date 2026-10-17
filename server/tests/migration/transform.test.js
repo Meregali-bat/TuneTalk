@@ -84,6 +84,16 @@ describe('transformLegacyData', () => {
     expect(report.skipped).toContainEqual({ tabela: 'usuario', id: 3, motivo: 'email duplicado (já usado pelo usuário 1)' });
   });
 
+  it('deixa sem nome o usuário cujo nome repete um anterior; ele escolhe outro no próximo login', () => {
+    const { data, report } = transformLegacyData(legacy({
+      usuario: table([user(1, { nome: 'Ana' }), user(2, { nome: 'ana' })]),
+    }));
+    expect(data.usuarios.map((u) => u.nome)).toEqual(['Ana', null]);
+    expect(report.adjusted).toEqual([
+      { tabela: 'usuario', id: 2, motivo: 'nome "ana" repetido; vai escolher outro no próximo login' },
+    ]);
+  });
+
   it('remove curtidas e seguimentos repetidos', () => {
     const { data } = transformLegacyData(legacy({
       curtir: table([

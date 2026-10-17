@@ -1,6 +1,6 @@
 // Backend da demonstração: as mesmas rotas e respostas da API Express, executando os
 // serviços reais do servidor sobre um banco em memória salvo no localStorage do visitante.
-import { HttpError, badRequest, notFound, unauthorized } from '../../../server/src/errors.js';
+import { HttpError, badRequest, forbidden, notFound, unauthorized } from '../../../server/src/errors.js';
 import { createAuthService } from '../../../server/src/services/authService.js';
 import { createPostService } from '../../../server/src/services/postService.js';
 import { createUserService } from '../../../server/src/services/userService.js';
@@ -10,7 +10,7 @@ import { avatar } from './art.js';
 
 export { DEMO_LOGIN };
 
-const STORAGE_KEY = 'tunetalk-demo-v1';
+const STORAGE_KEY = 'tunetalk-demo-v2';
 
 const readState = (storage) => {
   try {
@@ -62,9 +62,15 @@ export function createFakeApi({ storage = globalThis.localStorage } = {}) {
   build();
 
   const session = () => state.session;
-  const me = () => {
+  const signedIn = () => {
     if (!state.session) throw unauthorized();
     return state.session.id;
+  };
+  // Igual ao middleware requireUsername do servidor: sem nome de usuário, só a sessão e a escolha do nome.
+  const me = () => {
+    const id = signedIn();
+    if (!state.session.nome) throw forbidden('Escolha um nome de usuário para continuar.');
+    return id;
   };
   const startSession = (user) => {
     state.session = user;
@@ -76,14 +82,12 @@ export function createFakeApi({ storage = globalThis.localStorage } = {}) {
   const noContent = () => ({ status: 204, body: null });
 
   const routes = [
-    ['GET', /^\/auth\/me$/, () => { me(); return ok(session()); }],
+    ['GET', /^\/auth\/me$/, () => { signedIn(); return ok(session()); }],
     ['POST', /^\/auth\/login$/, async ({ body }) => ok(startSession(await services.auth.login(body.email, body.senha)))],
     ['POST', /^\/auth\/logout$/, () => { state.session = null; writeState(storage, state); return noContent(); }],
-    ['POST', /^\/auth\/register$/, async ({ form }) => {
-      const nome = form.get('nome');
-      const imagem = form.get('imagem');
-      const fotoPerfil = imagem instanceof File && imagem.size > 0 ? await fileToDataUrl(imagem) : avatar(nome || '?');
-      const user = await services.auth.register({ nome, email: form.get('email'), senha: form.get('senha'), fotoPerfil });
+    ['POST', /^\/auth\/register$/, async ({ body }) => {
+      const fotoPerfil = avatar(String(body.email ?? '?').split('@')[0] || '?');
+      const user = await services.auth.register({ email: body.email, senha: body.senha, fotoPerfil });
       return ok(startSession(user), 201);
     }],
 
@@ -100,6 +104,10 @@ export function createFakeApi({ storage = globalThis.localStorage } = {}) {
     ['DELETE', /^\/posts\/(\d+)\/like$/, async ({ id }) => ok({ likes: await services.posts.unlike(id, me()) })],
     ['POST', /^\/posts\/(\d+)\/comments$/, async ({ id, body }) => ok({ id: await services.posts.comment(id, me(), body.texto) }, 201)],
 
+    ['PUT', /^\/users\/me\/username$/, async ({ body }) => {
+      const { nome } = await services.users.setUsername(signedIn(), body.nome);
+      return ok(startSession({ ...state.session, nome }));
+    }],
     ['PUT', /^\/users\/me$/, async ({ form }) => {
       const foto = form.get('foto');
       const fotoPerfil = foto instanceof File && foto.size > 0 ? await fileToDataUrl(foto) : undefined;

@@ -24,6 +24,7 @@ const renderAt = (route, auth = makeAuth()) =>
 
 describe('rotas da aplicação', () => {
   beforeEach(() => {
+    vi.clearAllMocks();
     notificationsApi.unreadCount.mockResolvedValue(0);
     postsApi.feed.mockResolvedValue([]);
   });
@@ -39,12 +40,18 @@ describe('rotas da aplicação', () => {
 
   it('visitante acessa /login e /cadastrar', () => {
     renderAt('/login', makeAuth({ user: null }));
-    expect(screen.getByText(/Bem-vindo de volta/)).toBeInTheDocument();
+    expect(screen.getByRole('heading', { name: /Bem-vindo de volta/ })).toBeInTheDocument();
   });
 
   it('visitante em rota privada vai para o login', () => {
     renderAt('/foryou', makeAuth({ user: null }));
-    expect(screen.getByText(/Bem-vindo de volta/)).toBeInTheDocument();
+    expect(screen.getByRole('heading', { name: /Bem-vindo de volta/ })).toBeInTheDocument();
+  });
+
+  it('conta nova sem nome de usuário cai na tela de boas-vindas', () => {
+    renderAt('/foryou', makeAuth({ user: { id: 9, nome: null, email: 'n@x.com' } }));
+    expect(screen.getByLabelText('Nome de usuário')).toBeInTheDocument();
+    expect(postsApi.feed).not.toHaveBeenCalled();
   });
 
   it('usuário logado na raiz vai para o feed com o header', async () => {

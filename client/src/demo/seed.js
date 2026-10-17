@@ -38,10 +38,10 @@ export function createSeed() {
     seq: { usuarios: 4, posts: 8, comentarios: 4, notificacoes: 3 },
     session: null,
     usuarios: [
-      user(1, 'Ana Souza', DEMO_LOGIN.email, 'MPB de manhã, rock à noite'),
-      user(2, 'Bruno Lima', 'bruno@demo.com', 'Colecionador de vinil'),
-      user(3, 'Carla Mendes', 'carla@demo.com', 'Toco baixo numa banda de garagem'),
-      user(4, 'Diego Rocha', 'diego@demo.com', null),
+      user(1, 'ana.souza', DEMO_LOGIN.email, 'MPB de manhã, rock à noite'),
+      user(2, 'bruno.lima', 'bruno@demo.com', 'Colecionador de vinil'),
+      user(3, 'carla.mendes', 'carla@demo.com', 'Toco baixo numa banda de garagem'),
+      user(4, 'diego.rocha', 'diego@demo.com', null),
     ],
     posts: [
       musicPost(1, 2, 'Help!', 'Até hoje não entendo como fizeram isso em 1965.', 5, 35),

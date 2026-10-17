@@ -1,5 +1,5 @@
 import multer from 'multer';
-import { HttpError, badRequest, unauthorized } from '../errors.js';
+import { HttpError, badRequest, forbidden, unauthorized } from '../errors.js';
 
 // Express 4 não captura rejeições de handlers async; isto encaminha para o errorHandler.
 export const asyncRoute = (handler) => (req, res, next) =>
@@ -7,6 +7,12 @@ export const asyncRoute = (handler) => (req, res, next) =>
 
 export function requireAuth(req, res, next) {
   if (!req.session.user) return next(unauthorized());
+  next();
+}
+
+// Quem acabou de criar a conta precisa escolher o nome de usuário antes de usar o resto do app.
+export function requireUsername(req, res, next) {
+  if (!req.session.user.nome) return next(forbidden('Escolha um nome de usuário para continuar.'));
   next();
 }
 

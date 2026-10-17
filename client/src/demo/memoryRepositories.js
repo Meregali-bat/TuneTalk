@@ -31,18 +31,23 @@ export function createMemoryRepositories(state, onChange) {
   });
   const byIdDesc = (a, b) => b.id - a.id;
 
+  const same = (a, b) => (a ?? '').toLowerCase() === (b ?? '').toLowerCase();
+
   const users = {
     async findByCredentials(email, senha) {
-      const user = state.usuarios.find((u) => u.email === email);
+      const user = state.usuarios.find((u) => same(u.email, email));
       if (!user || user.senha !== md5(senha)) return null;
       return { ...publicUser(user), email: user.email };
     },
-    async existsByNameOrEmail(nome, email) {
-      return state.usuarios.some((u) => u.nome === nome || u.email === email);
+    async existsByEmail(email) {
+      return state.usuarios.some((u) => same(u.email, email));
     },
-    async create({ nome, email, senha, fotoPerfil }) {
+    async isNameTaken(nome, exceptId) {
+      return state.usuarios.some((u) => u.id !== exceptId && u.nome && same(u.nome, nome));
+    },
+    async create({ email, senha, fotoPerfil }) {
       const id = nextId('usuarios');
-      state.usuarios.push({ id, nome, email, senha: md5(senha), fotoPerfil, bio: null });
+      state.usuarios.push({ id, nome: null, email, senha: md5(senha), fotoPerfil, bio: null });
       return changed(id);
     },
     async findById(id) {

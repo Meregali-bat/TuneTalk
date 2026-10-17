@@ -1,10 +1,10 @@
 import { Router } from 'express';
 import { badRequest } from '../errors.js';
-import { asyncRoute, currentUserId, parseIdParam, requireAuth } from './middlewares.js';
+import { asyncRoute, currentUserId, parseIdParam, requireAuth, requireUsername } from './middlewares.js';
 
 export function createPostRoutes({ postService }) {
   const router = Router();
-  router.use(requireAuth);
+  router.use(requireAuth, requireUsername);
   router.param('id', parseIdParam);
 
   const feeds = {

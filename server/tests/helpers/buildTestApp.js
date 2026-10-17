@@ -17,7 +17,7 @@ export function buildTestApp(overrides = {}) {
       unlike: vi.fn(),
       comment: vi.fn(),
     },
-    userService: { getProfile: vi.fn(), updateProfile: vi.fn(), follow: vi.fn(), unfollow: vi.fn() },
+    userService: { getProfile: vi.fn(), updateProfile: vi.fn(), setUsername: vi.fn(), follow: vi.fn(), unfollow: vi.fn() },
     notifications: { listForUser: vi.fn(), countUnread: vi.fn(), markAllRead: vi.fn() },
     musicService: { search: vi.fn() },
     uploader: { upload: vi.fn() },
@@ -32,4 +32,10 @@ export async function loggedAgent(app) {
   const agent = request.agent(app);
   await agent.post('/api/auth/login').send({ email: 'ana@x.com', senha: 'Senha!1' }).expect(200);
   return agent;
+}
+
+// Sessão de quem acabou de criar a conta e ainda não escolheu o nome de usuário.
+export async function agentWithoutUsername(app, deps) {
+  deps.authService.login.mockResolvedValueOnce({ id: 9, nome: null, email: 'novo@x.com' });
+  return loggedAgent(app);
 }

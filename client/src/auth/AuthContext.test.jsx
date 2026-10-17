@@ -2,7 +2,7 @@ import { describe, it, expect, vi, beforeEach } from 'vitest';
 import { act, render, renderHook, screen, waitFor } from '@testing-library/react';
 import { MemoryRouter, Route, Routes } from 'react-router-dom';
 import { AuthProvider, useAuth } from './AuthContext.jsx';
-import { PublicOnlyRoute, RequireAuth } from './guards.jsx';
+import { PublicOnlyRoute, RequireAuth, RequireUsername } from './guards.jsx';
 import { authApi } from '../api/index.js';
 import { ApiError } from '../api/http.js';
 import { makeAuth } from '../test/render.jsx';
@@ -58,9 +58,8 @@ describe('AuthProvider', () => {
     const { result } = renderHook(() => useAuth(), { wrapper });
     await waitFor(() => expect(result.current.loading).toBe(false));
 
-    const form = new FormData();
-    await act(() => result.current.register(form));
-    expect(authApi.register).toHaveBeenCalledWith(form);
+    await act(() => result.current.register({ email: 'ana@x.com', senha: 'Senha!1' }));
+    expect(authApi.register).toHaveBeenCalledWith({ email: 'ana@x.com', senha: 'Senha!1' });
     expect(result.current.user).toEqual(ana);
   });
 });
@@ -75,7 +74,10 @@ describe('guards de rota', () => {
               <Route path="/login" element={<p>tela de login</p>} />
             </Route>
             <Route element={<RequireAuth />}>
-              <Route path="/foryou" element={<p>feed</p>} />
+              <Route path="/bem-vindo" element={<p>escolher nome</p>} />
+              <Route element={<RequireUsername />}>
+                <Route path="/foryou" element={<p>feed</p>} />
+              </Route>
             </Route>
           </Routes>
         </MemoryRouter>
@@ -90,6 +92,16 @@ describe('guards de rota', () => {
   it('redireciona usuário logado de rota pública para /foryou', () => {
     renderRoutes(makeAuth(), '/login');
     expect(screen.getByText('feed')).toBeInTheDocument();
+  });
+
+  it('quem ainda não tem nome de usuário vai para /bem-vindo', () => {
+    renderRoutes(makeAuth({ user: { id: 9, nome: null, email: 'n@x.com' } }), '/foryou');
+    expect(screen.getByText('escolher nome')).toBeInTheDocument();
+  });
+
+  it('em rota pública, quem não tem nome também vai para /bem-vindo', () => {
+    renderRoutes(makeAuth({ user: { id: 9, nome: null, email: 'n@x.com' } }), '/login');
+    expect(screen.getByText('escolher nome')).toBeInTheDocument();
   });
 
   it('não renderiza nada enquanto a sessão carrega', () => {

@@ -1,10 +1,17 @@
 import { badRequest, conflict, notFound } from '../errors.js';
+import { USERNAME_MESSAGES, checkUsername } from '../../../shared/usernameRules.js';
 
 export function createUserService({ users, follows, postService, notifications }) {
   const findOrFail = async (id) => {
     const user = await users.findById(id);
     if (!user) throw notFound('Usuário não encontrado.');
     return user;
+  };
+
+  const assertUsernameAvailable = async (nome, usuarioId) => {
+    const broken = Object.entries(checkUsername(nome)).find(([, ok]) => !ok);
+    if (broken) throw badRequest(USERNAME_MESSAGES[broken[0]]);
+    if (await users.isNameTaken(nome, usuarioId)) throw conflict('Esse nome de usuário já está em uso.');
   };
 
   return {
@@ -32,6 +39,13 @@ export function createUserService({ users, follows, postService, notifications }
       };
     },
 
+    async setUsername(usuarioId, nome) {
+      const clean = (nome ?? '').trim();
+      await assertUsernameAvailable(clean, usuarioId);
+      await users.update(usuarioId, { nome: clean });
+      return { id: usuarioId, nome: clean };
+    },
+
     async updateProfile(usuarioId, { nome, bio, fotoPerfil }) {
       const atual = await findOrFail(usuarioId);
       const changes = {
@@ -39,6 +53,8 @@ export function createUserService({ users, follows, postService, notifications }
         bio: bio ?? atual.bio,
         fotoPerfil: fotoPerfil || atual.fotoPerfil,
       };
+      // Nomes antigos fora das regras atuais continuam valendo enquanto não forem trocados.
+      if (changes.nome !== atual.nome) await assertUsernameAvailable(changes.nome, usuarioId);
       await users.update(usuarioId, changes);
       return { ...atual, ...changes };
     },

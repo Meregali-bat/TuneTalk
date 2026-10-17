@@ -23,6 +23,10 @@ const { data, report } = transformLegacyData(parseDump(fs.readFileSync(file, 'ut
 
 console.log('Registros a importar:');
 console.table(report.imported);
+if (report.adjusted.length > 0) {
+  console.log(`\n${report.adjusted.length} registro(s) ajustado(s):`);
+  console.table(report.adjusted);
+}
 if (report.skipped.length > 0) {
   console.log(`\n${report.skipped.length} registro(s) descartado(s):`);
   console.table(report.skipped);

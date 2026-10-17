@@ -17,7 +17,8 @@ enum TipoNotificacao {
 
 model Usuario {
   id         Int     @id @default(autoincrement())
-  nome       String  @db.VarChar(45)
+  // Nome de usuário: escolhido depois do cadastro, por isso pode ficar vazio até lá.
+  nome       String? @unique @db.VarChar(45)
   email      String  @unique @db.VarChar(100)
   senha      String  @db.VarChar(65)
   fotoPerfil String? @map("foto_perfil") @db.VarChar(255)

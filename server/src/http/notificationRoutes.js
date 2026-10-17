@@ -1,9 +1,9 @@
 import { Router } from 'express';
-import { asyncRoute, currentUserId, requireAuth } from './middlewares.js';
+import { asyncRoute, currentUserId, requireAuth, requireUsername } from './middlewares.js';
 
 export function createNotificationRoutes({ notifications }) {
   const router = Router();
-  router.use(requireAuth);
+  router.use(requireAuth, requireUsername);
 
   router.get('/', asyncRoute(async (req, res) => {
     res.json(await notifications.listForUser(currentUserId(req)));

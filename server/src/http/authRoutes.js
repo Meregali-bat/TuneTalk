@@ -1,7 +1,7 @@
 import { Router } from 'express';
-import { asyncRoute, imageUpload, requireAuth, uploadedImageUrl } from './middlewares.js';
+import { asyncRoute, requireAuth } from './middlewares.js';
 
-export function createAuthRoutes({ authService, uploader, defaultProfilePhoto }) {
+export function createAuthRoutes({ authService, defaultProfilePhoto }) {
   const router = Router();
 
   const startSession = (req, user) =>
@@ -30,10 +30,9 @@ export function createAuthRoutes({ authService, uploader, defaultProfilePhoto })
     });
   });
 
-  router.post('/register', imageUpload.single('imagem'), asyncRoute(async (req, res) => {
-    const { nome, email, senha } = req.body;
-    const fotoPerfil = (await uploadedImageUrl(uploader, req.file)) ?? defaultProfilePhoto;
-    const user = await authService.register({ nome, email, senha, fotoPerfil });
+  router.post('/register', asyncRoute(async (req, res) => {
+    const { email, senha } = req.body;
+    const user = await authService.register({ email, senha, fotoPerfil: defaultProfilePhoto });
     await startSession(req, user);
     res.status(201).json(user);
   }));

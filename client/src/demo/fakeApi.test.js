@@ -63,25 +63,28 @@ describe('API fake da demo (serviços reais + banco em memória)', () => {
     expect(await call('DELETE', `/posts/${post.id}`)).toMatchObject({ status: 403 });
   });
 
-  it('cadastro com validação de senha, perfil e seguir', async () => {
-    const fraca = new FormData();
-    fraca.append('nome', 'Nova');
-    fraca.append('email', 'nova@demo.com');
-    fraca.append('senha', 'fraca');
-    expect((await call('POST', '/auth/register', fraca)).status).toBe(400);
+  it('cadastro só com email e senha, escolha do nome de usuário e seguir', async () => {
+    const register = (senha) => call('POST', '/auth/register', JSON.stringify({ email: 'nova@demo.com', senha }));
+    expect((await register('fraca')).status).toBe(400);
 
-    const form = new FormData();
-    form.append('nome', 'Nova');
-    form.append('email', 'nova@demo.com');
-    form.append('senha', 'Senha!1');
-    const created = await call('POST', '/auth/register', form);
-    expect(created.status).toBe(201);
+    const created = await register('Senha!1');
+    expect(created).toMatchObject({ status: 201, body: { nome: null, email: 'nova@demo.com' } });
+
+    expect(await call('GET', '/posts?feed=foryou')).toEqual({ status: 403, body: { error: 'Escolha um nome de usuário para continuar.' } });
+    expect((await call('PUT', '/users/me/username', JSON.stringify({ nome: 'ana_souza_' }))).status).toBe(200);
+    expect((await call('PUT', '/users/me/username', JSON.stringify({ nome: 'nova user' }))).status).toBe(400);
+    expect((await call('GET', '/auth/me')).body.nome).toBe('ana_souza_');
 
     const [alvo] = (await call('GET', '/posts?feed=foryou')).body.map((p) => p.autor);
     expect((await call('POST', `/users/${alvo.id}/follow`)).status).toBe(204);
     const perfil = (await call('GET', `/users/${alvo.id}`)).body;
     expect(perfil.seguindoIds).toContain(alvo.id);
-    expect(perfil.usuario.fotoPerfil).toBeTruthy();
+  });
+
+  it('não deixa escolher um nome que já existe', async () => {
+    await call('POST', '/auth/register', JSON.stringify({ email: 'nova@demo.com', senha: 'Senha!1' }));
+    expect(await call('PUT', '/users/me/username', JSON.stringify({ nome: 'Ana.Souza' })))
+      .toEqual({ status: 409, body: { error: 'Esse nome de usuário já está em uso.' } });
   });
 
   it('notificações: contador de não lidas e marcar como lidas', async () => {

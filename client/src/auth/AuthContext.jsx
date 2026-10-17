@@ -20,8 +20,8 @@ export function AuthProvider({ children }) {
     return logged;
   }, []);
 
-  const register = useCallback(async (form) => {
-    const created = await authApi.register(form);
+  const register = useCallback(async (credentials) => {
+    const created = await authApi.register(credentials);
     setUser(created);
     return created;
   }, []);
