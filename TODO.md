@@ -3,6 +3,11 @@
 Organizado em 4 fases incrementais. Cada fase é independente e deployável.  
 Design completo em `docs/superpowers/specs/2026-06-01-tunetalk-modernization-design.md`.
 
+> **Atualização:** o projeto foi migrado de EJS para **React (SPA) + API Express em camadas**, com TDD
+> (veja o `README.md`). Os caminhos citados abaixo (`models/`, `controllers/`, `public/script/`, `index.js`)
+> agora correspondem a `server/src/repositories/`, `server/src/services/`, `server/src/http/` e `client/src/`.
+> A chave do Deezer deixou de existir (o servidor usa a API pública) e o script do Spotify, que não era usado, foi removido.
+
 ---
 
 ## Fase 1 — Segurança (Express + EJS atual)
@@ -15,12 +20,12 @@ Design completo em `docs/superpowers/specs/2026-06-01-tunetalk-modernization-des
 - [✅] Migrar `models/modelNotificacao.js` — todas as queries para placeholders nomeados `:p_xxx`
 
 ### 1.2 Credenciais expostas
-- [ ] Mover chave RapidAPI (Deezer) de `public/script/apiDeezer.js` para `.env`
-- [ ] Mover `client_id` e `client_secret` do Spotify de `public/script/apiSpotify.js` para `.env`
-- [ ] Mover o `secret` da sessão hardcoded em `index.js` para `.env`
-- [ ] Criar rota Express `/api/music/search` para proxear chamadas Deezer/Spotify (tira credenciais do client-side)
-- [ ] Atualizar `apiDeezer.js` e `apiSpotify.js` para chamar `/api/music/search` em vez da API externa diretamente
-- [ ] Adicionar `.env` e `uploads/` ao `.gitignore`
+- [✅] Mover chave RapidAPI (Deezer) de `public/script/apiDeezer.js` para `.env`
+- [✅] Mover `client_id` e `client_secret` do Spotify de `public/script/apiSpotify.js` para `.env`
+- [✅] Mover o `secret` da sessão hardcoded em `index.js` para `.env`
+- [✅] Criar rota Express `/api/music/search` para proxear chamadas Deezer/Spotify (tira credenciais do client-side)
+- [✅] Atualizar `apiDeezer.js` e `apiSpotify.js` para chamar `/api/music/search` em vez da API externa diretamente
+- [✅] Adicionar `.env` e `uploads/` ao `.gitignore`
 
 ### 1.3 Hashing de senhas
 - [ ] Instalar `bcrypt`
@@ -29,8 +34,8 @@ Design completo em `docs/superpowers/specs/2026-06-01-tunetalk-modernization-des
 - [ ] Adicionar lógica de re-hash transparente no login: se hash MD5 bater, re-salvar com bcrypt
 
 ### 1.4 Connection pool
-- [ ] Substituir `mysql.createConnection` por `mysql.createPool` em `models/dbModel.js`
-- [ ] Remover o `connection.end()` manual (pool gerencia o ciclo de vida)
+- [✅] Substituir `mysql.createConnection` por `mysql.createPool` em `models/dbModel.js`
+- [✅] Remover o `connection.end()` manual (pool gerencia o ciclo de vida)
 
 ---
 

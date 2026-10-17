@@ -1,0 +1,11 @@
+/* Reset e base comuns a todas as páginas. */
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
+
+body {
+  background-color: #000505;
+  font-family: 'Geologica', sans-serif;
+}

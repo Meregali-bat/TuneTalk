@@ -38,7 +38,7 @@ export function buildContainer(config) {
     notifications,
     uploader: createCloudinaryUploader(cloudinary),
     sessionSecret: config.sessionSecret,
-    secureCookies: config.isProduction,
+    secureCookies: config.secureCookies,
     defaultProfilePhoto: config.defaultProfilePhoto,
     clientDist: config.isProduction ? path.join(rootDir, 'dist') : undefined,
   };

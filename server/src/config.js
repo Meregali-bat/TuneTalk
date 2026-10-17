@@ -11,6 +11,8 @@ export function loadConfig(env = process.env) {
     isProduction,
     port: Number(env.PORT) || 3000,
     sessionSecret: env.SESSION_SECRET || 'dev-only-secret',
+    // Ative quando o app estiver atrás de HTTPS; com HTTP puro o navegador descartaria o cookie.
+    secureCookies: env.COOKIE_SECURE === 'true',
     defaultProfilePhoto: env.DEFAULT_PROFILE_PHOTO || DEFAULT_PROFILE_PHOTO,
     db: {
       host: env.DB_HOST,

@@ -62,4 +62,9 @@ describe('loadConfig', () => {
   it('usa porta 3000 por padrão', () => {
     expect(loadConfig({}).port).toBe(3000);
   });
+
+  it('só marca o cookie de sessão como secure quando COOKIE_SECURE=true', () => {
+    expect(loadConfig({ NODE_ENV: 'production', SESSION_SECRET: 's' }).secureCookies).toBe(false);
+    expect(loadConfig({ COOKIE_SECURE: 'true' }).secureCookies).toBe(true);
+  });
 });
