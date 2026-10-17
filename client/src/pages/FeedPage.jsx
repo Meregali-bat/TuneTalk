@@ -12,18 +12,20 @@ const TABS = [
 
 function FeedTabs({ active }) {
   return (
-    <nav className="feed-tabs" aria-label="Feeds">
-      {TABS.map((tab) => (
-        <Link
-          key={tab.feed}
-          to={tab.to}
-          className={`feed-tabs__tab${tab.feed === active ? ' is-active' : ''}`}
-          aria-current={tab.feed === active ? 'page' : undefined}
-        >
-          {tab.label}
-        </Link>
-      ))}
-    </nav>
+    <div className="feed-tabs-bar">
+      <nav className="feed-tabs" aria-label="Feeds">
+        {TABS.map((tab) => (
+          <Link
+            key={tab.feed}
+            to={tab.to}
+            className={`feed-tabs__tab${tab.feed === active ? ' is-active' : ''}`}
+            aria-current={tab.feed === active ? 'page' : undefined}
+          >
+            {tab.label}
+          </Link>
+        ))}
+      </nav>
+    </div>
   );
 }
 

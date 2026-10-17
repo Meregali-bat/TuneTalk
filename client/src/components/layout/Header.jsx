@@ -44,7 +44,7 @@ export function Header() {
 
   return (
     <>
-      <div className="app-header">
+      <header className="app-header">
         <div className="app-header__inner">
           <Link to="/foryou" className="app-logo" aria-label="TuneTalk, início">
             <img src={asset('img/tunetalk-logo.svg')} alt="" />
@@ -75,7 +75,7 @@ export function Header() {
             </button>
           </nav>
         </div>
-      </div>
+      </header>
 
       <Modal open={open} title="Notificações" onClose={closeModal} variant="panel">
         <NotificationList notifications={notifications} onNavigate={closeModal} />

@@ -1,5 +1,6 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest';
 import { render, screen, within } from '@testing-library/react';
+import userEvent from '@testing-library/user-event';
 import { MemoryRouter } from 'react-router-dom';
 import { AppRoutes } from './App.jsx';
 import { AuthContext } from './auth/AuthContext.jsx';
@@ -65,6 +66,17 @@ describe('rotas da aplicação', () => {
     renderAt('/seguindo');
     await screen.findByRole('heading', { name: 'Nada de quem você segue ainda' });
     expect(postsApi.feed).toHaveBeenCalledWith('seguindo');
+  });
+
+  it('trocar de aba ou de página volta ao topo', async () => {
+    const scrollTo = vi.spyOn(window, 'scrollTo').mockImplementation(() => {});
+    renderAt('/foryou');
+    await screen.findByRole('heading', { name: 'Ainda não há posts' });
+    scrollTo.mockClear();
+
+    await userEvent.click(screen.getByRole('link', { name: 'Seguindo' }));
+
+    expect(scrollTo).toHaveBeenCalledWith(0, 0);
   });
 
   it('/perfil/:id e /post/:id carregam as páginas certas', async () => {

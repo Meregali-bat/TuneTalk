@@ -11,6 +11,7 @@
   --destaque-claro: #3fc463;
   --erro: #f55b64;
   --azul: #3d7cf5;
+  --app-header-h: 3.5rem;
   --gutter-left: max(16px, env(safe-area-inset-left, 0px));
   --gutter-right: max(16px, env(safe-area-inset-right, 0px));
 
@@ -46,7 +47,7 @@
   position: sticky;
   top: env(safe-area-inset-top, 0px);
   z-index: 1020;
-  background: rgba(0, 5, 5, .85);
+  background: rgba(0, 5, 5, .96);
   backdrop-filter: blur(12px);
   border-bottom: 1px solid var(--linhas);
 }
@@ -57,8 +58,9 @@
   justify-content: space-between;
   gap: 1rem;
   max-width: 1120px;
+  min-height: var(--app-header-h);
   margin: 0 auto;
-  padding-block: .55rem;
+  padding-block: 0;
   padding-left: var(--gutter-left);
   padding-right: var(--gutter-right);
 }
@@ -108,16 +110,26 @@
 .feed {
   max-width: 640px;
   margin: 0 auto;
-  padding-block: 1.25rem 7rem;
+  padding-block: 0 7rem;
   padding-left: var(--gutter-left);
   padding-right: var(--gutter-right);
+}
+
+/* As abas ficam fixas logo abaixo do topo; o fundo desfocado esconde os posts que passam por trás. */
+.feed-tabs-bar {
+  position: sticky;
+  top: calc(env(safe-area-inset-top, 0px) + var(--app-header-h) + 1px);
+  z-index: 1010;
+  margin: 0 calc(-1 * var(--gutter-right)) .5rem calc(-1 * var(--gutter-left));
+  padding: .85rem var(--gutter-right) .75rem var(--gutter-left);
+  background: rgba(0, 5, 5, .96);
+  backdrop-filter: blur(12px);
 }
 
 .feed-tabs {
   display: grid;
   grid-template-columns: 1fr 1fr;
   padding: .25rem;
-  margin-bottom: 1.25rem;
   border: 1px solid var(--linhas);
   border-radius: 999px;
   background: var(--superficie);

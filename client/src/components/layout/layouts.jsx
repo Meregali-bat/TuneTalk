@@ -1,4 +1,5 @@
-import { Link, Outlet } from 'react-router-dom';
+import { useEffect } from 'react';
+import { Link, Outlet, useLocation } from 'react-router-dom';
 import { Header } from './Header.jsx';
 import { asset } from '../../utils/asset.js';
 
@@ -27,11 +28,16 @@ export function PublicLayout({ authForm = false, showLinks = true }) {
 }
 
 export function AppLayout() {
+  const { pathname } = useLocation();
+
+  // Com o topo e as abas fixos, cada página (ou aba do feed) começa do início.
+  useEffect(() => {
+    window.scrollTo(0, 0);
+  }, [pathname]);
+
   return (
     <div className="layout-app">
-      <header>
-        <Header />
-      </header>
+      <Header />
       <main>
         <Outlet />
       </main>
