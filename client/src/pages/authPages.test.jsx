@@ -7,13 +7,33 @@ import { LandingPage } from './LandingPage.jsx';
 import { ApiError } from '../api/http.js';
 import { makeAuth, renderWithProviders } from '../test/render.jsx';
 
-vi.mock('aos', () => ({ default: { init: vi.fn() } }));
-
 describe('LandingPage', () => {
-  it('apresenta o TuneTalk', () => {
+  it('apresenta a proposta com chamadas para cadastro e login', () => {
     renderWithProviders(<LandingPage />);
-    expect(screen.getByText(/seja bem-vindo\(a\) ao/)).toBeInTheDocument();
-    expect(screen.getByText('Debater livremente sobre músicas')).toBeInTheDocument();
+
+    expect(screen.getByRole('heading', { level: 1 })).toHaveTextContent('Avalie, comente e descubra música');
+    const ctas = screen.getAllByRole('link', { name: 'Criar conta' });
+    expect(ctas.length).toBeGreaterThanOrEqual(2);
+    ctas.forEach((link) => expect(link).toHaveAttribute('href', '/cadastrar'));
+    expect(screen.getByRole('link', { name: 'Já tenho conta' })).toHaveAttribute('href', '/login');
+  });
+
+  it('mostra um post de exemplo com nota em estrelas', () => {
+    renderWithProviders(<LandingPage />);
+    const exemplo = screen.getByRole('figure', { name: 'Exemplo de post no TuneTalk' });
+    expect(exemplo).toHaveTextContent('Abbey Road');
+    expect(screen.getByLabelText('Nota 5 de 5')).toBeInTheDocument();
+  });
+
+  it('lista o que dá para fazer e como funciona, em ordem', () => {
+    renderWithProviders(<LandingPage />);
+
+    ['Debata sobre músicas', 'Compartilhe o que ouve', 'Monte seu perfil', 'Descubra artistas novos'].forEach((titulo) => {
+      expect(screen.getByRole('heading', { name: titulo })).toBeInTheDocument();
+    });
+
+    const passos = screen.getAllByRole('listitem').map((item) => item.querySelector('h3')?.textContent).filter(Boolean);
+    expect(passos).toEqual(['Busque a música', 'Dê sua nota', 'Converse']);
   });
 });
 

@@ -1,12 +1,11 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest';
-import { render, screen } from '@testing-library/react';
+import { render, screen, within } from '@testing-library/react';
 import { MemoryRouter } from 'react-router-dom';
 import { AppRoutes } from './App.jsx';
 import { AuthContext } from './auth/AuthContext.jsx';
 import { makeAuth } from './test/render.jsx';
 import { notificationsApi, postsApi, usersApi } from './api/index.js';
 
-vi.mock('aos', () => ({ default: { init: vi.fn() } }));
 vi.mock('./api/index.js', () => ({
   notificationsApi: { unreadCount: vi.fn(), list: vi.fn(), readAll: vi.fn() },
   postsApi: { feed: vi.fn(), get: vi.fn() },
@@ -31,9 +30,11 @@ describe('rotas da aplicação', () => {
 
   it('visitante vê a landing page com links de login e cadastro', () => {
     renderAt('/', makeAuth({ user: null }));
-    expect(screen.getByText(/seja bem-vindo\(a\) ao/)).toBeInTheDocument();
-    expect(screen.getByRole('link', { name: 'Login' })).toHaveAttribute('href', '/login');
-    expect(screen.getByRole('link', { name: 'Cadastrar' })).toHaveAttribute('href', '/cadastrar');
+    expect(screen.getByRole('heading', { level: 1 })).toHaveTextContent('Avalie, comente e descubra música');
+    const nav = screen.getByRole('navigation', { name: 'Principal' });
+    expect(within(nav).getByRole('link', { name: 'Entrar' })).toHaveAttribute('href', '/login');
+    expect(within(nav).getByRole('link', { name: 'Cadastrar' })).toHaveAttribute('href', '/cadastrar');
+    expect(within(nav).getByRole('link', { name: 'TuneTalk, página inicial' })).toHaveAttribute('href', '/');
   });
 
   it('visitante acessa /login e /cadastrar', () => {
@@ -68,6 +69,6 @@ describe('rotas da aplicação', () => {
 
   it('rota desconhecida volta para a raiz', async () => {
     renderAt('/xpto', makeAuth({ user: null }));
-    expect(screen.getByText(/seja bem-vindo\(a\) ao/)).toBeInTheDocument();
+    expect(screen.getByRole('heading', { level: 1 })).toHaveTextContent('Avalie, comente e descubra música');
   });
 });

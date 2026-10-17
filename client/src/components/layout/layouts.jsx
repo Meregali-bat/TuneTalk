@@ -6,16 +6,16 @@ export function PublicLayout({ authForm = false }) {
   return (
     <div className={`layout-public${authForm ? ' auth-form' : ''}`}>
       <header>
-        <div className="navegacao">
-          <Link to="/" className="link-header">
-            <div className="logo">
-              <img src={asset('img/tunetalk-logo.svg')} alt="logo" />
-              <span className="titulo-logo">TuneTalk</span>
-            </div>
+        <nav className="navegacao" aria-label="Principal">
+          <Link to="/" className="logo" aria-label="TuneTalk, página inicial">
+            <img src={asset('img/tunetalk-logo.svg')} alt="" />
+            <span className="titulo-logo">TuneTalk</span>
           </Link>
-          <Link className="link-header" to="/login">Login</Link>
-          <Link className="link-header" to="/cadastrar">Cadastrar</Link>
-        </div>
+          <div className="navegacao__links">
+            <Link className="link-header" to="/login">Entrar</Link>
+            <Link className="link-header link-header--cta" to="/cadastrar">Cadastrar</Link>
+          </div>
+        </nav>
       </header>
       <main>
         <Outlet />
