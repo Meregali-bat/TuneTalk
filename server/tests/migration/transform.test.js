@@ -8,7 +8,7 @@ const user = (id, extra = {}) => ({
 });
 const post = (id, autor, extra = {}) => ({
   idpost: id, texto: 't', likes: 99, musicName: 'Help!', artistName: 'Beatles', posterMusica: 'p.jpg', albumName: null,
-  posterAlbum: null, postType: 'música', releaseDate: '138', usuario_idusuario: autor, nota: 4.5,
+  posterAlbum: null, postType: 'música', releaseDate: '138', usuario_idusuario: autor, nota: 4,
   data: '2023-12-01 15:30:00', musicPreview: 'x.mp3', ...extra,
 });
 
@@ -35,7 +35,7 @@ describe('transformLegacyData', () => {
     ]);
     expect(data.posts).toEqual([{
       id: 10, autorId: 1, texto: 't', musicName: 'Help!', artistName: 'Beatles', posterMusica: 'p.jpg', albumName: null,
-      posterAlbum: null, postType: 'música', releaseDate: '138', nota: 4.5, musicPreview: 'x.mp3',
+      posterAlbum: null, postType: 'música', releaseDate: '138', nota: 8, musicPreview: 'x.mp3',
       createdAt: new Date('2023-12-01T15:30:00Z'),
     }]);
     expect(data.comentarios).toEqual([
@@ -92,6 +92,13 @@ describe('transformLegacyData', () => {
     expect(report.adjusted).toEqual([
       { tabela: 'usuario', id: 2, motivo: 'nome "ana" repetido; vai escolher outro no próximo login' },
     ]);
+  });
+
+  it('converte a nota antiga (0 a 5 estrelas) para a escala de 0 a 10', () => {
+    const { data } = transformLegacyData(legacy({
+      post: table([post(10, 1, { nota: 0 }), post(11, 1, { nota: 3 }), post(12, 1, { nota: 5 }), post(13, 1, { nota: null })]),
+    }));
+    expect(data.posts.map((p) => p.nota)).toEqual([0, 6, 10, 0]);
   });
 
   it('remove curtidas e seguimentos repetidos', () => {

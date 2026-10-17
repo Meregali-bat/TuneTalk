@@ -45,7 +45,7 @@ export function seed(prisma) {
     },
     post: (autorId, data = {}) =>
       prisma.post.create({
-        data: { autorId, texto: 'texto', musicName: 'Help!', artistName: 'The Beatles', postType: 'música', nota: 4, ...data },
+        data: { autorId, texto: 'texto', musicName: 'Help!', artistName: 'The Beatles', postType: 'música', nota: 8, ...data },
       }),
   };
 }

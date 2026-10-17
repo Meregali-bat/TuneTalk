@@ -76,13 +76,13 @@ describe('postService', () => {
   });
 
   describe('create', () => {
-    it('grava o post com autor e data atual', async () => {
-      const id = await service.create(7, { texto: 'oi', musicName: 'Help!', nota: '4', postType: 'música' });
+    it('grava o post com autor, data atual e nota como número', async () => {
+      const id = await service.create(7, { texto: 'oi', musicName: 'Help!', nota: '7', postType: 'música' });
       expect(id).toBe(42);
       expect(posts.create).toHaveBeenCalledWith({
         texto: 'oi',
         musicName: 'Help!',
-        nota: '4',
+        nota: 7,
         postType: 'música',
         autorId: 7,
         data: now,
@@ -90,13 +90,44 @@ describe('postService', () => {
     });
 
     it('ignora campos desconhecidos do corpo', async () => {
-      await service.create(7, { musicName: 'x', usuario_idusuario: 1, likes: 999 });
+      await service.create(7, { musicName: 'x', nota: 5, usuario_idusuario: 1, likes: 999 });
       expect(posts.create.mock.calls[0][0]).not.toHaveProperty('likes');
       expect(posts.create.mock.calls[0][0]).not.toHaveProperty('usuario_idusuario');
     });
 
+    it('aceita nota inteira de 0 a 10 (cada ponto é meia estrela)', async () => {
+      for (const nota of [0, 1, 9, 10, '10']) {
+        await service.create(7, { musicName: 'x', nota });
+      }
+      expect(posts.create.mock.calls.map(([post]) => post.nota)).toEqual([0, 1, 9, 10, 10]);
+    });
+
+    it('exige a nota', async () => {
+      await expect(service.create(7, { musicName: 'x' })).rejects.toMatchObject({
+        status: 400,
+        message: 'Dê uma nota de 0 a 10.',
+      });
+    });
+
+    it('rejeita nota fora de 0 a 10 ou quebrada', async () => {
+      for (const nota of [-1, 11, 4.5, 'abc', '']) {
+        await expect(service.create(7, { musicName: 'x', nota })).rejects.toMatchObject({
+          status: 400,
+          message: 'A nota deve ser um número inteiro de 0 a 10.',
+        });
+      }
+      expect(posts.create).not.toHaveBeenCalled();
+    });
+
+    it('rejeita texto com mais de 500 caracteres', async () => {
+      await expect(service.create(7, { musicName: 'x', nota: 6, texto: 'a'.repeat(501) })).rejects.toMatchObject({
+        status: 400,
+        message: 'O texto pode ter no máximo 500 caracteres.',
+      });
+    });
+
     it('exige uma música ou um álbum', async () => {
-      await expect(service.create(7, { texto: 'sem música' })).rejects.toMatchObject({ status: 400 });
+      await expect(service.create(7, { texto: 'sem música', nota: 5 })).rejects.toMatchObject({ status: 400 });
     });
   });
 

@@ -1,56 +1,66 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useId, useState } from 'react';
 import { musicApi, postsApi } from '../../api/index.js';
 import { useDebouncedValue } from '../../hooks/useDebouncedValue.js';
+import { formatDuration } from '../../utils/postFormat.js';
+import { Modal } from '../common/Modal.jsx';
 import { StarRatingInput } from './StarRatingInput.jsx';
 
-function MusicSearch({ onSelect }) {
-  const [query, setQuery] = useState('');
-  const [results, setResults] = useState([]);
-  const debouncedQuery = useDebouncedValue(query.trim(), 300);
+const TEXTO_MAX = 500;
 
-  useEffect(() => {
-    if (!debouncedQuery) {
-      setResults([]);
-      return undefined;
-    }
-    let active = true;
-    musicApi.search(debouncedQuery)
-      .then((tracks) => active && setResults(tracks))
-      .catch(() => active && setResults([]));
-    return () => { active = false; };
-  }, [debouncedQuery]);
-
+function TrackInfo({ track }) {
   return (
     <>
-      <input
-        type="text"
-        id="search-input"
-        className="form-control"
-        placeholder="Digite a música"
-        autoFocus
-        value={query}
-        onChange={(event) => setQuery(event.target.value)}
-      />
-      <div id="search-results">
-        {results.map((track) => (
-          <div
-            key={track.id}
-            className="search-result"
-            role="button"
-            tabIndex={0}
-            onClick={() => onSelect(track)}
-            onKeyDown={(event) => event.key === 'Enter' && onSelect(track)}
-          >
-            <img src={track.capa} alt="" className="search-result-img" />
-            {`${track.titulo} by ${track.artista} (Track)`}
-          </div>
-        ))}
-      </div>
+      <img src={track.capa} alt="" className="track-row__cover" />
+      <span className="track-row__info">
+        <span className="track-row__title">{track.titulo}</span>
+        <span className="track-row__meta">{track.artista} · {formatDuration(track.duracao)}</span>
+      </span>
     </>
   );
 }
 
-function PostForm({ track, onCreated }) {
+function SearchStep({ query, onQueryChange, search, onSelect }) {
+  return (
+    <div className="composer-step">
+      <div className="composer-search">
+        <i className="bi bi-search" aria-hidden="true" />
+        <input
+          type="search"
+          aria-label="Buscar música"
+          placeholder="Música ou artista"
+          autoComplete="off"
+          autoFocus
+          value={query}
+          onChange={(event) => onQueryChange(event.target.value)}
+        />
+      </div>
+
+      {search.status === 'idle' && <p className="composer-hint">Digite o nome de uma música ou artista.</p>}
+      {search.status === 'loading' && <p role="status" className="composer-hint">Buscando…</p>}
+      {search.status === 'error' && (
+        <p role="alert" className="composer-error">Não foi possível buscar agora. Tente de novo.</p>
+      )}
+      {search.status === 'done' && search.results.length === 0 && (
+        <p className="composer-hint">Nada encontrado para “{search.term}”.</p>
+      )}
+      {search.status === 'done' && search.results.length > 0 && (
+        <ul className="composer-results" aria-label="Resultados">
+          {search.results.map((track) => (
+            <li key={track.id}>
+              <button type="button" className="track-row" onClick={() => onSelect(track)}>
+                <TrackInfo track={track} />
+                <i className="bi bi-chevron-right track-row__chevron" aria-hidden="true" />
+              </button>
+            </li>
+          ))}
+        </ul>
+      )}
+    </div>
+  );
+}
+
+function ReviewStep({ track, onChangeTrack, onPublished }) {
+  const textoId = useId();
   const [texto, setTexto] = useState('');
   const [nota, setNota] = useState(null);
   const [error, setError] = useState('');
@@ -58,11 +68,12 @@ function PostForm({ track, onCreated }) {
 
   const submit = async (event) => {
     event.preventDefault();
+    if (nota === null) return;
     setSending(true);
     setError('');
     try {
       await postsApi.create({
-        texto,
+        texto: texto.trim(),
         musicName: track.titulo,
         artistName: track.artista,
         posterMusica: track.capa,
@@ -71,7 +82,7 @@ function PostForm({ track, onCreated }) {
         musicPreview: track.preview,
         nota,
       });
-      onCreated();
+      onPublished();
     } catch (err) {
       setError(err.message);
       setSending(false);
@@ -79,38 +90,59 @@ function PostForm({ track, onCreated }) {
   };
 
   return (
-    <div style={{ display: 'flex', flexDirection: 'column', height: '100%' }}>
-      <h2 id="music-name">{`${track.titulo} by ${track.artista}`}</h2>
-      <div className="post-configs">
-        <img
-          id="foto-musica"
-          src={track.capa}
-          alt={track.titulo}
-          className="img-fluid rounded"
-          style={{ marginRight: '1rem', maxWidth: 150 }}
-        />
-        <form className="ml-3 d-flex flex-column" onSubmit={submit}>
-          {error && <div role="alert" className="text-danger mb-2">{error}</div>}
-          <div className="form-group">
-            <textarea
-              id="texto"
-              aria-label="Texto do post"
-              className="form-control rounded"
-              rows={6}
-              value={texto}
-              onChange={(event) => setTexto(event.target.value)}
-            />
-          </div>
-          <div className="form-group">
-            <StarRatingInput value={nota} onChange={setNota} />
-          </div>
-          <button type="submit" className="btn btn-postar btn-primary align-self-center" disabled={sending}>
-            Postar
-          </button>
-        </form>
+    <form className="composer-step" onSubmit={submit}>
+      <div role="group" aria-label="Música escolhida" className="track-row track-row--selected">
+        <TrackInfo track={track} />
+        <button type="button" className="composer-link" onClick={onChangeTrack}>Trocar música</button>
       </div>
-    </div>
+
+      <StarRatingInput value={nota} onChange={setNota} />
+
+      <div className="composer-field">
+        <label htmlFor={textoId}>O que você achou?</label>
+        <textarea
+          id={textoId}
+          rows={4}
+          maxLength={TEXTO_MAX}
+          placeholder="Conte o que achou (opcional)"
+          value={texto}
+          onChange={(event) => setTexto(event.target.value)}
+        />
+        <span className="composer-counter">{texto.length}/{TEXTO_MAX}</span>
+      </div>
+
+      {error && <p role="alert" className="composer-error">{error}</p>}
+
+      <button type="submit" className="composer-submit" disabled={nota === null || sending}>
+        {sending ? 'Publicando…' : 'Publicar'}
+      </button>
+    </form>
   );
+}
+
+// Fluxo em duas etapas: buscar a música e depois avaliar. Fechar o diálogo descarta o rascunho.
+function Composer({ onPublished }) {
+  const [query, setQuery] = useState('');
+  const [search, setSearch] = useState({ status: 'idle', results: [] });
+  const [track, setTrack] = useState(null);
+  const term = useDebouncedValue(query.trim(), 300);
+
+  useEffect(() => {
+    if (!term) {
+      setSearch({ status: 'idle', results: [] });
+      return undefined;
+    }
+    let active = true;
+    setSearch((current) => ({ ...current, status: 'loading' }));
+    musicApi.search(term)
+      .then((results) => active && setSearch({ status: 'done', results, term }))
+      .catch(() => active && setSearch({ status: 'error', results: [] }));
+    return () => { active = false; };
+  }, [term]);
+
+  return track
+    ? <ReviewStep track={track} onChangeTrack={() => setTrack(null)} onPublished={onPublished} />
+    : <SearchStep query={query} onQueryChange={setQuery} search={search} onSelect={setTrack} />;
 }
 
 // Pode ser controlado de fora (open/onOpenChange), ex.: botão do feed vazio; sem isso, controla o próprio estado.
@@ -118,34 +150,23 @@ export function CreatePost({ onCreated, open: controlledOpen, onOpenChange }) {
   const [internalOpen, setInternalOpen] = useState(false);
   const open = controlledOpen ?? internalOpen;
   const setOpen = onOpenChange ?? setInternalOpen;
-  const [track, setTrack] = useState(null);
 
-  const close = () => {
-    setOpen(false);
-    setTrack(null);
-  };
+  const close = () => setOpen(false);
 
-  const handleCreated = () => {
+  const handlePublished = () => {
     close();
     onCreated();
   };
 
   return (
-    <div className="composer">
+    <>
       <button type="button" className="composer-fab" aria-label="Criar post" onClick={() => setOpen(true)}>
         <i className="bi bi-music-note-beamed" aria-hidden="true" />
         <span className="composer-fab__label" aria-hidden="true">Postar</span>
       </button>
-      {open && (
-        <>
-          <div id="overlay" data-testid="create-post-overlay" style={{ display: 'block' }} onClick={close} />
-          <div id="search-bar" className="input-group" style={{ display: 'block' }}>
-            {track
-              ? <PostForm track={track} onCreated={handleCreated} />
-              : <MusicSearch onSelect={setTrack} />}
-          </div>
-        </>
-      )}
-    </div>
+      <Modal open={open} title="Novo post" onClose={close} variant="sheet">
+        <Composer onPublished={handlePublished} />
+      </Modal>
+    </>
   );
 }

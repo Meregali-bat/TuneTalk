@@ -26,7 +26,7 @@ describe('LandingPage', () => {
     renderWithProviders(<LandingPage />);
     const exemplo = screen.getByRole('figure', { name: 'Exemplo de post no TuneTalk' });
     expect(exemplo).toHaveTextContent('Abbey Road');
-    expect(screen.getByLabelText('Nota 5 de 5')).toBeInTheDocument();
+    expect(screen.getByLabelText('Nota 9 de 10')).toBeInTheDocument();
   });
 
   it('lista o que dá para fazer e como funciona, em ordem', () => {

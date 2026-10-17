@@ -60,7 +60,8 @@ export function transformLegacyData(tables) {
       posterAlbum: row.posterAlbum,
       postType: row.postType,
       releaseDate: row.releaseDate == null ? null : String(row.releaseDate),
-      nota: row.nota ?? 0,
+      // A nota antiga ia de 0 a 5 estrelas; a nova vai de 0 a 10 (meia estrela por ponto).
+      nota: Math.min(10, Math.max(0, Math.round((row.nota ?? 0) * 2))),
       musicPreview: row.musicPreview,
       createdAt: toDate(row.data),
     });

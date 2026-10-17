@@ -1,4 +1,7 @@
 import { badRequest, forbidden, notFound } from '../errors.js';
+import { isValidNota, parseNota } from '../../../shared/rating.js';
+
+const TEXTO_MAX = 500;
 
 const CREATE_FIELDS = [
   'texto', 'musicName', 'artistName', 'posterMusica', 'albumName',
@@ -66,7 +69,13 @@ export function createPostService({
     async create(autorId, body) {
       const data = pick(body, CREATE_FIELDS);
       if (!data.musicName && !data.albumName) throw badRequest('Escolha uma música ou álbum.');
-      return posts.create({ ...data, autorId, data: now() });
+
+      const nota = parseNota(data.nota);
+      if (nota === null) throw badRequest('Dê uma nota de 0 a 10.');
+      if (!isValidNota(nota)) throw badRequest('A nota deve ser um número inteiro de 0 a 10.');
+      if ((data.texto ?? '').length > TEXTO_MAX) throw badRequest(`O texto pode ter no máximo ${TEXTO_MAX} caracteres.`);
+
+      return posts.create({ ...data, nota, autorId, data: now() });
     },
 
     async remove(postId, usuarioId) {

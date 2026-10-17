@@ -47,7 +47,8 @@ model Post {
   postType     String?  @map("post_type") @db.VarChar(20)
   // Faixas guardam a duração em segundos; álbuns, a data de lançamento.
   releaseDate  String?  @map("release_date") @db.VarChar(20)
-  nota         Float    @default(0)
+  // De 0 a 10: cada ponto é meia estrela.
+  nota         Int      @default(0)
   musicPreview String?  @map("music_preview") @db.VarChar(2000)
   createdAt    DateTime @default(now()) @map("created_at")
   autorId      Int      @map("autor_id")

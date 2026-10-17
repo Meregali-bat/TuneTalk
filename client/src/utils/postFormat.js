@@ -15,3 +15,9 @@ export function starIcons(nota) {
     return nota < i + 1 ? 'half' : 'fill';
   });
 }
+
+export function formatDuration(seconds) {
+  if (seconds === null || seconds === undefined) return '';
+  const minutes = Math.floor(seconds / 60);
+  return `${minutes}:${String(seconds % 60).padStart(2, '0')}`;
+}

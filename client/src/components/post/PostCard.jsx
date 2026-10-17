@@ -28,7 +28,10 @@ function MusicBlock({ post, postUrl }) {
         <div className="post-card__music-info">
           <h2 className="post-card__title">{post.titulo}</h2>
           <p className="post-card__meta">{meta}</p>
-          <span className="post-card__stars"><StarRating nota={post.nota} /></span>
+          <span className="post-card__rating">
+            <span className="post-card__stars"><StarRating nota={post.nota} /></span>
+            <span className="post-card__score" aria-hidden="true">{post.nota}/10</span>
+          </span>
         </div>
       </Link>
       {!isAlbum && post.preview && <PlayButton src={post.preview} />}

@@ -11,12 +11,19 @@ import { postsApi } from '../../api/index.js';
 vi.mock('../../api/index.js', () => ({ postsApi: { like: vi.fn(), unlike: vi.fn() } }));
 
 describe('StarRating', () => {
-  it('desenha estrelas cheias, meia e vazias conforme a nota', () => {
-    const { container } = render(<StarRating nota={3.5} />);
+  it('desenha a nota de 0 a 10 como estrelas, com meia estrela para notas ímpares', () => {
+    const { container } = render(<StarRating nota={7} />);
     expect(container.querySelectorAll('.bi-star-fill')).toHaveLength(3);
     expect(container.querySelectorAll('.bi-star-half')).toHaveLength(1);
     expect(container.querySelectorAll('.bi-star')).toHaveLength(1);
-    expect(screen.getByLabelText('Nota 3.5 de 5')).toBeInTheDocument();
+    expect(screen.getByLabelText('Nota 7 de 10')).toBeInTheDocument();
+  });
+
+  it('nota 0 é cinco estrelas vazias e 10 é cinco cheias', () => {
+    const { container, rerender } = render(<StarRating nota={0} />);
+    expect(container.querySelectorAll('.bi-star')).toHaveLength(5);
+    rerender(<StarRating nota={10} />);
+    expect(container.querySelectorAll('.bi-star-fill')).toHaveLength(5);
   });
 });
 

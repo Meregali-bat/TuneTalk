@@ -11,7 +11,7 @@ const musicPost = {
   id: 10,
   texto: 'que som',
   likes: 3,
-  nota: 4,
+  nota: 7,
   data: new Date(Date.now() - 2 * 60 * 60 * 1000).toISOString(),
   quantidadeComentarios: 2,
   tipo: 'música',
@@ -42,7 +42,8 @@ describe('PostCard', () => {
     expect(screen.getByText('que som')).toBeInTheDocument();
     expect(screen.getByRole('heading', { name: 'Help!' })).toBeInTheDocument();
     expect(screen.getByText('The Beatles • música • 2 min')).toBeInTheDocument();
-    expect(screen.getByLabelText('Nota 4 de 5')).toBeInTheDocument();
+    expect(screen.getByLabelText('Nota 7 de 10')).toBeInTheDocument();
+    expect(screen.getByText('7/10')).toBeInTheDocument();
     expect(screen.getByAltText('Poster da música')).toHaveAttribute('src', 'help.jpg');
     expect(screen.getByRole('button', { name: 'Tocar prévia' })).toBeInTheDocument();
   });

@@ -32,7 +32,7 @@ describe('postRepository (Postgres)', () => {
         posterMusica: 'help.jpg',
         postType: 'música',
         releaseDate: '138',
-        nota: '4.5',
+        nota: 9,
         musicPreview: 'help.mp3',
         data,
       });
@@ -43,7 +43,7 @@ describe('postRepository (Postgres)', () => {
         id,
         texto: 'que som',
         likes: 1,
-        nota: 4.5,
+        nota: 9,
         data: '2024-01-01T10:00:00.000Z',
         quantidadeComentarios: 1,
         tipo: 'música',
@@ -70,8 +70,8 @@ describe('postRepository (Postgres)', () => {
       expect((await repo.findById(b.id)).tipo).toBe('música');
     });
 
-    it('usa texto vazio e nota 0 quando não informados', async () => {
-      const id = await repo.create({ autorId: ana.id, musicName: 'x', data: new Date() });
+    it('usa texto vazio quando não informado', async () => {
+      const id = await repo.create({ autorId: ana.id, musicName: 'x', nota: 0, data: new Date() });
       expect(await repo.findById(id)).toMatchObject({ texto: '', nota: 0 });
     });
 

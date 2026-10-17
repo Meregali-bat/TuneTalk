@@ -88,7 +88,7 @@ describe('FeedPage', () => {
     postsApi.feed.mockResolvedValue([]);
     renderWithProviders(<FeedPage feed="foryou" />);
     await userEvent.click(await screen.findByRole('button', { name: 'Fazer o primeiro post' }));
-    expect(screen.getByPlaceholderText('Digite a música')).toBeInTheDocument();
+    expect(screen.getByLabelText('Buscar música')).toBeInTheDocument();
   });
 
   it('remove da lista o post apagado', async () => {
@@ -111,9 +111,10 @@ describe('FeedPage', () => {
     await screen.findByText('post 1');
 
     await userEvent.click(screen.getByRole('button', { name: 'Criar post' }));
-    await userEvent.type(screen.getByPlaceholderText('Digite a música'), 'help');
-    await userEvent.click(await screen.findByRole('button', { name: 'Help! by Beatles (Track)' }));
-    await userEvent.click(screen.getByRole('button', { name: 'Postar' }));
+    await userEvent.type(screen.getByLabelText('Buscar música'), 'help');
+    await userEvent.click(await screen.findByRole('button', { name: /Help!/ }));
+    await userEvent.click(screen.getByLabelText('8 de 10'));
+    await userEvent.click(screen.getByRole('button', { name: 'Publicar' }));
 
     await waitFor(() => expect(postsApi.feed).toHaveBeenCalledTimes(2));
   });
