@@ -10,10 +10,12 @@
     "dev:client": "vite",
     "build": "vite build",
     "build:demo": "vite build --mode demo && node scripts/build-demo-page.js",
+    "vercel-build": "prisma migrate deploy && vite build",
     "start": "NODE_ENV=production node server/src/index.js",
-    "postinstall": "prisma generate",
+    "postinstall": "npm run db:generate",
     "db:migrate": "prisma migrate deploy",
-    "db:migrate:dev": "prisma migrate dev",
+    "db:migrate:dev": "prisma migrate dev && npm run db:generate",
+    "db:generate": "node scripts/prisma-to-js.js --clean && prisma generate && node --no-warnings scripts/prisma-to-js.js",
     "db:import": "node scripts/migrate-mysql-dump.js",
     "db:studio": "prisma studio",
     "test": "vitest run",
@@ -29,6 +31,7 @@
     "bootstrap": "^5.3.8",
     "bootstrap-icons": "^1.13.2",
     "cloudinary": "^1.41.3",
+    "connect-pg-simple": "^10.0.0",
     "dotenv": "^18.0.8",
     "express": "^4.22.3",
     "express-session": "^1.19.0",
@@ -53,5 +56,8 @@
     "supertest": "^7.3.1",
     "vite": "^8.3.4",
     "vitest": "^5.0.5"
+  },
+  "engines": {
+    "node": "22.x"
   }
 }

@@ -2,7 +2,7 @@ generator client {
   provider            = "prisma-client"
   output              = "../server/src/generated/prisma"
   moduleFormat        = "esm"
-  importFileExtension = "ts"
+  importFileExtension = "ts" // convertido para .js por scripts/prisma-to-js.js
 }
 
 datasource db {
@@ -108,4 +108,15 @@ model Notificacao {
 
   @@index([destinatarioId, lida])
   @@map("notificacoes")
+}
+
+// Sessões de login (express-session + connect-pg-simple). Ficam no banco porque na
+// Vercel cada requisição pode cair numa instância diferente do servidor.
+model Sessao {
+  sid    String   @id(map: "session_pkey") @db.VarChar
+  sess   Json     @db.Json
+  expire DateTime @db.Timestamp(6)
+
+  @@index([expire], map: "IDX_session_expire")
+  @@map("session")
 }

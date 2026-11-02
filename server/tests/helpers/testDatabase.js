@@ -2,7 +2,7 @@ import fs from 'node:fs';
 import path from 'node:path';
 import { PGlite } from '@electric-sql/pglite';
 import { PrismaPGlite } from 'pglite-prisma-adapter';
-import { PrismaClient } from '../../src/generated/prisma/client.ts';
+import { PrismaClient } from '../../src/generated/prisma/client.js';
 
 const migrationsDir = path.resolve(import.meta.dirname, '../../../prisma/migrations');
 

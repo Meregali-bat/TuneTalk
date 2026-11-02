@@ -2,7 +2,9 @@ const DEFAULT_PROFILE_PHOTO =
   'https://res.cloudinary.com/dorm41uma/image/upload/v1701558934/jyqonmjasuobge6nmvi4.png';
 
 export function loadConfig(env = process.env) {
-  const isProduction = env.NODE_ENV === 'production';
+  // A Vercel define VERCEL=1 no build e nas funções.
+  const onVercel = env.VERCEL === '1';
+  const isProduction = env.NODE_ENV === 'production' || onVercel;
   if (isProduction && !env.SESSION_SECRET) {
     throw new Error('Defina SESSION_SECRET no ambiente de produção.');
   }
@@ -15,7 +17,9 @@ export function loadConfig(env = process.env) {
     port: Number(env.PORT) || 3000,
     sessionSecret: env.SESSION_SECRET || 'dev-only-secret',
     // Ative quando o app estiver atrás de HTTPS; com HTTP puro o navegador descartaria o cookie.
-    secureCookies: env.COOKIE_SECURE === 'true',
+    secureCookies: env.COOKIE_SECURE === 'true' || onVercel,
+    // Na Vercel os arquivos do React são servidos pela própria Vercel; em outro host, pelo Express.
+    serveClient: isProduction && !onVercel,
     defaultProfilePhoto: env.DEFAULT_PROFILE_PHOTO || DEFAULT_PROFILE_PHOTO,
     databaseUrl: env.DATABASE_URL,
     cloudinary: {

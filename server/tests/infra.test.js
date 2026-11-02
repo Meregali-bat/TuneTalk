@@ -52,4 +52,24 @@ describe('loadConfig', () => {
     expect(loadConfig({ NODE_ENV: 'production', SESSION_SECRET: 's', DATABASE_URL: 'x' }).secureCookies).toBe(false);
     expect(loadConfig({ COOKIE_SECURE: 'true' }).secureCookies).toBe(true);
   });
+
+  it('fora da Vercel, em produção o Express também entrega o build do React', () => {
+    expect(loadConfig({ NODE_ENV: 'production', SESSION_SECRET: 's', DATABASE_URL: 'x' }).serveClient).toBe(true);
+    expect(loadConfig({}).serveClient).toBe(false);
+  });
+
+  describe('na Vercel', () => {
+    const vercel = { VERCEL: '1', SESSION_SECRET: 's', DATABASE_URL: 'postgresql://neon' };
+
+    it('exige os segredos mesmo sem NODE_ENV', () => {
+      expect(() => loadConfig({ VERCEL: '1', DATABASE_URL: 'x' })).toThrow(/SESSION_SECRET/);
+      expect(() => loadConfig({ VERCEL: '1', SESSION_SECRET: 's' })).toThrow(/DATABASE_URL/);
+    });
+
+    it('usa cookie secure (é sempre HTTPS) e deixa os arquivos do React com a própria Vercel', () => {
+      const config = loadConfig(vercel);
+      expect(config.secureCookies).toBe(true);
+      expect(config.serveClient).toBe(false);
+    });
+  });
 });

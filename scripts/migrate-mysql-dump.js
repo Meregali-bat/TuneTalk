@@ -8,7 +8,7 @@ import fs from 'node:fs';
 import { parseDump } from '../server/src/migration/mysqlDump.js';
 import { transformLegacyData } from '../server/src/migration/transform.js';
 import { loadIntoDatabase } from '../server/src/migration/load.js';
-import { createPrismaClient } from '../server/src/infra/prisma.js';
+import { createPool, createPrismaClient } from '../server/src/infra/prisma.js';
 
 const args = process.argv.slice(2);
 const file = args.find((arg) => !arg.startsWith('--'));
@@ -42,7 +42,9 @@ if (!process.env.DATABASE_URL) {
   process.exit(1);
 }
 
-const prisma = createPrismaClient(process.env.DATABASE_URL);
+// No Neon, a conexão direta (sem pooler) é a indicada para cargas grandes.
+const pool = createPool(process.env.DATABASE_URL_UNPOOLED || process.env.DATABASE_URL);
+const prisma = createPrismaClient(pool);
 try {
   await loadIntoDatabase(prisma, data);
   console.log('\nMigração concluída.');
@@ -51,4 +53,5 @@ try {
   process.exitCode = 1;
 } finally {
   await prisma.$disconnect();
+  await pool.end();
 }

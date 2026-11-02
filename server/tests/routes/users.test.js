@@ -33,6 +33,14 @@ describe('rotas /api/users', () => {
       expect(deps.userService.updateProfile).toHaveBeenCalledWith(1, { nome: 'Novo', bio: 'bio', fotoPerfil: undefined });
     });
 
+    it('recusa foto acima de 4 MB com mensagem clara (a Vercel aceita no máximo 4,5 MB por requisição)', async () => {
+      const grande = Buffer.alloc(4 * 1024 * 1024 + 1);
+      const res = await agent.put('/api/users/me').field('nome', 'N').attach('foto', grande, 'grande.png');
+      expect(res.status).toBe(400);
+      expect(res.body).toEqual({ error: 'A foto pode ter no máximo 4 MB.' });
+      expect(deps.uploader.upload).not.toHaveBeenCalled();
+    });
+
     it('envia a foto nova para o uploader', async () => {
       deps.uploader.upload.mockResolvedValue('https://cdn/nova.png');
       deps.userService.updateProfile.mockResolvedValue({ id: 1 });

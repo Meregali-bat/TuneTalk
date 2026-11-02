@@ -25,9 +25,12 @@ export function parseIdParam(req, res, next, value, name) {
   next();
 }
 
+// A Vercel recusa requisições acima de 4,5 MB antes de chegar no app.
+const FOTO_MAX_MB = 4;
+
 export const imageUpload = multer({
   storage: multer.memoryStorage(),
-  limits: { fileSize: 5 * 1024 * 1024 },
+  limits: { fileSize: FOTO_MAX_MB * 1024 * 1024 },
 });
 
 export async function uploadedImageUrl(uploader, file) {
@@ -50,7 +53,8 @@ export function errorHandler(err, req, res, next) {
     return res.status(err.status).json({ error: err.message });
   }
   if (err instanceof multer.MulterError) {
-    return res.status(400).json({ error: 'Arquivo inválido.' });
+    const error = err.code === 'LIMIT_FILE_SIZE' ? `A foto pode ter no máximo ${FOTO_MAX_MB} MB.` : 'Arquivo inválido.';
+    return res.status(400).json({ error });
   }
   const prismaError = PRISMA_ERRORS[err?.name === 'PrismaClientKnownRequestError' && err.code];
   if (prismaError) {

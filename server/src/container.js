@@ -1,7 +1,8 @@
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { v2 as cloudinary } from 'cloudinary';
-import { createPrismaClient } from './infra/prisma.js';
+import { createPool, createPrismaClient } from './infra/prisma.js';
+import { createSessionStore } from './infra/sessionStore.js';
 import { createCloudinaryUploader } from './infra/cloudinaryUploader.js';
 import { createUserRepository } from './repositories/userRepository.js';
 import { createPostRepository } from './repositories/postRepository.js';
@@ -17,7 +18,8 @@ const rootDir = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '../.
 
 // Composição real das dependências (Postgres via Prisma, Cloudinary, Deezer).
 export function buildContainer(config) {
-  const prisma = createPrismaClient(config.databaseUrl);
+  const pool = createPool(config.databaseUrl);
+  const prisma = createPrismaClient(pool);
   cloudinary.config(config.cloudinary);
 
   const users = createUserRepository(prisma);
@@ -35,9 +37,10 @@ export function buildContainer(config) {
     musicService: createMusicService(),
     notifications,
     uploader: createCloudinaryUploader(cloudinary),
+    sessionStore: createSessionStore(pool),
     sessionSecret: config.sessionSecret,
     secureCookies: config.secureCookies,
     defaultProfilePhoto: config.defaultProfilePhoto,
-    clientDist: config.isProduction ? path.join(rootDir, 'dist') : undefined,
+    clientDist: config.serveClient ? path.join(rootDir, 'dist') : undefined,
   };
 }

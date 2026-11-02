@@ -1,5 +1,6 @@
 import { describe, it, expect, beforeEach } from 'vitest';
 import request from 'supertest';
+import session from 'express-session';
 import { buildTestApp, loggedAgent, sessionUser } from '../helpers/buildTestApp.js';
 import { HttpError } from '../../src/errors.js';
 
@@ -40,6 +41,37 @@ describe('rotas /api/auth', () => {
       const res = await request(app).post('/api/auth/login').send({ email: 'a', senha: 'b' });
       expect(res.status).toBe(401);
       expect(res.body).toEqual({ error: 'Usuário ou senha incorretos.' });
+    });
+  });
+
+  describe('sessão', () => {
+    it('fica no store injetado (em produção, o Postgres) e sobrevive a outra instância do app', async () => {
+      const sessionStore = new session.MemoryStore();
+      const primeira = buildTestApp({ sessionStore });
+      const res = await request(primeira.app).post('/api/auth/login').send({ email: 'ana@x.com', senha: 'Senha!1' });
+      const cookie = res.headers['set-cookie'];
+
+      expect(Object.keys(sessionStore.sessions)).toHaveLength(1);
+      const outra = buildTestApp({ sessionStore });
+      const me = await request(outra.app).get('/api/auth/me').set('Cookie', cookie);
+      expect(me.body).toEqual(sessionUser);
+    });
+
+    it('o cookie dura 30 dias, é httpOnly e sameSite=lax', async () => {
+      const res = await request(app).post('/api/auth/login').send({ email: 'ana@x.com', senha: 'Senha!1' });
+      const [cookie] = res.headers['set-cookie'];
+      expect(cookie).toMatch(/HttpOnly/);
+      expect(cookie).toMatch(/SameSite=Lax/);
+      const expires = Date.parse(cookie.match(/Expires=([^;]+)/)[1]);
+      expect(expires - Date.now()).toBeGreaterThan(29 * 24 * 60 * 60 * 1000);
+    });
+
+    it('atrás de HTTPS (secureCookies) confia no proxy e marca o cookie como Secure', async () => {
+      const { app: seguro } = buildTestApp({ secureCookies: true });
+      const res = await request(seguro).post('/api/auth/login')
+        .set('X-Forwarded-Proto', 'https')
+        .send({ email: 'ana@x.com', senha: 'Senha!1' });
+      expect(res.headers['set-cookie'][0]).toMatch(/Secure/);
     });
   });
 

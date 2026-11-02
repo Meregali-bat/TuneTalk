@@ -16,7 +16,14 @@ npm run db:migrate          # cria as tabelas
 npm run dev                 # API em :3000 e React em :5173 (com proxy para /api)
 ```
 
-Produção: `npm run db:migrate && npm run build && npm start` — o Express serve a API e o build do React na mesma porta.
+Produção em servidor próprio: `npm run db:migrate && npm run build && npm start` — o Express serve a API e o build do React na mesma porta.
+
+### Deploy na Vercel + Neon
+
+- `vercel.json`: a Vercel entrega o build do React (`dist/`) e manda `/api/*` para a função `api/index.js` (o mesmo app Express).
+- O build (`npm run vercel-build`) aplica as migrations e depois gera o React.
+- Sessões ficam no Postgres (tabela `session`), porque cada requisição pode cair numa instância diferente.
+- Variáveis de ambiente na Vercel: `DATABASE_URL` (Neon com pooler), `DATABASE_URL_UNPOOLED` (Neon direta, usada pelas migrations), `SESSION_SECRET` e as três do Cloudinary. A integração Neon da Vercel cria as duas do banco sozinha.
 
 ### Migrar os dados do MySQL antigo
 
@@ -36,6 +43,7 @@ Os ids são preservados, então links antigos (`/post/123`, `/perfil/11`) contin
 | `npm run test:server` / `npm run test:client` | só uma das partes |
 | `npm run db:migrate` | aplica as migrations (`prisma migrate deploy`) |
 | `npm run db:migrate:dev` | cria uma migration nova após mudar o `schema.prisma` |
+| `npm run db:generate` | gera o Prisma Client e converte para JavaScript (roda sozinho no `npm install`) |
 | `npm run db:import` | importa um dump do MySQL antigo |
 | `npm run db:studio` | abre o Prisma Studio para ver os dados |
 | `npm run build:demo` | gera a demo que roda só no navegador (backend fake com os serviços reais e dados fictícios) em `dist-demo/` |
