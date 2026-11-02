@@ -23,6 +23,8 @@ export async function createTestDatabase() {
 
   return {
     prisma,
+    // SQL cru com vários comandos, como num editor de SQL.
+    exec: (sql) => pglite.exec(sql),
     async reset() {
       await pglite.exec(`TRUNCATE ${TABLES.join(', ')} RESTART IDENTITY CASCADE`);
     },

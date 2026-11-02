@@ -3,16 +3,20 @@
 //
 //   npm run db:import -- banco.sql --dry-run   # só mostra o relatório
 //   npm run db:import -- banco.sql             # grava no banco (que precisa estar vazio)
+//   npm run db:import -- banco.sql --sql=importacao.sql
+//                                              # gera um .sql para colar no SQL Editor do Neon
 import 'dotenv/config';
 import fs from 'node:fs';
 import { parseDump } from '../server/src/migration/mysqlDump.js';
 import { transformLegacyData } from '../server/src/migration/transform.js';
 import { loadIntoDatabase } from '../server/src/migration/load.js';
+import { toSql } from '../server/src/migration/toSql.js';
 import { createPool, createPrismaClient } from '../server/src/infra/prisma.js';
 
 const args = process.argv.slice(2);
 const file = args.find((arg) => !arg.startsWith('--'));
 const dryRun = args.includes('--dry-run');
+const sqlFile = args.find((arg) => arg.startsWith('--sql='))?.slice('--sql='.length);
 
 if (!file) {
   console.error('Uso: npm run db:import -- <arquivo.sql> [--dry-run]');
@@ -34,6 +38,12 @@ if (report.skipped.length > 0) {
 
 if (dryRun) {
   console.log('\n--dry-run: nada foi gravado.');
+  process.exit(0);
+}
+
+if (sqlFile) {
+  fs.writeFileSync(sqlFile, toSql(data));
+  console.log(`\nSQL gravado em ${sqlFile}. Rode as migrations antes e cole no SQL Editor do banco.`);
   process.exit(0);
 }
 
