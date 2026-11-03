@@ -6,7 +6,7 @@ import { musicApi, usersApi } from '../api/index.js';
 import { makeAuth, renderWithProviders } from '../test/render.jsx';
 
 vi.mock('../api/index.js', () => ({
-  usersApi: { profile: vi.fn(), follow: vi.fn(), unfollow: vi.fn(), updateMe: vi.fn() },
+  usersApi: { profile: vi.fn(), follow: vi.fn(), unfollow: vi.fn(), updateMe: vi.fn(), changePassword: vi.fn() },
   postsApi: { like: vi.fn(), unlike: vi.fn(), remove: vi.fn(), create: vi.fn() },
   musicApi: { search: vi.fn() },
 }));
@@ -121,6 +121,28 @@ describe('ProfilePage', () => {
       renderProfile(1);
       expect(await screen.findByRole('button', { name: 'Editar perfil' })).toBeInTheDocument();
       expect(screen.queryByRole('button', { name: 'Seguir' })).toBeNull();
+    });
+
+    it('troca a senha e confirma na tela', async () => {
+      usersApi.profile.mockResolvedValue(profile({ usuario: ana }));
+      usersApi.changePassword.mockResolvedValue(null);
+      renderProfile(1);
+
+      await userEvent.click(await screen.findByRole('button', { name: 'Trocar senha' }));
+      const dialog = screen.getByRole('dialog', { name: 'Trocar senha' });
+      await userEvent.type(within(dialog).getByLabelText('Senha atual'), 'Atual!1');
+      await userEvent.type(within(dialog).getByLabelText('Nova senha'), 'Nova!123');
+      await userEvent.type(within(dialog).getByLabelText('Repita a nova senha'), 'Nova!123');
+      await userEvent.click(within(dialog).getByRole('button', { name: 'Salvar nova senha' }));
+
+      expect(await screen.findByRole('status')).toHaveTextContent('Senha alterada. Os outros aparelhos conectados precisam entrar de novo.');
+      expect(screen.queryByRole('dialog')).toBeNull();
+    });
+
+    it('perfil de outra pessoa não tem "Trocar senha"', async () => {
+      renderProfile();
+      await screen.findByRole('heading', { level: 1, name: 'bia' });
+      expect(screen.queryByRole('button', { name: 'Trocar senha' })).toBeNull();
     });
 
     it('sem posts convida a fazer o primeiro', async () => {

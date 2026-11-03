@@ -1593,3 +1593,24 @@ button.track-row:hover {
     font-size: .98rem;
   }
 }
+
+.profile-header__actions {
+  gap: .6rem;
+}
+
+.profile-notice {
+  display: flex;
+  align-items: center;
+  gap: .5rem;
+  margin: 1rem 0 0;
+  padding: .75rem 1rem;
+  border: 1px solid rgba(43, 168, 74, .45);
+  border-radius: 12px;
+  background: rgba(43, 168, 74, .1);
+  color: var(--texto);
+  font-size: .9rem;
+
+  i {
+    color: var(--destaque-claro);
+  }
+}

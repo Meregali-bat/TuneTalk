@@ -1,5 +1,9 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest';
+import md5 from 'md5';
 import { createUserService } from '../../src/services/userService.js';
+import { createPasswords } from '../../src/security/passwords.js';
+
+const passwords = createPasswords({ rounds: 4 });
 
 const ana = { id: 1, nome: 'Ana', fotoPerfil: 'ana.png', bio: 'oi' };
 const bia = { id: 2, nome: 'Bia', fotoPerfil: 'bia.png', bio: null };
@@ -16,6 +20,8 @@ describe('userService', () => {
       findById: vi.fn(async (id) => ({ 1: ana, 2: bia })[id] ?? null),
       update: vi.fn(),
       isNameTaken: vi.fn().mockResolvedValue(false),
+      findAuthById: vi.fn().mockResolvedValue({ id: 1, senha: md5('Atual!1') }),
+      updatePassword: vi.fn(),
     };
     follows = {
       isFollowing: vi.fn().mockResolvedValue(false),
@@ -29,7 +35,7 @@ describe('userService', () => {
     };
     postService = { byAuthor: vi.fn().mockResolvedValue([{ id: 10 }]) };
     notifications = { create: vi.fn() };
-    service = createUserService({ users, follows, postService, notifications });
+    service = createUserService({ users, follows, postService, notifications, passwords });
   });
 
   describe('getProfile', () => {
@@ -151,6 +157,50 @@ describe('userService', () => {
 
     it('lança 409 se não segue', async () => {
       await expect(service.unfollow(1, 2)).rejects.toMatchObject({ status: 409 });
+    });
+  });
+
+  describe('changePassword', () => {
+    it('confere a senha atual e grava a nova em bcrypt', async () => {
+      await service.changePassword(1, 'Atual!1', 'Nova!123');
+
+      const [id, hash] = users.updatePassword.mock.calls[0];
+      expect(id).toBe(1);
+      expect(await passwords.verify('Nova!123', hash)).toEqual({ ok: true, needsRehash: false });
+    });
+
+    it('funciona também com a senha atual já em bcrypt', async () => {
+      users.findAuthById.mockResolvedValue({ id: 1, senha: await passwords.hash('Atual!1') });
+      await service.changePassword(1, 'Atual!1', 'Nova!123');
+      expect(users.updatePassword).toHaveBeenCalled();
+    });
+
+    it('recusa quando a senha atual está errada', async () => {
+      await expect(service.changePassword(1, 'errada', 'Nova!123')).rejects.toMatchObject({
+        status: 400,
+        message: 'A senha atual está incorreta.',
+      });
+      expect(users.updatePassword).not.toHaveBeenCalled();
+    });
+
+    it('aplica as mesmas regras do cadastro à nova senha', async () => {
+      await expect(service.changePassword(1, 'Atual!1', 'fraca')).rejects.toMatchObject({
+        status: 400,
+        message: 'A senha deve conter pelo menos um símbolo, mais de 6 caracteres e uma letra maiúscula.',
+      });
+      expect(users.findAuthById).not.toHaveBeenCalled();
+    });
+
+    it('exige que a nova seja diferente da atual', async () => {
+      await expect(service.changePassword(1, 'Atual!1', 'Atual!1')).rejects.toMatchObject({
+        status: 400,
+        message: 'A nova senha precisa ser diferente da atual.',
+      });
+    });
+
+    it('exige os dois campos', async () => {
+      await expect(service.changePassword(1, '', 'Nova!123')).rejects.toMatchObject({ status: 400, message: 'Preencha a senha atual e a nova.' });
+      await expect(service.changePassword(1, 'Atual!1', '')).rejects.toMatchObject({ status: 400 });
     });
   });
 });

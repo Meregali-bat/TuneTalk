@@ -16,7 +16,10 @@ export function buildTestApp(overrides = {}) {
       like: vi.fn(),
       unlike: vi.fn(),
     },
-    userService: { getProfile: vi.fn(), updateProfile: vi.fn(), setUsername: vi.fn(), follow: vi.fn(), unfollow: vi.fn() },
+    userService: {
+      getProfile: vi.fn(), updateProfile: vi.fn(), setUsername: vi.fn(), changePassword: vi.fn(), follow: vi.fn(), unfollow: vi.fn(),
+    },
+    sessions: { destroyOthers: vi.fn() },
     notifications: { listForUser: vi.fn(), countUnread: vi.fn(), markAllRead: vi.fn() },
     musicService: { search: vi.fn() },
     uploader: { upload: vi.fn() },

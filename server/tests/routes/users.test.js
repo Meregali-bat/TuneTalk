@@ -24,6 +24,27 @@ describe('rotas /api/users', () => {
     expect(deps.userService.getProfile).toHaveBeenCalledWith(2, 1);
   });
 
+  describe('PUT /api/users/me/password', () => {
+    it('troca a senha, derruba as outras sessões da pessoa e mantém a atual', async () => {
+      deps.userService.changePassword.mockResolvedValue(undefined);
+      await agent.put('/api/users/me/password').send({ senhaAtual: 'Atual!1', novaSenha: 'Nova!123' }).expect(204);
+
+      expect(deps.userService.changePassword).toHaveBeenCalledWith(1, 'Atual!1', 'Nova!123');
+      const [userId, keepSid] = deps.sessions.destroyOthers.mock.calls[0];
+      expect(userId).toBe(1);
+      expect(keepSid).toEqual(expect.any(String));
+      await agent.get('/api/auth/me').expect(200);
+    });
+
+    it('repassa o erro de senha atual errada sem mexer nas sessões', async () => {
+      deps.userService.changePassword.mockRejectedValue(new HttpError(400, 'A senha atual está incorreta.'));
+      const res = await agent.put('/api/users/me/password').send({ senhaAtual: 'x', novaSenha: 'Nova!123' });
+      expect(res.status).toBe(400);
+      expect(res.body).toEqual({ error: 'A senha atual está incorreta.' });
+      expect(deps.sessions.destroyOthers).not.toHaveBeenCalled();
+    });
+  });
+
   describe('PUT /api/users/me', () => {
     it('atualiza nome e bio sem foto nova', async () => {
       deps.userService.updateProfile.mockResolvedValue({ id: 1, nome: 'Novo' });

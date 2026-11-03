@@ -18,6 +18,7 @@ describe('endpoints da API', () => {
     ['postsApi.like', () => postsApi.like(3), ['/posts/3/like', { method: 'POST' }]],
     ['postsApi.unlike', () => postsApi.unlike(3), ['/posts/3/like', { method: 'DELETE' }]],
     ['usersApi.profile', () => usersApi.profile(2), ['/users/2']],
+    ['usersApi.changePassword', () => usersApi.changePassword('A!1aaa', 'B!2bbb'), ['/users/me/password', { method: 'PUT', body: { senhaAtual: 'A!1aaa', novaSenha: 'B!2bbb' } }]],
     ['usersApi.follow', () => usersApi.follow(2), ['/users/2/follow', { method: 'POST' }]],
     ['usersApi.unfollow', () => usersApi.unfollow(2), ['/users/2/follow', { method: 'DELETE' }]],
     ['notificationsApi.list', () => notificationsApi.list(), ['/notifications']],

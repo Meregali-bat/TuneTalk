@@ -65,6 +65,18 @@ describe('API fake da demo (serviços reais + banco em memória)', () => {
     expect((await call('GET', `/posts/${soTexto.body.id}`)).body.post).toMatchObject({ texto: 'só texto', titulo: null, nota: null });
   });
 
+  it('troca a senha: a antiga para de valer e a nova entra', async () => {
+    await login();
+    const trocar = (senhaAtual, novaSenha) => call('PUT', '/users/me/password', JSON.stringify({ senhaAtual, novaSenha }));
+    expect((await trocar('errada', 'Nova!123')).body).toEqual({ error: 'A senha atual está incorreta.' });
+    expect((await trocar(DEMO_LOGIN.senha, 'Nova!123')).status).toBe(204);
+
+    await call('POST', '/auth/logout');
+    const entrar = (senha) => call('POST', '/auth/login', JSON.stringify({ email: DEMO_LOGIN.email, senha }));
+    expect((await entrar(DEMO_LOGIN.senha)).status).toBe(401);
+    expect((await entrar('Nova!123')).status).toBe(200);
+  });
+
   it('não deixa apagar post de outra pessoa', async () => {
     await login();
     const [post] = (await call('GET', '/posts?feed=seguindo')).body;

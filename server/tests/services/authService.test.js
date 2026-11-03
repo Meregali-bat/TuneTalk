@@ -1,54 +1,69 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest';
+import md5 from 'md5';
 import { createAuthService } from '../../src/services/authService.js';
+import { createPasswords } from '../../src/security/passwords.js';
 
-const ana = { id: 1, nome: 'Ana', email: 'ana@x.com', fotoPerfil: 'f.png', bio: null };
+const passwords = createPasswords({ rounds: 4 });
 
 describe('authService', () => {
   let users;
   let auth;
+  let ana;
 
-  beforeEach(() => {
+  beforeEach(async () => {
+    ana = { id: 1, nome: 'Ana', email: 'ana@x.com', senha: await passwords.hash('Senha!1') };
     users = {
-      findByCredentials: vi.fn(),
+      findAuthByEmail: vi.fn().mockResolvedValue(ana),
+      updatePassword: vi.fn(),
       existsByEmail: vi.fn().mockResolvedValue(false),
       create: vi.fn().mockResolvedValue(1),
     };
-    auth = createAuthService({ users });
+    auth = createAuthService({ users, passwords });
   });
 
   describe('login', () => {
-    it('devolve o usuário da sessão quando as credenciais batem', async () => {
-      users.findByCredentials.mockResolvedValue(ana);
+    it('devolve o usuário da sessão (sem a senha) quando as credenciais batem', async () => {
       expect(await auth.login('ana@x.com', 'Senha!1')).toEqual({ id: 1, nome: 'Ana', email: 'ana@x.com' });
+      expect(users.updatePassword).not.toHaveBeenCalled();
     });
 
-    it('rejeita credenciais incorretas com 401', async () => {
-      users.findByCredentials.mockResolvedValue(null);
-      await expect(auth.login('ana@x.com', 'errada')).rejects.toMatchObject({
-        status: 401,
-        message: 'Email ou senha incorretos.',
-      });
+    it('rejeita senha errada ou email inexistente com a mesma mensagem (401)', async () => {
+      await expect(auth.login('ana@x.com', 'errada')).rejects.toMatchObject({ status: 401, message: 'Email ou senha incorretos.' });
+      users.findAuthByEmail.mockResolvedValue(null);
+      await expect(auth.login('nada@x.com', 'Senha!1')).rejects.toMatchObject({ status: 401, message: 'Email ou senha incorretos.' });
+    });
+
+    it('senha antiga em md5: entra e já regrava a senha em bcrypt', async () => {
+      users.findAuthByEmail.mockResolvedValue({ ...ana, senha: md5('Senha!1') });
+
+      await auth.login('ana@x.com', 'Senha!1');
+
+      const [id, novoHash] = users.updatePassword.mock.calls[0];
+      expect(id).toBe(1);
+      expect(await passwords.verify('Senha!1', novoHash)).toEqual({ ok: true, needsRehash: false });
     });
 
     it('ignora espaços em volta do email', async () => {
-      users.findByCredentials.mockResolvedValue(ana);
       await auth.login('  ana@x.com ', 'Senha!1');
-      expect(users.findByCredentials).toHaveBeenCalledWith('ana@x.com', 'Senha!1');
+      expect(users.findAuthByEmail).toHaveBeenCalledWith('ana@x.com');
     });
 
     it('rejeita email ou senha vazios com 400 sem consultar o banco', async () => {
       await expect(auth.login('', 'x')).rejects.toMatchObject({ status: 400 });
       await expect(auth.login('a@a.com', '')).rejects.toMatchObject({ status: 400 });
-      expect(users.findByCredentials).not.toHaveBeenCalled();
+      expect(users.findAuthByEmail).not.toHaveBeenCalled();
     });
   });
 
   describe('register', () => {
     const valid = { email: 'ana@x.com', senha: 'Senha!1', fotoPerfil: 'f.png' };
 
-    it('cria a conta só com email e senha; o nome de usuário vem depois', async () => {
+    it('cria a conta só com email e senha (guardada em bcrypt); o nome de usuário vem depois', async () => {
       expect(await auth.register(valid)).toEqual({ id: 1, nome: null, email: 'ana@x.com' });
-      expect(users.create).toHaveBeenCalledWith(valid);
+      const { senhaHash, ...resto } = users.create.mock.calls[0][0];
+      expect(resto).toEqual({ email: 'ana@x.com', fotoPerfil: 'f.png' });
+      expect(senhaHash).not.toContain('Senha!1');
+      expect(await passwords.verify('Senha!1', senhaHash)).toMatchObject({ ok: true });
     });
 
     it('normaliza o email (espaços e maiúsculas)', async () => {

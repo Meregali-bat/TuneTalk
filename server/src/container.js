@@ -2,7 +2,8 @@ import path from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { v2 as cloudinary } from 'cloudinary';
 import { createPool, createPrismaClient } from './infra/prisma.js';
-import { createSessionStore } from './infra/sessionStore.js';
+import { createSessionCleaner, createSessionStore } from './infra/sessionStore.js';
+import { createPasswords } from './security/passwords.js';
 import { createCloudinaryUploader } from './infra/cloudinaryUploader.js';
 import { createUserRepository } from './repositories/userRepository.js';
 import { createPostRepository } from './repositories/postRepository.js';
@@ -28,16 +29,18 @@ export function buildContainer(config) {
   const follows = createFollowRepository(prisma);
   const notifications = createNotificationRepository(prisma);
 
+  const passwords = createPasswords();
   const postService = createPostService({ posts, likes, notifications });
 
   return {
-    authService: createAuthService({ users }),
+    authService: createAuthService({ users, passwords }),
     postService,
-    userService: createUserService({ users, follows, postService, notifications }),
+    userService: createUserService({ users, follows, postService, notifications, passwords }),
     musicService: createMusicService(),
     notifications,
     uploader: createCloudinaryUploader(cloudinary),
     sessionStore: createSessionStore(pool),
+    sessions: createSessionCleaner(pool),
     sessionSecret: config.sessionSecret,
     secureCookies: config.secureCookies,
     defaultProfilePhoto: config.defaultProfilePhoto,

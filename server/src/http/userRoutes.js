@@ -3,7 +3,7 @@ import {
   asyncRoute, currentUserId, imageUpload, parseIdParam, requireAuth, requireUsername, uploadedImageUrl,
 } from './middlewares.js';
 
-export function createUserRoutes({ userService, uploader }) {
+export function createUserRoutes({ userService, uploader, sessions }) {
   const router = Router();
   router.use(requireAuth);
   router.param('id', parseIdParam);
@@ -16,6 +16,12 @@ export function createUserRoutes({ userService, uploader }) {
   }));
 
   router.use(requireUsername);
+
+  router.put('/me/password', asyncRoute(async (req, res) => {
+    await userService.changePassword(currentUserId(req), req.body.senhaAtual, req.body.novaSenha);
+    await sessions?.destroyOthers(currentUserId(req), req.sessionID);
+    res.status(204).end();
+  }));
 
   router.put('/me', imageUpload.single('foto'), asyncRoute(async (req, res) => {
     const { nome, bio } = req.body;

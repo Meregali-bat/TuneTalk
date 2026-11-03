@@ -1,9 +1,10 @@
 import { badRequest, conflict, notFound } from '../errors.js';
 import { USERNAME_MESSAGES, checkUsername } from '../../../shared/usernameRules.js';
+import { PASSWORD_RULES_MESSAGE, isPasswordValid } from '../../../shared/passwordRules.js';
 
 export const BIO_MAX = 255;
 
-export function createUserService({ users, follows, postService, notifications }) {
+export function createUserService({ users, follows, postService, notifications, passwords }) {
   const findOrFail = async (id) => {
     const user = await users.findById(id);
     if (!user) throw notFound('Usuário não encontrado.');
@@ -60,6 +61,20 @@ export function createUserService({ users, follows, postService, notifications }
       if (changes.nome !== atual.nome) await assertUsernameAvailable(changes.nome, usuarioId);
       await users.update(usuarioId, changes);
       return { ...atual, ...changes };
+    },
+
+    async changePassword(usuarioId, senhaAtual, novaSenha) {
+      if (!senhaAtual || !novaSenha) throw badRequest('Preencha a senha atual e a nova.');
+      if (!isPasswordValid(novaSenha)) throw badRequest(PASSWORD_RULES_MESSAGE);
+      if (novaSenha === senhaAtual) throw badRequest('A nova senha precisa ser diferente da atual.');
+
+      const auth = await users.findAuthById(usuarioId);
+      if (!auth) throw notFound('Usuário não encontrado.');
+      // 400 e não 401: errar a senha atual não deve derrubar a sessão no navegador.
+      const { ok } = await passwords.verify(senhaAtual, auth.senha);
+      if (!ok) throw badRequest('A senha atual está incorreta.');
+
+      await users.updatePassword(usuarioId, await passwords.hash(novaSenha));
     },
 
     async follow(seguidorId, seguidoId) {

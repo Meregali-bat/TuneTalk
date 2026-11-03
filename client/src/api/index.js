@@ -21,6 +21,8 @@ export const usersApi = {
   profile: (id) => request(`/users/${id}`),
   updateMe: (form) => request('/users/me', { method: 'PUT', form }),
   setUsername: (nome) => request('/users/me/username', { method: 'PUT', body: { nome } }),
+  changePassword: (senhaAtual, novaSenha) =>
+    request('/users/me/password', { method: 'PUT', body: { senhaAtual, novaSenha } }),
   follow: (id) => request(`/users/${id}/follow`, { method: 'POST' }),
   unfollow: (id) => request(`/users/${id}/follow`, { method: 'DELETE' }),
 };

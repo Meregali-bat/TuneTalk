@@ -1,16 +1,24 @@
-import md5 from 'md5';
-
 export const PUBLIC_USER_SELECT = { id: true, nome: true, fotoPerfil: true, bio: true };
 
 const sameText = (value) => ({ equals: value, mode: 'insensitive' });
 
 export function createUserRepository(prisma) {
   return {
-    // Busca sem diferenciar maiúsculas: emails antigos foram gravados como digitados.
-    async findByCredentials(email, senha) {
-      const user = await prisma.usuario.findFirst({ where: { email: sameText(email) } });
-      if (!user || user.senha !== md5(senha)) return null;
-      return { id: user.id, nome: user.nome, email: user.email, fotoPerfil: user.fotoPerfil, bio: user.bio };
+    // Inclui o hash da senha: só para o login conferir. Busca sem diferenciar maiúsculas,
+    // porque emails antigos foram gravados como digitados.
+    findAuthByEmail(email) {
+      return prisma.usuario.findFirst({
+        where: { email: sameText(email) },
+        select: { id: true, nome: true, email: true, senha: true },
+      });
+    },
+
+    findAuthById(id) {
+      return prisma.usuario.findUnique({ where: { id }, select: { id: true, senha: true } });
+    },
+
+    async updatePassword(id, senhaHash) {
+      await prisma.usuario.update({ where: { id }, data: { senha: senhaHash } });
     },
 
     async existsByEmail(email) {
@@ -26,9 +34,9 @@ export function createUserRepository(prisma) {
       return user !== null;
     },
 
-    async create({ email, senha, fotoPerfil }) {
+    async create({ email, senhaHash, fotoPerfil }) {
       const user = await prisma.usuario.create({
-        data: { email, senha: md5(senha), fotoPerfil },
+        data: { email, senha: senhaHash, fotoPerfil },
         select: { id: true },
       });
       return user.id;

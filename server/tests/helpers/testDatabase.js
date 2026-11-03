@@ -25,6 +25,8 @@ export async function createTestDatabase() {
     prisma,
     // SQL cru com vários comandos, como num editor de SQL.
     exec: (sql) => pglite.exec(sql),
+    // Mesma assinatura do pg.Pool#query, para testar código que usa o pool direto.
+    query: (text, params) => pglite.query(text, params),
     async reset() {
       await pglite.exec(`TRUNCATE ${TABLES.join(', ')} RESTART IDENTITY CASCADE`);
     },

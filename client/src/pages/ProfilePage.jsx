@@ -8,6 +8,7 @@ import { CreatePost } from '../components/post/CreatePost.jsx';
 import { FollowButton } from '../components/common/FollowButton.jsx';
 import { UserListModal } from '../components/profile/UserListModal.jsx';
 import { EditProfileModal } from '../components/profile/EditProfileModal.jsx';
+import { ChangePasswordModal } from '../components/profile/ChangePasswordModal.jsx';
 
 const formatMedia = (valor) =>
   valor.toLocaleString('pt-BR', { minimumFractionDigits: 1, maximumFractionDigits: 1 });
@@ -54,7 +55,7 @@ function Stat({ value, label, onClick }) {
   );
 }
 
-function ProfileHeader({ profile, isOwnProfile, onEdit, onOpenList, onFollowChange }) {
+function ProfileHeader({ profile, isOwnProfile, onEdit, onChangePassword, onOpenList, onFollowChange }) {
   const { usuario } = profile;
   const media = notaMedia(profile.posts);
 
@@ -77,9 +78,14 @@ function ProfileHeader({ profile, isOwnProfile, onEdit, onOpenList, onFollowChan
 
       <div className="profile-header__actions">
         {isOwnProfile ? (
-          <button type="button" className="follow-button follow-button--md is-following" onClick={onEdit}>
-            Editar perfil
-          </button>
+          <>
+            <button type="button" className="follow-button follow-button--md is-following" onClick={onEdit}>
+              Editar perfil
+            </button>
+            <button type="button" className="follow-button follow-button--md is-following" onClick={onChangePassword}>
+              Trocar senha
+            </button>
+          </>
         ) : (
           <FollowButton
             userId={usuario.id}
@@ -117,6 +123,8 @@ export function ProfilePage() {
   const { data: profile, error, reload, setData } = useAsync(() => usersApi.profile(id), [id]);
   const [openList, setOpenList] = useState(null);
   const [editing, setEditing] = useState(false);
+  const [changingPassword, setChangingPassword] = useState(false);
+  const [notice, setNotice] = useState('');
   const [composerOpen, setComposerOpen] = useState(false);
 
   if (error) {
@@ -145,9 +153,15 @@ export function ProfilePage() {
         profile={profile}
         isOwnProfile={isOwnProfile}
         onEdit={() => setEditing(true)}
+        onChangePassword={() => { setNotice(''); setChangingPassword(true); }}
         onOpenList={setOpenList}
         onFollowChange={reload}
       />
+      {notice && (
+        <p role="status" className="profile-notice">
+          <i className="bi bi-check-circle-fill" aria-hidden="true" /> {notice}
+        </p>
+      )}
 
       <h2 className="profile-section-title">Posts</h2>
       {profile.posts.length === 0 ? (
@@ -174,6 +188,16 @@ export function ProfilePage() {
         onClose={() => setOpenList(null)}
         onFollowChange={reload}
       />
+      {isOwnProfile && changingPassword && (
+        <ChangePasswordModal
+          open
+          onClose={() => setChangingPassword(false)}
+          onChanged={() => {
+            setChangingPassword(false);
+            setNotice('Senha alterada. Os outros aparelhos conectados precisam entrar de novo.');
+          }}
+        />
+      )}
       {isOwnProfile && editing && (
         <EditProfileModal open usuario={profile.usuario} onClose={() => setEditing(false)} onSaved={handleSaved} />
       )}

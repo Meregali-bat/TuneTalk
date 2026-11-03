@@ -5,14 +5,17 @@ const toSessionUser = ({ id, nome, email }) => ({ id, nome, email });
 
 const EMAIL_PATTERN = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 
-export function createAuthService({ users }) {
+export function createAuthService({ users, passwords }) {
   return {
     async login(email, senha) {
       const cleanEmail = (email ?? '').trim();
       if (!cleanEmail || !senha) throw badRequest('Preencha email e senha.');
 
-      const user = await users.findByCredentials(cleanEmail, senha);
-      if (!user) throw unauthorized('Email ou senha incorretos.');
+      const user = await users.findAuthByEmail(cleanEmail);
+      const { ok, needsRehash } = await passwords.verify(senha, user?.senha);
+      if (!ok) throw unauthorized('Email ou senha incorretos.');
+      // Senhas antigas (md5) passam para bcrypt no primeiro login depois da mudança.
+      if (needsRehash) await users.updatePassword(user.id, await passwords.hash(senha));
 
       return toSessionUser(user);
     },
@@ -25,7 +28,7 @@ export function createAuthService({ users }) {
       if (!isPasswordValid(senha)) throw badRequest(PASSWORD_RULES_MESSAGE);
       if (await users.existsByEmail(cleanEmail)) throw conflict('Já existe uma conta com esse email.');
 
-      const id = await users.create({ email: cleanEmail, senha, fotoPerfil });
+      const id = await users.create({ email: cleanEmail, senhaHash: await passwords.hash(senha), fotoPerfil });
       return toSessionUser({ id, nome: null, email: cleanEmail });
     },
   };

@@ -16,35 +16,40 @@ describe('userRepository (Postgres)', () => {
   beforeEach(() => db.reset());
   afterAll(() => db.close());
 
-  it('create grava a senha em md5, sem nome de usuário, e devolve o id', async () => {
-    const id = await repo.create({ email: 'ana@x.com', senha: 'Senha!1', fotoPerfil: 'f.png' });
+  // A senha chega já transformada em hash (feito pelo serviço); o repositório só guarda.
+  it('create grava o hash recebido, sem nome de usuário, e devolve o id', async () => {
+    const id = await repo.create({ email: 'ana@x.com', senhaHash: '$2b$hash', fotoPerfil: 'f.png' });
 
     const saved = await db.prisma.usuario.findUnique({ where: { id } });
-    expect(saved).toMatchObject({ nome: null, email: 'ana@x.com', senha: md5('Senha!1'), fotoPerfil: 'f.png' });
+    expect(saved).toMatchObject({ nome: null, email: 'ana@x.com', senha: '$2b$hash', fotoPerfil: 'f.png' });
     expect(await repo.findById(id)).toMatchObject({ id, nome: null });
   });
 
-  describe('findByCredentials', () => {
-    beforeEach(async () => {
-      const id = await repo.create({ email: 'ana@x.com', senha: 'Senha!1', fotoPerfil: 'f.png' });
+  describe('findAuthByEmail', () => {
+    it('devolve id, nome, email e o hash da senha', async () => {
+      const id = await repo.create({ email: 'ana@x.com', senhaHash: '$2b$hash', fotoPerfil: 'f.png' });
       await repo.update(id, { nome: 'Ana' });
+      expect(await repo.findAuthByEmail('ana@x.com')).toEqual({ id, nome: 'Ana', email: 'ana@x.com', senha: '$2b$hash' });
     });
 
-    it('devolve o usuário (sem a senha) quando email e senha batem', async () => {
-      const user = await repo.findByCredentials('ana@x.com', 'Senha!1');
-      expect(user).toEqual({ id: expect.any(Number), nome: 'Ana', email: 'ana@x.com', fotoPerfil: 'f.png', bio: null });
-    });
-
-    it('encontra o email ignorando maiúsculas (inclusive emails antigos gravados com maiúscula)', async () => {
+    it('ignora maiúsculas (inclusive emails antigos gravados com maiúscula)', async () => {
       await factory.user({ email: 'Legado@X.com', senha: md5('Senha!1') });
-      expect(await repo.findByCredentials('ANA@x.com', 'Senha!1')).toMatchObject({ nome: 'Ana' });
-      expect(await repo.findByCredentials('legado@x.com', 'Senha!1')).toMatchObject({ email: 'Legado@X.com' });
+      expect(await repo.findAuthByEmail('legado@x.com')).toMatchObject({ email: 'Legado@X.com', senha: md5('Senha!1') });
     });
 
-    it('devolve null com senha errada ou email inexistente', async () => {
-      expect(await repo.findByCredentials('ana@x.com', 'errada')).toBeNull();
-      expect(await repo.findByCredentials('nada@x.com', 'Senha!1')).toBeNull();
+    it('devolve null para email inexistente', async () => {
+      expect(await repo.findAuthByEmail('nada@x.com')).toBeNull();
     });
+  });
+
+  it('findAuthById e updatePassword trocam o hash da senha', async () => {
+    const ana = await factory.user({ senha: md5('velha') });
+    expect(await repo.findAuthById(ana.id)).toEqual({ id: ana.id, senha: md5('velha') });
+
+    await repo.updatePassword(ana.id, '$2b$nova');
+
+    expect(await repo.findAuthById(ana.id)).toEqual({ id: ana.id, senha: '$2b$nova' });
+    expect(await repo.findAuthById(9999)).toBeNull();
   });
 
   it('existsByEmail detecta email já cadastrado, ignorando maiúsculas', async () => {

@@ -4,6 +4,7 @@ import { HttpError, badRequest, forbidden, notFound, unauthorized } from '../../
 import { createAuthService } from '../../../server/src/services/authService.js';
 import { createPostService } from '../../../server/src/services/postService.js';
 import { createUserService } from '../../../server/src/services/userService.js';
+import { createPasswords } from '../../../server/src/security/passwords.js';
 import { createMemoryRepositories } from './memoryRepositories.js';
 import { CATALOG, DEMO_LOGIN, createSeed } from './seed.js';
 import { avatar } from './art.js';
@@ -43,6 +44,9 @@ const searchCatalog = (q) => {
   return CATALOG.filter((t) => `${t.titulo} ${t.artista}`.toLowerCase().includes(term));
 };
 
+// Custo menor que o do servidor: no navegador, cada hash bcrypt trava a tela enquanto calcula.
+const passwords = createPasswords({ rounds: 8 });
+
 export function createFakeApi({ storage = globalThis.localStorage } = {}) {
   let state = readState(storage) ?? createSeed();
   let services;
@@ -53,9 +57,11 @@ export function createFakeApi({ storage = globalThis.localStorage } = {}) {
       posts: repos.posts, likes: repos.likes, notifications: repos.notifications,
     });
     services = {
-      auth: createAuthService({ users: repos.users }),
+      auth: createAuthService({ users: repos.users, passwords }),
       posts: postService,
-      users: createUserService({ users: repos.users, follows: repos.follows, postService, notifications: repos.notifications }),
+      users: createUserService({
+        users: repos.users, follows: repos.follows, postService, notifications: repos.notifications, passwords,
+      }),
       notifications: repos.notifications,
     };
   };
@@ -106,6 +112,10 @@ export function createFakeApi({ storage = globalThis.localStorage } = {}) {
     ['PUT', /^\/users\/me\/username$/, async ({ body }) => {
       const { nome } = await services.users.setUsername(signedIn(), body.nome);
       return ok(startSession({ ...state.session, nome }));
+    }],
+    ['PUT', /^\/users\/me\/password$/, async ({ body }) => {
+      await services.users.changePassword(me(), body.senhaAtual, body.novaSenha);
+      return noContent();
     }],
     ['PUT', /^\/users\/me$/, async ({ form }) => {
       const foto = form.get('foto');

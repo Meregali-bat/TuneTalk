@@ -1,6 +1,5 @@
 // Repositórios em memória com o mesmo contrato dos repositórios Prisma do servidor,
 // para que os serviços reais (server/src/services) rodem no navegador.
-import md5 from 'md5';
 import { toPost } from '../../../server/src/repositories/postRepository.js';
 
 const publicUser = ({ id, nome, fotoPerfil, bio }) => ({ id, nome, fotoPerfil, bio });
@@ -35,10 +34,17 @@ export function createMemoryRepositories(state, onChange) {
   const same = (a, b) => (a ?? '').toLowerCase() === (b ?? '').toLowerCase();
 
   const users = {
-    async findByCredentials(email, senha) {
+    async findAuthByEmail(email) {
       const user = state.usuarios.find((u) => same(u.email, email));
-      if (!user || user.senha !== md5(senha)) return null;
-      return { ...publicUser(user), email: user.email };
+      return user ? { id: user.id, nome: user.nome, email: user.email, senha: user.senha } : null;
+    },
+    async findAuthById(id) {
+      const user = userById(id);
+      return user ? { id: user.id, senha: user.senha } : null;
+    },
+    async updatePassword(id, senhaHash) {
+      userById(id).senha = senhaHash;
+      changed();
     },
     async existsByEmail(email) {
       return state.usuarios.some((u) => same(u.email, email));
@@ -46,9 +52,9 @@ export function createMemoryRepositories(state, onChange) {
     async isNameTaken(nome, exceptId) {
       return state.usuarios.some((u) => u.id !== exceptId && u.nome && same(u.nome, nome));
     },
-    async create({ email, senha, fotoPerfil }) {
+    async create({ email, senhaHash, fotoPerfil }) {
       const id = nextId('usuarios');
-      state.usuarios.push({ id, nome: null, email, senha: md5(senha), fotoPerfil, bio: null });
+      state.usuarios.push({ id, nome: null, email, senha: senhaHash, fotoPerfil, bio: null });
       return changed(id);
     },
     async findById(id) {

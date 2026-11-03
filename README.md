@@ -92,6 +92,7 @@ para testar rotas sem banco e serviços sem HTTP.
 | POST / DELETE | `/api/posts/:id/like` | curtir / descurtir → `{ likes }` |
 | GET | `/api/users/:id` | perfil, posts, seguidores e seguindo |
 | PUT | `/api/users/me` | multipart: `nome`, `bio`, `foto?` |
+| PUT | `/api/users/me/password` | `{ senhaAtual, novaSenha }` → troca a senha e desconecta os outros aparelhos |
 | POST / DELETE | `/api/users/:id/follow` | seguir / deixar de seguir |
 | GET | `/api/notifications` | lista |
 | GET | `/api/notifications/unread-count` | `{ count }` |
