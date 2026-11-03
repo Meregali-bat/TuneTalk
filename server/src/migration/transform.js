@@ -39,6 +39,7 @@ export function transformLegacyData(tables) {
       fotoPerfil: row.fotoPerfil,
       bio: row.bio,
       admin: row.admin === 1,
+      veterano: true,
     });
   }
   const userIds = new Set(usuarios.map((u) => u.id));

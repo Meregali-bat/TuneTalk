@@ -4,8 +4,8 @@ import { toSql } from '../../src/migration/toSql.js';
 
 const data = () => ({
   usuarios: [
-    { id: 11, nome: "Ana d'Ávila", email: 'ana@x.com', senha: 'h', fotoPerfil: 'a.png', bio: 'linha 1\nlinha 2', admin: false },
-    { id: 40, nome: null, email: 'bia@x.com', senha: 'h', fotoPerfil: null, bio: null, admin: true },
+    { id: 11, nome: "Ana d'Ávila", email: 'ana@x.com', senha: 'h', fotoPerfil: 'a.png', bio: 'linha 1\nlinha 2', admin: false, veterano: true },
+    { id: 40, nome: null, email: 'bia@x.com', senha: 'h', fotoPerfil: null, bio: null, admin: true, veterano: true },
   ],
   posts: [{
     id: 300, autorId: 11, texto: "it's \\ ok", musicName: 'Help!', artistName: 'Beatles', posterMusica: 'p', albumName: null,
@@ -31,7 +31,7 @@ describe('toSql (importação pelo SQL Editor)', () => {
   it('insere tudo com os mesmos ids, textos com aspas e quebras de linha intactos', async () => {
     await db.exec(toSql(data()));
 
-    expect(await db.prisma.usuario.findUnique({ where: { id: 11 } })).toMatchObject({ nome: "Ana d'Ávila", bio: 'linha 1\nlinha 2', admin: false });
+    expect(await db.prisma.usuario.findUnique({ where: { id: 11 } })).toMatchObject({ nome: "Ana d'Ávila", bio: 'linha 1\nlinha 2', admin: false, veterano: true });
     expect(await db.prisma.usuario.findUnique({ where: { id: 40 } })).toMatchObject({ nome: null, fotoPerfil: null, admin: true });
     expect(await db.prisma.post.findUnique({ where: { id: 300 } })).toMatchObject({
       texto: "it's \\ ok", postType: 'música', nota: 8, parentId: null, createdAt: new Date('2023-12-01T10:00:00Z'),

@@ -1,5 +1,5 @@
 export const PUBLIC_USER_SELECT = {
-  id: true, nome: true, nomeExibicao: true, fotoPerfil: true, bannerUrl: true, bio: true,
+  id: true, nome: true, nomeExibicao: true, fotoPerfil: true, bannerUrl: true, bio: true, fundadorDesde: true,
 };
 
 const sameText = (value) => ({ equals: value, mode: 'insensitive' });
@@ -11,7 +11,7 @@ export function createUserRepository(prisma) {
     findAuthByEmail(email) {
       return prisma.usuario.findFirst({
         where: { email: sameText(email) },
-        select: { id: true, nome: true, email: true, senha: true },
+        select: { id: true, nome: true, email: true, senha: true, veterano: true, fundadorDesde: true },
       });
     },
 
@@ -36,6 +36,10 @@ export function createUserRepository(prisma) {
         take: limite - comeco.length,
       });
       return [...comeco, ...resto];
+    },
+
+    async activateFounder(id) {
+      await prisma.usuario.update({ where: { id }, data: { fundadorDesde: new Date() } });
     },
 
     async setPinnedPost(id, postId) {

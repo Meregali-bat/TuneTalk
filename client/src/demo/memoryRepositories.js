@@ -2,8 +2,8 @@
 // para que os serviços reais (server/src/services) rodem no navegador.
 import { toPost } from '../../../server/src/repositories/postRepository.js';
 
-const publicUser = ({ id, nome, nomeExibicao = null, fotoPerfil, bannerUrl = null, bio }) => ({
-  id, nome, nomeExibicao, fotoPerfil, bannerUrl, bio,
+const publicUser = ({ id, nome, nomeExibicao = null, fotoPerfil, bannerUrl = null, bio, fundadorDesde = null }) => ({
+  id, nome, nomeExibicao, fotoPerfil, bannerUrl, bio, fundadorDesde,
 });
 
 export function createMemoryRepositories(state, onChange) {
@@ -17,8 +17,8 @@ export function createMemoryRepositories(state, onChange) {
   };
   const userById = (id) => state.usuarios.find((u) => u.id === id);
   const author = (id) => {
-    const { nome, fotoPerfil } = userById(id);
-    return { id, nome, fotoPerfil };
+    const { nome, fotoPerfil, fundadorDesde } = userById(id);
+    return { id, nome, fotoPerfil, fundadorDesde };
   };
 
   const postRow = (post) => toPost({
@@ -46,11 +46,17 @@ export function createMemoryRepositories(state, onChange) {
     },
     async findAuthByEmail(email) {
       const user = state.usuarios.find((u) => same(u.email, email));
-      return user ? { id: user.id, nome: user.nome, email: user.email, senha: user.senha } : null;
+      return user ? {
+        id: user.id, nome: user.nome, email: user.email, senha: user.senha, veterano: Boolean(user.veterano), fundadorDesde: user.fundadorDesde ?? null,
+      } : null;
     },
     async findAuthById(id) {
       const user = userById(id);
       return user ? { id: user.id, senha: user.senha } : null;
+    },
+    async activateFounder(id) {
+      userById(id).fundadorDesde = new Date().toISOString();
+      changed();
     },
     async setPinnedPost(id, postId) {
       userById(id).postFixadoId = postId;

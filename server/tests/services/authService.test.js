@@ -43,6 +43,31 @@ describe('authService', () => {
       expect(await passwords.verify('Senha!1', novoHash)).toEqual({ ok: true, needsRehash: false });
     });
 
+    describe('selo de fundador', () => {
+      it('conta do TuneTalk antigo ganha o selo no primeiro login depois da mudança', async () => {
+        users.activateFounder = vi.fn();
+        users.findAuthByEmail.mockResolvedValue({ ...ana, veterano: true, fundadorDesde: null });
+        await auth.login('ana@x.com', 'Senha!1');
+        expect(users.activateFounder).toHaveBeenCalledWith(1);
+      });
+
+      it('não reativa quem já tem, nem dá para contas novas', async () => {
+        users.activateFounder = vi.fn();
+        users.findAuthByEmail.mockResolvedValue({ ...ana, veterano: true, fundadorDesde: new Date() });
+        await auth.login('ana@x.com', 'Senha!1');
+        users.findAuthByEmail.mockResolvedValue({ ...ana, veterano: false, fundadorDesde: null });
+        await auth.login('ana@x.com', 'Senha!1');
+        expect(users.activateFounder).not.toHaveBeenCalled();
+      });
+
+      it('senha errada não ativa nada', async () => {
+        users.activateFounder = vi.fn();
+        users.findAuthByEmail.mockResolvedValue({ ...ana, veterano: true, fundadorDesde: null });
+        await expect(auth.login('ana@x.com', 'errada')).rejects.toMatchObject({ status: 401 });
+        expect(users.activateFounder).not.toHaveBeenCalled();
+      });
+    });
+
     it('ignora espaços em volta do email', async () => {
       await auth.login('  ana@x.com ', 'Senha!1');
       expect(users.findAuthByEmail).toHaveBeenCalledWith('ana@x.com');

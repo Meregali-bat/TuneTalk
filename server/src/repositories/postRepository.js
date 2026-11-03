@@ -1,5 +1,5 @@
 const POST_INCLUDE = {
-  autor: { select: { id: true, nome: true, fotoPerfil: true, postFixadoId: true } },
+  autor: { select: { id: true, nome: true, fotoPerfil: true, postFixadoId: true, fundadorDesde: true } },
   _count: { select: { respostas: true, curtidas: true } },
 };
 
@@ -35,7 +35,7 @@ export function toPost(row) {
     imagem: row.imagemUrl ?? null,
     imagemProporcao: row.imagemProporcao ?? null,
     fixado: row.autor.postFixadoId === row.id,
-    autor: { id: row.autor.id, nome: row.autor.nome, fotoPerfil: row.autor.fotoPerfil },
+    autor: { id: row.autor.id, nome: row.autor.nome, fotoPerfil: row.autor.fotoPerfil, fundador: Boolean(row.autor.fundadorDesde) },
   };
 }
 

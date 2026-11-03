@@ -7,6 +7,7 @@ import { relativeTime } from '../../utils/relativeTime.js';
 import { StarRating } from './StarRating.jsx';
 import { formatEstrelas } from '../../../../shared/rating.js';
 import { VerifiedBadge } from '../effects/VerifiedBadge.jsx';
+import { FounderBadge } from '../effects/FounderBadge.jsx';
 import { LikeButton } from './LikeButton.jsx';
 import { PlayButton } from './PlayButton.jsx';
 import { ShareButton } from './ShareButton.jsx';
@@ -84,6 +85,7 @@ export function PostCard({
           <span className="post-card__author-line">
             <Link to={profileUrl} className="post-card__author" id={authorId}>{post.autor.nome}</Link>
             <VerifiedBadge nome={post.autor.nome} />
+            <FounderBadge ativo={Boolean(post.autor.fundador)} />
           </span>
           <time className="post-card__time" dateTime={post.data}>{relativeTime(post.data)}</time>
         </div>

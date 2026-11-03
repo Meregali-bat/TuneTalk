@@ -132,6 +132,12 @@ describe('API fake da demo (serviços reais + banco em memória)', () => {
     expect((await call('GET', `/users/${api.currentUserId()}`)).body.usuario).toMatchObject({ nomeExibicao: 'Ana S.', bannerUrl: capa });
   });
 
+  it('a Ana (conta antiga) ganha o selo de fundador ao entrar', async () => {
+    await login();
+    const { usuario } = (await call('GET', `/users/${api.currentUserId()}`)).body;
+    expect(usuario.fundadorDesde).toEqual(expect.any(String));
+  });
+
   it('busca pessoas pelo nome ou @', async () => {
     await login();
     const achados = (await call('GET', '/users?q=%40bruno')).body;

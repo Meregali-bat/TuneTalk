@@ -50,7 +50,7 @@ export function createSeed() {
     seq: { usuarios: 4, posts: 16, notificacoes: 3 },
     session: null,
     usuarios: [
-      user(1, 'ana.souza', DEMO_LOGIN.email, 'MPB de manhã, rock à noite', 'Ana Souza'),
+      { ...user(1, 'ana.souza', DEMO_LOGIN.email, 'MPB de manhã, rock à noite', 'Ana Souza'), veterano: true },
       user(2, 'bruno.lima', 'bruno@demo.com', 'Colecionador de vinil', 'Bruno Lima 💿'),
       user(3, 'carla.mendes', 'carla@demo.com', 'Toco baixo numa banda de garagem'),
       user(4, 'diego.rocha', 'diego@demo.com', null),

@@ -2129,3 +2129,20 @@ button.track-row:hover {
     animation: none;
   }
 }
+
+/* Selo de fundador: medalha dourada (diferente do verificado). */
+.founder-badge {
+  display: inline-block;
+  flex: none;
+  font-size: .95em;
+  line-height: 1;
+  vertical-align: -.05em;
+  background: linear-gradient(160deg, #ffe08a 0%, #f2b84b 55%, #c98a1e 100%);
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent;
+}
+
+.profile-header__name .founder-badge {
+  font-size: 1.3rem;
+}

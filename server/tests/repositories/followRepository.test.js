@@ -45,7 +45,7 @@ describe('followRepository (Postgres)', () => {
     expect(await repo.countFollowers(bia.id)).toBe(2);
 
     expect(await repo.listFollowing(caio.id)).toEqual([
-      { id: bia.id, nome: 'Bia', nomeExibicao: null, fotoPerfil: bia.fotoPerfil, bannerUrl: null, bio: 'rock' },
+      { id: bia.id, nome: 'Bia', nomeExibicao: null, fotoPerfil: bia.fotoPerfil, bannerUrl: null, bio: 'rock', fundadorDesde: null },
     ]);
     expect((await repo.listFollowers(bia.id)).map((u) => u.nome).sort()).toEqual(['Ana', 'Caio']);
   });

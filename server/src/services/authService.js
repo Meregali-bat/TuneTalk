@@ -16,6 +16,8 @@ export function createAuthService({ users, passwords }) {
       if (!ok) throw unauthorized('Email ou senha incorretos.');
       // Senhas antigas (md5) passam para bcrypt no primeiro login depois da mudança.
       if (needsRehash) await users.updatePassword(user.id, await passwords.hash(senha));
+      // Quem veio do TuneTalk antigo ganha o selo de fundador no primeiro login depois da mudança.
+      if (user.veterano && !user.fundadorDesde) await users.activateFounder(user.id);
 
       return toSessionUser(user);
     },

@@ -142,6 +142,13 @@ describe('UserListModal', () => {
     expect(screen.getByText('@bia')).toBeInTheDocument();
   });
 
+  it('mostra o selo de fundador nas listas', () => {
+    renderWithProviders(
+      <UserListModal open title="Seguidores" users={[{ id: 2, nome: 'bia', fotoPerfil: 'b.png', fundadorDesde: '2026-11-03T12:00:00.000Z' }]} seguindoIds={[]} onClose={vi.fn()} />,
+    );
+    expect(screen.getByRole('img', { name: 'No TuneTalk desde o início' })).toBeInTheDocument();
+  });
+
   it('mostra o selo de quem é verificado', () => {
     renderWithProviders(
       <UserListModal open title="Seguidores" users={[{ id: 11, nome: 'meregali.bat', fotoPerfil: 'm.png' }]} seguindoIds={[]} onClose={vi.fn()} />,

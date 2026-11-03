@@ -30,8 +30,8 @@ describe('transformLegacyData', () => {
     const { data } = transformLegacyData(legacy());
 
     expect(data.usuarios).toEqual([
-      { id: 1, nome: 'u1', email: 'u1@x.com', senha: 'md5', fotoPerfil: 'f.png', bio: null, admin: true },
-      { id: 2, nome: 'u2', email: 'u2@x.com', senha: 'md5', fotoPerfil: 'f.png', bio: null, admin: false },
+      { id: 1, nome: 'u1', email: 'u1@x.com', senha: 'md5', fotoPerfil: 'f.png', bio: null, admin: true, veterano: true },
+      { id: 2, nome: 'u2', email: 'u2@x.com', senha: 'md5', fotoPerfil: 'f.png', bio: null, admin: false, veterano: true },
     ]);
     expect(data.posts).toEqual([{
       id: 10, autorId: 1, texto: 't', musicName: 'Help!', artistName: 'Beatles', posterMusica: 'p.jpg', albumName: null,

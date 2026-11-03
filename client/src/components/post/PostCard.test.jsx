@@ -109,6 +109,11 @@ describe('PostCard', () => {
     expect(screen.getByRole('article')).not.toHaveClass('post-card--continua');
   });
 
+  it('autor fundador tem o selo de fundador ao lado do nome', () => {
+    renderWithProviders(<PostCard post={{ ...musicPost, autor: { ...musicPost.autor, fundador: true } }} />);
+    expect(screen.getByRole('img', { name: 'No TuneTalk desde o início' })).toBeInTheDocument();
+  });
+
   it('mostra a imagem (ou GIF) do post', () => {
     renderWithProviders(<PostCard post={{ ...musicPost, imagem: 'https://res.cloudinary.com/t/gato.gif' }} />);
     expect(screen.getByAltText('Imagem do post de Bia')).toHaveAttribute('src', 'https://res.cloudinary.com/t/gato.gif');

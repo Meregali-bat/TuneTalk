@@ -3,7 +3,9 @@
 // Faz o mesmo que load.js: mantém os ids, ajusta as sequências e recusa banco com usuários.
 
 const TABLES = [
-  ['usuarios', 'usuarios', { id: 'id', nome: 'nome', email: 'email', senha: 'senha', fotoPerfil: 'foto_perfil', bio: 'bio', admin: 'admin' }],
+  ['usuarios', 'usuarios', {
+    id: 'id', nome: 'nome', email: 'email', senha: 'senha', fotoPerfil: 'foto_perfil', bio: 'bio', admin: 'admin', veterano: 'veterano',
+  }],
   ['posts', 'posts', POST_COLUMNS()],
   ['respostas', 'posts', POST_COLUMNS()],
   ['curtidas', 'curtidas', { postId: 'post_id', usuarioId: 'usuario_id' }],

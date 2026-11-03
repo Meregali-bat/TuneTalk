@@ -29,7 +29,9 @@ describe('userRepository (Postgres)', () => {
     it('devolve id, nome, email e o hash da senha', async () => {
       const id = await repo.create({ email: 'ana@x.com', senhaHash: '$2b$hash', fotoPerfil: 'f.png' });
       await repo.update(id, { nome: 'Ana' });
-      expect(await repo.findAuthByEmail('ana@x.com')).toEqual({ id, nome: 'Ana', email: 'ana@x.com', senha: '$2b$hash' });
+      expect(await repo.findAuthByEmail('ana@x.com')).toEqual({
+        id, nome: 'Ana', email: 'ana@x.com', senha: '$2b$hash', veterano: false, fundadorDesde: null,
+      });
     });
 
     it('ignora maiúsculas (inclusive emails antigos gravados com maiúscula)', async () => {
@@ -52,7 +54,7 @@ describe('userRepository (Postgres)', () => {
     expect((await repo.search('olivia')).map((u) => u.id)).toEqual([olivia.id]);
     expect((await repo.search('mat')).map((u) => u.id)).toEqual([mateus.id]);
     expect(await repo.search('ninguém-assim')).toEqual([]);
-    expect(Object.keys((await repo.search('e'))[0]).sort()).toEqual(['bannerUrl', 'bio', 'fotoPerfil', 'id', 'nome', 'nomeExibicao']);
+    expect(Object.keys((await repo.search('e'))[0]).sort()).toEqual(['bannerUrl', 'bio', 'fotoPerfil', 'fundadorDesde', 'id', 'nome', 'nomeExibicao']);
   });
 
   it('search põe primeiro quem começa com o que foi digitado e devolve no máximo 20', async () => {
@@ -66,6 +68,15 @@ describe('userRepository (Postgres)', () => {
 
     const poucos = await repo.search('bia1');
     expect(poucos.map((u) => u.nome).slice(0, 1)).toEqual(['bia1']);
+  });
+
+  it('findAuthByEmail traz se é veterano; activateFounder liga o selo uma vez', async () => {
+    const ana = await factory.user({ email: 'v@x.com', veterano: true });
+    expect(await repo.findAuthByEmail('v@x.com')).toMatchObject({ veterano: true, fundadorDesde: null });
+
+    await repo.activateFounder(ana.id);
+    const { fundadorDesde } = await repo.findById(ana.id);
+    expect(Date.now() - fundadorDesde.getTime()).toBeLessThan(60_000);
   });
 
   it('setPinnedPost fixa e desafixa o post do perfil', async () => {
@@ -109,7 +120,7 @@ describe('userRepository (Postgres)', () => {
   it('findById devolve o usuário público ou null', async () => {
     const ana = await factory.user({ nome: 'Ana', bio: 'oi' });
     expect(await repo.findById(ana.id)).toEqual({
-      id: ana.id, nome: 'Ana', nomeExibicao: null, fotoPerfil: ana.fotoPerfil, bannerUrl: null, bio: 'oi',
+      id: ana.id, nome: 'Ana', nomeExibicao: null, fotoPerfil: ana.fotoPerfil, bannerUrl: null, bio: 'oi', fundadorDesde: null,
     });
     expect(await repo.findById(9999)).toBeNull();
   });
@@ -118,7 +129,7 @@ describe('userRepository (Postgres)', () => {
     const ana = await factory.user();
     await repo.update(ana.id, { nome: 'Novo', nomeExibicao: 'Ana Souza', fotoPerfil: 'n.png', bannerUrl: 'b.png', bio: 'bio' });
     expect(await repo.findById(ana.id)).toEqual({
-      id: ana.id, nome: 'Novo', nomeExibicao: 'Ana Souza', fotoPerfil: 'n.png', bannerUrl: 'b.png', bio: 'bio',
+      id: ana.id, nome: 'Novo', nomeExibicao: 'Ana Souza', fotoPerfil: 'n.png', bannerUrl: 'b.png', bio: 'bio', fundadorDesde: null,
     });
   });
 });

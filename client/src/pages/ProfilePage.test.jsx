@@ -236,6 +236,13 @@ describe('ProfilePage', () => {
     expect(nome.parentElement).toContainElement(screen.getByRole('img', { name: 'Verificado' }));
   });
 
+  it('quem está desde o início mostra o selo de fundador ao lado do nome', async () => {
+    usersApi.profile.mockResolvedValue(profile({ usuario: { ...bia, fundadorDesde: '2026-11-03T12:00:00.000Z' } }));
+    renderProfile();
+    const nome = await screen.findByRole('heading', { level: 1, name: 'bia' });
+    expect(nome.parentElement).toContainElement(screen.getByRole('img', { name: 'No TuneTalk desde o início' }));
+  });
+
   it('mostra erro para perfil inexistente', async () => {
     usersApi.profile.mockRejectedValue(new Error('Usuário não encontrado.'));
     renderProfile(99);
