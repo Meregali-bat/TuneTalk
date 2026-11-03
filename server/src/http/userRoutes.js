@@ -39,6 +39,10 @@ export function createUserRoutes({ userService, uploader, sessions }) {
     res.json(usuario);
   }));
 
+  router.get('/', asyncRoute(async (req, res) => {
+    res.json(await userService.search(req.query.q, currentUserId(req)));
+  }));
+
   router.get('/:id', asyncRoute(async (req, res) => {
     res.json(await userService.getProfile(req.params.id, currentUserId(req)));
   }));

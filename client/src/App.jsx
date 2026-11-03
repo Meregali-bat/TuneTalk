@@ -11,6 +11,7 @@ import { UsernamePage } from './pages/UsernamePage.jsx';
 import { FeedPage } from './pages/FeedPage.jsx';
 import { ProfilePage } from './pages/ProfilePage.jsx';
 import { PostPage } from './pages/PostPage.jsx';
+import { SearchPage } from './pages/SearchPage.jsx';
 
 export function AppRoutes() {
   return (
@@ -41,6 +42,7 @@ export function AppRoutes() {
             <Route path="/seguindo" element={<FeedPage key="seguindo" feed="seguindo" />} />
             <Route path="/perfil/:id" element={<ProfilePage />} />
             <Route path="/post/:id" element={<PostPage />} />
+            <Route path="/buscar" element={<SearchPage />} />
           </Route>
         </Route>
       </Route>

@@ -36,6 +36,14 @@ export function createMemoryRepositories(state, onChange) {
   const same = (a, b) => (a ?? '').toLowerCase() === (b ?? '').toLowerCase();
 
   const users = {
+    async search(texto, limite = 20) {
+      const t = texto.toLowerCase();
+      const campos = (u) => [u.nome, u.nomeExibicao].filter(Boolean).map((v) => v.toLowerCase());
+      const comNome = state.usuarios.filter((u) => u.nome).sort((a, b) => a.nome.localeCompare(b.nome));
+      const comeco = comNome.filter((u) => campos(u).some((v) => v.startsWith(t)));
+      const resto = comNome.filter((u) => !comeco.includes(u) && campos(u).some((v) => v.includes(t)));
+      return [...comeco, ...resto].slice(0, limite).map(publicUser);
+    },
     async findAuthByEmail(email) {
       const user = state.usuarios.find((u) => same(u.email, email));
       return user ? { id: user.id, nome: user.nome, email: user.email, senha: user.senha } : null;

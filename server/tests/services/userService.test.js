@@ -181,6 +181,24 @@ describe('userService', () => {
     });
   });
 
+  describe('search', () => {
+    it('busca pessoas (tirando o @ do começo) e diz quem quem busca já segue', async () => {
+      users.search = vi.fn().mockResolvedValue([ana, bia]);
+      expect(await service.search('  @Bi ', 1)).toEqual([
+        { ...ana, seguindo: false },
+        { ...bia, seguindo: true },
+      ]);
+      expect(users.search).toHaveBeenCalledWith('Bi');
+      expect(follows.followingIds).toHaveBeenCalledWith(1);
+    });
+
+    it('busca vazia não consulta o banco', async () => {
+      users.search = vi.fn();
+      expect(await service.search(' @ ', 1)).toEqual([]);
+      expect(users.search).not.toHaveBeenCalled();
+    });
+  });
+
   describe('changePassword', () => {
     it('confere a senha atual e grava a nova em bcrypt', async () => {
       await service.changePassword(1, 'Atual!1', 'Nova!123');

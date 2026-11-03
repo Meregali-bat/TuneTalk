@@ -19,6 +19,25 @@ export function createUserRepository(prisma) {
       return prisma.usuario.findUnique({ where: { id }, select: { id: true, senha: true } });
     },
 
+    // Quem começa com o texto vem primeiro; depois quem só contém. Contas sem nome ficam de fora.
+    async search(texto, limite = 20) {
+      const campo = (op) => ({
+        nome: { not: null },
+        OR: [{ nome: { [op]: texto, mode: 'insensitive' } }, { nomeExibicao: { [op]: texto, mode: 'insensitive' } }],
+      });
+      const comeco = await prisma.usuario.findMany({
+        where: campo('startsWith'), select: PUBLIC_USER_SELECT, orderBy: { nome: 'asc' }, take: limite,
+      });
+      if (comeco.length >= limite) return comeco;
+      const resto = await prisma.usuario.findMany({
+        where: { ...campo('contains'), id: { notIn: comeco.map((u) => u.id) } },
+        select: PUBLIC_USER_SELECT,
+        orderBy: { nome: 'asc' },
+        take: limite - comeco.length,
+      });
+      return [...comeco, ...resto];
+    },
+
     async setPinnedPost(id, postId) {
       await prisma.usuario.update({ where: { id }, data: { postFixadoId: postId } });
     },

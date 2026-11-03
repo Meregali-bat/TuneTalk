@@ -42,6 +42,32 @@ describe('userRepository (Postgres)', () => {
     });
   });
 
+  it('search acha pelo nome de usuário ou de exibição, sem diferenciar maiúsculas, e ignora quem ainda não tem nome', async () => {
+    const olivia = await factory.user({ nome: 'sweetener', nomeExibicao: 'Olivia Fã 💜' });
+    const mateus = await factory.user({ nome: 'mateus', nomeExibicao: null });
+    await factory.user({ nome: null });
+    await factory.user({ nome: 'outra.pessoa' });
+
+    expect((await repo.search('SWEET')).map((u) => u.id)).toEqual([olivia.id]);
+    expect((await repo.search('olivia')).map((u) => u.id)).toEqual([olivia.id]);
+    expect((await repo.search('mat')).map((u) => u.id)).toEqual([mateus.id]);
+    expect(await repo.search('ninguém-assim')).toEqual([]);
+    expect(Object.keys((await repo.search('e'))[0]).sort()).toEqual(['bannerUrl', 'bio', 'fotoPerfil', 'id', 'nome', 'nomeExibicao']);
+  });
+
+  it('search põe primeiro quem começa com o que foi digitado e devolve no máximo 20', async () => {
+    const meio = await factory.user({ nome: 'zz.bia' });
+    for (let i = 0; i < 22; i++) await factory.user({ nome: `bia${i}` });
+
+    const achados = await repo.search('bia');
+    expect(achados).toHaveLength(20);
+    expect(achados.every((u) => u.nome.startsWith('bia'))).toBe(true);
+    expect(achados.map((u) => u.id)).not.toContain(meio.id);
+
+    const poucos = await repo.search('bia1');
+    expect(poucos.map((u) => u.nome).slice(0, 1)).toEqual(['bia1']);
+  });
+
   it('setPinnedPost fixa e desafixa o post do perfil', async () => {
     const ana = await factory.user();
     const post = await db.prisma.post.create({ data: { autorId: ana.id, texto: 'oi' } });

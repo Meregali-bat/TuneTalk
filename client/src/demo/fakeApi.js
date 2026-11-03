@@ -150,6 +150,7 @@ export function createFakeApi({ storage = globalThis.localStorage } = {}) {
       startSession({ ...state.session, nome: usuario.nome });
       return ok(usuario);
     }],
+    ['GET', /^\/users$/, async ({ query }) => ok(await services.users.search(query.get('q'), me()))],
     ['GET', /^\/users\/(\d+)$/, async ({ id }) => ok(await services.users.getProfile(id, me()))],
     ['POST', /^\/users\/(\d+)\/follow$/, async ({ id }) => { await services.users.follow(me(), id); return noContent(); }],
     ['DELETE', /^\/users\/(\d+)\/follow$/, async ({ id }) => { await services.users.unfollow(me(), id); return noContent(); }],

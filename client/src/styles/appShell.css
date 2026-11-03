@@ -2063,3 +2063,20 @@ button.track-row:hover {
   left: calc(-.75rem - 1.25rem - 1px);
   border-left: 2px dotted var(--linhas);
 }
+
+/* --- Buscar pessoas --- */
+.search-page {
+  display: grid;
+  gap: 1rem;
+  padding-top: 1.25rem;
+}
+
+.search-page__title {
+  margin: 0;
+  font-size: 1.3rem;
+  font-weight: 700;
+}
+
+.search-page__results {
+  margin: 0 -.5rem;
+}

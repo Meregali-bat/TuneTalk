@@ -132,6 +132,12 @@ describe('API fake da demo (serviços reais + banco em memória)', () => {
     expect((await call('GET', `/users/${api.currentUserId()}`)).body.usuario).toMatchObject({ nomeExibicao: 'Ana S.', bannerUrl: capa });
   });
 
+  it('busca pessoas pelo nome ou @', async () => {
+    await login();
+    const achados = (await call('GET', '/users?q=%40bruno')).body;
+    expect(achados).toEqual([expect.objectContaining({ nome: 'bruno.lima', seguindo: true })]);
+  });
+
   it('post só com imagem (GIF)', async () => {
     await login();
     expect((await call('POST', '/posts/image-upload')).body.uploadUrl).toBe('/api/demo-upload');

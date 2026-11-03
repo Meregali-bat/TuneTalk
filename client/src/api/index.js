@@ -44,6 +44,7 @@ export const postsApi = {
 
 export const usersApi = {
   profile: (id) => request(`/users/${id}`),
+  search: (q) => request(`/users?q=${encodeURIComponent(q)}`),
   updateMe: (changes) => request('/users/me', { method: 'PUT', body: changes }),
   uploadPhoto: (file) => uploadImage('/users/me/photo-upload', file),
   uploadBanner: (file) => uploadImage('/users/me/banner-upload', file),

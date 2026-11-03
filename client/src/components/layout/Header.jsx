@@ -51,6 +51,9 @@ export function Header() {
             <span>TuneTalk</span>
           </Link>
           <nav className="app-header__actions" aria-label="Conta">
+            <Link className="icon-button" to="/buscar" aria-label="Buscar pessoas">
+              <i className="bi bi-search" aria-hidden="true" />
+            </Link>
             <button
               type="button"
               className="icon-button app-header__bell"

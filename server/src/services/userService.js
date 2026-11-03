@@ -72,6 +72,13 @@ export function createUserService({ users, follows, postService, notifications, 
       return { ...atual, ...changes };
     },
 
+    async search(texto, viewerId) {
+      const limpo = (texto ?? '').trim().replace(/^@/, '').trim();
+      if (!limpo) return [];
+      const [achados, seguindoIds] = await Promise.all([users.search(limpo), follows.followingIds(viewerId)]);
+      return achados.map((u) => ({ ...u, seguindo: seguindoIds.includes(u.id) }));
+    },
+
     async changePassword(usuarioId, senhaAtual, novaSenha) {
       if (!senhaAtual || !novaSenha) throw badRequest('Preencha a senha atual e a nova.');
       if (!isPasswordValid(novaSenha)) throw badRequest(PASSWORD_RULES_MESSAGE);
