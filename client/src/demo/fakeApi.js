@@ -12,7 +12,7 @@ import { avatar } from './art.js';
 
 export { DEMO_LOGIN };
 
-const STORAGE_KEY = 'tunetalk-demo-v6';
+const STORAGE_KEY = 'tunetalk-demo-v7';
 
 const readState = (storage) => {
   try {

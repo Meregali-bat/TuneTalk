@@ -119,6 +119,14 @@ export function createMemoryRepositories(state, onChange) {
         .sort((a, b) => a.createdAt.localeCompare(b.createdAt) || a.id - b.id)
         .map(postRow);
     },
+    async listFirstReplies(parentIds) {
+      const primeiras = new Map();
+      for (const parentId of parentIds) {
+        const [primeira] = await posts.listReplies(parentId);
+        if (primeira) primeiras.set(parentId, primeira);
+      }
+      return primeiras;
+    },
     async findById(id) {
       const post = state.posts.find((p) => p.id === id);
       return post ? postRow(post) : null;

@@ -112,6 +112,42 @@ describe('PostPage', () => {
     expect(within(principal).getByRole('button', { name: 'Curtir' })).toHaveTextContent('0');
   });
 
+  describe('conversa dentro dos comentários (como no Twitter)', () => {
+    const respostaDaResposta = reply(20, 'boa pergunta', ana, { parentId: 5 });
+
+    it('mostra a primeira resposta de cada comentário logo abaixo dele', async () => {
+      postsApi.get.mockResolvedValue(detail({
+        respostas: [{ ...reply(5, 'concordo', caio, { quantidadeComentarios: 1 }), primeiraResposta: respostaDaResposta }],
+      }));
+      renderPost();
+
+      const conversa = await screen.findByRole('group', { name: 'Conversa do comentário de Caio' });
+      expect(within(conversa).getByText('concordo')).toBeInTheDocument();
+      expect(within(conversa).getByText('boa pergunta')).toBeInTheDocument();
+      expect(within(conversa).queryByRole('button', { name: /Mostrar respostas/ })).toBeNull();
+    });
+
+    it('"Mostrar respostas" traz as outras respostas daquele comentário ali mesmo', async () => {
+      postsApi.get.mockResolvedValueOnce(detail({
+        respostas: [{ ...reply(5, 'concordo', caio, { quantidadeComentarios: 3 }), primeiraResposta: respostaDaResposta }],
+      }));
+      renderPost();
+      const conversa = await screen.findByRole('group', { name: 'Conversa do comentário de Caio' });
+
+      postsApi.get.mockResolvedValueOnce(detail({
+        post: reply(5, 'concordo', caio),
+        respostas: [respostaDaResposta, reply(21, 'eu também', caio, { parentId: 5 }), reply(22, 'e eu', ana, { parentId: 5 })],
+      }));
+      await userEvent.click(within(conversa).getByRole('button', { name: 'Mostrar respostas (mais 2)' }));
+
+      expect(postsApi.get).toHaveBeenLastCalledWith(5);
+      expect(await within(conversa).findByText('e eu')).toBeInTheDocument();
+      expect(within(conversa).getByText('eu também')).toBeInTheDocument();
+      expect(within(conversa).getAllByText('boa pergunta')).toHaveLength(1);
+      expect(within(conversa).queryByRole('button', { name: /Mostrar respostas/ })).toBeNull();
+    });
+  });
+
   it('apagar um comentário tira ele da lista', async () => {
     postsApi.get.mockResolvedValue(detail({ respostas: [reply(5, 'meu comentário', ana)] }));
     postsApi.remove.mockResolvedValue(null);

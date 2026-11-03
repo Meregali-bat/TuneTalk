@@ -1973,3 +1973,33 @@ button.track-row:hover {
   gap: .3rem;
   min-width: 0;
 }
+
+/* Conversa dentro de um comentário: as respostas ficam recuadas, ligadas por uma linha. */
+.reply-thread {
+  display: grid;
+  gap: .5rem;
+}
+
+.reply-thread__replies {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr);
+  gap: .5rem;
+  margin-left: 1.4rem;
+  padding-left: .9rem;
+  border-left: 2px solid var(--linhas);
+}
+
+.reply-thread__more {
+  justify-self: start;
+  margin-left: 2.3rem;
+  padding: .2rem 0;
+  border: none;
+  background: none;
+  color: var(--destaque-claro);
+  font-size: .9rem;
+  font-weight: 600;
+
+  &:hover:not(:disabled) {
+    text-decoration: underline;
+  }
+}

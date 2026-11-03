@@ -74,8 +74,19 @@ export function createPostService({
         post.parentId ? posts.findById(post.parentId) : null,
         posts.listReplies(postId),
       ]);
+      const primeiras = await posts.listFirstReplies(respostas.map((r) => r.id));
       const [paiMarcado = null] = pai ? await markLiked([pai], viewerId) : [];
-      return { post: { ...post, curtido }, pai: paiMarcado, respostas: await markLiked(respostas, viewerId) };
+      const primeirasMarcadas = new Map(
+        (await markLiked([...primeiras.values()], viewerId)).map((p) => [p.parentId, p]),
+      );
+      return {
+        post: { ...post, curtido },
+        pai: paiMarcado,
+        respostas: (await markLiked(respostas, viewerId)).map((r) => ({
+          ...r,
+          primeiraResposta: primeirasMarcadas.get(r.id) ?? null,
+        })),
+      };
     },
 
     // Serve para posts e respostas (com parentId). Música e imagem são opcionais; com música, a nota é obrigatória.

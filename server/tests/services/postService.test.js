@@ -18,6 +18,7 @@ describe('postService', () => {
       listByAuthor: vi.fn().mockResolvedValue([post(4)]),
       findById: vi.fn().mockResolvedValue(post(1, 2, { likes: 5 })),
       listReplies: vi.fn().mockResolvedValue([post(8, 3, { parentId: 1 }), post(9, 7, { parentId: 1 })]),
+      listFirstReplies: vi.fn().mockResolvedValue(new Map()),
       create: vi.fn().mockResolvedValue(42),
       remove: vi.fn(),
     };
@@ -76,10 +77,21 @@ describe('postService', () => {
         post: { ...post(1, 2, { likes: 5 }), curtido: true },
         pai: null,
         respostas: [
-          { ...post(8, 3, { parentId: 1 }), curtido: false },
-          { ...post(9, 7, { parentId: 1 }), curtido: true },
+          { ...post(8, 3, { parentId: 1 }), curtido: false, primeiraResposta: null },
+          { ...post(9, 7, { parentId: 1 }), curtido: true, primeiraResposta: null },
         ],
       });
+    });
+
+    it('cada comentário traz a primeira resposta dele, como no Twitter', async () => {
+      likes.likedPostIds.mockResolvedValue([20]);
+      posts.listFirstReplies.mockResolvedValue(new Map([[8, post(20, 2, { parentId: 8 })]]));
+
+      const { respostas } = await service.get(1, 7);
+
+      expect(posts.listFirstReplies).toHaveBeenCalledWith([8, 9]);
+      expect(respostas[0].primeiraResposta).toEqual({ ...post(20, 2, { parentId: 8 }), curtido: true });
+      expect(respostas[1].primeiraResposta).toBeNull();
     });
 
     it('quando é uma resposta, devolve também o post pai', async () => {

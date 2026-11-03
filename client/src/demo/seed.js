@@ -47,7 +47,7 @@ const reply = (id, parentId, autorId, texto, minutes) => ({
 
 export function createSeed() {
   return {
-    seq: { usuarios: 4, posts: 14, notificacoes: 3 },
+    seq: { usuarios: 4, posts: 16, notificacoes: 3 },
     session: null,
     usuarios: [
       user(1, 'ana.souza', DEMO_LOGIN.email, 'MPB de manhã, rock à noite', 'Ana Souza'),
@@ -71,6 +71,8 @@ export function createSeed() {
       reply(12, 4, 2, 'Elis e Tom juntos, não tem como errar.', 25),
       reply(13, 2, 4, 'Preciso ouvir esse inteiro.', 170),
       reply(14, 10, 1, 'Qual versão? A do Shea Stadium?', 20),
+      reply(15, 10, 2, 'A do Anthology também é muito boa.', 18),
+      reply(16, 10, 3, 'Essa mesmo, a do Shea!', 15),
     ],
     curtidas: [
       { postId: 1, usuarioId: 1 }, { postId: 1, usuarioId: 3 }, { postId: 2, usuarioId: 2 }, { postId: 4, usuarioId: 2 },

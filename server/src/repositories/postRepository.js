@@ -63,6 +63,17 @@ export function createPostRepository(prisma) {
       return findPosts({ where: { parentId }, orderBy: [{ createdAt: 'asc' }, { id: 'asc' }] });
     },
 
+    // Primeira resposta de cada comentário (a mais antiga), para mostrar a conversa como no Twitter.
+    async listFirstReplies(parentIds) {
+      if (parentIds.length === 0) return new Map();
+      const rows = await findPosts({
+        where: { parentId: { in: parentIds } },
+        orderBy: [{ parentId: 'asc' }, { createdAt: 'asc' }, { id: 'asc' }],
+        distinct: ['parentId'],
+      });
+      return new Map(rows.map((post) => [post.parentId, post]));
+    },
+
     async findById(id) {
       const row = await prisma.post.findUnique({ where: { id }, include: POST_INCLUDE });
       return row ? toPost(row) : null;

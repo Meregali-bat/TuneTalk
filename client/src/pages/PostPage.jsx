@@ -35,6 +35,44 @@ function ThreadSkeleton() {
   );
 }
 
+/**
+ * Um comentário com a conversa embaixo, como no Twitter: a primeira resposta aparece direto;
+ * se houver mais, "Mostrar respostas" busca as outras e mostra ali mesmo.
+ */
+function ReplyThread({ resposta, onDeleted }) {
+  const [todas, setTodas] = useState(null);
+  const [carregando, setCarregando] = useState(false);
+  const respostas = todas ?? (resposta.primeiraResposta ? [resposta.primeiraResposta] : []);
+  const faltam = resposta.quantidadeComentarios - respostas.length;
+
+  const mostrarTodas = async () => {
+    setCarregando(true);
+    try {
+      setTodas((await postsApi.get(resposta.id)).respostas);
+    } finally {
+      setCarregando(false);
+    }
+  };
+
+  const tirar = (id) => setTodas(respostas.filter((r) => r.id !== id));
+
+  return (
+    <div role="group" aria-label={`Conversa do comentário de ${resposta.autor.nome}`} className="reply-thread">
+      <PostCard post={resposta} variant="reply" onDeleted={onDeleted} />
+      {respostas.length > 0 && (
+        <div className="reply-thread__replies">
+          {respostas.map((r) => <PostCard key={r.id} post={r} variant="reply" onDeleted={tirar} />)}
+        </div>
+      )}
+      {todas === null && faltam > 0 && respostas.length > 0 && (
+        <button type="button" className="reply-thread__more" onClick={mostrarTodas} disabled={carregando}>
+          {carregando ? 'Carregando…' : `Mostrar respostas (mais ${faltam})`}
+        </button>
+      )}
+    </div>
+  );
+}
+
 function ParentLink({ pai }) {
   return (
     <Link to={`/post/${pai.id}`} className="thread-parent">
@@ -109,7 +147,7 @@ export function PostPage() {
         ) : (
           <div className="reply-list">
             {respostas.map((resposta) => (
-              <PostCard key={resposta.id} post={resposta} variant="reply" onDeleted={removeReply} />
+              <ReplyThread key={resposta.id} resposta={resposta} onDeleted={removeReply} />
             ))}
           </div>
         )}

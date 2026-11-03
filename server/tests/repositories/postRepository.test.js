@@ -148,6 +148,23 @@ describe('postRepository (Postgres)', () => {
     expect((await db.prisma.usuario.findUnique({ where: { id: ana.id } })).postFixadoId).toBeNull();
   });
 
+  it('listFirstReplies devolve a primeira resposta de cada comentário, numa consulta só', async () => {
+    const pai = await factory.post(ana.id);
+    const c1 = await factory.reply(pai.id, bia.id);
+    const c2 = await factory.reply(pai.id, ana.id);
+    const c3 = await factory.reply(pai.id, ana.id);
+    const r1a = await factory.reply(c1.id, ana.id, { texto: 'primeira', createdAt: new Date('2024-01-01T10:00:00Z') });
+    await factory.reply(c1.id, bia.id, { texto: 'segunda', createdAt: new Date('2024-01-01T11:00:00Z') });
+    const r2a = await factory.reply(c2.id, bia.id);
+
+    const primeiras = await repo.listFirstReplies([c1.id, c2.id, c3.id]);
+
+    expect(primeiras.get(c1.id)).toMatchObject({ id: r1a.id, texto: 'primeira', parentId: c1.id });
+    expect(primeiras.get(c2.id)).toMatchObject({ id: r2a.id });
+    expect(primeiras.has(c3.id)).toBe(false);
+    expect((await repo.listFirstReplies([])).size).toBe(0);
+  });
+
   it('listByAuthor devolve só os posts do autor, mais novos primeiro', async () => {
     const p1 = await factory.post(ana.id);
     await factory.post(bia.id);
