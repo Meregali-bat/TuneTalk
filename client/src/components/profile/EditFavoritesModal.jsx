@@ -60,10 +60,27 @@ export function EditFavoritesModal({ favoritos, onClose, onSaved }) {
     });
   };
   // Troca o item de lugar com o vizinho (para a esquerda: -1; para a direita: +1).
+  const trocar = (i, k) => mudarLista(lista.map((f, j) => (j === i ? lista[k] : j === k ? lista[i] : f)));
   const mover = (i, passo) => {
     const k = i + passo;
     if (k < 0 || k >= lista.length) return;
-    mudarLista(lista.map((f, j) => (j === i ? lista[k] : j === k ? lista[i] : f)));
+    trocar(i, k);
+    // Chegou na ponta: o botão apertado desliga; o foco passa para o outro, sem cair no nada.
+    if (k === 0 || k === lista.length - 1) {
+      requestAnimationFrame(() => {
+        document.querySelector(`.favorites-editor__barra [data-direcao="${k === 0 ? 'depois' : 'antes'}"]`)?.focus();
+      });
+    }
+  };
+  // Com uma capa selecionada, tocar em outra troca as duas de lugar (atalho para não ir de uma em uma).
+  const tocarCapa = (item, i) => {
+    const iSelecionado = lista.findIndex((f) => f.id === selecionado);
+    if (iSelecionado >= 0 && iSelecionado !== i) {
+      trocar(iSelecionado, i);
+      setSelecionado(null);
+      return;
+    }
+    setSelecionado(selecionado === item.id ? null : item.id);
   };
 
   const trocarAba = (chave) => {
@@ -131,8 +148,9 @@ export function EditFavoritesModal({ favoritos, onClose, onSaved }) {
         <div role="tabpanel" id={painelId} aria-labelledby={`${painelId}-aba-${aba}`} className="favorites-editor__painel">
         <p role="status" className="composer-hint favorites-editor__contador">
           {lista.length === 0 && 'Busque abaixo e toque num resultado para adicionar.'}
-          {lista.length > 0 && !cheia && 'Toque numa capa para mudar a ordem ou tirar.'}
-          {cheia && 'Lista cheia. Toque numa capa para trocar de lugar ou tirar.'}
+          {lista.length > 0 && !selecionado && !cheia && 'Toque numa capa para mudar a ordem ou tirar.'}
+          {!selecionado && cheia && 'Lista cheia. Toque numa capa para trocar de lugar ou tirar.'}
+          {selecionado && 'Toque em outra capa para trocar as duas de lugar.'}
         </p>
         <ol className="favorites-grid favorites-editor__slots" aria-label={`${secao.titulo} escolhidos`}>
           {Array.from({ length: FAVORITOS_MAX }, (_, i) => lista[i]).map((item, i) => (item ? (
@@ -143,7 +161,7 @@ export function EditFavoritesModal({ favoritos, onClose, onSaved }) {
                 className={`favorites-editor__capa${selecionado === item.id ? ' is-selected' : ''}`}
                 aria-pressed={selecionado === item.id}
                 aria-label={`${i + 1}º: ${item.titulo}`}
-                onClick={() => setSelecionado(selecionado === item.id ? null : item.id)}
+                onClick={() => tocarCapa(item, i)}
               >
                 <span className="favorites-editor__capa-imagem">
                   <FavoriteCover item={item} redondo={redondo} />
@@ -165,11 +183,12 @@ export function EditFavoritesModal({ favoritos, onClose, onSaved }) {
           const item = lista[i];
           return (
             <div className="favorites-editor__barra" role="group" aria-label={`Ações para ${item.titulo}`}>
-              <button type="button" aria-label={`Mover ${item.titulo} para antes`} disabled={i === 0} onClick={() => mover(i, -1)}>
+              <button type="button" data-direcao="antes" aria-label={`Mover ${item.titulo} para antes`} disabled={i === 0} onClick={() => mover(i, -1)}>
                 <i className="bi bi-chevron-left" aria-hidden="true" /> Antes
               </button>
               <button
                 type="button"
+                data-direcao="depois"
                 aria-label={`Mover ${item.titulo} para depois`}
                 disabled={i === lista.length - 1}
                 onClick={() => mover(i, 1)}
@@ -190,7 +209,7 @@ export function EditFavoritesModal({ favoritos, onClose, onSaved }) {
             type="search"
             key={aba}
             aria-label={`Buscar ${secao.aba.toLowerCase()}`}
-            placeholder={cheia ? 'Lista cheia: tire um para trocar' : `Buscar ${secao.aba.toLowerCase()}`}
+            placeholder={cheia ? 'Lista cheia' : `Buscar ${secao.aba.toLowerCase()}`}
             autoComplete="off"
             disabled={cheia}
             value={query}

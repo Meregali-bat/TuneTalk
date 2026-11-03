@@ -110,7 +110,10 @@ export function EditProfileModal({ open, usuario, onClose, onSaved, onChangePass
         </div>
 
         <div className="edit-profile__photo">
-          <img src={foto.preview ?? usuario.fotoPerfil} alt="Foto de perfil" className="edit-profile__avatar" />
+          {/* Tocar na foto também abre a escolha da imagem. */}
+          <button type="button" className="edit-profile__avatar-botao" aria-label="Trocar foto (pela imagem)" tabIndex={-1} onClick={() => fileInput.current?.click()}>
+            <img src={foto.preview ?? usuario.fotoPerfil} alt="Foto de perfil" className="edit-profile__avatar" />
+          </button>
           <button type="button" className="composer-link" onClick={() => fileInput.current?.click()}>
             <i className="bi bi-camera" aria-hidden="true" /> Trocar foto
           </button>

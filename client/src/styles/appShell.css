@@ -2141,6 +2141,11 @@ button.track-row:hover {
   gap: .4rem;
   min-width: 0;
 
+  /* O nome não estica: os selos ficam colados nele, mesmo com nome comprido. */
+  h1 {
+    flex: 0 1 auto;
+  }
+
   .verified-badge {
     font-size: 1.35rem;
   }
@@ -2747,7 +2752,12 @@ button.lyrics-picker__verso {
   align-items: center;
   justify-content: space-between;
   gap: .5rem;
-  min-height: 2.25rem;
+  min-height: 2.75rem;
+
+  .composer-link {
+    min-height: 2.75rem;
+    padding: 0 1rem;
+  }
 }
 
 .profile-favorites__vazio {
@@ -3013,6 +3023,20 @@ button.favorites-editor__capa {
     outline: 2px solid var(--destaque);
     outline-offset: 3px;
   }
+}
+
+/* Telas bem estreitas: no editor, a capa e o número já identificam; o título cortado só atrapalhava. */
+@media (max-width: 359.98px) {
+  .favorites-editor__slots .favorites-grid__titulo {
+    display: none;
+  }
+}
+
+button.edit-profile__avatar-botao {
+  padding: 0;
+  border: 0;
+  border-radius: 50%;
+  background: none;
 }
 
 .favorites-editor__capa-imagem {

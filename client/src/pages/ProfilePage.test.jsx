@@ -370,6 +370,21 @@ describe('ProfilePage', () => {
     expect(screen.getByText('Toque numa capa para mudar a ordem ou tirar.')).toBeInTheDocument();
   });
 
+  it('no editor, com uma capa escolhida, tocar em outra troca as duas de lugar', async () => {
+    const ana = { id: 1, nome: 'ana', fotoPerfil: 'a.png', bio: '' };
+    const tres = [1, 2, 3].map((i) => ({ id: String(i), titulo: `Música ${i}`, artista: 'X', capa: `https://cdn-images.dzcdn.net/${i}.jpg` }));
+    usersApi.profile.mockResolvedValue(profile({ usuario: ana, favoritos: { musicas: tres, albuns: [], artistas: [] } }));
+    usersApi.updateFavorites.mockImplementation(async (f) => f);
+    renderProfile(1);
+    await userEvent.click(await screen.findByRole('button', { name: 'Editar favoritos' }));
+
+    await userEvent.click(screen.getByRole('button', { name: '1º: Música 1' }));
+    expect(screen.getByText('Toque em outra capa para trocar as duas de lugar.')).toBeInTheDocument();
+    await userEvent.click(screen.getByRole('button', { name: '3º: Música 3' }));
+    expect(screen.getByRole('button', { name: '1º: Música 3' })).toBeInTheDocument();
+    expect(screen.getByRole('button', { name: '3º: Música 1' })).toBeInTheDocument();
+  });
+
   it('falha de conexão explica e deixa tentar de novo', async () => {
     usersApi.profile.mockRejectedValueOnce(new Error('Failed to fetch'));
     renderProfile();

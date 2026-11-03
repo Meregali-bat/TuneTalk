@@ -1,3 +1,4 @@
+import { useState } from 'react';
 import { describe, it, expect, vi, beforeEach } from 'vitest';
 import { act, render, screen } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
@@ -9,6 +10,35 @@ import { usersApi } from '../../api/index.js';
 vi.mock('../../api/index.js', () => ({ usersApi: { follow: vi.fn(), unfollow: vi.fn() } }));
 
 describe('Modal', () => {
+  it('ao abrir, o foco entra na janela, o Tab fica preso nela e, ao fechar, volta para quem abriu', async () => {
+    function Teste() {
+      const [aberto, setAberto] = useState(false);
+      return (
+        <>
+          <button type="button" onClick={() => setAberto(true)}>Abrir</button>
+          <button type="button">Atrás</button>
+          <Modal open={aberto} title="Janela" onClose={() => setAberto(false)}>
+            <button type="button">Dentro</button>
+          </Modal>
+        </>
+      );
+    }
+    render(<Teste />);
+    const abrir = screen.getByRole('button', { name: 'Abrir' });
+    await userEvent.click(abrir);
+    expect(screen.getByRole('dialog', { name: 'Janela' })).toHaveFocus();
+
+    await userEvent.tab();
+    expect(screen.getByRole('button', { name: 'Fechar' })).toHaveFocus();
+    await userEvent.tab();
+    expect(screen.getByRole('button', { name: 'Dentro' })).toHaveFocus();
+    await userEvent.tab();
+    expect(screen.getByRole('button', { name: 'Fechar' })).toHaveFocus();
+
+    await userEvent.keyboard('{Escape}');
+    expect(abrir).toHaveFocus();
+  });
+
   it('não renderiza quando fechado', () => {
     render(<Modal open={false} title="Seguidores" onClose={vi.fn()}>conteúdo</Modal>);
     expect(screen.queryByRole('dialog')).toBeNull();
