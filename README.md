@@ -105,3 +105,5 @@ para testar rotas sem banco e serviços sem HTTP.
 | GET | `/api/notifications/unread-count` | `{ count }` |
 | POST | `/api/notifications/read-all` | marca todas como lidas |
 | GET | `/api/music/search?q=` | busca no Deezer pelo servidor |
+| GET | `/api/hashtags/em-alta` | hashtags mais usadas nos últimos 7 dias (com quantos posts) |
+| GET | `/api/hashtags?q=` | busca hashtags que começam com o texto |

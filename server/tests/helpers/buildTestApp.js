@@ -26,6 +26,7 @@ export function buildTestApp(overrides = {}) {
     sessions: { destroyOthers: vi.fn() },
     notifications: { listForUser: vi.fn(), countUnread: vi.fn(), markAllRead: vi.fn() },
     musicService: { search: vi.fn() },
+    hashtagService: { trending: vi.fn(), search: vi.fn() },
     uploader: { signUpload: vi.fn(), isOwnUrl: vi.fn() },
     sessionSecret: 'test-secret',
     defaultProfilePhoto: 'default.png',

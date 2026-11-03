@@ -1,5 +1,5 @@
 import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
-import { authApi, musicApi, notificationsApi, postsApi, usersApi } from './index.js';
+import { authApi, hashtagsApi, musicApi, notificationsApi, postsApi, usersApi } from './index.js';
 import { request } from './http.js';
 
 vi.mock('./http.js', async (importOriginal) => ({
@@ -23,6 +23,8 @@ describe('endpoints da API', () => {
     ['postsApi.like', () => postsApi.like(3), ['/posts/3/like', { method: 'POST' }]],
     ['postsApi.unlike', () => postsApi.unlike(3), ['/posts/3/like', { method: 'DELETE' }]],
     ['usersApi.profile', () => usersApi.profile(2), ['/users/2']],
+    ['hashtagsApi.trending', () => hashtagsApi.trending(), ['/hashtags/em-alta']],
+    ['hashtagsApi.search', () => hashtagsApi.search('#gu'), ['/hashtags?q=%23gu']],
     ['usersApi.comments', () => usersApi.comments(2), ['/users/2/comentarios']],
     ['usersApi.profile (pelo @)', () => usersApi.profile('@bia.souza'), ['/users/by-name/bia.souza']],
     ['usersApi.search', () => usersApi.search('@bi a'), ['/users?q=%40bi%20a']],

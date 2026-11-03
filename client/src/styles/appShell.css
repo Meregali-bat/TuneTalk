@@ -2311,3 +2311,69 @@ button.feed-tabs__tab {
     background: var(--destaque);
   }
 }
+
+/* --- Buscar: hashtags em alta e resultados de hashtag --- */
+.search-page__secao {
+  display: grid;
+  gap: .5rem;
+}
+
+.search-page__subtitulo {
+  display: flex;
+  align-items: center;
+  gap: .45rem;
+  margin: 0;
+  font-size: 1.05rem;
+  font-weight: 700;
+
+  i {
+    color: #ff7a45;
+  }
+}
+
+.hashtag-list {
+  display: grid;
+  margin: 0 -.5rem;
+  padding: 0;
+  list-style: none;
+}
+
+.hashtag-row {
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr);
+  grid-template-areas: "posicao tag" "posicao posts";
+  column-gap: .85rem;
+  align-items: center;
+  padding: .7rem .5rem;
+  border-radius: 12px;
+  color: var(--texto);
+
+  &:hover {
+    background: var(--superficie-2);
+    color: var(--texto);
+  }
+}
+
+.hashtag-row__posicao {
+  grid-area: posicao;
+  width: 1.6rem;
+  color: var(--texto-suave);
+  font-weight: 700;
+  font-variant-numeric: tabular-nums;
+  text-align: center;
+}
+
+.hashtag-row__tag {
+  grid-area: tag;
+  overflow: hidden;
+  color: var(--azul);
+  font-weight: 700;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.hashtag-row__posts {
+  grid-area: posts;
+  color: var(--texto-suave);
+  font-size: .82rem;
+}

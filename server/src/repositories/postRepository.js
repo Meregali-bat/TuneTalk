@@ -60,6 +60,20 @@ export function createPostRepository(prisma) {
       });
     },
 
+    // Só os textos com "#" (para contar hashtags em alta ou buscar uma), dos mais novos.
+    async listHashtagTexts({ desde, contem, limite }) {
+      const rows = await prisma.post.findMany({
+        where: {
+          texto: { contains: contem ? `#${contem}` : '#', mode: 'insensitive' },
+          ...(desde && { createdAt: { gte: desde } }),
+        },
+        select: { texto: true },
+        orderBy: [{ createdAt: 'desc' }, { id: 'desc' }],
+        take: limite,
+      });
+      return rows.map((row) => row.texto);
+    },
+
     // Comentários de alguém (aba "Comentários" do perfil), com quem cada um respondeu.
     async listRepliesByAuthor(autorId, limit = 50) {
       const rows = await prisma.post.findMany({

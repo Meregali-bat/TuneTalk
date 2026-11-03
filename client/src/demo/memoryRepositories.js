@@ -132,6 +132,14 @@ export function createMemoryRepositories(state, onChange) {
       const followed = new Set(await follows.followingIds(usuarioId));
       return topLevel().filter((p) => followed.has(p.autorId)).sort(byIdDesc).map(postRow);
     },
+    async listHashtagTexts({ desde, contem, limite }) {
+      const trecho = contem ? `#${contem}`.toLowerCase() : '#';
+      return [...state.posts]
+        .filter((p) => (p.texto ?? '').toLowerCase().includes(trecho) && (!desde || new Date(p.createdAt) >= desde))
+        .sort((a, b) => b.createdAt.localeCompare(a.createdAt) || b.id - a.id)
+        .slice(0, limite)
+        .map((p) => p.texto);
+    },
     async listRepliesByAuthor(autorId, limit = 50) {
       return state.posts
         .filter((p) => p.autorId === autorId && p.parentId)

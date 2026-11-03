@@ -7,6 +7,7 @@ import { createPostRoutes } from './http/postRoutes.js';
 import { createUserRoutes } from './http/userRoutes.js';
 import { createNotificationRoutes } from './http/notificationRoutes.js';
 import { createMusicRoutes } from './http/musicRoutes.js';
+import { createHashtagRoutes } from './http/hashtagRoutes.js';
 import { apiNotFound, errorHandler } from './http/middlewares.js';
 
 const SESSION_MAX_AGE = 30 * 24 * 60 * 60 * 1000;
@@ -37,6 +38,7 @@ export function createApp(deps) {
   api.use('/users', createUserRoutes(deps));
   api.use('/notifications', createNotificationRoutes(deps));
   api.use('/music', createMusicRoutes(deps));
+  api.use('/hashtags', createHashtagRoutes(deps));
   api.use(apiNotFound);
   app.use('/api', api);
 

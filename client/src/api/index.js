@@ -66,6 +66,11 @@ export const notificationsApi = {
   readAll: () => request('/notifications/read-all', { method: 'POST' }),
 };
 
+export const hashtagsApi = {
+  trending: () => request('/hashtags/em-alta'),
+  search: (q) => request(`/hashtags?q=${encodeURIComponent(q)}`),
+};
+
 export const musicApi = {
   // Link novo da prévia (os do Deezer vencem).
   preview: async (titulo, artista) =>

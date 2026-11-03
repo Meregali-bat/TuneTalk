@@ -147,13 +147,21 @@ describe('API fake da demo (serviços reais + banco em memória)', () => {
   it('hashtag lista os posts que usam a tag', async () => {
     await login();
     const posts = (await call('GET', '/posts?tag=beatles')).body;
-    expect(posts.map((p) => p.titulo)).toEqual(['Help!', 'Abbey Road']);
+    // o comentário "Concordo demais! #Beatles" (sem música) e os dois posts dos Beatles
+    expect(posts.map((p) => p.titulo)).toEqual([null, 'Help!', 'Abbey Road']);
   });
 
   it('aba de comentários do perfil traz com quem a pessoa falou', async () => {
     await login();
     const comentarios = (await call('GET', `/users/${api.currentUserId()}/comentarios`)).body;
     expect(comentarios[0]).toMatchObject({ texto: 'Qual versão? A do Shea Stadium?', respondendoA: { nome: 'carla.mendes' } });
+  });
+
+  it('hashtags em alta e busca de hashtags', async () => {
+    await login();
+    const emAlta = (await call('GET', '/hashtags/em-alta')).body;
+    expect(emAlta[0]).toEqual({ tag: 'Beatles', posts: 3 });
+    expect((await call('GET', '/hashtags?q=%23vi')).body).toEqual([{ tag: 'vinil', posts: 1 }]);
   });
 
   it('busca pessoas pelo nome ou @', async () => {

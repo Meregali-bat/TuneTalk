@@ -36,9 +36,9 @@ describe('Header', () => {
     expect(screen.getByRole('link', { name: 'Meu perfil' })).toHaveAttribute('href', '/perfil/1');
   });
 
-  it('tem a lupa que leva à busca de pessoas', () => {
+  it('tem a lupa que leva à busca', () => {
     renderWithProviders(<Header />);
-    expect(screen.getByRole('link', { name: 'Buscar pessoas' })).toHaveAttribute('href', '/buscar');
+    expect(screen.getByRole('link', { name: 'Buscar' })).toHaveAttribute('href', '/buscar');
   });
 
   it('mostra a quantidade de notificações não lidas', async () => {

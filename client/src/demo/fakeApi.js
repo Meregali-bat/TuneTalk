@@ -6,6 +6,7 @@ import { createPostService } from '../../../server/src/services/postService.js';
 import { createUserService } from '../../../server/src/services/userService.js';
 import { createPasswords } from '../../../server/src/security/passwords.js';
 import { createPasswordResetService } from '../../../server/src/services/passwordResetService.js';
+import { createHashtagService } from '../../../server/src/services/hashtagService.js';
 import { createMemoryRepositories } from './memoryRepositories.js';
 import { ALBUM_CATALOG, CATALOG, DEMO_LOGIN, createSeed } from './seed.js';
 import { avatar } from './art.js';
@@ -74,6 +75,7 @@ export function createFakeApi({ storage = globalThis.localStorage } = {}) {
         users: repos.users, follows: repos.follows, postService, notifications: repos.notifications, passwords,
       }),
       notifications: repos.notifications,
+      hashtags: createHashtagService({ posts: repos.posts }),
     };
   };
   build();
@@ -162,6 +164,8 @@ export function createFakeApi({ storage = globalThis.localStorage } = {}) {
     ['GET', /^\/notifications\/unread-count$/, async () => ok({ count: await services.notifications.countUnread(me()) })],
     ['POST', /^\/notifications\/read-all$/, async () => { await services.notifications.markAllRead(me()); return noContent(); }],
 
+    ['GET', /^\/hashtags\/em-alta$/, async () => { me(); return ok(await services.hashtags.trending()); }],
+    ['GET', /^\/hashtags$/, async ({ query }) => { me(); return ok(await services.hashtags.search(query.get('q'))); }],
     ['GET', /^\/music\/search$/, ({ query }) => { me(); return ok(searchCatalog(query.get('q'), query.get('tipo'))); }],
   ];
 

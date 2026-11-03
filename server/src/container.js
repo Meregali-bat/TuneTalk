@@ -17,6 +17,7 @@ import { createAuthService } from './services/authService.js';
 import { createPostService } from './services/postService.js';
 import { createUserService } from './services/userService.js';
 import { createMusicService } from './services/musicService.js';
+import { createHashtagService } from './services/hashtagService.js';
 
 const rootDir = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '../..');
 
@@ -47,6 +48,7 @@ export function buildContainer(config) {
     postService,
     userService: createUserService({ users, follows, postService, notifications, passwords }),
     musicService: createMusicService(),
+    hashtagService: createHashtagService({ posts }),
     notifications,
     uploader: createCloudinaryUploader(cloudinary),
     sessionStore: createSessionStore(pool),

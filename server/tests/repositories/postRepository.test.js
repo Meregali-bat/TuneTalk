@@ -195,6 +195,16 @@ describe('postRepository (Postgres)', () => {
     expect(comentarios[1].respondendoA).toEqual({ postId: doBia.id, nome: 'Bia' });
   });
 
+  it('listHashtagTexts devolve os textos com # (filtrando por data e por pedaço da tag)', async () => {
+    await factory.post(ana.id, { texto: 'velho #rock', createdAt: new Date('2024-01-01') });
+    await factory.post(ana.id, { texto: 'novo #Guts', createdAt: new Date('2024-06-01') });
+    await factory.post(ana.id, { texto: 'sem tag', createdAt: new Date('2024-06-02') });
+
+    expect(await repo.listHashtagTexts({ limite: 10 })).toEqual(['novo #Guts', 'velho #rock']);
+    expect(await repo.listHashtagTexts({ desde: new Date('2024-03-01'), limite: 10 })).toEqual(['novo #Guts']);
+    expect(await repo.listHashtagTexts({ contem: 'gu', limite: 10 })).toEqual(['novo #Guts']);
+  });
+
   it('listByAuthor devolve só os posts do autor, mais novos primeiro', async () => {
     const p1 = await factory.post(ana.id);
     await factory.post(bia.id);
