@@ -30,4 +30,11 @@ describe('checkPreviewDatabase (site de teste)', () => {
     expect(semBanco.ok).toBe(false);
     expect(semBanco.message).toMatch(/BANCO_DE_TESTE=sim/);
   });
+
+  it('aceita "Sim" com espaços e explica no log o ramo e o que chegou', () => {
+    expect(checkPreviewDatabase({ VERCEL_ENV: 'preview', BANCO_DE_TESTE: ' Sim ' })).toEqual({ ok: true });
+    expect(checkPreviewDatabase({ VERCEL_ENV: 'preview', VERCEL_GIT_COMMIT_REF: 'teste' }).message)
+      .toMatch(/Ramo deste deploy: teste\. BANCO_DE_TESTE não chegou neste deploy/);
+    expect(checkPreviewDatabase({ VERCEL_ENV: 'preview', BANCO_DE_TESTE: 'true' }).message).toMatch(/chegou com outro valor \("true"\)/);
+  });
 });

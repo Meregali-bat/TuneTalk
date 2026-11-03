@@ -23,11 +23,14 @@ export function checkBeforeMigrate(tables) {
  */
 export function checkPreviewDatabase(env) {
   if (env.VERCEL_ENV !== 'preview') return { ok: true };
-  if (env.BANCO_DE_TESTE === 'sim') return { ok: true };
+  if ((env.BANCO_DE_TESTE ?? '').trim().toLowerCase() === 'sim') return { ok: true };
+  const ramo = env.VERCEL_GIT_COMMIT_REF || '(desconhecido)';
+  const marca = env.BANCO_DE_TESTE === undefined ? 'não chegou neste deploy' : `chegou com outro valor (${JSON.stringify(env.BANCO_DE_TESTE)})`;
   return {
     ok: false,
     message:
       'Deploy de teste (Preview) sem banco de teste: o build parou para não mexer no banco de produção.\n'
+      + `Ramo deste deploy: ${ramo}. BANCO_DE_TESTE ${marca}.\n`
       + 'Na Vercel, em Settings → Environment Variables, só para "Preview": aponte DATABASE_URL e '
       + 'DATABASE_URL_UNPOOLED para um branch de teste do Neon e crie BANCO_DE_TESTE=sim.',
   };
