@@ -1,3 +1,5 @@
+import { hasHashtag } from '../../../shared/mentions.js';
+
 const POST_INCLUDE = {
   autor: { select: { id: true, nome: true, fotoPerfil: true, postFixadoId: true, fundadorDesde: true, mostrarSeloFundador: true } },
   _count: { select: { respostas: true, curtidas: true } },
@@ -56,6 +58,16 @@ export function createPostRepository(prisma) {
         where: { ...TOP_LEVEL, autor: { seguidores: { some: { seguidorId: usuarioId } } } },
         orderBy: { id: 'desc' },
       });
+    },
+
+    // Posts e comentários com a hashtag inteira (o banco filtra por "contém"; aqui conferimos a tag).
+    async listByHashtag(tag, limit = 50) {
+      const candidatos = await findPosts({
+        where: { texto: { contains: `#${tag}`, mode: 'insensitive' } },
+        orderBy: [{ createdAt: 'desc' }, { id: 'desc' }],
+        take: limit * 2,
+      });
+      return candidatos.filter((p) => hasHashtag(p.texto, tag)).slice(0, limit);
     },
 
     // Em ordem de conversa: a primeira resposta fica no topo.

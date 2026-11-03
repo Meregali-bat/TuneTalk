@@ -39,6 +39,13 @@ describe('rotas /api/posts', () => {
     });
   });
 
+  it('GET /api/posts?tag= lista os posts da hashtag', async () => {
+    deps.postService.byHashtag.mockResolvedValue([{ id: 1 }]);
+    const res = await agent.get(`/api/posts?tag=${encodeURIComponent('músicaboa')}`);
+    expect(res.body).toEqual([{ id: 1 }]);
+    expect(deps.postService.byHashtag).toHaveBeenCalledWith('músicaboa', 1);
+  });
+
   it('POST /api/posts cria o post', async () => {
     deps.postService.create.mockResolvedValue(42);
     const body = { texto: 'oi', musicName: 'Help!', nota: '4' };

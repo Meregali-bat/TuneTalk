@@ -80,6 +80,12 @@ export function createPostService({
       return markLiked(await posts.listFromFollowed(viewerId), viewerId);
     },
 
+    async byHashtag(tag, viewerId) {
+      const limpa = (tag ?? '').trim().replace(/^#/, '').toLowerCase();
+      if (!limpa) throw badRequest('Hashtag inválida.');
+      return markLiked(await posts.listByHashtag(limpa), viewerId);
+    },
+
     // O post fixado vem primeiro; os outros seguem do mais novo para o mais antigo.
     async byAuthor(autorId, viewerId) {
       const list = await posts.listByAuthor(autorId);

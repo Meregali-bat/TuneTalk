@@ -12,7 +12,7 @@ import { avatar } from './art.js';
 
 export { DEMO_LOGIN };
 
-const STORAGE_KEY = 'tunetalk-demo-v8';
+const STORAGE_KEY = 'tunetalk-demo-v9';
 
 const readState = (storage) => {
   try {
@@ -115,6 +115,7 @@ export function createFakeApi({ storage = globalThis.localStorage } = {}) {
     }],
 
     ['GET', /^\/posts$/, async ({ query }) => {
+      if (query.has('tag')) return ok(await services.posts.byHashtag(query.get('tag'), me()));
       const feeds = { foryou: services.posts.forYou, seguindo: services.posts.following };
       const load = feeds[query.get('feed')];
       if (!load) throw badRequest('Feed inválido.');

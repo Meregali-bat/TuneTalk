@@ -14,11 +14,13 @@ import { PlayButton } from './PlayButton.jsx';
 import { ShareButton } from './ShareButton.jsx';
 import { PostMenu } from './PostMenu.jsx';
 
-// Texto com as marcações (@usuario) como link para o perfil.
+// Texto com as marcações (@usuario, link para o perfil) e hashtags (link para a página da tag).
 function TextoComMarcacoes({ texto }) {
-  return splitMentions(texto).map((parte, i) => (parte.tipo === 'mencao'
-    ? <Link key={i} to={`/perfil/@${parte.valor}`} className="mention">@{parte.valor}</Link>
-    : <span key={i}>{parte.valor}</span>));
+  return splitMentions(texto).map((parte, i) => {
+    if (parte.tipo === 'mencao') return <Link key={i} to={`/perfil/@${parte.valor}`} className="mention">@{parte.valor}</Link>;
+    if (parte.tipo === 'hashtag') return <Link key={i} to={`/tag/${encodeURIComponent(parte.valor)}`} className="hashtag">#{parte.valor}</Link>;
+    return <span key={i}>{parte.valor}</span>;
+  });
 }
 
 const TIPO_LABEL = { album: 'álbum', 'música': 'música' };
@@ -61,7 +63,7 @@ export function PostCard({
   useEffect(() => setFixado(Boolean(post.fixado)), [post.fixado]);
   const isOwner = user?.id === post.autor.id;
   const navigate = useNavigate();
-  const temMarcacao = splitMentions(post.texto ?? '').some((p) => p.tipo === 'mencao');
+  const temMarcacao = splitMentions(post.texto ?? '').some((p) => p.tipo !== 'texto');
   const authorId = useId();
   const postUrl = `/post/${post.id}`;
   const profileUrl = `/perfil/${post.autor.id}`;

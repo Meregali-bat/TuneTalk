@@ -144,6 +144,12 @@ describe('API fake da demo (serviços reais + banco em memória)', () => {
     expect((await call('GET', '/users/by-name/bruno.lima')).body.usuario).toMatchObject({ nome: 'bruno.lima' });
   });
 
+  it('hashtag lista os posts que usam a tag', async () => {
+    await login();
+    const posts = (await call('GET', '/posts?tag=beatles')).body;
+    expect(posts.map((p) => p.titulo)).toEqual(['Help!', 'Abbey Road']);
+  });
+
   it('busca pessoas pelo nome ou @', async () => {
     await login();
     const achados = (await call('GET', '/users?q=%40bruno')).body;

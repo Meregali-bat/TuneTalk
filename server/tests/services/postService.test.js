@@ -54,6 +54,13 @@ describe('postService', () => {
       expect(feed).toEqual([{ ...post(3), curtido: true }]);
     });
 
+    it('byHashtag lista os posts da hashtag (sem o #) marcados para quem vê', async () => {
+      posts.listByHashtag = vi.fn().mockResolvedValue([post(3)]);
+      expect(await service.byHashtag('#Rock', 7)).toEqual([{ ...post(3), curtido: true }]);
+      expect(posts.listByHashtag).toHaveBeenCalledWith('rock');
+      await expect(service.byHashtag('#', 7)).rejects.toMatchObject({ status: 400 });
+    });
+
     it('byAuthor põe o post fixado primeiro, mantendo a ordem dos outros', async () => {
       posts.listByAuthor.mockResolvedValue([post(9), post(8), post(7, 2, { fixado: true }), post(6)]);
       expect((await service.byAuthor(2, 7)).map((p) => p.id)).toEqual([7, 9, 8, 6]);

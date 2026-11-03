@@ -64,6 +64,13 @@ describe('PostCard', () => {
     expect(screen.getByTestId('location')).toHaveTextContent('/post/10');
   });
 
+  it('hashtags ficam destacadas e levam à página da hashtag', () => {
+    renderWithProviders(<PostCard post={{ ...musicPost, texto: 'ouvindo #GUTS e #músicaboa' }} />);
+    expect(screen.getByRole('link', { name: '#GUTS' })).toHaveAttribute('href', '/tag/GUTS');
+    expect(screen.getByRole('link', { name: '#músicaboa' })).toHaveAttribute('href', `/tag/${encodeURIComponent('músicaboa')}`);
+    expect(screen.getByRole('link', { name: '#GUTS' })).toHaveClass('hashtag');
+  });
+
   it('mostra álbum com ano e sem botão de play', () => {
     renderWithProviders(
       <PostCard post={{ ...musicPost, tipo: 'album', titulo: 'Abbey Road', capa: 'abbey.jpg', releaseDate: '1969-09-', preview: null }} />,

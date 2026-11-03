@@ -1,27 +1,12 @@
 import { useState } from 'react';
-import { Link, useLocation, useNavigate, useParams } from 'react-router-dom';
+import { Link, useNavigate, useParams } from 'react-router-dom';
+import { BackBar } from '../components/layout/BackBar.jsx';
 import { postsApi } from '../api/index.js';
 import { useAsync } from '../hooks/useAsync.js';
 import { Modal } from '../components/common/Modal.jsx';
 import { PostCard } from '../components/post/PostCard.jsx';
 import { Composer } from '../components/post/Composer.jsx';
 import { PullToRefresh } from '../components/common/PullToRefresh.jsx';
-
-function ThreadBar() {
-  const navigate = useNavigate();
-  const location = useLocation();
-  // Quem abriu o link direto não tem para onde voltar no histórico.
-  const back = () => (location.key === 'default' ? navigate('/foryou') : navigate(-1));
-
-  return (
-    <div className="thread-bar">
-      <button type="button" className="icon-button" aria-label="Voltar" onClick={back}>
-        <i className="bi bi-arrow-left" aria-hidden="true" />
-      </button>
-      <h1 className="thread-bar__title">Post</h1>
-    </div>
-  );
-}
 
 function ThreadSkeleton() {
   return (
@@ -109,7 +94,7 @@ export function PostPage() {
   if (error) {
     return (
       <div className="feed">
-        <ThreadBar />
+        <BackBar titulo="Post" />
         <div role="alert" className="feed-error"><p>{error.message}</p></div>
       </div>
     );
@@ -117,7 +102,7 @@ export function PostPage() {
   if (!data) {
     return (
       <div className="feed">
-        <ThreadBar />
+        <BackBar titulo="Post" />
         <ThreadSkeleton />
       </div>
     );
@@ -136,7 +121,7 @@ export function PostPage() {
   return (
     <div className="feed thread">
       <PullToRefresh onRefresh={reload} />
-      <ThreadBar />
+      <BackBar titulo="Post" />
 
       {pai && <ParentLink pai={pai} />}
 

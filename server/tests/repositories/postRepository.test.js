@@ -172,6 +172,16 @@ describe('postRepository (Postgres)', () => {
     expect((await repo.listFirstReplies([])).size).toBe(0);
   });
 
+  it('listByHashtag acha posts e comentários com a hashtag inteira, mais novos primeiro', async () => {
+    const velho = await factory.post(ana.id, { texto: 'ouvindo #Rock', createdAt: new Date('2024-01-01') });
+    const novo = await factory.post(bia.id, { texto: 'mais #rock aqui', createdAt: new Date('2024-02-01') });
+    const comentario = await factory.reply(velho.id, bia.id, { texto: 'adoro #ROCK', createdAt: new Date('2024-03-01') });
+    await factory.post(ana.id, { texto: 'só #rockabilly' });
+    await factory.post(ana.id, { texto: 'sem hashtag rock' });
+
+    expect((await repo.listByHashtag('rock')).map((p) => p.id)).toEqual([comentario.id, novo.id, velho.id]);
+  });
+
   it('listByAuthor devolve só os posts do autor, mais novos primeiro', async () => {
     const p1 = await factory.post(ana.id);
     await factory.post(bia.id);

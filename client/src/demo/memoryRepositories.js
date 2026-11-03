@@ -1,6 +1,7 @@
 // Repositórios em memória com o mesmo contrato dos repositórios Prisma do servidor,
 // para que os serviços reais (server/src/services) rodem no navegador.
 import { toPost } from '../../../server/src/repositories/postRepository.js';
+import { hasHashtag } from '../../../shared/mentions.js';
 
 const publicUser = ({
   id, nome, nomeExibicao = null, fotoPerfil, bannerUrl = null, bio, fundadorDesde = null, mostrarSeloFundador = true,
@@ -130,6 +131,13 @@ export function createMemoryRepositories(state, onChange) {
     async listFromFollowed(usuarioId) {
       const followed = new Set(await follows.followingIds(usuarioId));
       return topLevel().filter((p) => followed.has(p.autorId)).sort(byIdDesc).map(postRow);
+    },
+    async listByHashtag(tag, limit = 50) {
+      return [...state.posts]
+        .filter((p) => hasHashtag(p.texto ?? '', tag))
+        .sort((a, b) => b.createdAt.localeCompare(a.createdAt) || b.id - a.id)
+        .slice(0, limit)
+        .map(postRow);
     },
     async listReplies(parentId) {
       return state.posts

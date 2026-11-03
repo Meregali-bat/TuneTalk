@@ -13,6 +13,7 @@ export function createPostRoutes({ postService, uploader }) {
   };
 
   router.get('/', asyncRoute(async (req, res) => {
+    if (req.query.tag !== undefined) return res.json(await postService.byHashtag(req.query.tag, currentUserId(req)));
     const loadFeed = feeds[req.query.feed];
     if (!loadFeed) throw badRequest('Feed inválido.');
     res.json(await loadFeed(currentUserId(req)));

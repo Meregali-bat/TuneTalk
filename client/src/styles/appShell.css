@@ -2252,3 +2252,31 @@ button.track-row:hover {
   text-overflow: ellipsis;
   white-space: nowrap;
 }
+
+/* --- Hashtags --- */
+.hashtag {
+  color: var(--azul);
+  font-weight: 600;
+
+  &:hover {
+    color: var(--azul);
+    text-decoration: underline;
+  }
+}
+
+.thread-bar__titulos {
+  display: grid;
+  min-width: 0;
+}
+
+.thread-bar__title {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.thread-bar__subtitle {
+  margin: 0;
+  color: var(--texto-suave);
+  font-size: .8rem;
+}

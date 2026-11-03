@@ -17,6 +17,7 @@ describe('endpoints da API', () => {
     ['authApi.logout', () => authApi.logout(), ['/auth/logout', { method: 'POST' }]],
     ['postsApi.feed', () => postsApi.feed('seguindo'), ['/posts?feed=seguindo']],
     ['postsApi.get', () => postsApi.get(3), ['/posts/3']],
+    ['postsApi.byHashtag', () => postsApi.byHashtag('músicaboa'), [`/posts?tag=${encodeURIComponent('músicaboa')}`]],
     ['postsApi.create', () => postsApi.create({ texto: 'x' }), ['/posts', { method: 'POST', body: { texto: 'x' } }]],
     ['postsApi.remove', () => postsApi.remove(3), ['/posts/3', { method: 'DELETE' }]],
     ['postsApi.like', () => postsApi.like(3), ['/posts/3/like', { method: 'POST' }]],

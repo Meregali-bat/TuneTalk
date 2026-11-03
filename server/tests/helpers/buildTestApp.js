@@ -11,6 +11,7 @@ export function buildTestApp(overrides = {}) {
     postService: {
       forYou: vi.fn(),
       following: vi.fn(),
+      byHashtag: vi.fn(),
       get: vi.fn(),
       create: vi.fn(),
       remove: vi.fn(),
