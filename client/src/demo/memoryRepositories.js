@@ -1,6 +1,6 @@
 // Repositórios em memória com o mesmo contrato dos repositórios Prisma do servidor,
 // para que os serviços reais (server/src/services) rodem no navegador.
-import { resumoDoPai, toPost } from '../../../server/src/repositories/postRepository.js';
+import { toPost } from '../../../server/src/repositories/postRepository.js';
 import { hasHashtag } from '../../../shared/mentions.js';
 
 const publicUser = ({
@@ -155,7 +155,7 @@ export function createMemoryRepositories(state, onChange) {
         .slice(0, limit)
         .map((p) => {
           const pai = state.posts.find((x) => x.id === p.parentId);
-          return { ...postRow(p), respondendoA: resumoDoPai(pai, userById(pai.autorId).nome) };
+          return { ...postRow(p), respondendoA: { postId: pai.id, nome: userById(pai.autorId).nome } };
         });
     },
     async listByHashtag(tag, limit = 50) {

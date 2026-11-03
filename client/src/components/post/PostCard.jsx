@@ -90,18 +90,7 @@ export function PostCard({
     >
       {post.respondendoA && (
         <Link to={`/post/${post.respondendoA.postId}`} className="post-card__context">
-          <i className="bi bi-reply" aria-hidden="true" />
-          <span className="post-card__context-quem">Respondendo a @{post.respondendoA.nome}</span>
-          {/* Sobre o quê: a música (com capa) ou o começo do texto respondido. */}
-          {post.respondendoA.titulo && (
-            <span className="post-card__context-sobre">
-              {post.respondendoA.capa && <img src={post.respondendoA.capa} alt="" />}
-              {post.respondendoA.titulo}{post.respondendoA.artista ? ` · ${post.respondendoA.artista}` : ''}
-            </span>
-          )}
-          {!post.respondendoA.titulo && post.respondendoA.trecho && (
-            <span className="post-card__context-sobre">“{post.respondendoA.trecho}”</span>
-          )}
+          <i className="bi bi-reply" aria-hidden="true" /> Respondendo a @{post.respondendoA.nome}
         </Link>
       )}
       {showPinned && fixado && (

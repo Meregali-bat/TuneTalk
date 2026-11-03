@@ -39,7 +39,7 @@ function usernameProblem(nome, original) {
   return broken ? USERNAME_MESSAGES[broken[0]] : '';
 }
 
-export function EditProfileModal({ open, usuario, onClose, onSaved, onChangePassword }) {
+export function EditProfileModal({ open, usuario, onClose, onSaved }) {
   const nomeId = useId();
   const exibicaoId = useId();
   const bioId = useId();
@@ -56,14 +56,6 @@ export function EditProfileModal({ open, usuario, onClose, onSaved, onChangePass
 
   const problem = usernameProblem(nome.trim(), usuario.nome);
   const capaAtual = capa.preview ?? usuario.bannerUrl;
-
-  // Como no editor de favoritos: fechar (ou ir trocar a senha) com mudanças não salvas pergunta antes.
-  const alterado = nome !== (usuario.nome ?? '') || nomeExibicao !== (usuario.nomeExibicao ?? '')
-    || bio !== (usuario.bio ?? '') || mostrarSelo !== (usuario.mostrarSeloFundador !== false)
-    || Boolean(foto.file) || Boolean(capa.file);
-  const podeSair = () => !alterado || window.confirm('Descartar as mudanças no perfil?');
-  const fechar = () => { if (podeSair()) onClose(); };
-  const irTrocarSenha = () => { if (podeSair()) onChangePassword(); };
 
   const submit = async (event) => {
     event.preventDefault();
@@ -89,7 +81,7 @@ export function EditProfileModal({ open, usuario, onClose, onSaved, onChangePass
   };
 
   return (
-    <Modal open={open} title="Editar perfil" onClose={fechar} variant="sheet">
+    <Modal open={open} title="Editar perfil" onClose={onClose} variant="sheet">
       <form className="edit-profile" onSubmit={submit}>
         <div className="edit-profile__banner">
           {capaAtual
@@ -110,10 +102,7 @@ export function EditProfileModal({ open, usuario, onClose, onSaved, onChangePass
         </div>
 
         <div className="edit-profile__photo">
-          {/* Tocar na foto também abre a escolha da imagem. */}
-          <button type="button" className="edit-profile__avatar-botao" aria-label="Trocar foto (pela imagem)" tabIndex={-1} onClick={() => fileInput.current?.click()}>
-            <img src={foto.preview ?? usuario.fotoPerfil} alt="Foto de perfil" className="edit-profile__avatar" />
-          </button>
+          <img src={foto.preview ?? usuario.fotoPerfil} alt="Foto de perfil" className="edit-profile__avatar" />
           <button type="button" className="composer-link" onClick={() => fileInput.current?.click()}>
             <i className="bi bi-camera" aria-hidden="true" /> Trocar foto
           </button>
@@ -182,20 +171,11 @@ export function EditProfileModal({ open, usuario, onClose, onSaved, onChangePass
           </label>
         )}
 
-        {onChangePassword && (
-          <div className="edit-profile__conta">
-            <span>Conta</span>
-            <button type="button" className="composer-link" onClick={irTrocarSenha}>
-              <i className="bi bi-key" aria-hidden="true" /> Trocar senha
-            </button>
-          </div>
-        )}
-
         {error && <p role="alert" className="composer-error">{error}</p>}
 
         <div className="edit-profile__actions">
-          <button type="button" className="composer-link" onClick={fechar}>Cancelar</button>
-          <button type="submit" className="composer-submit" disabled={Boolean(saving) || Boolean(problem) || !alterado}>
+          <button type="button" className="composer-link" onClick={onClose}>Cancelar</button>
+          <button type="submit" className="composer-submit" disabled={Boolean(saving) || Boolean(problem)}>
             {{ foto: 'Enviando foto…', capa: 'Enviando capa…', dados: 'Salvando…' }[saving] ?? 'Salvar'}
           </button>
         </div>

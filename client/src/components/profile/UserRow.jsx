@@ -16,8 +16,7 @@ export function UserRow({ usuario, following, onFollowChange, onNavigate }) {
             {usuario.nomeExibicao || usuario.nome} <VerifiedBadge nome={usuario.nome} />
             <FounderBadge ativo={mostraSeloFundador(usuario)} />
           </span>
-          {/* Sem nome de exibição, o nome já é o @: não repete. */}
-          {usuario.nomeExibicao && <span className="user-row__handle">@{usuario.nome}</span>}
+          <span className="user-row__handle">@{usuario.nome}</span>
           {usuario.bio && <span className="user-row__bio">{usuario.bio}</span>}
         </span>
       </Link>

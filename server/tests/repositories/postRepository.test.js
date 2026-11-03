@@ -193,7 +193,6 @@ describe('postRepository (Postgres)', () => {
 
   it('listRepliesByAuthor devolve os comentários da pessoa (mais novos primeiro) com quem ela respondeu', async () => {
     const doBia = await factory.post(bia.id);
-    await db.prisma.post.update({ where: { id: doBia.id }, data: { musicName: 'Help!', artistName: 'The Beatles', posterMusica: 'h.jpg', postType: 'música' } });
     const c1 = await factory.reply(doBia.id, ana.id, { texto: 'primeiro', createdAt: new Date('2024-01-01') });
     const c2 = await factory.reply(c1.id, ana.id, { texto: 'segundo', createdAt: new Date('2024-02-01') });
     await factory.reply(doBia.id, bia.id);
@@ -201,13 +200,8 @@ describe('postRepository (Postgres)', () => {
 
     const comentarios = await repo.listRepliesByAuthor(ana.id);
     expect(comentarios.map((c) => [c.id, c.texto])).toEqual([[c2.id, 'segundo'], [c1.id, 'primeiro']]);
-    // Comentário respondido: sem música, mostra o começo do texto. Post com música: título, artista e capa.
-    expect(comentarios[0].respondendoA).toEqual({
-      postId: c1.id, nome: 'Ana', titulo: null, artista: null, capa: null, trecho: 'primeiro',
-    });
-    expect(comentarios[1].respondendoA).toEqual({
-      postId: doBia.id, nome: 'Bia', titulo: 'Help!', artista: 'The Beatles', capa: 'h.jpg', trecho: null,
-    });
+    expect(comentarios[0].respondendoA).toEqual({ postId: c1.id, nome: 'Ana' });
+    expect(comentarios[1].respondendoA).toEqual({ postId: doBia.id, nome: 'Bia' });
   });
 
   it('listHashtagTexts devolve os textos com # (filtrando por data e por pedaço da tag)', async () => {

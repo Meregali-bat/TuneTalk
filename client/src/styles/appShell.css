@@ -10,8 +10,6 @@
   --destaque: #2ba84a;
   --destaque-claro: #3fc463;
   --erro: #f55b64;
-  /* Fundo do contador de notificações: vermelho mais fechado, para o número branco ler bem (5:1). */
-  --erro-forte: #cf2f3c;
   --azul: #3d7cf5;
   --app-header-h: 3.5rem;
   --gutter-left: max(16px, env(safe-area-inset-left, 0px));
@@ -91,27 +89,6 @@
   gap: .25rem;
 }
 
-/* Telas bem estreitas (320px): logo e ícones juntos passavam da largura da tela. */
-@media (max-width: 359.98px) {
-  .app-header__inner {
-    gap: .5rem;
-  }
-
-  .app-logo {
-    gap: .4rem;
-    font-size: 1.05rem;
-
-    img {
-      width: 2rem;
-      height: 2rem;
-    }
-  }
-
-  .app-header__actions {
-    gap: 0;
-  }
-}
-
 .app-badge {
   position: absolute;
   top: .1rem;
@@ -121,7 +98,7 @@
   padding: 0 .3rem;
   border: 2px solid var(--background);
   border-radius: 999px;
-  background: var(--erro-forte);
+  background: var(--erro);
   color: #fff;
   font-size: .62rem;
   font-weight: 700;
@@ -1104,10 +1081,8 @@ button.track-row:hover {
     background: var(--destaque-claro);
   }
 
-  /* Desligado em tom neutro: o verde apagado parecia "meio ligado". */
   &:disabled {
-    background: var(--superficie-2);
-    color: var(--texto-suave);
+    opacity: .45;
     cursor: not-allowed;
   }
 }
@@ -1121,8 +1096,6 @@ button.track-row:hover {
 /* --- Perfil --- */
 .profile {
   padding-top: 1.5rem;
-  /* Espaço para o botão flutuante de postar não cobrir o fim da lista. */
-  padding-bottom: 6rem;
 }
 
 .profile-header {
@@ -1139,49 +1112,6 @@ button.track-row:hover {
   aspect-ratio: 3 / 1;
   object-fit: cover;
   background: var(--superficie-2);
-}
-
-/* Sem capa escolhida, o degradê não precisa empurrar o conteúdo para baixo. */
-.profile-banner--padrao {
-  aspect-ratio: 5 / 1;
-}
-
-.profile-banner {
-  max-height: 14rem;
-}
-
-.profile-banner--gosto {
-  isolation: isolate;
-  display: grid;
-  grid-auto-flow: column;
-  grid-auto-columns: 1fr;
-  overflow: hidden;
-
-  img {
-    width: 100%;
-    height: 100%;
-    object-fit: cover;
-    filter: blur(14px) saturate(1.3) brightness(.7);
-    transform: scale(1.3);
-  }
-}
-
-/* Botão de editar o próprio perfil: ação (contorno com lápis), não um estado como "Seguindo". */
-.profile-edit-button {
-  display: inline-flex;
-  align-items: center;
-  gap: .45rem;
-  min-height: 2.75rem;
-  padding: 0 1.2rem;
-  border: 1px solid var(--linhas);
-  border-radius: 999px;
-  background: var(--superficie);
-  color: var(--texto);
-  font-weight: 600;
-
-  &:hover {
-    border-color: var(--texto-suave);
-  }
 }
 
 .profile-banner--padrao {
@@ -1205,8 +1135,6 @@ button.track-row:hover {
 }
 
 .profile-header__avatar {
-  position: relative;
-  z-index: 1;
   flex: none;
   width: 6.5rem;
   height: 6.5rem;
@@ -1228,60 +1156,6 @@ button.track-row:hover {
   color: var(--texto-suave);
   font-size: .95rem;
   overflow-wrap: anywhere;
-}
-
-.profile-header__desde {
-  font-size: .85rem;
-}
-
-.profile-header__nota {
-  display: flex;
-  align-items: baseline;
-  gap: .35rem;
-  margin: 0;
-  color: var(--texto-suave);
-  font-size: .9rem;
-
-  i {
-    align-self: center;
-    color: var(--destaque-claro);
-    font-size: .85rem;
-  }
-
-  strong {
-    color: var(--texto);
-    font-variant-numeric: tabular-nums;
-  }
-}
-
-/* Escolhe qual fileira de favoritos mostrar (Músicas / Álbuns / Artistas). */
-.profile-favorites__seletor {
-  display: flex;
-  gap: .4rem;
-  overflow-x: auto;
-  scrollbar-width: none;
-
-  button {
-    flex: none;
-    min-height: 2.75rem;
-    padding: 0 .9rem;
-    border: 1px solid var(--linhas);
-    border-radius: 999px;
-    background: none;
-    color: var(--texto-suave);
-    font-size: .85rem;
-    font-weight: 600;
-
-    &.is-active {
-      border-color: var(--destaque);
-      background: var(--superficie-2);
-      color: var(--texto);
-    }
-  }
-}
-
-.follow-button__check {
-  margin-right: .3rem;
 }
 
 .profile-header__identity {
@@ -1314,15 +1188,8 @@ button.track-row:hover {
   grid-template-columns: repeat(auto-fit, minmax(0, 1fr));
   margin: 0;
   padding: 0;
-  border-top: 1px solid var(--linhas);
+  border-block: 1px solid var(--linhas);
   list-style: none;
-}
-
-.profile-stat__estrela {
-  margin-right: .1em;
-  color: var(--destaque-claro);
-  font-size: .75em;
-  vertical-align: .1em;
 }
 
 .profile-stat__inner {
@@ -1340,24 +1207,16 @@ button.track-row:hover {
     font-size: 1.2rem;
     font-weight: 700;
     font-variant-numeric: tabular-nums;
-    white-space: nowrap;
   }
 
   span {
     color: var(--texto-suave);
-    /* Encolhe em telas bem estreitas (320px) para "Seguidores" caber na coluna. */
-    font-size: clamp(.7rem, 3.4vw, .78rem);
+    font-size: .78rem;
     white-space: nowrap;
   }
 
   button& {
     transition: background-color .15s ease;
-
-    /* Pontilhado sob o rótulo: mostra, sem depender de passar o mouse, que o número abre algo. */
-    span {
-      text-decoration: underline dotted;
-      text-underline-offset: .2em;
-    }
 
     &:hover {
       background: var(--superficie-2);
@@ -1371,7 +1230,7 @@ button.track-row:hover {
   padding-top: .75rem;
 
   .follow-button--md {
-    min-height: 2.75rem;
+    min-height: 2.4rem;
     padding: 0 1.1rem;
     font-size: .9rem;
   }
@@ -1410,12 +1269,9 @@ button.track-row:hover {
   white-space: nowrap;
   transition: background-color .15s ease, color .15s ease, border-color .15s ease;
 
-  /* Só onde há mouse: no toque o :hover gruda depois do toque. */
-  @media (hover: hover) {
-    &:hover:not(:disabled) {
-      background: var(--destaque-claro);
-      border-color: var(--destaque-claro);
-    }
+  &:hover:not(:disabled) {
+    background: var(--destaque-claro);
+    border-color: var(--destaque-claro);
   }
 
   &.is-following {
@@ -1432,14 +1288,6 @@ button.track-row:hover {
   &:disabled {
     opacity: .6;
   }
-
-  /* Pedindo confirmação para deixar de seguir, ou depois de uma falha. */
-  &.is-error,
-  &.is-error:hover:not(:disabled) {
-    border-color: rgba(245, 91, 100, .6);
-    background: rgba(245, 91, 100, .08);
-    color: var(--erro);
-  }
 }
 
 .follow-button--md {
@@ -1449,8 +1297,6 @@ button.track-row:hover {
 
 .follow-button--sm {
   flex: none;
-  /* Largura fixa: "Deixar de seguir?" não espreme o nome ao lado. */
-  min-width: 7.5rem;
   min-height: 2rem;
   padding: 0 .9rem;
   font-size: .85rem;
@@ -1808,33 +1654,15 @@ button.track-row:hover {
   gap: .6rem;
 }
 
-/* Aviso do perfil: flutua no alto, sem empurrar a página. */
 .profile-notice {
-  position: fixed;
-  left: 50%;
-  /* No alto, logo abaixo do cabeçalho: embaixo cobria justamente as capas recém-salvas. */
-  top: calc(env(safe-area-inset-top, 0px) + var(--app-header-h) + .75rem);
-  z-index: 1030;
   display: flex;
   align-items: center;
   gap: .5rem;
-  width: max-content;
-  max-width: calc(100vw - 2rem);
-  margin: 0;
+  margin: 1rem 0 0;
   padding: .75rem 1rem;
-  box-shadow: 0 10px 30px -10px rgba(0, 0, 0, .8);
-  opacity: 0;
-  pointer-events: none;
-  transform: translate(-50%, -.5rem);
-  transition: opacity .2s ease-out, transform .2s ease-out;
-
-  &.is-visible {
-    opacity: 1;
-    transform: translate(-50%, 0);
-  }
   border: 1px solid rgba(43, 168, 74, .45);
   border-radius: 12px;
-  background: #0d2416;
+  background: rgba(43, 168, 74, .1);
   color: var(--texto);
   font-size: .9rem;
 
@@ -2140,11 +1968,6 @@ button.track-row:hover {
   align-items: center;
   gap: .4rem;
   min-width: 0;
-
-  /* O nome não estica: os selos ficam colados nele, mesmo com nome comprido. */
-  h1 {
-    flex: 0 1 auto;
-  }
 
   .verified-badge {
     font-size: 1.35rem;
@@ -2483,53 +2306,19 @@ button.track-row:hover {
 
 .profile-tabs {
   margin: 0;
-
-  /* Aba ativa em tom neutro com risco verde: o verde cheio fica para as ações principais. */
-  .feed-tabs__tab.is-active,
-  button.feed-tabs__tab.is-active {
-    background: var(--superficie-2);
-    box-shadow: inset 0 -2px 0 var(--destaque);
-    color: var(--texto);
-  }
 }
 
 /* "Respondendo a @fulano" nos comentários listados fora da conversa */
 .post-card__context {
   display: inline-flex;
-  flex-wrap: wrap;
   align-items: center;
   gap: .35rem;
-  max-width: 100%;
   margin-bottom: .55rem;
   color: var(--texto-suave);
   font-size: .82rem;
 
   &:hover {
     color: var(--destaque-claro);
-  }
-}
-
-/* A música (ou o texto) do post respondido, em pílula ao lado de "Respondendo a". */
-.post-card__context-sobre {
-  display: inline-flex;
-  align-items: center;
-  gap: .4rem;
-  min-width: 0;
-  max-width: 100%;
-  padding: .15rem .55rem .15rem .2rem;
-  border: 1px solid var(--linhas);
-  border-radius: 999px;
-  overflow: hidden;
-  color: var(--texto);
-  white-space: nowrap;
-  text-overflow: ellipsis;
-
-  img {
-    flex: none;
-    width: 1.35rem;
-    height: 1.35rem;
-    border-radius: 4px;
-    object-fit: cover;
   }
 }
 
@@ -2726,24 +2515,22 @@ button.lyrics-picker__verso {
 .profile-favorites {
   display: grid;
   gap: 1rem;
-  /* Cartão próprio, com a mesma moldura do cabeçalho do perfil e dos posts. */
-  margin-top: 1rem;
-  padding: 1rem 1.25rem 1.25rem;
-  border: 1px solid var(--linhas);
-  border-radius: 22px;
-  background: var(--superficie);
+  /* Respiro entre o cartão do perfil e "Editar favoritos". */
+  padding: 1.25rem 1.25rem 1.25rem;
+  border-bottom: 1px solid var(--linhas);
 
   h2 {
     margin: 0;
-    font-size: 1.05rem;
-    font-weight: 600;
+    font-size: 1rem;
   }
 
   h3 {
     margin: 0 0 .5rem;
     color: var(--texto-suave);
-    font-size: .85rem;
+    font-size: .72rem;
     font-weight: 600;
+    letter-spacing: .06em;
+    text-transform: uppercase;
   }
 }
 
@@ -2752,62 +2539,30 @@ button.lyrics-picker__verso {
   align-items: center;
   justify-content: space-between;
   gap: .5rem;
-  min-height: 2.75rem;
-
-  .composer-link {
-    min-height: 2.75rem;
-    padding: 0 1rem;
-  }
+  min-height: 2.25rem;
 }
 
-.profile-favorites__vazio {
-  display: grid;
-  justify-items: center;
-  gap: .75rem;
-  padding: 1.25rem 1rem;
+button.profile-favorites__vazio {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: .5rem;
+  min-height: 4.5rem;
+  padding: .75rem 1rem;
   border: 1px dashed var(--linhas);
-  border-radius: 18px;
+  border-radius: 14px;
+  background: none;
+  color: var(--texto-suave);
+  font-size: .9rem;
   text-align: center;
 
-  p {
-    max-width: 30ch;
-    margin: 0;
-    color: var(--texto-suave);
-    font-size: .92rem;
-    line-height: 1.45;
+  i {
+    color: var(--destaque);
   }
 
-  /* Ação secundária (contorno): no perfil vazio, o botão verde cheio é "Fazer o primeiro post". */
-  .feed-empty__action {
-    margin-top: 0;
-    border: 1px solid var(--destaque);
-    background: none;
+  &:hover {
+    border-color: var(--destaque);
     color: var(--texto);
-  }
-}
-
-/* Três capas vazias sugerem o que vai aparecer ali. */
-.profile-favorites__capas {
-  display: flex;
-
-  span {
-    width: 2.75rem;
-    aspect-ratio: 1;
-    border: 1px solid var(--linhas);
-    border-radius: 8px;
-    background: linear-gradient(135deg, rgba(43, 168, 74, .28), rgba(43, 168, 74, .06));
-  }
-
-  span + span {
-    margin-left: -.6rem;
-  }
-
-  span:nth-child(2) {
-    transform: translateY(-.3rem);
-  }
-
-  span.favorite-cover--redondo {
-    border-radius: 50%;
   }
 }
 
@@ -2840,71 +2595,22 @@ button.lyrics-picker__verso {
   border-radius: 50%;
 }
 
-.favorites-grid__link {
-  display: flex;
-  flex-direction: column;
-  min-width: 0;
-  border-radius: 10px;
-  color: inherit;
-  text-decoration: none;
-
-  &:hover {
-    color: inherit;
-  }
-
-  &:hover .favorite-cover {
-    box-shadow: 0 0 0 2px var(--destaque);
-  }
-
-  &:focus-visible {
-    outline: 2px solid var(--destaque);
-    outline-offset: 3px;
-  }
-}
-
-/* Título em até duas linhas: no celular cada capa tem uns 60px, e uma linha só cortava quase tudo. */
-.favorites-grid__titulo {
-  display: -webkit-box;
-  margin-top: .4rem;
-  overflow: hidden;
-  font-size: .78rem;
-  font-weight: 600;
-  line-height: 1.25;
-  overflow-wrap: normal;
-  hyphens: auto;
-  -webkit-box-orient: vertical;
-  -webkit-line-clamp: 2;
-}
-
-
+.favorites-grid__titulo,
 .favorites-grid__artista {
   overflow: hidden;
-  color: var(--texto-suave);
-  font-size: .75rem;
   white-space: nowrap;
   text-overflow: ellipsis;
 }
 
-/* No celular, cada fileira do perfil vira um trilho que rola para o lado: capas de ~95px
-   em vez de 60px, com espaço para o título e o artista. */
-@media (max-width: 575.98px) {
-  .profile-favorites .favorites-grid {
-    grid-template-columns: none;
-    grid-auto-flow: column;
-    grid-auto-columns: 30%;
-    /* Some no canto direito: mostra que a fileira continua para o lado. */
-    mask-image: linear-gradient(to right, #000 85%, transparent);
-    margin-inline: -1.25rem;
-    padding-inline: 1.25rem;
-    overflow-x: auto;
-    scroll-padding-inline: 1.25rem;
-    scroll-snap-type: x mandatory;
-    scrollbar-width: none;
+.favorites-grid__titulo {
+  margin-top: .35rem;
+  font-size: .74rem;
+  font-weight: 600;
+}
 
-    > li {
-      scroll-snap-align: start;
-    }
-  }
+.favorites-grid__artista {
+  color: var(--texto-suave);
+  font-size: .68rem;
 }
 
 .favorites-editor {
@@ -2912,81 +2618,14 @@ button.lyrics-picker__verso {
     grid-template-columns: repeat(3, 1fr);
   }
 
-  /* Mesmo estilo de aba ativa do perfil (neutro com risco verde). */
-  .composer-tabs__tab.is-active {
-    background: var(--superficie-2);
-    box-shadow: inset 0 -2px 0 var(--destaque);
-    color: var(--texto);
-  }
-
   .track-row:disabled {
     opacity: .55;
   }
 }
 
-.favorites-editor__conta {
-  margin-left: .2rem;
-  font-size: .78rem;
-  font-weight: 500;
-  opacity: .8;
-}
-
-.favorites-editor__acoes {
-  position: sticky;
-  bottom: -.35rem;
-  z-index: 2;
-  margin: 0 -.35rem;
-  padding: .75rem .35rem;
-  border-top: 1px solid var(--linhas);
-  background: var(--superficie);
-  /* Cobre a sobra de padding embaixo, para os resultados não aparecerem por baixo do Salvar. */
-  box-shadow: 0 1rem 0 var(--superficie);
-}
-
-.edit-profile__actions {
-  position: sticky;
-  bottom: -.35rem;
-  z-index: 2;
-  padding: .75rem 0;
-  border-top: 1px solid var(--linhas);
-  background: var(--superficie);
-  box-shadow: 0 1rem 0 var(--superficie);
-}
-
-.lyrics-picker__acoes .composer-link,
-.edit-profile__actions .composer-link {
-  min-height: 3rem;
-  padding: 0 1.25rem;
-}
-
-.edit-profile__conta {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  gap: .75rem;
-  padding: .85rem 0 .25rem;
-  border-top: 1px solid var(--linhas);
-
-  span {
-    color: var(--texto-suave);
-    font-size: .85rem;
-    font-weight: 600;
-  }
-
-  .composer-link {
-    display: inline-flex;
-    align-items: center;
-    gap: .4rem;
-    min-height: 2.75rem;
-    padding: 0 1rem;
-  }
-}
-
 .favorites-editor__contador {
   margin: 0;
-  padding: 0;
   text-align: left;
-  text-wrap: pretty;
 
   strong {
     color: var(--destaque);
@@ -3003,7 +2642,28 @@ button.lyrics-picker__verso {
   font-size: .85rem;
 }
 
-/* No editor, cada capa é um botão: tocar seleciona e abre a barra de ações embaixo da fileira. */
+.favorites-editor__tools {
+  position: absolute;
+  top: .2rem;
+  right: .2rem;
+  display: flex;
+  gap: .15rem;
+
+  button {
+    display: grid;
+    place-items: center;
+    width: 1.45rem;
+    height: 1.45rem;
+    padding: 0;
+    border: 0;
+    border-radius: 50%;
+    background: rgba(0, 5, 5, .78);
+    color: var(--texto);
+    font-size: .7rem;
+  }
+}
+
+/* Ordenar favoritos: cada capa do editor é um botão (tocar escolhe; tocar em outra troca as duas). */
 button.favorites-editor__capa {
   display: flex;
   flex-direction: column;
@@ -3025,26 +2685,12 @@ button.favorites-editor__capa {
   }
 }
 
-/* Telas bem estreitas: no editor, a capa e o número já identificam; o título cortado só atrapalhava. */
-@media (max-width: 359.98px) {
-  .favorites-editor__slots .favorites-grid__titulo {
-    display: none;
-  }
-}
-
-button.edit-profile__avatar-botao {
-  padding: 0;
-  border: 0;
-  border-radius: 50%;
-  background: none;
-}
-
 .favorites-editor__capa-imagem {
   position: relative;
   display: block;
 }
 
-/* Posição no top 5, sempre visível no editor. */
+/* Posição no top 5. */
 .favorites-editor__posicao {
   position: absolute;
   top: .25rem;
@@ -3063,16 +2709,17 @@ button.edit-profile__avatar-botao {
 }
 
 .favorites-editor__barra {
-  display: grid;
-  grid-template-columns: 1fr 1fr 1fr;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
   gap: .5rem;
 
   button {
     display: inline-flex;
     align-items: center;
-    justify-content: center;
     gap: .35rem;
     min-height: 2.75rem;
+    padding: 0 1rem;
     border: 1px solid var(--linhas);
     border-radius: 999px;
     background: none;
@@ -3084,15 +2731,10 @@ button.edit-profile__avatar-botao {
       opacity: .35;
     }
   }
-
-  .favorites-editor__barra-tirar {
-    border-color: rgba(245, 91, 100, .5);
-    color: var(--erro);
-  }
 }
 
-.favorites-editor__painel {
-  display: flex;
-  flex-direction: column;
-  gap: inherit;
+.favorites-editor__barra-dica {
+  color: var(--texto-suave);
+  font-size: .78rem;
+  text-align: center;
 }

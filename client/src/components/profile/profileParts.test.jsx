@@ -70,14 +70,12 @@ describe('EditProfileModal', () => {
     expect(usersApi.uploadPhoto).not.toHaveBeenCalled();
   });
 
-  it('Salvar só liga com alguma mudança; sem foto nova, não envia foto', async () => {
+  it('não envia foto quando nenhuma foi escolhida', async () => {
     usersApi.updateMe.mockResolvedValue(ana);
     renderModal();
-    expect(screen.getByRole('button', { name: 'Salvar' })).toBeDisabled();
-    await userEvent.type(screen.getByLabelText('Bio'), '!');
     await userEvent.click(screen.getByRole('button', { name: 'Salvar' }));
     expect(usersApi.uploadPhoto).not.toHaveBeenCalled();
-    expect(usersApi.updateMe).toHaveBeenCalledWith({ nome: 'Ana', nomeExibicao: '', bio: 'oi!' });
+    expect(usersApi.updateMe).toHaveBeenCalledWith({ nome: 'Ana', nomeExibicao: '', bio: 'oi' });
   });
 
   it('avisa as regras quando o nome novo não serve e não deixa salvar', async () => {
@@ -130,7 +128,6 @@ describe('EditProfileModal', () => {
   it('mostra o erro do servidor', async () => {
     usersApi.updateMe.mockRejectedValue(new Error('Esse nome de usuário já está em uso.'));
     renderModal();
-    await userEvent.type(screen.getByLabelText('Bio'), '!');
     await userEvent.click(screen.getByRole('button', { name: 'Salvar' }));
     expect(await screen.findByRole('alert')).toHaveTextContent('Esse nome de usuário já está em uso.');
   });

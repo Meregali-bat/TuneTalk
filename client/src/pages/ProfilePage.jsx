@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react';
+import { useState } from 'react';
 import { formatMediaEstrelas } from '../../../shared/rating.js';
 import { useParams } from 'react-router-dom';
 import { usersApi } from '../api/index.js';
@@ -15,14 +15,14 @@ import { profileEffectFor } from '../components/effects/profileEffects.js';
 import { VerifiedBadge } from '../components/effects/VerifiedBadge.jsx';
 import { FounderBadge, mostraSeloFundador } from '../components/effects/FounderBadge.jsx';
 import { PullToRefresh } from '../components/common/PullToRefresh.jsx';
-import { ProfileFavorites, listaDeFavoritos } from '../components/profile/ProfileFavorites.jsx';
+import { ProfileFavorites } from '../components/profile/ProfileFavorites.jsx';
 import { EditFavoritesModal } from '../components/profile/EditFavoritesModal.jsx';
 
 // Só posts com música têm nota. A média sai na escala guardada (0 a 10) e é mostrada em estrelas.
 function notaMedia(posts) {
   const notas = posts.map((post) => post.nota).filter((nota) => nota !== null && nota !== undefined);
   if (notas.length === 0) return null;
-  return { media: notas.reduce((soma, nota) => soma + nota, 0) / notas.length, quantidade: notas.length };
+  return notas.reduce((soma, nota) => soma + nota, 0) / notas.length;
 }
 
 function ProfileSkeleton() {
@@ -41,22 +41,17 @@ function ProfileSkeleton() {
   );
 }
 
-// 12345 vira "12,3 mil": cabe na coluna do número em qualquer tela.
-const compacto = (valor) => (typeof valor === 'number'
-  ? new Intl.NumberFormat('pt-BR', { notation: 'compact', maximumFractionDigits: 1 }).format(valor)
-  : valor);
-
 function Stat({ value, label, onClick }) {
   const content = (
     <>
-      <strong>{compacto(value)}</strong>
+      <strong>{value}</strong>
       <span>{label}</span>
     </>
   );
   return (
     <li className="profile-stat">
       {onClick ? (
-        <button type="button" className="profile-stat__inner" aria-label={`${label}: ${compacto(value)}`} onClick={onClick}>
+        <button type="button" className="profile-stat__inner" aria-label={`${label}: ${value}`} onClick={onClick}>
           {content}
         </button>
       ) : (
@@ -66,27 +61,10 @@ function Stat({ value, label, onClick }) {
   );
 }
 
-// Sem capa escolhida, a capa mostra o gosto da pessoa: as capas dos favoritos lado a lado, desfocadas.
-// Sem favoritos, fica o degradê verde.
-function CapaDoGosto({ favoritos }) {
-  const capas = ['albuns', 'musicas', 'artistas']
-    .flatMap((chave) => listaDeFavoritos(favoritos, chave))
-    .map((item) => item.capa)
-    .slice(0, 4);
-  if (capas.length === 0) {
-    return <div className="profile-banner profile-banner--padrao" data-testid="capa-padrao" aria-hidden="true" />;
-  }
-  return (
-    <div className="profile-banner profile-banner--padrao profile-banner--gosto" data-testid="capa-gosto" aria-hidden="true">
-      {capas.map((capa, i) => <img key={i} src={capa} alt="" />)}
-    </div>
-  );
-}
-
 // Nome de exibição (livre) quando existe; senão, o nome de usuário. O @ é sempre o nome de usuário.
 export const displayName = (usuario) => usuario.nomeExibicao || usuario.nome;
 
-function ProfileHeader({ profile, isOwnProfile, onEdit, onOpenList, onOpenPosts, onFollowChange }) {
+function ProfileHeader({ profile, isOwnProfile, onEdit, onChangePassword, onOpenList, onFollowChange }) {
   const { usuario } = profile;
   const nome = displayName(usuario);
   const media = notaMedia(profile.posts);
@@ -96,7 +74,7 @@ function ProfileHeader({ profile, isOwnProfile, onEdit, onOpenList, onOpenPosts,
       {usuario.bannerUrl ? (
         <img src={usuario.bannerUrl} alt={`Capa do perfil de ${nome}`} className="profile-banner" />
       ) : (
-        <CapaDoGosto favoritos={profile.favoritos} />
+        <div className="profile-banner profile-banner--padrao" data-testid="capa-padrao" aria-hidden="true" />
       )}
 
       <div className="profile-header__body">
@@ -105,8 +83,18 @@ function ProfileHeader({ profile, isOwnProfile, onEdit, onOpenList, onOpenPosts,
           <div className="profile-header__actions">
             {isOwnProfile ? (
               <>
-                <button type="button" className="profile-edit-button" onClick={onEdit}>
-                  <i className="bi bi-pencil" aria-hidden="true" /> Editar perfil
+                <button type="button" className="follow-button follow-button--md is-following" onClick={onEdit}>
+                  Editar perfil
+                </button>
+                {/* No celular vira só o ícone de chave; o nome continua para leitores de tela. */}
+                <button
+                  type="button"
+                  className="follow-button follow-button--md is-following profile-action--senha"
+                  aria-label="Trocar senha"
+                  onClick={onChangePassword}
+                >
+                  <i className="bi bi-key" aria-hidden="true" />
+                  <span className="profile-action__label">Trocar senha</span>
                 </button>
               </>
             ) : (
@@ -125,25 +113,15 @@ function ProfileHeader({ profile, isOwnProfile, onEdit, onOpenList, onOpenPosts,
             <VerifiedBadge nome={usuario.nome} />
             <FounderBadge ativo={mostraSeloFundador(usuario)} />
           </div>
-          <p className="profile-header__handle">
-            @{usuario.nome}
-            {/* O selo de fundador só explicava no "title" (que não aparece no toque): aqui fica escrito. */}
-            {mostraSeloFundador(usuario) && <span className="profile-header__desde"> · no TuneTalk desde o início</span>}
-          </p>
+          <p className="profile-header__handle">@{usuario.nome}</p>
           {usuario.bio && <p className="profile-header__bio">{usuario.bio}</p>}
-          {/* A média fica numa linha própria: na fileira dos números, o rótulo comprido batia nos vizinhos. */}
-          {media !== null && (
-            <p className="profile-header__nota">
-              <i className="bi bi-star-fill" aria-hidden="true" />
-              <strong>{formatMediaEstrelas(media.media)}/5</strong> de média em {media.quantidade} {media.quantidade === 1 ? 'nota' : 'notas'}
-            </p>
-          )}
         </div>
 
         <ul className="profile-stats" aria-label="Números do perfil">
-          <Stat value={profile.quantidadePosts} label="Posts" onClick={onOpenPosts} />
+          <Stat value={profile.quantidadePosts} label="Posts" />
           <Stat value={profile.quantidadeSeguidores} label="Seguidores" onClick={() => onOpenList('seguidores')} />
           <Stat value={profile.quantidadeSeguindo} label="Seguindo" onClick={() => onOpenList('seguindo')} />
+          {media !== null && <Stat value={`${formatMediaEstrelas(media)}/5`} label="Nota média" />}
         </ul>
       </div>
     </header>
@@ -152,10 +130,10 @@ function ProfileHeader({ profile, isOwnProfile, onEdit, onOpenList, onOpenPosts,
 
 // Aba "Comentários": só busca quando aberta pela primeira vez.
 function ProfileComments({ usuarioId, nome }) {
-  const { data: comentarios, error, setData, reload } = useAsync(() => usersApi.comments(usuarioId), [usuarioId]);
+  const { data: comentarios, error, setData } = useAsync(() => usersApi.comments(usuarioId), [usuarioId]);
   const remover = (id) => setData((lista) => lista.filter((c) => c.id !== id));
 
-  if (error) return <LoadError mensagem="Não deu para carregar os comentários." onRetry={reload} />;
+  if (error) return <div role="alert" className="feed-error"><p>{error.message}</p></div>;
   if (!comentarios) return <p role="status" className="composer-hint">Carregando comentários…</p>;
   if (comentarios.length === 0) {
     return (
@@ -168,18 +146,6 @@ function ProfileComments({ usuarioId, nome }) {
   return (
     <div className="feed-list">
       {comentarios.map((c) => <PostCard key={c.id} post={c} onDeleted={remover} />)}
-    </div>
-  );
-}
-
-// Erro de carregamento com saída: explica e deixa tentar de novo sem recarregar a página.
-function LoadError({ mensagem, onRetry }) {
-  return (
-    <div role="alert" className="feed-error">
-      <p>{mensagem}</p>
-      <button type="button" className="follow-button follow-button--md is-following" onClick={onRetry}>
-        <i className="bi bi-arrow-clockwise" aria-hidden="true" /> Tentar de novo
-      </button>
     </div>
   );
 }
@@ -212,12 +178,6 @@ export function ProfilePage() {
   const [changingPassword, setChangingPassword] = useState(false);
   const [editingFavorites, setEditingFavorites] = useState(false);
   const [notice, setNotice] = useState('');
-  // O aviso ("Favoritos salvos.", "Senha alterada…") some sozinho depois de alguns segundos.
-  useEffect(() => {
-    if (!notice) return undefined;
-    const sumir = setTimeout(() => setNotice(''), 6000);
-    return () => clearTimeout(sumir);
-  }, [notice]);
   const [composerOpen, setComposerOpen] = useState(false);
   const [aba, setAba] = useState('posts');
   const [abriuComentarios, setAbriuComentarios] = useState(false);
@@ -225,12 +185,7 @@ export function ProfilePage() {
   if (error) {
     return (
       <div className="feed">
-        <LoadError
-          mensagem={error.status === 404
-            ? 'Esse perfil não existe ou mudou de @.'
-            : 'Não deu para carregar o perfil. Confira sua conexão.'}
-          onRetry={reload}
-        />
+        <div role="alert" className="feed-error"><p>{error.message}</p></div>
       </div>
     );
   }
@@ -242,19 +197,6 @@ export function ProfilePage() {
     updateUser({ nome: usuario.nome });
     setEditing(false);
     reload();
-  };
-
-  const abrirAba = (chave) => {
-    setAba(chave);
-    if (chave === 'comentarios') setAbriuComentarios(true);
-  };
-  // Setas trocam de aba, como em qualquer lista de abas (o Tab pula direto para o conteúdo).
-  const moverAba = (event, chave) => {
-    if (event.key !== 'ArrowRight' && event.key !== 'ArrowLeft') return;
-    event.preventDefault();
-    const proxima = chave === 'posts' ? 'comentarios' : 'posts';
-    abrirAba(proxima);
-    document.getElementById(`aba-${proxima}`)?.focus();
   };
 
   const removePost = (postId) =>
@@ -269,18 +211,15 @@ export function ProfilePage() {
         profile={profile}
         isOwnProfile={isOwnProfile}
         onEdit={() => setEditing(true)}
+        onChangePassword={() => { setNotice(''); setChangingPassword(true); }}
         onOpenList={setOpenList}
-        onOpenPosts={() => {
-          abrirAba('posts');
-          document.querySelector('.profile-tabs-bar')?.scrollIntoView?.({ behavior: 'smooth', block: 'start' });
-          document.getElementById('aba-posts')?.focus({ preventScroll: true });
-        }}
         onFollowChange={reload}
       />
-      {/* Aviso flutuante (não empurra a página). A região fica sempre montada para o leitor de tela anunciar. */}
-      <p role="status" className={`profile-notice${notice ? ' is-visible' : ''}`}>
-        {notice && <><i className="bi bi-check-circle-fill" aria-hidden="true" /> {notice}</>}
-      </p>
+      {notice && (
+        <p role="status" className="profile-notice">
+          <i className="bi bi-check-circle-fill" aria-hidden="true" /> {notice}
+        </p>
+      )}
 
       <ProfileFavorites
         favoritos={profile.favoritos}
@@ -288,7 +227,7 @@ export function ProfilePage() {
         onEditar={() => setEditingFavorites(true)}
       />
 
-      {/* Fica presa no topo ao rolar, como as abas do feed. */}
+      {/* Posts/Comentários ficam presos no topo ao rolar, como as abas do feed. */}
       <div className="feed-tabs-bar profile-tabs-bar">
       <div role="tablist" aria-label="Conteúdo do perfil" className="feed-tabs profile-tabs">
         {[['posts', 'Posts'], ['comentarios', 'Comentários']].map(([chave, rotulo]) => (
@@ -300,9 +239,7 @@ export function ProfilePage() {
             aria-selected={aba === chave}
             aria-controls={`painel-${chave}`}
             className={`feed-tabs__tab${aba === chave ? ' is-active' : ''}`}
-            tabIndex={aba === chave ? 0 : -1}
-            onClick={() => abrirAba(chave)}
-            onKeyDown={(event) => moverAba(event, chave)}
+            onClick={() => { setAba(chave); if (chave === 'comentarios') setAbriuComentarios(true); }}
           >
             {rotulo}
           </button>
@@ -311,7 +248,6 @@ export function ProfilePage() {
       </div>
 
       <div role="tabpanel" id="painel-posts" aria-labelledby="aba-posts" hidden={aba !== 'posts'}>
-        <h2 className="visually-hidden">Posts de {displayName(profile.usuario)}</h2>
         {profile.posts.length === 0 ? (
           <EmptyPosts nome={displayName(profile.usuario)} isOwnProfile={isOwnProfile} onCompose={() => setComposerOpen(true)} />
         ) : (
@@ -325,7 +261,6 @@ export function ProfilePage() {
 
       {/* Fica montada depois de aberta, para não buscar de novo a cada troca de aba. */}
       <div role="tabpanel" id="painel-comentarios" aria-labelledby="aba-comentarios" hidden={aba !== 'comentarios'}>
-        <h2 className="visually-hidden">Comentários de {displayName(profile.usuario)}</h2>
         {abriuComentarios && <ProfileComments usuarioId={profile.usuario.id} nome={displayName(profile.usuario)} />}
       </div>
 
@@ -348,8 +283,7 @@ export function ProfilePage() {
       {isOwnProfile && changingPassword && (
         <ChangePasswordModal
           open
-          /* Desistir de trocar a senha volta para "Editar perfil", de onde a pessoa veio. */
-          onClose={() => { setChangingPassword(false); setEditing(true); }}
+          onClose={() => setChangingPassword(false)}
           onChanged={() => {
             setChangingPassword(false);
             setNotice('Senha alterada. Os outros aparelhos conectados precisam entrar de novo.');
@@ -363,19 +297,11 @@ export function ProfilePage() {
           onSaved={(favoritos) => {
             setData((p) => ({ ...p, favoritos }));
             setEditingFavorites(false);
-            setNotice('Favoritos salvos.');
           }}
         />
       )}
       {isOwnProfile && editing && (
-        <EditProfileModal
-          open
-          usuario={profile.usuario}
-          onClose={() => setEditing(false)}
-          onSaved={handleSaved}
-          /* Trocar senha mora em "Editar perfil": é coisa da conta, não da identidade do perfil. */
-          onChangePassword={() => { setEditing(false); setNotice(''); setChangingPassword(true); }}
-        />
+        <EditProfileModal open usuario={profile.usuario} onClose={() => setEditing(false)} onSaved={handleSaved} />
       )}
       {isOwnProfile && (
         <CreatePost open={composerOpen} onOpenChange={setComposerOpen} onCreated={reload} />
