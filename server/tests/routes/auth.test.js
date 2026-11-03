@@ -75,6 +75,27 @@ describe('rotas /api/auth', () => {
     });
   });
 
+  describe('esqueci minha senha', () => {
+    it('POST /api/auth/forgot-password responde 204 sempre (exista a conta ou não)', async () => {
+      deps.passwordResetService.request.mockResolvedValue(undefined);
+      await request(app).post('/api/auth/forgot-password').send({ email: 'ana@x.com' }).expect(204);
+      expect(deps.passwordResetService.request).toHaveBeenCalledWith('ana@x.com');
+    });
+
+    it('POST /api/auth/reset-password troca a senha com o código do link', async () => {
+      deps.passwordResetService.reset.mockResolvedValue(undefined);
+      await request(app).post('/api/auth/reset-password').send({ token: 'abc', novaSenha: 'Nova!123' }).expect(204);
+      expect(deps.passwordResetService.reset).toHaveBeenCalledWith('abc', 'Nova!123');
+    });
+
+    it('repassa o erro de link inválido', async () => {
+      deps.passwordResetService.reset.mockRejectedValue(new HttpError(400, 'Este link é inválido ou já expirou. Peça um novo.'));
+      const res = await request(app).post('/api/auth/reset-password').send({ token: 'x', novaSenha: 'Nova!123' });
+      expect(res.status).toBe(400);
+      expect(res.body).toEqual({ error: 'Este link é inválido ou já expirou. Peça um novo.' });
+    });
+  });
+
   it('POST /api/auth/logout encerra a sessão', async () => {
     const agent = await loggedAgent(app);
     await agent.post('/api/auth/logout').expect(204);

@@ -23,4 +23,11 @@ describe('createSessionCleaner (Postgres)', () => {
     const { rows } = await db.query('SELECT sid FROM session ORDER BY sid');
     expect(rows.map((r) => r.sid)).toEqual(['anonima', 'celular', 'outra-pessoa']);
   });
+
+  it('destroyAll apaga todas as sessões do usuário (após redefinir a senha pelo email)', async () => {
+    await createSessionCleaner(db).destroyAll(1);
+
+    const { rows } = await db.query('SELECT sid FROM session ORDER BY sid');
+    expect(rows.map((r) => r.sid)).toEqual(['anonima', 'outra-pessoa']);
+  });
 });

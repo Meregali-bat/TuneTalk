@@ -42,6 +42,11 @@ describe('LandingPage', () => {
 });
 
 describe('LoginPage', () => {
+  it('tem o link "Esqueci minha senha"', () => {
+    renderWithProviders(<LoginPage />);
+    expect(screen.getByRole('link', { name: 'Esqueci minha senha' })).toHaveAttribute('href', '/esqueci-senha');
+  });
+
   const fillLogin = async (email = 'ana@x.com', senha = 'Senha!1') => {
     await userEvent.type(screen.getByLabelText('Email'), email);
     await userEvent.type(screen.getByLabelText('Senha'), senha);

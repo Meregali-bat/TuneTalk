@@ -5,6 +5,8 @@ export const authApi = {
   login: (email, senha) => request('/auth/login', { method: 'POST', body: { email, senha } }),
   register: ({ email, senha }) => request('/auth/register', { method: 'POST', body: { email, senha } }),
   logout: () => request('/auth/logout', { method: 'POST' }),
+  forgotPassword: (email) => request('/auth/forgot-password', { method: 'POST', body: { email } }),
+  resetPassword: (token, novaSenha) => request('/auth/reset-password', { method: 'POST', body: { token, novaSenha } }),
 };
 
 export const postsApi = {

@@ -58,6 +58,7 @@ export function LoginPage() {
             />
           )}
         </Field>
+        <Link to="/esqueci-senha" className="auth-forgot">Esqueci minha senha</Link>
         <button type="submit" className="auth-submit" disabled={sending || !email || !senha}>
           {sending ? 'Entrando…' : 'Entrar'}
         </button>

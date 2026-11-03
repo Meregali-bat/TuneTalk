@@ -4,7 +4,9 @@ export function AuthCard({ title, subtitle, children, footer }) {
   return (
     <div className="auth-card">
       <h1 className="auth-title">
-        {title}<span className="auth-title__dot">.</span>
+        {title}
+        {/* O ponto verde é enfeite; títulos que já terminam com pontuação ficam sem ele. */}
+        {!/[.!?]$/.test(title) && <span className="auth-title__dot">.</span>}
       </h1>
       {subtitle && <p className="auth-subtitle">{subtitle}</p>}
       {children}

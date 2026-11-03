@@ -9,8 +9,13 @@ export function createSessionStore(pool) {
 }
 
 // Ao trocar a senha, os outros aparelhos logados na conta saem; a sessão atual continua.
+// Ao redefinir pelo email (sem estar logado), saem todos.
 export function createSessionCleaner(pool) {
   return {
+    async destroyAll(usuarioId) {
+      await pool.query("DELETE FROM session WHERE (sess -> 'user' ->> 'id')::int = $1", [usuarioId]);
+    },
+
     async destroyOthers(usuarioId, keepSid) {
       await pool.query(
         "DELETE FROM session WHERE (sess -> 'user' ->> 'id')::int = $1 AND sid <> $2",

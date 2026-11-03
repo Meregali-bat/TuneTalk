@@ -231,3 +231,37 @@
     animation: none;
   }
 }
+
+.auth-forgot {
+  align-self: flex-end;
+  margin-top: -.35rem;
+  color: var(--destaque-claro);
+  font-size: .9rem;
+  font-weight: 600;
+  text-decoration: underline;
+  text-underline-offset: 3px;
+}
+
+.auth-notice {
+  display: flex;
+  gap: .65rem;
+  align-items: flex-start;
+  margin: 0;
+  padding: .9rem 1rem;
+  border: 1px solid rgba(43, 168, 74, .45);
+  border-radius: 12px;
+  background: rgba(43, 168, 74, .1);
+  line-height: 1.45;
+
+  i {
+    color: var(--destaque-claro);
+    font-size: 1.15rem;
+  }
+}
+
+.auth-submit--link {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  text-decoration: none;
+}

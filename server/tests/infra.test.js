@@ -72,4 +72,22 @@ describe('loadConfig', () => {
       expect(config.serveClient).toBe(false);
     });
   });
+
+  describe('email e link do "esqueci minha senha"', () => {
+    it('lê a chave do Resend e o remetente', () => {
+      const config = loadConfig({ RESEND_API_KEY: 're_x', EMAIL_FROM: 'TuneTalk <oi@tunetalk.app>' });
+      expect(config.resendApiKey).toBe('re_x');
+      expect(config.emailFrom).toBe('TuneTalk <oi@tunetalk.app>');
+    });
+
+    it('sem EMAIL_FROM usa o remetente de teste do Resend', () => {
+      expect(loadConfig({}).emailFrom).toBe('TuneTalk <onboarding@resend.dev>');
+    });
+
+    it('endereço do site: APP_URL, senão o domínio de produção da Vercel, senão o Vite local', () => {
+      expect(loadConfig({ APP_URL: 'https://tunetalk.app/' }).appUrl).toBe('https://tunetalk.app');
+      expect(loadConfig({ VERCEL_PROJECT_PRODUCTION_URL: 'tune-talk.vercel.app' }).appUrl).toBe('https://tune-talk.vercel.app');
+      expect(loadConfig({}).appUrl).toBe('http://localhost:5173');
+    });
+  });
 });

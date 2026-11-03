@@ -5,6 +5,7 @@ import { createAuthService } from '../../../server/src/services/authService.js';
 import { createPostService } from '../../../server/src/services/postService.js';
 import { createUserService } from '../../../server/src/services/userService.js';
 import { createPasswords } from '../../../server/src/security/passwords.js';
+import { createPasswordResetService } from '../../../server/src/services/passwordResetService.js';
 import { createMemoryRepositories } from './memoryRepositories.js';
 import { CATALOG, DEMO_LOGIN, createSeed } from './seed.js';
 import { avatar } from './art.js';
@@ -58,6 +59,15 @@ export function createFakeApi({ storage = globalThis.localStorage } = {}) {
     });
     services = {
       auth: createAuthService({ users: repos.users, passwords }),
+      // Sem email na demo: o link aparece no console do navegador.
+      reset: createPasswordResetService({
+        users: repos.users,
+        resets: repos.resets,
+        passwords,
+        mailer: { send: async ({ text }) => console.info(text) },
+        sessions: { destroyAll: async () => { state.session = null; } },
+        appUrl: `${globalThis.location?.origin ?? ''}${globalThis.location?.pathname ?? ''}`,
+      }),
       posts: postService,
       users: createUserService({
         users: repos.users, follows: repos.follows, postService, notifications: repos.notifications, passwords,
@@ -91,6 +101,12 @@ export function createFakeApi({ storage = globalThis.localStorage } = {}) {
     ['GET', /^\/auth\/me$/, () => { signedIn(); return ok(session()); }],
     ['POST', /^\/auth\/login$/, async ({ body }) => ok(startSession(await services.auth.login(body.email, body.senha)))],
     ['POST', /^\/auth\/logout$/, () => { state.session = null; writeState(storage, state); return noContent(); }],
+    ['POST', /^\/auth\/forgot-password$/, async ({ body }) => { await services.reset.request(body.email); return noContent(); }],
+    ['POST', /^\/auth\/reset-password$/, async ({ body }) => {
+      await services.reset.reset(body.token, body.novaSenha);
+      writeState(storage, state);
+      return noContent();
+    }],
     ['POST', /^\/auth\/register$/, async ({ body }) => {
       const fotoPerfil = avatar(String(body.email ?? '?').split('@')[0] || '?');
       const user = await services.auth.register({ email: body.email, senha: body.senha, fotoPerfil });

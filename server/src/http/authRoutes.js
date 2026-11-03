@@ -1,7 +1,7 @@
 import { Router } from 'express';
 import { asyncRoute, requireAuth } from './middlewares.js';
 
-export function createAuthRoutes({ authService, defaultProfilePhoto }) {
+export function createAuthRoutes({ authService, passwordResetService, defaultProfilePhoto }) {
   const router = Router();
 
   const startSession = (req, user) =>
@@ -35,6 +35,16 @@ export function createAuthRoutes({ authService, defaultProfilePhoto }) {
     const user = await authService.register({ email, senha, fotoPerfil: defaultProfilePhoto });
     await startSession(req, user);
     res.status(201).json(user);
+  }));
+
+  router.post('/forgot-password', asyncRoute(async (req, res) => {
+    await passwordResetService.request(req.body.email);
+    res.status(204).end();
+  }));
+
+  router.post('/reset-password', asyncRoute(async (req, res) => {
+    await passwordResetService.reset(req.body.token, req.body.novaSenha);
+    res.status(204).end();
   }));
 
   return router;

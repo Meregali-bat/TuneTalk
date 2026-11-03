@@ -1,6 +1,12 @@
 const DEFAULT_PROFILE_PHOTO =
   'https://res.cloudinary.com/dorm41uma/image/upload/v1701558934/jyqonmjasuobge6nmvi4.png';
 
+function appUrl(env) {
+  if (env.APP_URL) return env.APP_URL.replace(/\/+$/, '');
+  if (env.VERCEL_PROJECT_PRODUCTION_URL) return `https://${env.VERCEL_PROJECT_PRODUCTION_URL}`;
+  return 'http://localhost:5173';
+}
+
 export function loadConfig(env = process.env) {
   // A Vercel define VERCEL=1 no build e nas funções.
   const onVercel = env.VERCEL === '1';
@@ -22,6 +28,11 @@ export function loadConfig(env = process.env) {
     serveClient: isProduction && !onVercel,
     defaultProfilePhoto: env.DEFAULT_PROFILE_PHOTO || DEFAULT_PROFILE_PHOTO,
     databaseUrl: env.DATABASE_URL,
+    // "Esqueci minha senha": sem RESEND_API_KEY o email só aparece no terminal.
+    resendApiKey: env.RESEND_API_KEY,
+    emailFrom: env.EMAIL_FROM || 'TuneTalk <onboarding@resend.dev>',
+    // Base dos links enviados por email. Nunca vem do cabeçalho Host da requisição, que pode ser forjado.
+    appUrl: appUrl(env),
     cloudinary: {
       cloud_name: env.CLOUDINARY_CLOUD_NAME,
       api_key: env.CLOUDINARY_API_KEY,

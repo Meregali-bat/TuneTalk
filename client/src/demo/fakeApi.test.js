@@ -77,6 +77,23 @@ describe('API fake da demo (serviços reais + banco em memória)', () => {
     expect((await entrar('Nova!123')).status).toBe(200);
   });
 
+  it('esqueci minha senha: o link (mostrado no console) redefine a senha uma vez só', async () => {
+    const links = [];
+    const original = console.info;
+    console.info = (msg) => links.push(String(msg));
+    try {
+      expect((await call('POST', '/auth/forgot-password', JSON.stringify({ email: DEMO_LOGIN.email }))).status).toBe(204);
+    } finally {
+      console.info = original;
+    }
+    const token = links.join('\n').match(/#token=([\w-]+)/)[1];
+
+    const redefinir = () => call('POST', '/auth/reset-password', JSON.stringify({ token, novaSenha: 'Outra!123' }));
+    expect((await redefinir()).status).toBe(204);
+    expect((await redefinir()).status).toBe(400);
+    expect((await call('POST', '/auth/login', JSON.stringify({ email: DEMO_LOGIN.email, senha: 'Outra!123' }))).status).toBe(200);
+  });
+
   it('não deixa apagar post de outra pessoa', async () => {
     await login();
     const [post] = (await call('GET', '/posts?feed=seguindo')).body;

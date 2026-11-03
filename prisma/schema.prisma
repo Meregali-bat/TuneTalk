@@ -31,6 +31,7 @@ model Usuario {
   seguidores            Seguimento[]  @relation("seguido")
   notificacoesRecebidas Notificacao[] @relation("destinatario")
   notificacoesEnviadas  Notificacao[] @relation("autor")
+  redefinicoesSenha     RedefinicaoSenha[]
 
   @@map("usuarios")
 }
@@ -119,4 +120,20 @@ model Sessao {
 
   @@index([expire], map: "IDX_session_expire")
   @@map("session")
+}
+
+// Pedidos de "esqueci minha senha". Guarda só o hash (sha256) do código enviado por email:
+// quem lê o banco não consegue usar o link.
+model RedefinicaoSenha {
+  id        Int       @id @default(autoincrement())
+  usuarioId Int       @map("usuario_id")
+  tokenHash String    @unique @map("token_hash") @db.VarChar(64)
+  expiraEm  DateTime  @map("expira_em")
+  usadoEm   DateTime? @map("usado_em")
+  createdAt DateTime  @default(now()) @map("created_at")
+
+  usuario Usuario @relation(fields: [usuarioId], references: [id], onDelete: Cascade)
+
+  @@index([usuarioId])
+  @@map("redefinicoes_senha")
 }

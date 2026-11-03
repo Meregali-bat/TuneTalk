@@ -7,6 +7,7 @@ export const sessionUser = { id: 1, nome: 'Ana', email: 'ana@x.com' };
 export function buildTestApp(overrides = {}) {
   const deps = {
     authService: { login: vi.fn().mockResolvedValue(sessionUser), register: vi.fn() },
+    passwordResetService: { request: vi.fn(), reset: vi.fn() },
     postService: {
       forYou: vi.fn(),
       following: vi.fn(),

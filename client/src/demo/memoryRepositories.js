@@ -178,6 +178,33 @@ export function createMemoryRepositories(state, onChange) {
     },
   };
 
+  state.redefinicoes ??= [];
+  const resets = {
+    async create({ usuarioId, tokenHash, expiraEm }) {
+      state.redefinicoes.push({
+        id: state.redefinicoes.length + 1, usuarioId, tokenHash, expiraEm: expiraEm.toISOString(), usadoEm: null, createdAt: new Date().toISOString(),
+      });
+      changed();
+    },
+    async findValid(tokenHash, agora) {
+      const r = state.redefinicoes.find((x) => x.tokenHash === tokenHash && !x.usadoEm && new Date(x.expiraEm) > agora);
+      return r ? { id: r.id, usuarioId: r.usuarioId } : null;
+    },
+    async claim(id, agora) {
+      const r = state.redefinicoes.find((x) => x.id === id && !x.usadoEm);
+      if (!r) return false;
+      r.usadoEm = agora.toISOString();
+      return changed(true);
+    },
+    async countSince(usuarioId, desde) {
+      return state.redefinicoes.filter((x) => x.usuarioId === usuarioId && new Date(x.createdAt) >= desde).length;
+    },
+    async deleteForUser(usuarioId) {
+      state.redefinicoes = state.redefinicoes.filter((x) => x.usuarioId !== usuarioId);
+      changed();
+    },
+  };
+
   const notifications = {
     async listForUser(usuarioId) {
       return state.notificacoes
@@ -206,5 +233,5 @@ export function createMemoryRepositories(state, onChange) {
     },
   };
 
-  return { users, follows, posts, likes, notifications };
+  return { users, follows, posts, likes, resets, notifications };
 }

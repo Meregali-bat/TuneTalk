@@ -4,6 +4,9 @@ import { v2 as cloudinary } from 'cloudinary';
 import { createPool, createPrismaClient } from './infra/prisma.js';
 import { createSessionCleaner, createSessionStore } from './infra/sessionStore.js';
 import { createPasswords } from './security/passwords.js';
+import { createConsoleMailer, createResendMailer } from './infra/mailer.js';
+import { createPasswordResetRepository } from './repositories/passwordResetRepository.js';
+import { createPasswordResetService } from './services/passwordResetService.js';
 import { createCloudinaryUploader } from './infra/cloudinaryUploader.js';
 import { createUserRepository } from './repositories/userRepository.js';
 import { createPostRepository } from './repositories/postRepository.js';
@@ -30,17 +33,24 @@ export function buildContainer(config) {
   const notifications = createNotificationRepository(prisma);
 
   const passwords = createPasswords();
+  const sessions = createSessionCleaner(pool);
+  const mailer = config.resendApiKey
+    ? createResendMailer({ apiKey: config.resendApiKey, from: config.emailFrom })
+    : createConsoleMailer();
   const postService = createPostService({ posts, likes, notifications });
 
   return {
     authService: createAuthService({ users, passwords }),
+    passwordResetService: createPasswordResetService({
+      users, resets: createPasswordResetRepository(prisma), passwords, mailer, sessions, appUrl: config.appUrl,
+    }),
     postService,
     userService: createUserService({ users, follows, postService, notifications, passwords }),
     musicService: createMusicService(),
     notifications,
     uploader: createCloudinaryUploader(cloudinary),
     sessionStore: createSessionStore(pool),
-    sessions: createSessionCleaner(pool),
+    sessions,
     sessionSecret: config.sessionSecret,
     secureCookies: config.secureCookies,
     defaultProfilePhoto: config.defaultProfilePhoto,

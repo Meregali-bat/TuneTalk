@@ -6,7 +6,7 @@ import { PrismaClient } from '../../src/generated/prisma/client.js';
 
 const migrationsDir = path.resolve(import.meta.dirname, '../../../prisma/migrations');
 
-const TABLES = ['notificacoes', 'curtidas', 'seguimentos', 'posts', 'usuarios'];
+const TABLES = ['redefinicoes_senha', 'notificacoes', 'curtidas', 'seguimentos', 'posts', 'usuarios'];
 
 /**
  * Postgres em memória (PGlite) com as migrations reais aplicadas.

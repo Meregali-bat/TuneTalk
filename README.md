@@ -24,6 +24,7 @@ Produção em servidor próprio: `npm run db:migrate && npm run build && npm sta
 - O build (`npm run vercel-build`) aplica as migrations e depois gera o React.
 - Sessões ficam no Postgres (tabela `session`), porque cada requisição pode cair numa instância diferente.
 - Variáveis de ambiente na Vercel: `DATABASE_URL` (Neon com pooler), `DATABASE_URL_UNPOOLED` (Neon direta, usada pelas migrations), `SESSION_SECRET` e as três do Cloudinary. A integração Neon da Vercel cria as duas do banco sozinha.
+- "Esqueci minha senha" (email pelo [Resend](https://resend.com)): `RESEND_API_KEY`, `EMAIL_FROM` (ex.: `TuneTalk <nao-responda@seudominio.com>`, de um domínio verificado no Resend) e, se o site tiver domínio próprio, `APP_URL` (base dos links; sem ela, usa o domínio de produção da Vercel). Sem `RESEND_API_KEY` o email só aparece no log.
 
 ### Migrar os dados do MySQL antigo
 
@@ -86,6 +87,8 @@ para testar rotas sem banco e serviços sem HTTP.
 | POST | `/api/auth/login` | `{ email, senha }` |
 | POST | `/api/auth/register` | `{ email, senha }` |
 | POST | `/api/auth/logout` | encerra a sessão |
+| POST | `/api/auth/forgot-password` | `{ email }` → 204 sempre; manda o link de redefinição (1 hora, uso único) |
+| POST | `/api/auth/reset-password` | `{ token, novaSenha }` → troca a senha e desconecta todos os aparelhos |
 | GET | `/api/posts?feed=foryou\|seguindo` | feed |
 | POST | `/api/posts` | cria post; com `parentId` vira comentário. Música opcional (com música, `nota` de 0 a 10 é obrigatória) |
 | GET / DELETE | `/api/posts/:id` | `{ post, pai, respostas }` / apagar com as respostas (só o autor) |

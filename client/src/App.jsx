@@ -5,6 +5,8 @@ import { AppLayout, PublicLayout } from './components/layout/layouts.jsx';
 import { LandingPage } from './pages/LandingPage.jsx';
 import { LoginPage } from './pages/LoginPage.jsx';
 import { RegisterPage } from './pages/RegisterPage.jsx';
+import { ForgotPasswordPage } from './pages/ForgotPasswordPage.jsx';
+import { ResetPasswordPage } from './pages/ResetPasswordPage.jsx';
 import { UsernamePage } from './pages/UsernamePage.jsx';
 import { FeedPage } from './pages/FeedPage.jsx';
 import { ProfilePage } from './pages/ProfilePage.jsx';
@@ -20,7 +22,13 @@ export function AppRoutes() {
         <Route element={<PublicLayout authForm />}>
           <Route path="/login" element={<LoginPage />} />
           <Route path="/cadastrar" element={<RegisterPage />} />
+          <Route path="/esqueci-senha" element={<ForgotPasswordPage />} />
         </Route>
+      </Route>
+
+      {/* Fora do PublicOnlyRoute: o link do email precisa abrir mesmo com alguém logado no aparelho. */}
+      <Route element={<PublicLayout authForm />}>
+        <Route path="/redefinir-senha" element={<ResetPasswordPage />} />
       </Route>
 
       <Route element={<RequireAuth />}>
