@@ -51,10 +51,11 @@ describe('PostCard', () => {
     expect(screen.getByRole('button', { name: 'Tocar prévia' })).toBeInTheDocument();
   });
 
-  it('topo como no Twitter: nome de exibição, @usuario e o tempo na mesma linha', () => {
+  it('topo: nome de exibição em cima; @usuario e o tempo embaixo', () => {
     renderWithProviders(<PostCard post={{ ...musicPost, autor: { ...musicPost.autor, nome: 'carol', nomeExibicao: 'Twit da Carol' } }} />);
-    const linha = screen.getByRole('link', { name: 'Twit da Carol' }).closest('.post-card__who');
-    expect(linha).toHaveTextContent('Twit da Carol@carol·2 h');
+    const topo = screen.getByRole('link', { name: 'Twit da Carol' }).closest('.post-card__who');
+    expect(topo.querySelector('.post-card__author-line')).toHaveTextContent('Twit da Carol');
+    expect(topo.querySelector('.post-card__meta')).toHaveTextContent('@carol·2 h');
     expect(screen.getByRole('link', { name: 'Twit da Carol' })).toHaveAttribute('href', '/perfil/2');
     expect(screen.getByRole('article')).toHaveAccessibleName('Post de Twit da Carol sobre Help!');
   });

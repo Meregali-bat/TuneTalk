@@ -99,16 +99,18 @@ export function PostCard({
         <Link to={profileUrl} className="post-card__avatar" tabIndex={-1} aria-hidden="true">
           <img src={post.autor.fotoPerfil} alt="" />
         </Link>
-        {/* Como no Twitter: nome de exibição, selos, @usuario e o tempo curto, numa linha só. */}
+        {/* Nome de exibição com os selos em cima; @usuario e o tempo curto embaixo, menores. */}
         <div className="post-card__who">
           <span className="post-card__author-line">
             <Link to={profileUrl} className="post-card__author" id={authorId}>{nomeAutor}</Link>
             <VerifiedBadge nome={post.autor.nome} />
             <FounderBadge ativo={Boolean(post.autor.fundador)} />
           </span>
-          <span className="post-card__handle">@{post.autor.nome}</span>
-          <span className="post-card__dot" aria-hidden="true">·</span>
-          <time className="post-card__time" dateTime={post.data} title={relativeTime(post.data)}>{shortTime(post.data)}</time>
+          <span className="post-card__meta">
+            <span className="post-card__handle">@{post.autor.nome}</span>
+            <span className="post-card__dot" aria-hidden="true">·</span>
+            <time className="post-card__time" dateTime={post.data} title={relativeTime(post.data)}>{shortTime(post.data)}</time>
+          </span>
         </div>
         {showMenu && (
           <PostMenu
