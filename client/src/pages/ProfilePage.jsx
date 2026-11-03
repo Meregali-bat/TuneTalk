@@ -15,7 +15,7 @@ import { profileEffectFor } from '../components/effects/profileEffects.js';
 import { VerifiedBadge } from '../components/effects/VerifiedBadge.jsx';
 import { FounderBadge, mostraSeloFundador } from '../components/effects/FounderBadge.jsx';
 import { PullToRefresh } from '../components/common/PullToRefresh.jsx';
-import { ProfileFavorites } from '../components/profile/ProfileFavorites.jsx';
+import { ProfileFavorites, listaDeFavoritos } from '../components/profile/ProfileFavorites.jsx';
 import { EditFavoritesModal } from '../components/profile/EditFavoritesModal.jsx';
 
 // Só posts com música têm nota. A média sai na escala guardada (0 a 10) e é mostrada em estrelas.
@@ -66,6 +66,23 @@ function Stat({ value, label, onClick }) {
   );
 }
 
+// Sem capa escolhida, a capa mostra o gosto da pessoa: as capas dos favoritos lado a lado, desfocadas.
+// Sem favoritos, fica o degradê verde.
+function CapaDoGosto({ favoritos }) {
+  const capas = ['albuns', 'musicas', 'artistas']
+    .flatMap((chave) => listaDeFavoritos(favoritos, chave))
+    .map((item) => item.capa)
+    .slice(0, 4);
+  if (capas.length === 0) {
+    return <div className="profile-banner profile-banner--padrao" data-testid="capa-padrao" aria-hidden="true" />;
+  }
+  return (
+    <div className="profile-banner profile-banner--padrao profile-banner--gosto" data-testid="capa-gosto" aria-hidden="true">
+      {capas.map((capa, i) => <img key={i} src={capa} alt="" />)}
+    </div>
+  );
+}
+
 // Nome de exibição (livre) quando existe; senão, o nome de usuário. O @ é sempre o nome de usuário.
 export const displayName = (usuario) => usuario.nomeExibicao || usuario.nome;
 
@@ -79,7 +96,7 @@ function ProfileHeader({ profile, isOwnProfile, onEdit, onOpenList, onOpenPosts,
       {usuario.bannerUrl ? (
         <img src={usuario.bannerUrl} alt={`Capa do perfil de ${nome}`} className="profile-banner" />
       ) : (
-        <div className="profile-banner profile-banner--padrao" data-testid="capa-padrao" aria-hidden="true" />
+        <CapaDoGosto favoritos={profile.favoritos} />
       )}
 
       <div className="profile-header__body">
@@ -88,8 +105,8 @@ function ProfileHeader({ profile, isOwnProfile, onEdit, onOpenList, onOpenPosts,
           <div className="profile-header__actions">
             {isOwnProfile ? (
               <>
-                <button type="button" className="follow-button follow-button--md is-following" onClick={onEdit}>
-                  Editar perfil
+                <button type="button" className="profile-edit-button" onClick={onEdit}>
+                  <i className="bi bi-pencil" aria-hidden="true" /> Editar perfil
                 </button>
               </>
             ) : (

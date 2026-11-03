@@ -3,7 +3,7 @@ import { usersApi } from '../../api/index.js';
 
 /**
  * Seguir / Seguindo. Deixar de seguir pede dois toques: o primeiro troca o botão para
- * "Deixar de seguir?" (em vermelho) por alguns segundos; só o segundo confirma.
+ * "Deixar de seguir?" (em vermelho) por alguns segundos (6s, tempo de um leitor de tela ler); só o segundo confirma.
  * Assim ninguém deixa de seguir sem querer, nem no celular (onde não existe "passar o mouse").
  * Se a ação falhar, o botão diz isso e deixa tentar de novo.
  */
@@ -14,7 +14,7 @@ export function FollowButton({ userId, following, onChange, size = 'md' }) {
 
   useEffect(() => {
     if (!confirmando) return undefined;
-    const voltar = setTimeout(() => setConfirmando(false), 4000);
+    const voltar = setTimeout(() => setConfirmando(false), 6000);
     return () => clearTimeout(voltar);
   }, [confirmando]);
 

@@ -104,6 +104,16 @@ describe('ProfilePage', () => {
       expect(screen.queryByAltText(/Capa do perfil/)).toBeNull();
       expect(screen.getByTestId('capa-padrao')).toBeInTheDocument();
     });
+
+    it('sem capa mas com favoritos: a capa vira um mosaico das capas favoritas (álbuns primeiro)', async () => {
+      const item = (id, capa) => ({ id, titulo: `T${id}`, artista: 'A', capa });
+      usersApi.profile.mockResolvedValue(profile({
+        favoritos: { musicas: [item('1', 'm.jpg')], albuns: [item('2', 'a.jpg')], artistas: [] },
+      }));
+      renderProfile();
+      const capa = await screen.findByTestId('capa-gosto');
+      expect([...capa.querySelectorAll('img')].map((img) => img.getAttribute('src'))).toEqual(['a.jpg', 'm.jpg']);
+    });
   });
 
   it('sem posts não mostra nota média', async () => {

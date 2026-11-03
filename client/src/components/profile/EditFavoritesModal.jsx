@@ -166,7 +166,7 @@ export function EditFavoritesModal({ favoritos, onClose, onSaved }) {
           return (
             <div className="favorites-editor__barra" role="group" aria-label={`Ações para ${item.titulo}`}>
               <button type="button" aria-label={`Mover ${item.titulo} para antes`} disabled={i === 0} onClick={() => mover(i, -1)}>
-                <i className="bi bi-chevron-left" aria-hidden="true" /> Mover
+                <i className="bi bi-chevron-left" aria-hidden="true" /> Antes
               </button>
               <button
                 type="button"
@@ -174,7 +174,7 @@ export function EditFavoritesModal({ favoritos, onClose, onSaved }) {
                 disabled={i === lista.length - 1}
                 onClick={() => mover(i, 1)}
               >
-                Mover <i className="bi bi-chevron-right" aria-hidden="true" />
+                Depois <i className="bi bi-chevron-right" aria-hidden="true" />
               </button>
               <button type="button" className="favorites-editor__barra-tirar" aria-label={`Tirar ${item.titulo}`} onClick={() => remover(i)}>
                 <i className="bi bi-trash3" aria-hidden="true" /> Tirar

@@ -1121,6 +1121,8 @@ button.track-row:hover {
 /* --- Perfil --- */
 .profile {
   padding-top: 1.5rem;
+  /* Espaço para o botão flutuante de postar não cobrir o fim da lista. */
+  padding-bottom: 6rem;
 }
 
 .profile-header {
@@ -1148,6 +1150,40 @@ button.track-row:hover {
   max-height: 14rem;
 }
 
+.profile-banner--gosto {
+  isolation: isolate;
+  display: grid;
+  grid-auto-flow: column;
+  grid-auto-columns: 1fr;
+  overflow: hidden;
+
+  img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    filter: blur(14px) saturate(1.3) brightness(.7);
+    transform: scale(1.3);
+  }
+}
+
+/* Botão de editar o próprio perfil: ação (contorno com lápis), não um estado como "Seguindo". */
+.profile-edit-button {
+  display: inline-flex;
+  align-items: center;
+  gap: .45rem;
+  min-height: 2.75rem;
+  padding: 0 1.2rem;
+  border: 1px solid var(--linhas);
+  border-radius: 999px;
+  background: var(--superficie);
+  color: var(--texto);
+  font-weight: 600;
+
+  &:hover {
+    border-color: var(--texto-suave);
+  }
+}
+
 .profile-banner--padrao {
   background:
     radial-gradient(90% 140% at 15% 0%, rgba(63, 196, 99, .55), transparent 60%),
@@ -1169,6 +1205,8 @@ button.track-row:hover {
 }
 
 .profile-header__avatar {
+  position: relative;
+  z-index: 1;
   flex: none;
   width: 6.5rem;
   height: 6.5rem;
@@ -1225,7 +1263,7 @@ button.track-row:hover {
 
   button {
     flex: none;
-    min-height: 2.25rem;
+    min-height: 2.75rem;
     padding: 0 .9rem;
     border: 1px solid var(--linhas);
     border-radius: 999px;
@@ -2828,12 +2866,6 @@ button.lyrics-picker__verso {
   -webkit-line-clamp: 2;
 }
 
-/* No perfil, uma linha só: as três fileiras ocupam menos altura antes dos posts. */
-.profile-favorites .favorites-grid__titulo {
-  display: block;
-  white-space: nowrap;
-  text-overflow: ellipsis;
-}
 
 .favorites-grid__artista {
   overflow: hidden;
@@ -2849,7 +2881,9 @@ button.lyrics-picker__verso {
   .profile-favorites .favorites-grid {
     grid-template-columns: none;
     grid-auto-flow: column;
-    grid-auto-columns: 23%;
+    grid-auto-columns: 30%;
+    /* Some no canto direito: mostra que a fileira continua para o lado. */
+    mask-image: linear-gradient(to right, #000 85%, transparent);
     margin-inline: -1.25rem;
     padding-inline: 1.25rem;
     overflow-x: auto;
