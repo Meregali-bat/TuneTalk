@@ -83,6 +83,18 @@ describe('PostCard', () => {
     expect(screen.queryByTestId('post-text')).toBeNull();
   });
 
+  it('imagem nova (cortada) ocupa a caixa na proporção escolhida, que limita o tamanho', () => {
+    renderWithProviders(<PostCard post={{ ...musicPost, imagem: 'https://res.cloudinary.com/t/gato.gif', imagemProporcao: 0.8 }} />);
+    const caixa = screen.getByAltText('Imagem do post de Bia').closest('a');
+    expect(caixa).toHaveClass('post-card__image--ajustada');
+    expect(caixa.style.getPropertyValue('--proporcao')).toBe('0.8');
+  });
+
+  it('imagem antiga (sem proporção) continua como era', () => {
+    renderWithProviders(<PostCard post={{ ...musicPost, imagem: 'https://res.cloudinary.com/t/velha.gif' }} />);
+    expect(screen.getByAltText('Imagem do post de Bia').closest('a')).not.toHaveClass('post-card__image--ajustada');
+  });
+
   it('mostra a imagem (ou GIF) do post', () => {
     renderWithProviders(<PostCard post={{ ...musicPost, imagem: 'https://res.cloudinary.com/t/gato.gif' }} />);
     expect(screen.getByAltText('Imagem do post de Bia')).toHaveAttribute('src', 'https://res.cloudinary.com/t/gato.gif');

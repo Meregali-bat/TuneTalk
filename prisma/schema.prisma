@@ -45,24 +45,26 @@ model Usuario {
 
 // Comentários também são posts: uma resposta aponta para o post pai e pode ter música ou não.
 model Post {
-  id           Int      @id @default(autoincrement())
-  texto        String   @db.VarChar(5000)
-  musicName    String?  @map("music_name") @db.VarChar(255)
-  artistName   String?  @map("artist_name") @db.VarChar(255)
-  posterMusica String?  @map("poster_musica") @db.VarChar(255)
-  albumName    String?  @map("album_name") @db.VarChar(255)
-  posterAlbum  String?  @map("poster_album") @db.VarChar(255)
-  postType     String?  @map("post_type") @db.VarChar(20)
+  id              Int      @id @default(autoincrement())
+  texto           String   @db.VarChar(5000)
+  musicName       String?  @map("music_name") @db.VarChar(255)
+  artistName      String?  @map("artist_name") @db.VarChar(255)
+  posterMusica    String?  @map("poster_musica") @db.VarChar(255)
+  albumName       String?  @map("album_name") @db.VarChar(255)
+  posterAlbum     String?  @map("poster_album") @db.VarChar(255)
+  postType        String?  @map("post_type") @db.VarChar(20)
   // Faixas guardam a duração em segundos; álbuns, a data de lançamento.
-  releaseDate  String?  @map("release_date") @db.VarChar(20)
+  releaseDate     String?  @map("release_date") @db.VarChar(20)
   // De 0 a 10: cada ponto é meia estrela. Vazia quando o post não tem música.
-  nota         Int?
-  musicPreview String?  @map("music_preview") @db.VarChar(2000)
+  nota            Int?
+  musicPreview    String?  @map("music_preview") @db.VarChar(2000)
   // Imagem ou GIF enviado direto ao Cloudinary (pasta tunetalk/posts).
-  imagemUrl    String?  @map("imagem_url") @db.VarChar(500)
-  createdAt    DateTime @default(now()) @map("created_at")
-  autorId      Int      @map("autor_id")
-  parentId     Int?     @map("parent_id")
+  imagemUrl       String?  @map("imagem_url") @db.VarChar(500)
+  // Proporção (largura/altura) escolhida ao cortar. Vazia nos posts antigos, que seguem como eram.
+  imagemProporcao Float?   @map("imagem_proporcao") @db.Real
+  createdAt       DateTime @default(now()) @map("created_at")
+  autorId         Int      @map("autor_id")
+  parentId        Int?     @map("parent_id")
 
   autor        Usuario       @relation(fields: [autorId], references: [id], onDelete: Cascade)
   pai          Post?         @relation("respostas", fields: [parentId], references: [id], onDelete: Cascade)

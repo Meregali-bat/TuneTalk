@@ -159,6 +159,19 @@ describe('postService', () => {
       expect(posts.create).toHaveBeenCalledWith({ imagemUrl: 'https://res.cloudinary.com/x.gif', nota: null, autorId: 7, data: now });
     });
 
+    it('guarda a proporção da imagem cortada', async () => {
+      await service.create(7, { imagemUrl: 'https://res.cloudinary.com/x.gif', imagemProporcao: '1.7778' });
+      expect(posts.create.mock.calls[0][0].imagemProporcao).toBeCloseTo(1.7778);
+    });
+
+    it('recusa proporção absurda ou sem imagem', async () => {
+      const erro = { status: 400, message: 'Proporção da imagem inválida.' };
+      await expect(service.create(7, { imagemUrl: 'https://res.cloudinary.com/x.gif', imagemProporcao: 0 })).rejects.toMatchObject(erro);
+      await expect(service.create(7, { imagemUrl: 'https://res.cloudinary.com/x.gif', imagemProporcao: 'abc' })).rejects.toMatchObject(erro);
+      await expect(service.create(7, { imagemUrl: 'https://res.cloudinary.com/x.gif', imagemProporcao: 20 })).rejects.toMatchObject(erro);
+      await expect(service.create(7, { texto: 'oi', imagemProporcao: 1 })).rejects.toMatchObject(erro);
+    });
+
     it('sem música nem imagem, exige texto', async () => {
       await expect(service.create(7, { texto: '   ' })).rejects.toMatchObject({
         status: 400,

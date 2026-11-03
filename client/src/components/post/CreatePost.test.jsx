@@ -5,6 +5,20 @@ import { CreatePost } from './CreatePost.jsx';
 import { StarRatingInput } from './StarRatingInput.jsx';
 import { musicApi, postsApi } from '../../api/index.js';
 
+// A biblioteca de corte mede a imagem no navegador; aqui ela devolve um corte fixo na hora.
+vi.mock('react-easy-crop', async () => {
+  const { useEffect } = await import('react');
+  return {
+    default: function FakeCropper({ aspect, onMediaLoaded, onCropComplete }) {
+      useEffect(() => {
+        onMediaLoaded?.({ naturalWidth: 800, naturalHeight: 600 });
+        onCropComplete?.({ x: 10, y: 0, width: 80, height: 100 }, { x: 80, y: 0, width: 640, height: 600 });
+      }, [aspect]);
+      return <div data-testid="cropper" data-aspect={aspect ?? ''} />;
+    },
+  };
+});
+
 vi.mock('../../api/index.js', () => ({
   musicApi: { search: vi.fn() },
   postsApi: { create: vi.fn(), uploadImage: vi.fn() },
@@ -235,24 +249,80 @@ describe('CreatePost', () => {
   });
 
   describe('imagem ou GIF', () => {
+    const secureUrl = 'https://res.cloudinary.com/t/image/upload/v1/tunetalk/posts/gato.gif';
     const gif = () => new File(['GIF89a'], 'gato.gif', { type: 'image/gif' });
     const escolher = (file) => userEvent.upload(screen.getByLabelText('Escolher imagem'), file);
+    const usar = () => userEvent.click(screen.getByRole('button', { name: 'Usar imagem' }));
 
-    it('mostra a prévia e publica só com a imagem: envia ao Cloudinary e salva o link', async () => {
-      postsApi.uploadImage.mockResolvedValue('https://res.cloudinary.com/t/gato.gif');
+    it('abre o ajuste com os formatos; "Original" vem marcado', async () => {
+      render(<CreatePost onCreated={vi.fn()} />);
+      await open();
+      expect(screen.getByRole('button', { name: 'Adicionar imagem' })).toBeInTheDocument();
+      await escolher(gif());
+
+      const ajuste = screen.getByRole('group', { name: 'Formato da imagem' });
+      const formatos = within(ajuste).getAllByRole('button');
+      expect(formatos.map((b) => b.textContent)).toEqual(['Original', 'Quadrado', 'Retrato', 'Paisagem']);
+      expect(within(ajuste).getByRole('button', { name: 'Original' })).toHaveAttribute('aria-pressed', 'true');
+      expect(screen.getByLabelText('Zoom')).toBeInTheDocument();
+    });
+
+    it('"Original": publica a imagem inteira, só limitando o tamanho, com a proporção dela', async () => {
+      postsApi.uploadImage.mockResolvedValue(secureUrl);
       const onCreated = vi.fn();
       render(<CreatePost onCreated={onCreated} />);
       await open();
-
-      expect(screen.getByRole('button', { name: 'Adicionar imagem' })).toBeInTheDocument();
       const file = gif();
       await escolher(file);
-      expect(screen.getByAltText('Imagem escolhida')).toHaveAttribute('src', 'blob:previa');
+      await usar();
 
+      expect(screen.getByAltText('Imagem escolhida')).toBeInTheDocument();
       await userEvent.click(screen.getByRole('button', { name: 'Publicar' }));
+
       expect(postsApi.uploadImage).toHaveBeenCalledWith(file);
-      expect(postsApi.create).toHaveBeenCalledWith({ texto: '', imagemUrl: 'https://res.cloudinary.com/t/gato.gif' });
+      expect(postsApi.create).toHaveBeenCalledWith({
+        texto: '',
+        imagemUrl: 'https://res.cloudinary.com/t/image/upload/c_limit,w_1600/v1/tunetalk/posts/gato.gif',
+        imagemProporcao: 800 / 600,
+      });
       await waitFor(() => expect(onCreated).toHaveBeenCalled());
+    });
+
+    it('com um formato escolhido, publica o pedaço que a pessoa enquadrou', async () => {
+      postsApi.uploadImage.mockResolvedValue(secureUrl);
+      render(<CreatePost onCreated={vi.fn()} />);
+      await open();
+      await escolher(gif());
+      await userEvent.click(screen.getByRole('button', { name: 'Quadrado' }));
+      expect(screen.getByTestId('cropper')).toHaveAttribute('data-aspect', '1');
+      await usar();
+      await userEvent.click(screen.getByRole('button', { name: 'Publicar' }));
+
+      expect(postsApi.create).toHaveBeenCalledWith({
+        texto: '',
+        imagemUrl: 'https://res.cloudinary.com/t/image/upload/c_crop,x_80,y_0,w_640,h_600/c_limit,w_1600/v1/tunetalk/posts/gato.gif',
+        imagemProporcao: 1,
+      });
+    });
+
+    it('"Ajustar imagem" reabre o corte da imagem escolhida', async () => {
+      render(<CreatePost onCreated={vi.fn()} />);
+      await open();
+      await escolher(gif());
+      await usar();
+      await userEvent.click(screen.getByRole('button', { name: 'Ajustar imagem' }));
+      expect(screen.getByRole('group', { name: 'Formato da imagem' })).toBeInTheDocument();
+      await usar();
+      expect(screen.getByAltText('Imagem escolhida')).toBeInTheDocument();
+    });
+
+    it('"Cancelar" no ajuste desiste da imagem escolhida', async () => {
+      render(<CreatePost onCreated={vi.fn()} />);
+      await open();
+      await escolher(gif());
+      await userEvent.click(screen.getByRole('button', { name: 'Cancelar' }));
+      expect(screen.queryByAltText('Imagem escolhida')).toBeNull();
+      expect(screen.getByRole('button', { name: 'Adicionar imagem' })).toBeInTheDocument();
     });
 
     it('mostra "Enviando imagem…" enquanto sobe', async () => {
@@ -260,6 +330,7 @@ describe('CreatePost', () => {
       render(<CreatePost onCreated={vi.fn()} />);
       await open();
       await escolher(gif());
+      await usar();
       await userEvent.click(screen.getByRole('button', { name: 'Publicar' }));
       expect(screen.getByRole('button', { name: 'Enviando imagem…' })).toBeDisabled();
     });
@@ -268,6 +339,7 @@ describe('CreatePost', () => {
       render(<CreatePost onCreated={vi.fn()} />);
       await open();
       await escolher(gif());
+      await usar();
       await userEvent.click(screen.getByRole('button', { name: 'Remover imagem' }));
       expect(screen.queryByAltText('Imagem escolhida')).toBeNull();
       expect(screen.getByRole('button', { name: 'Publicar' })).toBeDisabled();
@@ -280,7 +352,7 @@ describe('CreatePost', () => {
       Object.defineProperty(enorme, 'size', { value: 10 * 1024 * 1024 + 1 });
       await escolher(enorme);
       expect(screen.getByRole('alert')).toHaveTextContent('A imagem pode ter no máximo 10 MB.');
-      expect(screen.queryByAltText('Imagem escolhida')).toBeNull();
+      expect(screen.queryByRole('group', { name: 'Formato da imagem' })).toBeNull();
     });
   });
 

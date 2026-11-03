@@ -1749,14 +1749,6 @@ button.track-row:hover {
   }
 }
 
-.composer-image__remove {
-  position: absolute;
-  top: .5rem;
-  right: .5rem;
-  background: rgba(0, 5, 5, .75);
-  color: var(--texto);
-}
-
 .post-card__image {
   display: block;
   margin-top: .75rem;
@@ -1816,4 +1808,104 @@ button.track-row:hover {
     border-color: var(--destaque);
     box-shadow: 0 0 0 3px rgba(43, 168, 74, .25);
   }
+}
+
+/* Imagem de post nova: caixa na proporção do corte, com altura limitada (posts antigos seguem como eram). */
+.post-card__image--ajustada {
+  --altura-max: 20rem;
+  width: min(100%, calc(var(--altura-max) * var(--proporcao)));
+  aspect-ratio: var(--proporcao);
+
+  img {
+    width: 100%;
+    height: 100%;
+    max-height: none;
+    object-fit: cover;
+  }
+
+  @media (max-width: 575px) {
+    --altura-max: 17rem;
+  }
+}
+
+.composer-image__tools {
+  position: absolute;
+  top: .5rem;
+  right: .5rem;
+  display: flex;
+  gap: .35rem;
+
+  .icon-button {
+    background: rgba(0, 5, 5, .75);
+    color: var(--texto);
+  }
+}
+
+/* Prévia do corte no compositor: a imagem inteira deslocada dentro de uma caixa na proporção escolhida. */
+.composer-image__crop {
+  position: relative;
+  overflow: hidden;
+  width: calc(16rem * var(--proporcao));
+  max-width: 100%;
+  aspect-ratio: var(--proporcao);
+  border: 1px solid var(--linhas);
+  border-radius: 14px;
+
+  .composer-image & img {
+    position: absolute;
+    max-width: none;
+    max-height: none;
+    border: 0;
+    border-radius: 0;
+    object-fit: fill;
+  }
+}
+
+/* Tela de ajustar a imagem */
+.cropper__area {
+  position: relative;
+  height: min(55vh, 24rem);
+  overflow: hidden;
+  border-radius: 14px;
+  background: #000;
+}
+
+.cropper__formatos {
+  display: flex;
+  flex-wrap: wrap;
+  gap: .5rem;
+}
+
+.cropper__formato {
+  padding: .45rem .9rem;
+  border: 1px solid var(--linhas);
+  border-radius: 999px;
+  background: none;
+  color: var(--texto);
+  font-size: .85rem;
+  font-weight: 600;
+
+  &.is-active {
+    border-color: var(--destaque);
+    background: var(--destaque);
+    color: var(--background);
+  }
+}
+
+.cropper__zoom {
+  display: flex;
+  align-items: center;
+  gap: .6rem;
+  color: var(--texto-suave);
+
+  input {
+    flex: 1;
+    accent-color: var(--destaque);
+  }
+}
+
+/* Com corte, a moldura abraça a prévia para os botões ficarem em cima da imagem. */
+.composer-image:has(.composer-image__crop) {
+  width: fit-content;
+  max-width: 100%;
 }

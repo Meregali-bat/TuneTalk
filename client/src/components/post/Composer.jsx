@@ -4,6 +4,8 @@ import { useDebouncedValue } from '../../hooks/useDebouncedValue.js';
 import { formatDuration } from '../../utils/postFormat.js';
 import { StarRatingInput } from './StarRatingInput.jsx';
 import { IMAGEM_MAX_MB } from '../../api/limits.js';
+import { croppedImageUrl } from '../../utils/cloudinaryCrop.js';
+import { ImageCropper } from './ImageCropper.jsx';
 
 const TEXTO_MAX = 500;
 
@@ -16,6 +18,40 @@ function TrackInfo({ track }) {
         <span className="track-row__meta">{track.artista} · {formatDuration(track.duracao)}</span>
       </span>
     </>
+  );
+}
+
+function useObjectUrl(file) {
+  const [url, setUrl] = useState(null);
+  useEffect(() => {
+    if (!file) {
+      setUrl(null);
+      return undefined;
+    }
+    const created = URL.createObjectURL(file);
+    setUrl(created);
+    return () => URL.revokeObjectURL(created);
+  }, [file]);
+  return url;
+}
+
+// Prévia do pedaço escolhido: a imagem inteira é deslocada dentro de uma caixa na proporção do corte.
+function CropPreview({ src, recorte }) {
+  if (!recorte.area) return <img src={src} alt="Imagem escolhida" />;
+  const { x, y, width, height } = recorte.area;
+  return (
+    <div className="composer-image__crop" style={{ '--proporcao': recorte.proporcao }}>
+      <img
+        src={src}
+        alt="Imagem escolhida"
+        style={{
+          width: `${10000 / width}%`,
+          height: `${10000 / height}%`,
+          left: `${(-x * 100) / width}%`,
+          top: `${(-y * 100) / height}%`,
+        }}
+      />
+    </div>
   );
 }
 
@@ -112,17 +148,13 @@ export function Composer({
   const [query, setQuery] = useState('');
   const search = useMusicSearch(query);
   const [imagem, setImagem] = useState(null);
-  const [previa, setPrevia] = useState(null);
+  const [recorte, setRecorte] = useState(null);
+  const [pendente, setPendente] = useState(null); // imagem aberta no ajuste
+  const previa = useObjectUrl(imagem);
+  const previaPendente = useObjectUrl(pendente);
   const imagemInput = useRef(null);
   const [error, setError] = useState('');
   const [sending, setSending] = useState(null); // null, 'imagem' ou 'post'
-
-  useEffect(() => {
-    if (!imagem) return undefined;
-    const url = URL.createObjectURL(imagem);
-    setPrevia(url);
-    return () => URL.revokeObjectURL(url);
-  }, [imagem]);
 
   const clean = texto.trim();
   const canPublish = !sending && (track ? nota !== null : clean.length > 0 || imagem !== null);
@@ -134,12 +166,18 @@ export function Composer({
       return;
     }
     setError('');
-    setImagem(file);
+    setPendente(file);
+  };
+
+  const confirmarRecorte = (resultado) => {
+    setImagem(pendente);
+    setRecorte(resultado);
+    setPendente(null);
   };
 
   const removeImagem = () => {
     setImagem(null);
-    setPrevia(null);
+    setRecorte(null);
   };
 
   const chooseTrack = (chosen) => {
@@ -161,14 +199,14 @@ export function Composer({
       let imagemUrl;
       if (imagem) {
         setSending('imagem');
-        imagemUrl = await postsApi.uploadImage(imagem);
+        imagemUrl = croppedImageUrl(await postsApi.uploadImage(imagem), recorte.pixels);
       }
       setSending('post');
       await postsApi.create({
         texto: clean,
         ...(parentId !== undefined && { parentId }),
         ...(track && { ...musicFields(track), nota }),
-        ...(imagemUrl && { imagemUrl }),
+        ...(imagemUrl && { imagemUrl, imagemProporcao: recorte.proporcao }),
       });
       onPublished();
     } catch (err) {
@@ -176,6 +214,16 @@ export function Composer({
       setSending(null);
     }
   };
+
+  if (pendente) {
+    return (
+      <ImageCropper
+        src={previaPendente}
+        onConfirm={confirmarRecorte}
+        onCancel={() => setPendente(null)}
+      />
+    );
+  }
 
   if (searching) {
     return (
@@ -205,12 +253,17 @@ export function Composer({
         <span className="composer-counter">{texto.length}/{TEXTO_MAX}</span>
       </div>
 
-      {previa && (
+      {previa && recorte && (
         <figure className="composer-image">
-          <img src={previa} alt="Imagem escolhida" />
-          <button type="button" className="icon-button composer-image__remove" aria-label="Remover imagem" onClick={removeImagem}>
-            <i className="bi bi-x-lg" aria-hidden="true" />
-          </button>
+          <CropPreview src={previa} recorte={recorte} />
+          <div className="composer-image__tools">
+            <button type="button" className="icon-button" aria-label="Ajustar imagem" onClick={() => setPendente(imagem)}>
+              <i className="bi bi-crop" aria-hidden="true" />
+            </button>
+            <button type="button" className="icon-button" aria-label="Remover imagem" onClick={removeImagem}>
+              <i className="bi bi-x-lg" aria-hidden="true" />
+            </button>
+          </div>
         </figure>
       )}
 

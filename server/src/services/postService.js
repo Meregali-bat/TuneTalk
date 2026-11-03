@@ -5,8 +5,18 @@ const TEXTO_MAX = 500;
 
 const CREATE_FIELDS = [
   'texto', 'musicName', 'artistName', 'posterMusica', 'albumName',
-  'posterAlbum', 'postType', 'releaseDate', 'nota', 'musicPreview', 'imagemUrl',
+  'posterAlbum', 'postType', 'releaseDate', 'nota', 'musicPreview', 'imagemUrl', 'imagemProporcao',
 ];
+
+// Proporção largura/altura da imagem cortada: de bem alta (1:5) a bem larga (5:1).
+const parseProporcao = (value, temImagem) => {
+  if (value === undefined || value === null) return undefined;
+  const proporcao = Number(value);
+  if (!temImagem || !Number.isFinite(proporcao) || proporcao < 0.2 || proporcao > 5) {
+    throw badRequest('Proporção da imagem inválida.');
+  }
+  return proporcao;
+};
 
 const pick = (source, fields) =>
   Object.fromEntries(fields.filter((f) => source[f] !== undefined).map((f) => [f, source[f]]));
@@ -73,6 +83,8 @@ export function createPostService({
       const data = pick(body, CREATE_FIELDS);
       if (data.texto !== undefined) data.texto = String(data.texto).trim();
       const parentId = parseParentId(body.parentId);
+      const imagemProporcao = parseProporcao(data.imagemProporcao, Boolean(data.imagemUrl));
+      if (imagemProporcao !== undefined) data.imagemProporcao = imagemProporcao;
       const hasMusic = Boolean(data.musicName || data.albumName);
 
       if (hasMusic) {

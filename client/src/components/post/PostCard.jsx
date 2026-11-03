@@ -101,7 +101,14 @@ export function PostCard({
       )}
 
       {post.imagem && (
-        <Link to={postUrl} className="post-card__image" tabIndex={-1}>
+        // Posts novos guardam a proporção do corte: a caixa segue essa proporção, com altura limitada.
+        // Posts antigos (sem proporção) continuam como eram.
+        <Link
+          to={postUrl}
+          className={`post-card__image${post.imagemProporcao ? ' post-card__image--ajustada' : ''}`}
+          style={post.imagemProporcao ? { '--proporcao': post.imagemProporcao } : undefined}
+          tabIndex={-1}
+        >
           <img src={post.imagem} alt={`Imagem do post de ${post.autor.nome}`} loading="lazy" />
         </Link>
       )}

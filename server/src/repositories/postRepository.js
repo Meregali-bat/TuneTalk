@@ -33,6 +33,7 @@ export function toPost(row) {
     releaseDate: row.releaseDate,
     preview: row.musicPreview ?? null,
     imagem: row.imagemUrl ?? null,
+    imagemProporcao: row.imagemProporcao ?? null,
     fixado: row.autor.postFixadoId === row.id,
     autor: { id: row.autor.id, nome: row.autor.nome, fotoPerfil: row.autor.fotoPerfil },
   };
@@ -83,6 +84,7 @@ export function createPostRepository(prisma) {
           nota: toNota(post.nota),
           musicPreview: post.musicPreview ?? null,
           imagemUrl: post.imagemUrl ?? null,
+          imagemProporcao: post.imagemProporcao ?? null,
           createdAt: post.data,
         },
         select: { id: true },
