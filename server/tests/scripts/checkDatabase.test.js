@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest';
-import { checkBeforeMigrate } from '../../../scripts/check-db-before-migrate.js';
+import { checkBeforeMigrate, checkPreviewDatabase } from '../../../scripts/check-db-before-migrate.js';
 
 describe('checkBeforeMigrate', () => {
   it('libera banco vazio (primeiro deploy)', () => {
@@ -15,5 +15,19 @@ describe('checkBeforeMigrate', () => {
     expect(result.ok).toBe(false);
     expect(result.message).toMatch(/usuario, post, comentarios/);
     expect(result.message).toMatch(/não foi criado pelo Prisma/);
+  });
+});
+
+describe('checkPreviewDatabase (site de teste)', () => {
+  it('produção e máquina local seguem normais', () => {
+    expect(checkPreviewDatabase({ VERCEL_ENV: 'production' })).toEqual({ ok: true });
+    expect(checkPreviewDatabase({})).toEqual({ ok: true });
+  });
+
+  it('teste só passa com o banco de teste marcado', () => {
+    expect(checkPreviewDatabase({ VERCEL_ENV: 'preview', BANCO_DE_TESTE: 'sim' })).toEqual({ ok: true });
+    const semBanco = checkPreviewDatabase({ VERCEL_ENV: 'preview' });
+    expect(semBanco.ok).toBe(false);
+    expect(semBanco.message).toMatch(/BANCO_DE_TESTE=sim/);
   });
 });

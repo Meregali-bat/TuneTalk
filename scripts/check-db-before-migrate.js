@@ -16,6 +16,23 @@ export function checkBeforeMigrate(tables) {
   };
 }
 
+/**
+ * Site de teste (deploy de Preview da Vercel): só roda com um banco de teste, marcado com
+ * BANCO_DE_TESTE=sim nas variáveis do ambiente Preview. Sem isso, o teste poderia aplicar
+ * migrations e gravar posts de teste no banco de verdade, que o público usa.
+ */
+export function checkPreviewDatabase(env) {
+  if (env.VERCEL_ENV !== 'preview') return { ok: true };
+  if (env.BANCO_DE_TESTE === 'sim') return { ok: true };
+  return {
+    ok: false,
+    message:
+      'Deploy de teste (Preview) sem banco de teste: o build parou para não mexer no banco de produção.\n'
+      + 'Na Vercel, em Settings → Environment Variables, só para "Preview": aponte DATABASE_URL e '
+      + 'DATABASE_URL_UNPOOLED para um branch de teste do Neon e crie BANCO_DE_TESTE=sim.',
+  };
+}
+
 async function listTables(connectionString) {
   const client = new pg.Client({ connectionString });
   await client.connect();
@@ -30,6 +47,11 @@ async function listTables(connectionString) {
 }
 
 if (process.argv[1] === fileURLToPath(import.meta.url)) {
+  const preview = checkPreviewDatabase(process.env);
+  if (!preview.ok) {
+    console.error(preview.message);
+    process.exit(1);
+  }
   const url = process.env.DATABASE_URL_UNPOOLED || process.env.DATABASE_URL;
   if (!url) {
     console.error('Defina DATABASE_URL (e, no Neon, DATABASE_URL_UNPOOLED).');
