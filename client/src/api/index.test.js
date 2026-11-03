@@ -103,6 +103,12 @@ describe('endpoints da API', () => {
     });
   });
 
+  it('musicApi.preview pede um link novo da prévia', async () => {
+    request.mockResolvedValueOnce({ preview: 'novo.mp3' });
+    expect(await musicApi.preview('Help!', 'The Beatles')).toBe('novo.mp3');
+    expect(request).toHaveBeenCalledWith('/music/preview?titulo=Help!&artista=The%20Beatles');
+  });
+
   it('notificationsApi.unreadCount devolve só o número', async () => {
     request.mockResolvedValueOnce({ count: 4 });
     expect(await notificationsApi.unreadCount()).toBe(4);

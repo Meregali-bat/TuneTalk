@@ -6,9 +6,9 @@ import { LikeButton } from './LikeButton.jsx';
 import { PlayButton } from './PlayButton.jsx';
 import { ShareButton } from './ShareButton.jsx';
 import { PostMenu } from './PostMenu.jsx';
-import { postsApi } from '../../api/index.js';
+import { musicApi, postsApi } from '../../api/index.js';
 
-vi.mock('../../api/index.js', () => ({ postsApi: { like: vi.fn(), unlike: vi.fn() } }));
+vi.mock('../../api/index.js', () => ({ postsApi: { like: vi.fn(), unlike: vi.fn() }, musicApi: { preview: vi.fn() } }));
 
 describe('StarRating', () => {
   it('desenha a nota de 0 a 10 como estrelas, com meia estrela para notas ímpares', () => {
@@ -69,6 +69,40 @@ describe('PlayButton', () => {
   beforeEach(() => {
     play = vi.spyOn(window.HTMLMediaElement.prototype, 'play').mockResolvedValue();
     pause = vi.spyOn(window.HTMLMediaElement.prototype, 'pause').mockImplementation(() => {});
+  });
+
+  it('link antigo/vencido: busca um link novo da mesma música antes de tocar', async () => {
+    musicApi.preview.mockResolvedValue('https://cdnt-preview.dzcdn.net/novo.mp3');
+    render(<PlayButton src="https://cdns-preview-6.dzcdn.net/stream/c-velho-3.mp3" titulo="Help!" artista="The Beatles" />);
+
+    await userEvent.click(screen.getByRole('button', { name: 'Tocar prévia' }));
+
+    expect(musicApi.preview).toHaveBeenCalledWith('Help!', 'The Beatles');
+    expect(document.querySelector('audio').getAttribute('src')).toBe('https://cdnt-preview.dzcdn.net/novo.mp3');
+    expect(play).toHaveBeenCalledTimes(1);
+    expect(screen.getByRole('button', { name: 'Pausar prévia' })).toBeInTheDocument();
+  });
+
+  it('se tocar falhar (link expirou), busca de novo e tenta mais uma vez', async () => {
+    play.mockRejectedValueOnce(new Error('403')).mockResolvedValueOnce();
+    musicApi.preview.mockResolvedValue('https://cdnt-preview.dzcdn.net/novo.mp3');
+    render(<PlayButton src="https://cdn/preview.mp3" titulo="Help!" artista="The Beatles" />);
+
+    await userEvent.click(screen.getByRole('button', { name: 'Tocar prévia' }));
+
+    expect(musicApi.preview).toHaveBeenCalledTimes(1);
+    expect(play).toHaveBeenCalledTimes(2);
+    expect(screen.getByRole('button', { name: 'Pausar prévia' })).toBeInTheDocument();
+  });
+
+  it('se não houver prévia nenhuma, volta para o ícone de play', async () => {
+    play.mockRejectedValue(new Error('403'));
+    musicApi.preview.mockRejectedValue(new Error('Prévia não encontrada.'));
+    render(<PlayButton src="https://cdn/preview.mp3" titulo="x" artista="y" />);
+
+    await userEvent.click(screen.getByRole('button', { name: 'Tocar prévia' }));
+
+    expect(await screen.findByRole('button', { name: 'Tocar prévia' })).toBeInTheDocument();
   });
 
   it('toca e pausa a prévia', async () => {

@@ -26,7 +26,23 @@ const toAlbum = (album) => ({
 });
 
 export function createMusicService({ fetch = globalThis.fetch } = {}) {
+  const firstPreview = async (q) => {
+    const response = await fetch(`${DEEZER_SEARCH_URL.musica}?q=${encodeURIComponent(q)}&limit=1`);
+    if (!response.ok) throw badGateway('Falha ao buscar músicas.');
+    const body = await response.json();
+    return body.data?.[0]?.preview || null;
+  };
+
   return {
+    // O Deezer entrega links de prévia que expiram (e os do sistema antigo já não funcionam):
+    // na hora de tocar, buscamos a faixa de novo pelo artista e título para ter um link válido.
+    async preview(titulo, artista) {
+      const t = (titulo ?? '').trim();
+      const a = (artista ?? '').trim();
+      if (!t) return null;
+      return (await firstPreview(`artist:"${a}" track:"${t}"`)) ?? firstPreview(`${a} ${t}`.trim());
+    },
+
     // tipo: 'musica' (faixas, padrão) ou 'album'.
     async search(query, tipo = 'musica') {
       const q = (query ?? '').trim();

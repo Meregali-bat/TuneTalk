@@ -1,4 +1,4 @@
-import { describe, it, expect, beforeEach } from 'vitest';
+import { describe, it, expect, beforeEach, vi } from 'vitest';
 import request from 'supertest';
 import { buildTestApp, loggedAgent } from '../helpers/buildTestApp.js';
 
@@ -33,6 +33,14 @@ describe('rotas /api/notifications e /api/music', () => {
   it('POST /api/notifications/read-all marca tudo como lido', async () => {
     await agent.post('/api/notifications/read-all').expect(204);
     expect(deps.notifications.markAllRead).toHaveBeenCalledWith(1);
+  });
+
+  it('GET /api/music/preview devolve um link novo da prévia (404 se não achar)', async () => {
+    deps.musicService.preview = vi.fn().mockResolvedValueOnce('novo.mp3').mockResolvedValueOnce(null);
+    const res = await agent.get('/api/music/preview?titulo=Help!&artista=The%20Beatles');
+    expect(res.body).toEqual({ preview: 'novo.mp3' });
+    expect(deps.musicService.preview).toHaveBeenCalledWith('Help!', 'The Beatles');
+    await agent.get('/api/music/preview?titulo=x&artista=y').expect(404);
   });
 
   it('GET /api/music/search busca músicas', async () => {

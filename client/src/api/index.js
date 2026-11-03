@@ -65,6 +65,9 @@ export const notificationsApi = {
 };
 
 export const musicApi = {
+  // Link novo da prévia (os do Deezer vencem).
+  preview: async (titulo, artista) =>
+    (await request(`/music/preview?titulo=${encodeURIComponent(titulo)}&artista=${encodeURIComponent(artista ?? '')}`)).preview,
   // tipo 'album' busca álbuns; sem tipo, faixas.
   search: (q, tipo) => request(`/music/search?q=${encodeURIComponent(q)}${tipo === 'album' ? '&tipo=album' : ''}`),
 };

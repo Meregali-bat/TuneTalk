@@ -37,6 +37,36 @@ describe('musicService', () => {
     expect(result).toEqual([{ id: 9, tipo: 'album', titulo: 'Abbey Road', artista: 'The Beatles', capa: 'abbey.jpg', faixas: 17 }]);
   });
 
+  describe('preview (renovar o link da prévia)', () => {
+    it('busca a faixa pelo artista e título e devolve o link novo da prévia', async () => {
+      const fetch = vi.fn().mockResolvedValue(okResponse({ data: [{ ...deezerTrack, preview: 'novo.mp3?hdnea=exp=999' }] }));
+      const music = createMusicService({ fetch });
+
+      expect(await music.preview('maggots for brains', 'Olivia Rodrigo')).toBe('novo.mp3?hdnea=exp=999');
+      expect(fetch).toHaveBeenCalledWith(
+        `https://api.deezer.com/search?q=${encodeURIComponent('artist:"Olivia Rodrigo" track:"maggots for brains"')}&limit=1`,
+      );
+    });
+
+    it('se a busca exata não acha, tenta a busca simples', async () => {
+      const fetch = vi.fn()
+        .mockResolvedValueOnce(okResponse({ data: [] }))
+        .mockResolvedValueOnce(okResponse({ data: [{ ...deezerTrack, preview: 'achou.mp3' }] }));
+      const music = createMusicService({ fetch });
+
+      expect(await music.preview('Help!', 'The Beatles')).toBe('achou.mp3');
+      expect(fetch).toHaveBeenLastCalledWith(`https://api.deezer.com/search?q=${encodeURIComponent('The Beatles Help!')}&limit=1`);
+    });
+
+    it('sem título devolve null sem chamar a API; sem resultado também null', async () => {
+      const fetch = vi.fn().mockResolvedValue(okResponse({ data: [] }));
+      const music = createMusicService({ fetch });
+      expect(await music.preview('', 'x')).toBeNull();
+      expect(fetch).not.toHaveBeenCalled();
+      expect(await music.preview('nada', 'ninguém')).toBeNull();
+    });
+  });
+
   it('devolve lista vazia sem chamar a API para busca em branco', async () => {
     const fetch = vi.fn();
     const music = createMusicService({ fetch });

@@ -45,7 +45,7 @@ function MusicBlock({ post, postUrl }) {
           </span>
         </div>
       </Link>
-      {!isAlbum && post.preview && <PlayButton src={post.preview} />}
+      {!isAlbum && post.preview && <PlayButton src={post.preview} titulo={post.titulo} artista={post.artista} />}
     </div>
   );
 }
