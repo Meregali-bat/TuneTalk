@@ -182,6 +182,19 @@ describe('postRepository (Postgres)', () => {
     expect((await repo.listByHashtag('rock')).map((p) => p.id)).toEqual([comentario.id, novo.id, velho.id]);
   });
 
+  it('listRepliesByAuthor devolve os comentários da pessoa (mais novos primeiro) com quem ela respondeu', async () => {
+    const doBia = await factory.post(bia.id);
+    const c1 = await factory.reply(doBia.id, ana.id, { texto: 'primeiro', createdAt: new Date('2024-01-01') });
+    const c2 = await factory.reply(c1.id, ana.id, { texto: 'segundo', createdAt: new Date('2024-02-01') });
+    await factory.reply(doBia.id, bia.id);
+    await factory.post(ana.id);
+
+    const comentarios = await repo.listRepliesByAuthor(ana.id);
+    expect(comentarios.map((c) => [c.id, c.texto])).toEqual([[c2.id, 'segundo'], [c1.id, 'primeiro']]);
+    expect(comentarios[0].respondendoA).toEqual({ postId: c1.id, nome: 'Ana' });
+    expect(comentarios[1].respondendoA).toEqual({ postId: doBia.id, nome: 'Bia' });
+  });
+
   it('listByAuthor devolve só os posts do autor, mais novos primeiro', async () => {
     const p1 = await factory.post(ana.id);
     await factory.post(bia.id);

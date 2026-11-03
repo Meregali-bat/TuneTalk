@@ -49,6 +49,7 @@ export const usersApi = {
     ? request(`/users/by-name/${encodeURIComponent(String(id).slice(1))}`)
     : request(`/users/${id}`)),
   search: (q) => request(`/users?q=${encodeURIComponent(q)}`),
+  comments: (id) => request(`/users/${id}/comentarios`),
   updateMe: (changes) => request('/users/me', { method: 'PUT', body: changes }),
   uploadPhoto: (file) => uploadImage('/users/me/photo-upload', file),
   uploadBanner: (file) => uploadImage('/users/me/banner-upload', file),

@@ -80,6 +80,10 @@ export function createPostService({
       return markLiked(await posts.listFromFollowed(viewerId), viewerId);
     },
 
+    async repliesByAuthor(autorId, viewerId) {
+      return markLiked(await posts.listRepliesByAuthor(autorId), viewerId);
+    },
+
     async byHashtag(tag, viewerId) {
       const limpa = (tag ?? '').trim().replace(/^#/, '').toLowerCase();
       if (!limpa) throw badRequest('Hashtag inválida.');

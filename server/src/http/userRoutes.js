@@ -2,7 +2,7 @@ import { Router } from 'express';
 import { badRequest } from '../errors.js';
 import { asyncRoute, currentUserId, parseIdParam, requireAuth, requireUsername } from './middlewares.js';
 
-export function createUserRoutes({ userService, uploader, sessions }) {
+export function createUserRoutes({ userService, postService, uploader, sessions }) {
   const router = Router();
   router.use(requireAuth);
   router.param('id', parseIdParam);
@@ -50,6 +50,11 @@ export function createUserRoutes({ userService, uploader, sessions }) {
 
   router.get('/:id', asyncRoute(async (req, res) => {
     res.json(await userService.getProfile(req.params.id, currentUserId(req)));
+  }));
+
+  // Aba "Comentários" do perfil.
+  router.get('/:id/comentarios', asyncRoute(async (req, res) => {
+    res.json(await postService.repliesByAuthor(req.params.id, currentUserId(req)));
   }));
 
   router.post('/:id/follow', asyncRoute(async (req, res) => {

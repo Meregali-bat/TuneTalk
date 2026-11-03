@@ -1,4 +1,4 @@
-import { describe, it, expect, beforeEach } from 'vitest';
+import { describe, it, expect, beforeEach, vi } from 'vitest';
 import request from 'supertest';
 import { agentWithoutUsername, buildTestApp, loggedAgent } from '../helpers/buildTestApp.js';
 import { HttpError } from '../../src/errors.js';
@@ -22,6 +22,13 @@ describe('rotas /api/users', () => {
     const res = await agent.get('/api/users/by-name/bia.souza');
     expect(res.body).toEqual({ usuario: { id: 2 } });
     expect(deps.userService.getProfileByName).toHaveBeenCalledWith('bia.souza', 1);
+  });
+
+  it('GET /api/users/:id/comentarios lista os comentários da pessoa', async () => {
+    deps.postService.repliesByAuthor = vi.fn().mockResolvedValue([{ id: 9 }]);
+    const res = await agent.get('/api/users/2/comentarios');
+    expect(res.body).toEqual([{ id: 9 }]);
+    expect(deps.postService.repliesByAuthor).toHaveBeenCalledWith(2, 1);
   });
 
   it('GET /api/users?q= busca pessoas', async () => {

@@ -6,7 +6,7 @@ import { musicApi, postsApi, usersApi } from '../api/index.js';
 import { makeAuth, renderWithProviders } from '../test/render.jsx';
 
 vi.mock('../api/index.js', () => ({
-  usersApi: { profile: vi.fn(), follow: vi.fn(), unfollow: vi.fn(), updateMe: vi.fn(), changePassword: vi.fn() },
+  usersApi: { profile: vi.fn(), comments: vi.fn(), follow: vi.fn(), unfollow: vi.fn(), updateMe: vi.fn(), changePassword: vi.fn() },
   postsApi: { like: vi.fn(), unlike: vi.fn(), remove: vi.fn(), create: vi.fn(), pin: vi.fn(), unpin: vi.fn() },
   musicApi: { search: vi.fn() },
 }));
@@ -58,7 +58,7 @@ describe('ProfilePage', () => {
     expect(within(stats).getAllByRole('listitem').map((item) => item.textContent)).toEqual([
       '2Posts', '1Seguidores', '0Seguindo', '3,8/5Nota média',
     ]);
-    expect(screen.getByRole('heading', { level: 2, name: 'Posts' })).toBeInTheDocument();
+    expect(screen.getByRole('tab', { name: 'Posts' })).toHaveAttribute('aria-selected', 'true');
     expect(screen.getByText('post 10')).toBeInTheDocument();
   });
 
@@ -256,6 +256,39 @@ describe('ProfilePage', () => {
     renderProfile('@bia');
     expect(await screen.findByRole('heading', { level: 1, name: 'bia' })).toBeInTheDocument();
     expect(usersApi.profile).toHaveBeenCalledWith('@bia');
+  });
+
+  describe('abas Posts e Comentários', () => {
+    const comentario = {
+      ...post(30, null), texto: 'concordo demais', titulo: null, tipo: null, parentId: 7, respondendoA: { postId: 7, nome: 'caio' },
+    };
+
+    it('"Comentários" carrega (só ao abrir) os comentários da pessoa, com a quem ela respondeu', async () => {
+      usersApi.comments.mockResolvedValue([comentario]);
+      renderProfile();
+      await screen.findByText('post 10');
+      expect(usersApi.comments).not.toHaveBeenCalled();
+
+      await userEvent.click(screen.getByRole('tab', { name: 'Comentários' }));
+
+      expect(screen.getByRole('tab', { name: 'Comentários' })).toHaveAttribute('aria-selected', 'true');
+      expect(await screen.findByText('concordo demais')).toBeInTheDocument();
+      expect(usersApi.comments).toHaveBeenCalledWith(2);
+      expect(screen.getByRole('link', { name: 'Respondendo a @caio' })).toHaveAttribute('href', '/post/7');
+      expect(screen.getByText('post 10')).not.toBeVisible();
+
+      await userEvent.click(screen.getByRole('tab', { name: 'Posts' }));
+      expect(screen.getByText('post 10')).toBeVisible();
+      expect(screen.getByText('concordo demais')).not.toBeVisible();
+      expect(usersApi.comments).toHaveBeenCalledTimes(1);
+    });
+
+    it('sem comentários avisa', async () => {
+      usersApi.comments.mockResolvedValue([]);
+      renderProfile();
+      await userEvent.click(await screen.findByRole('tab', { name: 'Comentários' }));
+      expect(await screen.findByText('bia ainda não comentou nada.')).toBeInTheDocument();
+    });
   });
 
   it('mostra erro para perfil inexistente', async () => {

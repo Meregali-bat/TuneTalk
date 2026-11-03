@@ -153,6 +153,7 @@ export function createFakeApi({ storage = globalThis.localStorage } = {}) {
     }],
     ['GET', /^\/users\/by-name\/([^/]+)$/, async ({ match }) => ok(await services.users.getProfileByName(decodeURIComponent(match[1]), me()))],
     ['GET', /^\/users$/, async ({ query }) => ok(await services.users.search(query.get('q'), me()))],
+    ['GET', /^\/users\/(\d+)\/comentarios$/, async ({ id }) => ok(await services.posts.repliesByAuthor(id, me()))],
     ['GET', /^\/users\/(\d+)$/, async ({ id }) => ok(await services.users.getProfile(id, me()))],
     ['POST', /^\/users\/(\d+)\/follow$/, async ({ id }) => { await services.users.follow(me(), id); return noContent(); }],
     ['DELETE', /^\/users\/(\d+)\/follow$/, async ({ id }) => { await services.users.unfollow(me(), id); return noContent(); }],

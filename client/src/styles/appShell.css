@@ -2280,3 +2280,34 @@ button.track-row:hover {
   color: var(--texto-suave);
   font-size: .8rem;
 }
+
+/* Abas Posts | Comentários do perfil (mesmo visual das abas do feed) */
+.profile-tabs {
+  margin: 1.5rem 0 1rem;
+}
+
+/* "Respondendo a @fulano" nos comentários listados fora da conversa */
+.post-card__context {
+  display: inline-flex;
+  align-items: center;
+  gap: .35rem;
+  margin-bottom: .55rem;
+  color: var(--texto-suave);
+  font-size: .82rem;
+
+  &:hover {
+    color: var(--destaque-claro);
+  }
+}
+
+/* Abas feitas com <button> (perfil) herdam o visual das abas-link do feed, sem o fundo padrão do botão. */
+button.feed-tabs__tab {
+  border: 0;
+  background: none;
+  font: inherit;
+  font-weight: 600;
+
+  &.is-active {
+    background: var(--destaque);
+  }
+}

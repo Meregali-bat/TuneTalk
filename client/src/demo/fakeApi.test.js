@@ -150,6 +150,12 @@ describe('API fake da demo (serviços reais + banco em memória)', () => {
     expect(posts.map((p) => p.titulo)).toEqual(['Help!', 'Abbey Road']);
   });
 
+  it('aba de comentários do perfil traz com quem a pessoa falou', async () => {
+    await login();
+    const comentarios = (await call('GET', `/users/${api.currentUserId()}/comentarios`)).body;
+    expect(comentarios[0]).toMatchObject({ texto: 'Qual versão? A do Shea Stadium?', respondendoA: { nome: 'carla.mendes' } });
+  });
+
   it('busca pessoas pelo nome ou @', async () => {
     await login();
     const achados = (await call('GET', '/users?q=%40bruno')).body;

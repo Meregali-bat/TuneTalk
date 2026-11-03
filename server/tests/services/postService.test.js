@@ -61,6 +61,12 @@ describe('postService', () => {
       await expect(service.byHashtag('#', 7)).rejects.toMatchObject({ status: 400 });
     });
 
+    it('repliesByAuthor lista os comentários da pessoa marcados para quem vê', async () => {
+      posts.listRepliesByAuthor = vi.fn().mockResolvedValue([post(3, 4, { parentId: 1 })]);
+      expect(await service.repliesByAuthor(4, 7)).toEqual([{ ...post(3, 4, { parentId: 1 }), curtido: true }]);
+      expect(posts.listRepliesByAuthor).toHaveBeenCalledWith(4);
+    });
+
     it('byAuthor põe o post fixado primeiro, mantendo a ordem dos outros', async () => {
       posts.listByAuthor.mockResolvedValue([post(9), post(8), post(7, 2, { fixado: true }), post(6)]);
       expect((await service.byAuthor(2, 7)).map((p) => p.id)).toEqual([7, 9, 8, 6]);

@@ -60,6 +60,17 @@ export function createPostRepository(prisma) {
       });
     },
 
+    // Comentários de alguém (aba "Comentários" do perfil), com quem cada um respondeu.
+    async listRepliesByAuthor(autorId, limit = 50) {
+      const rows = await prisma.post.findMany({
+        where: { autorId, parentId: { not: null } },
+        orderBy: [{ createdAt: 'desc' }, { id: 'desc' }],
+        take: limit,
+        include: { ...POST_INCLUDE, pai: { select: { id: true, autor: { select: { nome: true } } } } },
+      });
+      return rows.map((row) => ({ ...toPost(row), respondendoA: { postId: row.pai.id, nome: row.pai.autor.nome } }));
+    },
+
     // Posts e comentários com a hashtag inteira (o banco filtra por "contém"; aqui conferimos a tag).
     async listByHashtag(tag, limit = 50) {
       const candidatos = await findPosts({

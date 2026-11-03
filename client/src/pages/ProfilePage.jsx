@@ -126,6 +126,28 @@ function ProfileHeader({ profile, isOwnProfile, onEdit, onChangePassword, onOpen
   );
 }
 
+// Aba "Comentários": só busca quando aberta pela primeira vez.
+function ProfileComments({ usuarioId, nome }) {
+  const { data: comentarios, error, setData } = useAsync(() => usersApi.comments(usuarioId), [usuarioId]);
+  const remover = (id) => setData((lista) => lista.filter((c) => c.id !== id));
+
+  if (error) return <div role="alert" className="feed-error"><p>{error.message}</p></div>;
+  if (!comentarios) return <p role="status" className="composer-hint">Carregando comentários…</p>;
+  if (comentarios.length === 0) {
+    return (
+      <div className="feed-empty">
+        <i className="bi bi-chat" aria-hidden="true" />
+        <p>{nome} ainda não comentou nada.</p>
+      </div>
+    );
+  }
+  return (
+    <div className="feed-list">
+      {comentarios.map((c) => <PostCard key={c.id} post={c} onDeleted={remover} />)}
+    </div>
+  );
+}
+
 function EmptyPosts({ nome, isOwnProfile, onCompose }) {
   if (!isOwnProfile) {
     return (
@@ -154,6 +176,8 @@ export function ProfilePage() {
   const [changingPassword, setChangingPassword] = useState(false);
   const [notice, setNotice] = useState('');
   const [composerOpen, setComposerOpen] = useState(false);
+  const [aba, setAba] = useState('posts');
+  const [abriuComentarios, setAbriuComentarios] = useState(false);
 
   if (error) {
     return (
@@ -194,16 +218,39 @@ export function ProfilePage() {
         </p>
       )}
 
-      <h2 className="profile-section-title">Posts</h2>
-      {profile.posts.length === 0 ? (
-        <EmptyPosts nome={displayName(profile.usuario)} isOwnProfile={isOwnProfile} onCompose={() => setComposerOpen(true)} />
-      ) : (
-        <div className="feed-list">
-          {profile.posts.map((post) => (
-            <PostCard key={post.id} post={post} onDeleted={removePost} onPinChange={reload} showPinned />
-          ))}
-        </div>
-      )}
+      <div role="tablist" aria-label="Conteúdo do perfil" className="feed-tabs profile-tabs">
+        {[['posts', 'Posts'], ['comentarios', 'Comentários']].map(([chave, rotulo]) => (
+          <button
+            key={chave}
+            type="button"
+            role="tab"
+            id={`aba-${chave}`}
+            aria-selected={aba === chave}
+            aria-controls={`painel-${chave}`}
+            className={`feed-tabs__tab${aba === chave ? ' is-active' : ''}`}
+            onClick={() => { setAba(chave); if (chave === 'comentarios') setAbriuComentarios(true); }}
+          >
+            {rotulo}
+          </button>
+        ))}
+      </div>
+
+      <div role="tabpanel" id="painel-posts" aria-labelledby="aba-posts" hidden={aba !== 'posts'}>
+        {profile.posts.length === 0 ? (
+          <EmptyPosts nome={displayName(profile.usuario)} isOwnProfile={isOwnProfile} onCompose={() => setComposerOpen(true)} />
+        ) : (
+          <div className="feed-list">
+            {profile.posts.map((post) => (
+              <PostCard key={post.id} post={post} onDeleted={removePost} onPinChange={reload} showPinned />
+            ))}
+          </div>
+        )}
+      </div>
+
+      {/* Fica montada depois de aberta, para não buscar de novo a cada troca de aba. */}
+      <div role="tabpanel" id="painel-comentarios" aria-labelledby="aba-comentarios" hidden={aba !== 'comentarios'}>
+        {abriuComentarios && <ProfileComments usuarioId={profile.usuario.id} nome={displayName(profile.usuario)} />}
+      </div>
 
       <UserListModal
         open={openList === 'seguidores'}

@@ -86,6 +86,11 @@ export function PostCard({
       className={`post-card post-card--${variant}${threadLine ? ' post-card--continua' : ''}`}
       aria-label={post.titulo ? `Post de ${post.autor.nome} sobre ${post.titulo}` : `Post de ${post.autor.nome}`}
     >
+      {post.respondendoA && (
+        <Link to={`/post/${post.respondendoA.postId}`} className="post-card__context">
+          <i className="bi bi-reply" aria-hidden="true" /> Respondendo a @{post.respondendoA.nome}
+        </Link>
+      )}
       {showPinned && fixado && (
         <p className="post-card__pinned"><i className="bi bi-pin-angle-fill" aria-hidden="true" /> Fixado</p>
       )}
