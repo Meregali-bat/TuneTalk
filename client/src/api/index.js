@@ -1,4 +1,24 @@
-import { request } from './http.js';
+import { ApiError, request } from './http.js';
+import { FOTO_MAX_MB } from './limits.js';
+
+// A foto vai direto do navegador para o Cloudinary, com uma assinatura feita pelo servidor:
+// a Vercel recusa requisições acima de 4,5 MB, e GIF animado de perfil passa disso fácil.
+async function uploadPhoto(file) {
+  const { uploadUrl, fields } = await request('/users/me/photo-upload', { method: 'POST' });
+  const form = new FormData();
+  Object.entries(fields).forEach(([key, value]) => form.append(key, value));
+  form.append('file', file);
+
+  const response = await fetch(uploadUrl, { method: 'POST', body: form });
+  const data = await response.json().catch(() => null);
+  if (!response.ok) {
+    const tooLarge = /file size too large/i.test(data?.error?.message ?? '');
+    throw new ApiError(response.status, tooLarge
+      ? `A foto pode ter no máximo ${FOTO_MAX_MB} MB.`
+      : 'Não foi possível enviar essa imagem. Tente outra.');
+  }
+  return data.secure_url;
+}
 
 export const authApi = {
   me: () => request('/auth/me'),
@@ -23,7 +43,8 @@ export const postsApi = {
 
 export const usersApi = {
   profile: (id) => request(`/users/${id}`),
-  updateMe: (form) => request('/users/me', { method: 'PUT', form }),
+  updateMe: (changes) => request('/users/me', { method: 'PUT', body: changes }),
+  uploadPhoto,
   setUsername: (nome) => request('/users/me/username', { method: 'PUT', body: { nome } }),
   changePassword: (senhaAtual, novaSenha) =>
     request('/users/me/password', { method: 'PUT', body: { senhaAtual, novaSenha } }),

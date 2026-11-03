@@ -7,7 +7,7 @@ import { usersApi } from '../../api/index.js';
 import { renderWithProviders } from '../../test/render.jsx';
 
 vi.mock('../../api/index.js', () => ({
-  usersApi: { updateMe: vi.fn(), follow: vi.fn(), unfollow: vi.fn() },
+  usersApi: { updateMe: vi.fn(), uploadPhoto: vi.fn(), follow: vi.fn(), unfollow: vi.fn() },
 }));
 
 const ana = { id: 1, nome: 'Ana', fotoPerfil: 'ana.png', bio: 'oi' };
@@ -31,31 +31,51 @@ describe('EditProfileModal', () => {
     expect(within(dialog).getByText('2/255')).toBeInTheDocument();
   });
 
-  it('mostra a prévia da foto escolhida e salva com FormData', async () => {
+  it('mostra a prévia, envia a foto (GIF incluso) direto para o Cloudinary e salva o link', async () => {
+    usersApi.uploadPhoto.mockResolvedValue('https://res.cloudinary.com/t/eu.gif');
     usersApi.updateMe.mockResolvedValue({ ...ana, nome: 'ana_b' });
     const onSaved = vi.fn();
     renderModal({ onSaved });
 
-    const file = new File(['img'], 'nova.png', { type: 'image/png' });
-    await userEvent.upload(screen.getByLabelText('Trocar foto'), file);
+    const gif = new File(['gif'], 'eu.gif', { type: 'image/gif' });
+    await userEvent.upload(screen.getByLabelText('Trocar foto'), gif);
     expect(screen.getByAltText('Foto de perfil')).toHaveAttribute('src', 'blob:preview');
 
     await userEvent.clear(screen.getByLabelText('Nome de usuário'));
     await userEvent.type(screen.getByLabelText('Nome de usuário'), 'ana_b');
     await userEvent.click(screen.getByRole('button', { name: 'Salvar' }));
 
-    const form = usersApi.updateMe.mock.calls[0][0];
-    expect(form.get('nome')).toBe('ana_b');
-    expect(form.get('bio')).toBe('oi');
-    expect(form.get('foto')).toBe(file);
+    expect(usersApi.uploadPhoto).toHaveBeenCalledWith(gif);
+    expect(usersApi.updateMe).toHaveBeenCalledWith({ nome: 'ana_b', bio: 'oi', fotoPerfil: 'https://res.cloudinary.com/t/eu.gif' });
     expect(onSaved).toHaveBeenCalledWith({ ...ana, nome: 'ana_b' });
+  });
+
+  it('mostra "Enviando foto…" enquanto a foto sobe', async () => {
+    usersApi.uploadPhoto.mockReturnValue(new Promise(() => {}));
+    renderModal();
+    await userEvent.upload(screen.getByLabelText('Trocar foto'), new File(['gif'], 'eu.gif', { type: 'image/gif' }));
+    await userEvent.click(screen.getByRole('button', { name: 'Salvar' }));
+    expect(screen.getByRole('button', { name: 'Enviando foto…' })).toBeDisabled();
+  });
+
+  it('recusa na hora foto acima de 10 MB, sem tentar enviar', async () => {
+    renderModal();
+    const enorme = new File(['x'], 'enorme.gif', { type: 'image/gif' });
+    Object.defineProperty(enorme, 'size', { value: 10 * 1024 * 1024 + 1 });
+    await userEvent.upload(screen.getByLabelText('Trocar foto'), enorme);
+
+    expect(screen.getByRole('alert')).toHaveTextContent('A foto pode ter no máximo 10 MB.');
+    expect(screen.getByAltText('Foto de perfil')).toHaveAttribute('src', 'ana.png');
+    await userEvent.click(screen.getByRole('button', { name: 'Salvar' }));
+    expect(usersApi.uploadPhoto).not.toHaveBeenCalled();
   });
 
   it('não envia foto quando nenhuma foi escolhida', async () => {
     usersApi.updateMe.mockResolvedValue(ana);
     renderModal();
     await userEvent.click(screen.getByRole('button', { name: 'Salvar' }));
-    expect(usersApi.updateMe.mock.calls[0][0].has('foto')).toBe(false);
+    expect(usersApi.uploadPhoto).not.toHaveBeenCalled();
+    expect(usersApi.updateMe).toHaveBeenCalledWith({ nome: 'Ana', bio: 'oi' });
   });
 
   it('avisa as regras quando o nome novo não serve e não deixa salvar', async () => {

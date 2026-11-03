@@ -1,18 +1,24 @@
-import { badGateway } from '../errors.js';
+// A foto vai direto do navegador para o Cloudinary (até 10 MB no plano grátis, GIF animado incluso):
+// a Vercel recusa requisições acima de 4,5 MB, então ela não pode passar pelo nosso servidor.
+// O servidor só assina o envio (o segredo nunca sai daqui) e depois confere o link salvo.
+const FOLDER = 'tunetalk/perfis';
 
-export function createCloudinaryUploader(cloudinary) {
+export function createCloudinaryUploader(cloudinary, { now = Date.now } = {}) {
+  const config = () => cloudinary.config();
+
   return {
-    upload(buffer) {
-      return new Promise((resolve, reject) => {
-        const stream = cloudinary.uploader.upload_stream({ resource_type: 'image' }, (error, result) => {
-          if (error) {
-            console.error('Erro ao fazer o upload da imagem:', error);
-            return reject(badGateway('Erro ao fazer o upload da imagem'));
-          }
-          resolve(result.secure_url);
-        });
-        stream.end(buffer);
-      });
+    signUpload() {
+      const { cloud_name: cloudName, api_key: apiKey, api_secret: apiSecret } = config();
+      const params = { timestamp: Math.floor(now() / 1000), folder: FOLDER };
+      return {
+        uploadUrl: `https://api.cloudinary.com/v1_1/${cloudName}/image/upload`,
+        fields: { api_key: apiKey, ...params, signature: cloudinary.utils.api_sign_request(params, apiSecret) },
+      };
+    },
+
+    isOwnUrl(url) {
+      const prefix = `https://res.cloudinary.com/${config().cloud_name}/image/upload/`;
+      return typeof url === 'string' && url.startsWith(prefix) && url.includes(`/${FOLDER}/`);
     },
   };
 }

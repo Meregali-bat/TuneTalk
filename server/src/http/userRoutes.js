@@ -1,7 +1,6 @@
 import { Router } from 'express';
-import {
-  asyncRoute, currentUserId, imageUpload, parseIdParam, requireAuth, requireUsername, uploadedImageUrl,
-} from './middlewares.js';
+import { badRequest } from '../errors.js';
+import { asyncRoute, currentUserId, parseIdParam, requireAuth, requireUsername } from './middlewares.js';
 
 export function createUserRoutes({ userService, uploader, sessions }) {
   const router = Router();
@@ -23,9 +22,13 @@ export function createUserRoutes({ userService, uploader, sessions }) {
     res.status(204).end();
   }));
 
-  router.put('/me', imageUpload.single('foto'), asyncRoute(async (req, res) => {
-    const { nome, bio } = req.body;
-    const fotoPerfil = await uploadedImageUrl(uploader, req.file);
+  router.post('/me/photo-upload', (req, res) => {
+    res.json(uploader.signUpload());
+  });
+
+  router.put('/me', asyncRoute(async (req, res) => {
+    const { nome, bio, fotoPerfil } = req.body;
+    if (fotoPerfil !== undefined && !uploader.isOwnUrl(fotoPerfil)) throw badRequest('Foto inválida. Envie a imagem de novo.');
     const usuario = await userService.updateProfile(currentUserId(req), { nome, bio, fotoPerfil });
     if (usuario.nome) req.session.user = { ...req.session.user, nome: usuario.nome };
     res.json(usuario);

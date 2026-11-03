@@ -106,6 +106,22 @@ describe('API fake da demo (serviços reais + banco em memória)', () => {
     expect((await perfil()).at(-1)).toMatchObject({ id: ultimo.id, fixado: false });
   });
 
+  it('foto de perfil: assina, "envia" para o Cloudinary fake e salva o link', async () => {
+    await login();
+    const { uploadUrl, fields } = (await call('POST', '/users/me/photo-upload')).body;
+    expect(uploadUrl).toBe('/api/demo-upload');
+
+    const form = new FormData();
+    Object.entries(fields).forEach(([k, v]) => form.append(k, v));
+    form.append('file', new File(['GIF89a'], 'eu.gif', { type: 'image/gif' }));
+    const { secure_url: url } = (await call('POST', '/demo-upload', form)).body;
+    expect(url).toMatch(/^data:image\/gif;base64,/);
+
+    const salvo = await call('PUT', '/users/me', JSON.stringify({ nome: 'ana.souza', bio: 'oi', fotoPerfil: url }));
+    expect(salvo.body.fotoPerfil).toBe(url);
+    expect((await call('PUT', '/users/me', JSON.stringify({ nome: 'ana.souza', fotoPerfil: 'https://x.com/a.gif' }))).status).toBe(400);
+  });
+
   it('não deixa apagar post de outra pessoa', async () => {
     await login();
     const [post] = (await call('GET', '/posts?feed=seguindo')).body;

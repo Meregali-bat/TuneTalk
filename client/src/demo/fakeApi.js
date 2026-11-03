@@ -135,10 +135,14 @@ export function createFakeApi({ storage = globalThis.localStorage } = {}) {
       await services.users.changePassword(me(), body.senhaAtual, body.novaSenha);
       return noContent();
     }],
-    ['PUT', /^\/users\/me$/, async ({ form }) => {
-      const foto = form.get('foto');
-      const fotoPerfil = foto instanceof File && foto.size > 0 ? await fileToDataUrl(foto) : undefined;
-      const usuario = await services.users.updateProfile(me(), { nome: form.get('nome'), bio: form.get('bio'), fotoPerfil });
+    // Na demo o "Cloudinary" é este endereço: a foto vira data URL e fica no próprio navegador.
+    ['POST', /^\/users\/me\/photo-upload$/, () => { me(); return ok({ uploadUrl: '/api/demo-upload', fields: {} }); }],
+    ['POST', /^\/demo-upload$/, async ({ form }) => ok({ secure_url: await fileToDataUrl(form.get('file')) })],
+    ['PUT', /^\/users\/me$/, async ({ body }) => {
+      if (body.fotoPerfil !== undefined && !String(body.fotoPerfil).startsWith('data:image/')) {
+        throw badRequest('Foto inválida. Envie a imagem de novo.');
+      }
+      const usuario = await services.users.updateProfile(me(), { nome: body.nome, bio: body.bio, fotoPerfil: body.fotoPerfil });
       startSession({ ...state.session, nome: usuario.nome });
       return ok(usuario);
     }],

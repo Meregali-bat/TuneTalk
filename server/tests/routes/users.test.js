@@ -45,33 +45,42 @@ describe('rotas /api/users', () => {
     });
   });
 
+  it('POST /api/users/me/photo-upload devolve a assinatura para enviar a foto direto ao Cloudinary', async () => {
+    deps.uploader.signUpload.mockReturnValue({ uploadUrl: 'https://api.cloudinary.com/x', fields: { signature: 's' } });
+    const res = await agent.post('/api/users/me/photo-upload');
+    expect(res.status).toBe(200);
+    expect(res.body).toEqual({ uploadUrl: 'https://api.cloudinary.com/x', fields: { signature: 's' } });
+  });
+
   describe('PUT /api/users/me', () => {
     it('atualiza nome e bio sem foto nova', async () => {
       deps.userService.updateProfile.mockResolvedValue({ id: 1, nome: 'Novo' });
-      const res = await agent.put('/api/users/me').field('nome', 'Novo').field('bio', 'bio');
+      const res = await agent.put('/api/users/me').send({ nome: 'Novo', bio: 'bio' });
       expect(res.status).toBe(200);
       expect(res.body).toEqual({ id: 1, nome: 'Novo' });
       expect(deps.userService.updateProfile).toHaveBeenCalledWith(1, { nome: 'Novo', bio: 'bio', fotoPerfil: undefined });
     });
 
-    it('recusa foto acima de 4 MB com mensagem clara (a Vercel aceita no máximo 4,5 MB por requisição)', async () => {
-      const grande = Buffer.alloc(4 * 1024 * 1024 + 1);
-      const res = await agent.put('/api/users/me').field('nome', 'N').attach('foto', grande, 'grande.png');
-      expect(res.status).toBe(400);
-      expect(res.body).toEqual({ error: 'A foto pode ter no máximo 4 MB.' });
-      expect(deps.uploader.upload).not.toHaveBeenCalled();
+    it('salva o link da foto já enviada ao Cloudinary', async () => {
+      deps.uploader.isOwnUrl.mockReturnValue(true);
+      deps.userService.updateProfile.mockResolvedValue({ id: 1 });
+      const url = 'https://res.cloudinary.com/tunetalk/image/upload/v1/tunetalk/perfis/a.gif';
+      await agent.put('/api/users/me').send({ nome: 'N', fotoPerfil: url }).expect(200);
+      expect(deps.uploader.isOwnUrl).toHaveBeenCalledWith(url);
+      expect(deps.userService.updateProfile.mock.calls[0][1].fotoPerfil).toBe(url);
     });
 
-    it('envia a foto nova para o uploader', async () => {
-      deps.uploader.upload.mockResolvedValue('https://cdn/nova.png');
-      deps.userService.updateProfile.mockResolvedValue({ id: 1 });
-      await agent.put('/api/users/me').field('nome', 'N').attach('foto', Buffer.from('img'), 'nova.png').expect(200);
-      expect(deps.userService.updateProfile.mock.calls[0][1].fotoPerfil).toBe('https://cdn/nova.png');
+    it('recusa link de foto que não veio do nosso Cloudinary', async () => {
+      deps.uploader.isOwnUrl.mockReturnValue(false);
+      const res = await agent.put('/api/users/me').send({ nome: 'N', fotoPerfil: 'https://site.com/x.gif' });
+      expect(res.status).toBe(400);
+      expect(res.body).toEqual({ error: 'Foto inválida. Envie a imagem de novo.' });
+      expect(deps.userService.updateProfile).not.toHaveBeenCalled();
     });
 
     it('mantém o nome da sessão atualizado', async () => {
       deps.userService.updateProfile.mockResolvedValue({ id: 1, nome: 'Novo' });
-      await agent.put('/api/users/me').field('nome', 'Novo');
+      await agent.put('/api/users/me').send({ nome: 'Novo' });
       const me = await agent.get('/api/auth/me');
       expect(me.body.nome).toBe('Novo');
     });

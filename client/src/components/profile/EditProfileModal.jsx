@@ -2,6 +2,7 @@ import { useEffect, useId, useRef, useState } from 'react';
 import { usersApi } from '../../api/index.js';
 import { Modal } from '../common/Modal.jsx';
 import { USERNAME_MESSAGES, checkUsername } from '../../../../shared/usernameRules.js';
+import { FOTO_MAX_MB } from '../../api/limits.js';
 
 const BIO_MAX = 255;
 
@@ -20,7 +21,7 @@ export function EditProfileModal({ open, usuario, onClose, onSaved }) {
   const [foto, setFoto] = useState(null);
   const [preview, setPreview] = useState(null);
   const [error, setError] = useState('');
-  const [saving, setSaving] = useState(false);
+  const [saving, setSaving] = useState(null); // null, 'foto' ou 'dados'
   const fileInput = useRef(null);
 
   useEffect(() => {
@@ -32,21 +33,31 @@ export function EditProfileModal({ open, usuario, onClose, onSaved }) {
 
   const problem = usernameProblem(nome.trim(), usuario.nome);
 
+  const chooseFoto = (file) => {
+    if (!file) return;
+    if (file.size > FOTO_MAX_MB * 1024 * 1024) {
+      setError(`A foto pode ter no máximo ${FOTO_MAX_MB} MB.`);
+      return;
+    }
+    setError('');
+    setFoto(file);
+  };
+
   const submit = async (event) => {
     event.preventDefault();
     if (problem) return;
-    const form = new FormData();
-    form.append('nome', nome.trim());
-    form.append('bio', bio);
-    if (foto) form.append('foto', foto);
-
-    setSaving(true);
     setError('');
     try {
-      onSaved(await usersApi.updateMe(form));
+      const changes = { nome: nome.trim(), bio };
+      if (foto) {
+        setSaving('foto');
+        changes.fotoPerfil = await usersApi.uploadPhoto(foto);
+      }
+      setSaving('dados');
+      onSaved(await usersApi.updateMe(changes));
     } catch (err) {
       setError(err.message);
-      setSaving(false);
+      setSaving(null);
     }
   };
 
@@ -65,7 +76,7 @@ export function EditProfileModal({ open, usuario, onClose, onSaved }) {
             aria-label="Trocar foto"
             className="visually-hidden"
             tabIndex={-1}
-            onChange={(event) => setFoto(event.target.files[0] ?? null)}
+            onChange={(event) => chooseFoto(event.target.files[0])}
           />
         </div>
 
@@ -105,8 +116,8 @@ export function EditProfileModal({ open, usuario, onClose, onSaved }) {
 
         <div className="edit-profile__actions">
           <button type="button" className="composer-link" onClick={onClose}>Cancelar</button>
-          <button type="submit" className="composer-submit" disabled={saving || Boolean(problem)}>
-            {saving ? 'Salvando…' : 'Salvar'}
+          <button type="submit" className="composer-submit" disabled={Boolean(saving) || Boolean(problem)}>
+            {{ foto: 'Enviando foto…', dados: 'Salvando…' }[saving] ?? 'Salvar'}
           </button>
         </div>
       </form>

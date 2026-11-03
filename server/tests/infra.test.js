@@ -2,31 +2,33 @@ import { describe, it, expect, vi } from 'vitest';
 import { createCloudinaryUploader } from '../src/infra/cloudinaryUploader.js';
 import { loadConfig } from '../src/config.js';
 
-describe('cloudinaryUploader', () => {
-  const fakeCloudinary = (error, result) => {
-    const end = vi.fn();
-    const upload_stream = vi.fn((options, callback) => {
-      end.mockImplementation(() => callback(error, result));
-      return { end };
-    });
-    return { uploader: { upload_stream }, end };
-  };
-
-  it('envia o buffer e devolve a URL segura', async () => {
-    const cloudinary = fakeCloudinary(null, { secure_url: 'https://cdn/x.png' });
-    const uploader = createCloudinaryUploader(cloudinary);
-    const buffer = Buffer.from('img');
-
-    expect(await uploader.upload(buffer)).toBe('https://cdn/x.png');
-    expect(cloudinary.end).toHaveBeenCalledWith(buffer);
+describe('cloudinaryUploader (envio direto do navegador)', () => {
+  const fakeCloudinary = () => ({
+    config: () => ({ cloud_name: 'tunetalk', api_key: 'k123', api_secret: 'segredo' }),
+    utils: { api_sign_request: vi.fn(() => 'assinatura') },
   });
 
-  it('rejeita quando o Cloudinary falha', async () => {
-    const uploader = createCloudinaryUploader(fakeCloudinary(new Error('boom')));
-    await expect(uploader.upload(Buffer.from('x'))).rejects.toMatchObject({
-      status: 502,
-      message: 'Erro ao fazer o upload da imagem',
+  it('assina o envio para a pasta de fotos de perfil, sem expor o segredo', () => {
+    const cloudinary = fakeCloudinary();
+    const uploader = createCloudinaryUploader(cloudinary, { now: () => 1_700_000_000_000 });
+
+    const signed = uploader.signUpload();
+
+    expect(cloudinary.utils.api_sign_request).toHaveBeenCalledWith({ timestamp: 1_700_000_000, folder: 'tunetalk/perfis' }, 'segredo');
+    expect(signed).toEqual({
+      uploadUrl: 'https://api.cloudinary.com/v1_1/tunetalk/image/upload',
+      fields: { api_key: 'k123', timestamp: 1_700_000_000, signature: 'assinatura', folder: 'tunetalk/perfis' },
     });
+    expect(JSON.stringify(signed)).not.toContain('segredo');
+  });
+
+  it('só aceita como foto de perfil links da nossa pasta no Cloudinary', () => {
+    const uploader = createCloudinaryUploader(fakeCloudinary());
+    expect(uploader.isOwnUrl('https://res.cloudinary.com/tunetalk/image/upload/v1/tunetalk/perfis/abc.gif')).toBe(true);
+    expect(uploader.isOwnUrl('https://res.cloudinary.com/outra/image/upload/v1/tunetalk/perfis/abc.gif')).toBe(false);
+    expect(uploader.isOwnUrl('https://res.cloudinary.com/tunetalk/image/upload/v1/outra-pasta/abc.gif')).toBe(false);
+    expect(uploader.isOwnUrl('https://site-malicioso.com/tunetalk/perfis/x.gif')).toBe(false);
+    expect(uploader.isOwnUrl(undefined)).toBe(false);
   });
 });
 

@@ -1,11 +1,15 @@
-import { describe, it, expect, vi, beforeEach } from 'vitest';
+import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
 import { authApi, musicApi, notificationsApi, postsApi, usersApi } from './index.js';
 import { request } from './http.js';
 
-vi.mock('./http.js', () => ({ request: vi.fn().mockResolvedValue('ok') }));
+vi.mock('./http.js', async (importOriginal) => ({
+  ...(await importOriginal()),
+  request: vi.fn().mockResolvedValue('ok'),
+}));
 
 describe('endpoints da API', () => {
   beforeEach(() => request.mockClear());
+  afterEach(() => vi.unstubAllGlobals());
 
   it.each([
     ['authApi.me', () => authApi.me(), ['/auth/me']],
@@ -41,10 +45,45 @@ describe('endpoints da API', () => {
     expect(request).toHaveBeenCalledWith('/users/me/username', { method: 'PUT', body: { nome: 'ana' } });
   });
 
-  it('usersApi.updateMe envia FormData', async () => {
-    const form = new FormData();
-    await usersApi.updateMe(form);
-    expect(request).toHaveBeenCalledWith('/users/me', { method: 'PUT', form });
+  it('usersApi.updateMe envia os dados (com o link da foto já enviada) em JSON', async () => {
+    await usersApi.updateMe({ nome: 'ana', bio: 'oi', fotoPerfil: 'https://res.cloudinary.com/x.gif' });
+    expect(request).toHaveBeenCalledWith('/users/me', {
+      method: 'PUT', body: { nome: 'ana', bio: 'oi', fotoPerfil: 'https://res.cloudinary.com/x.gif' },
+    });
+  });
+
+  describe('usersApi.uploadPhoto (direto para o Cloudinary)', () => {
+    const file = new File(['gif'], 'eu.gif', { type: 'image/gif' });
+    let fetchMock;
+
+    beforeEach(() => {
+      request.mockResolvedValueOnce({ uploadUrl: 'https://api.cloudinary.com/v1_1/t/image/upload', fields: { api_key: 'k', signature: 's' } });
+      fetchMock = vi.fn();
+      vi.stubGlobal('fetch', fetchMock);
+    });
+
+    it('pede a assinatura ao servidor, envia o arquivo com ela e devolve o link', async () => {
+      fetchMock.mockResolvedValue({ ok: true, json: async () => ({ secure_url: 'https://res.cloudinary.com/t/eu.gif' }) });
+
+      expect(await usersApi.uploadPhoto(file)).toBe('https://res.cloudinary.com/t/eu.gif');
+      expect(request).toHaveBeenCalledWith('/users/me/photo-upload', { method: 'POST' });
+      const [url, init] = fetchMock.mock.calls[0];
+      expect(url).toBe('https://api.cloudinary.com/v1_1/t/image/upload');
+      expect(init.method).toBe('POST');
+      expect(init.body.get('api_key')).toBe('k');
+      expect(init.body.get('signature')).toBe('s');
+      expect(init.body.get('file')).toBe(file);
+    });
+
+    it('explica quando o Cloudinary recusa por tamanho', async () => {
+      fetchMock.mockResolvedValue({ ok: false, status: 400, json: async () => ({ error: { message: 'File size too large. Got 12000000. Maximum is 10485760.' } }) });
+      await expect(usersApi.uploadPhoto(file)).rejects.toThrow('A foto pode ter no máximo 10 MB.');
+    });
+
+    it('outros erros do Cloudinary viram uma mensagem simples', async () => {
+      fetchMock.mockResolvedValue({ ok: false, status: 400, json: async () => ({ error: { message: 'Invalid image file' } }) });
+      await expect(usersApi.uploadPhoto(file)).rejects.toThrow('Não foi possível enviar essa imagem. Tente outra.');
+    });
   });
 
   it('notificationsApi.unreadCount devolve só o número', async () => {
