@@ -227,6 +227,22 @@ describe('API fake da demo (serviços reais + banco em memória)', () => {
     expect((await call('GET', '/music/search?q=')).body).toEqual([]);
   });
 
+  it('favoritos: busca artistas e salva músicas, álbuns e artistas no perfil', async () => {
+    await login();
+    const [artista] = (await call('GET', '/music/search?q=olivia&tipo=artista')).body;
+    expect(artista).toEqual(expect.objectContaining({ tipo: 'artista', titulo: 'Olivia Rodrigo' }));
+    const [album] = (await call('GET', '/music/search?q=abbey&tipo=album')).body;
+
+    const salvo = await call('PUT', '/users/me/favoritos', JSON.stringify({ albuns: [album], artistas: [artista] }));
+    expect(salvo.status).toBe(200);
+    const perfil = (await call('GET', '/users/1')).body;
+    expect(perfil.favoritos.albuns[0]).toEqual(expect.objectContaining({ titulo: 'Abbey Road', artista: 'The Beatles' }));
+    expect(perfil.favoritos.artistas[0].titulo).toBe('Olivia Rodrigo');
+
+    const ruim = await call('PUT', '/users/me/favoritos', JSON.stringify({ albuns: [{ ...album, capa: 'https://x.com/a.jpg' }] }));
+    expect(ruim.status).toBe(400);
+  });
+
   it('guarda o estado entre recarregamentos e permite restaurar', async () => {
     await login();
     await call('POST', '/notifications/read-all');

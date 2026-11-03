@@ -2506,3 +2506,154 @@ button.lyrics-picker__verso {
     padding: 0 1.6rem;
   }
 }
+
+/* Favoritos do perfil (como no Letterboxd): fileiras de 5 capas. */
+.profile-favorites {
+  display: grid;
+  gap: 1rem;
+  padding: 0 1.25rem 1.25rem;
+  border-bottom: 1px solid var(--linhas);
+
+  h2 {
+    margin: 0;
+    font-size: 1rem;
+  }
+
+  h3 {
+    margin: 0 0 .5rem;
+    color: var(--texto-suave);
+    font-size: .72rem;
+    font-weight: 600;
+    letter-spacing: .06em;
+    text-transform: uppercase;
+  }
+}
+
+.profile-favorites__topo {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: .5rem;
+  min-height: 2.25rem;
+}
+
+button.profile-favorites__vazio {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: .5rem;
+  min-height: 4.5rem;
+  padding: .75rem 1rem;
+  border: 1px dashed var(--linhas);
+  border-radius: 14px;
+  background: none;
+  color: var(--texto-suave);
+  font-size: .9rem;
+  text-align: center;
+
+  i {
+    color: var(--destaque);
+  }
+
+  &:hover {
+    border-color: var(--destaque);
+    color: var(--texto);
+  }
+}
+
+.favorites-grid {
+  display: grid;
+  grid-template-columns: repeat(5, minmax(0, 1fr));
+  gap: .5rem;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.favorites-grid__item {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+}
+
+.favorite-cover {
+  width: 100%;
+  aspect-ratio: 1;
+  border-radius: 8px;
+  background: var(--superficie-2);
+  box-shadow: 0 0 0 1px var(--linhas);
+  object-fit: cover;
+}
+
+.favorite-cover--redondo {
+  border-radius: 50%;
+}
+
+.favorites-grid__titulo,
+.favorites-grid__artista {
+  overflow: hidden;
+  white-space: nowrap;
+  text-overflow: ellipsis;
+}
+
+.favorites-grid__titulo {
+  margin-top: .35rem;
+  font-size: .74rem;
+  font-weight: 600;
+}
+
+.favorites-grid__artista {
+  color: var(--texto-suave);
+  font-size: .68rem;
+}
+
+.favorites-editor {
+  .composer-tabs {
+    grid-template-columns: repeat(3, 1fr);
+  }
+
+  .track-row:disabled {
+    opacity: .55;
+  }
+}
+
+.favorites-editor__contador {
+  margin: 0;
+  text-align: left;
+
+  strong {
+    color: var(--destaque);
+  }
+}
+
+.favorites-editor__vazio {
+  display: grid;
+  place-items: center;
+  aspect-ratio: 1;
+  border: 1px dashed var(--linhas);
+  border-radius: 8px;
+  color: var(--texto-suave);
+  font-size: .85rem;
+}
+
+.favorites-editor__tools {
+  position: absolute;
+  top: .2rem;
+  right: .2rem;
+  display: flex;
+  gap: .15rem;
+
+  button {
+    display: grid;
+    place-items: center;
+    width: 1.45rem;
+    height: 1.45rem;
+    padding: 0;
+    border: 0;
+    border-radius: 50%;
+    background: rgba(0, 5, 5, .78);
+    color: var(--texto);
+    font-size: .7rem;
+  }
+}

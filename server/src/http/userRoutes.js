@@ -22,6 +22,10 @@ export function createUserRoutes({ userService, postService, uploader, sessions 
     res.status(204).end();
   }));
 
+  router.put('/me/favoritos', asyncRoute(async (req, res) => {
+    res.json(await userService.updateFavorites(currentUserId(req), req.body));
+  }));
+
   router.post('/me/photo-upload', (req, res) => {
     res.json(uploader.signUpload());
   });

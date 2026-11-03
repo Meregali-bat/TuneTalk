@@ -8,7 +8,7 @@ import { createPasswords } from '../../../server/src/security/passwords.js';
 import { createPasswordResetService } from '../../../server/src/services/passwordResetService.js';
 import { createHashtagService } from '../../../server/src/services/hashtagService.js';
 import { createMemoryRepositories } from './memoryRepositories.js';
-import { ALBUM_CATALOG, CATALOG, DEMO_LOGIN, createSeed } from './seed.js';
+import { ALBUM_CATALOG, ARTIST_CATALOG, CATALOG, DEMO_LOGIN, createSeed } from './seed.js';
 import { avatar } from './art.js';
 
 const LETRA_DEMO = [
@@ -19,7 +19,7 @@ const LETRA_DEMO = [
 
 export { DEMO_LOGIN };
 
-const STORAGE_KEY = 'tunetalk-demo-v10';
+const STORAGE_KEY = 'tunetalk-demo-v11';
 
 const readState = (storage) => {
   try {
@@ -49,7 +49,7 @@ const fileToDataUrl = (file) =>
 const searchCatalog = (q, tipo) => {
   const term = (q ?? '').trim().toLowerCase();
   if (!term) return [];
-  const catalogo = tipo === 'album' ? ALBUM_CATALOG : CATALOG;
+  const catalogo = tipo === 'album' ? ALBUM_CATALOG : tipo === 'artista' ? ARTIST_CATALOG : CATALOG;
   return catalogo.filter((t) => `${t.titulo} ${t.artista}`.toLowerCase().includes(term));
 };
 
@@ -79,6 +79,8 @@ export function createFakeApi({ storage = globalThis.localStorage } = {}) {
       posts: postService,
       users: createUserService({
         users: repos.users, follows: repos.follows, postService, notifications: repos.notifications, passwords,
+        // As capas da demo são desenhadas (data:), não vêm do Deezer.
+        capaFavoritoValida: (url) => url.startsWith('data:image/svg+xml'),
       }),
       notifications: repos.notifications,
       hashtags: createHashtagService({ posts: repos.posts }),
@@ -150,6 +152,7 @@ export function createFakeApi({ storage = globalThis.localStorage } = {}) {
     ['POST', /^\/users\/me\/banner-upload$/, () => { me(); return ok({ uploadUrl: '/api/demo-upload', fields: {} }); }],
     ['POST', /^\/users\/me\/photo-upload$/, () => { me(); return ok({ uploadUrl: '/api/demo-upload', fields: {} }); }],
     ['POST', /^\/demo-upload$/, async ({ form }) => ok({ secure_url: await fileToDataUrl(form.get('file')) })],
+    ['PUT', /^\/users\/me\/favoritos$/, async ({ body }) => ok(await services.users.updateFavorites(me(), body))],
     ['PUT', /^\/users\/me$/, async ({ body }) => {
       const isDemoImage = (url) => url === undefined || String(url).startsWith('data:image/');
       if (!isDemoImage(body.fotoPerfil)) throw badRequest('Foto inválida. Envie a imagem de novo.');

@@ -88,6 +88,15 @@ describe('userRepository (Postgres)', () => {
     expect(await repo.findByNames([])).toEqual([]);
   });
 
+  it('favoritos começam vazios e são gravados como vieram', async () => {
+    const ana = await factory.user();
+    expect(await repo.getFavorites(ana.id)).toEqual({});
+    const favoritos = { musicas: [{ id: '1', titulo: 'Help!', artista: 'The Beatles', capa: 'c.jpg' }], albuns: [], artistas: [] };
+    await repo.setFavorites(ana.id, favoritos);
+    expect(await repo.getFavorites(ana.id)).toEqual(favoritos);
+    expect(await repo.getFavorites(9999)).toBeNull();
+  });
+
   it('setPinnedPost fixa e desafixa o post do perfil', async () => {
     const ana = await factory.user();
     const post = await db.prisma.post.create({ data: { autorId: ana.id, texto: 'oi' } });

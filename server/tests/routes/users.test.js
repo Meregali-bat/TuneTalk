@@ -45,6 +45,13 @@ describe('rotas /api/users', () => {
     expect(deps.userService.getProfile).toHaveBeenCalledWith(2, 1);
   });
 
+  it('PUT /api/users/me/favoritos salva os favoritos de quem está logado', async () => {
+    deps.userService.updateFavorites = vi.fn().mockResolvedValue({ musicas: [], albuns: [], artistas: [] });
+    const res = await agent.put('/api/users/me/favoritos').send({ musicas: [] }).expect(200);
+    expect(res.body).toEqual({ musicas: [], albuns: [], artistas: [] });
+    expect(deps.userService.updateFavorites).toHaveBeenCalledWith(1, { musicas: [] });
+  });
+
   describe('PUT /api/users/me/password', () => {
     it('troca a senha, derruba as outras sessões da pessoa e mantém a atual', async () => {
       deps.userService.changePassword.mockResolvedValue(undefined);

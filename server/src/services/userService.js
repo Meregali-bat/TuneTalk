@@ -1,6 +1,7 @@
 import { badRequest, conflict, notFound } from '../errors.js';
 import { USERNAME_MESSAGES, checkUsername } from '../../../shared/usernameRules.js';
 import { PASSWORD_RULES_MESSAGE, isPasswordValid } from '../../../shared/passwordRules.js';
+import { capaDoDeezer, lerFavoritos, validarFavoritos } from '../../../shared/favorites.js';
 
 export const BIO_MAX = 255;
 export const NOME_EXIBICAO_MAX = 50;
@@ -8,7 +9,8 @@ export const NOME_EXIBICAO_MAX = 50;
 // undefined mantém o atual; texto vazio apaga (o perfil volta a mostrar só o nome de usuário).
 const cleanNomeExibicao = (valor, atual) => (valor === undefined ? atual : String(valor).trim() || null);
 
-export function createUserService({ users, follows, postService, notifications, passwords }) {
+// capaFavoritoValida: no app real, só imagens do Deezer; a demo troca pelas capas desenhadas dela.
+export function createUserService({ users, follows, postService, notifications, passwords, capaFavoritoValida = capaDoDeezer }) {
   const findOrFail = async (id) => {
     const user = await users.findById(id);
     if (!user) throw notFound('Usuário não encontrado.');
@@ -24,7 +26,7 @@ export function createUserService({ users, follows, postService, notifications, 
   return {
     async getProfile(profileId, viewerId) {
       const usuario = await findOrFail(profileId);
-      const [posts, quantidadeSeguidores, quantidadeSeguindo, seguidores, seguindo, seguindoIds] =
+      const [posts, quantidadeSeguidores, quantidadeSeguindo, seguidores, seguindo, seguindoIds, favoritos] =
         await Promise.all([
           postService.byAuthor(profileId, viewerId),
           follows.countFollowers(profileId),
@@ -32,6 +34,7 @@ export function createUserService({ users, follows, postService, notifications, 
           follows.listFollowers(profileId),
           follows.listFollowing(profileId),
           follows.followingIds(viewerId),
+          users.getFavorites(profileId),
         ]);
 
       return {
@@ -43,6 +46,7 @@ export function createUserService({ users, follows, postService, notifications, 
         seguidores,
         seguindo,
         seguindoIds,
+        favoritos: lerFavoritos(favoritos, { capaValida: capaFavoritoValida }),
       };
     },
 
@@ -71,6 +75,13 @@ export function createUserService({ users, follows, postService, notifications, 
       if (changes.nome !== atual.nome) await assertUsernameAvailable(changes.nome, usuarioId);
       await users.update(usuarioId, changes);
       return { ...atual, ...changes };
+    },
+
+    async updateFavorites(usuarioId, body) {
+      const { favoritos, erro } = validarFavoritos(body, { capaValida: capaFavoritoValida });
+      if (erro) throw badRequest(erro);
+      await users.setFavorites(usuarioId, favoritos);
+      return favoritos;
     },
 
     async getProfileByName(nome, viewerId) {

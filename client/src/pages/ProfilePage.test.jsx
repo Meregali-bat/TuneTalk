@@ -6,7 +6,7 @@ import { musicApi, postsApi, usersApi } from '../api/index.js';
 import { makeAuth, renderWithProviders } from '../test/render.jsx';
 
 vi.mock('../api/index.js', () => ({
-  usersApi: { profile: vi.fn(), comments: vi.fn(), follow: vi.fn(), unfollow: vi.fn(), updateMe: vi.fn(), changePassword: vi.fn() },
+  usersApi: { profile: vi.fn(), comments: vi.fn(), updateFavorites: vi.fn(), follow: vi.fn(), unfollow: vi.fn(), updateMe: vi.fn(), changePassword: vi.fn() },
   postsApi: { like: vi.fn(), unlike: vi.fn(), remove: vi.fn(), create: vi.fn(), pin: vi.fn(), unpin: vi.fn() },
   musicApi: { search: vi.fn() },
 }));
@@ -295,5 +295,102 @@ describe('ProfilePage', () => {
     usersApi.profile.mockRejectedValue(new Error('Usuário não encontrado.'));
     renderProfile(99);
     expect(await screen.findByRole('alert')).toHaveTextContent('Usuário não encontrado.');
+  });
+
+  describe('favoritos (como no Letterboxd)', () => {
+    const ana = { id: 1, nome: 'ana', fotoPerfil: 'a.png', bio: '' };
+    const capa = (n) => `https://cdn-images.dzcdn.net/${n}.jpg`;
+    const help = { id: '1', titulo: 'Help!', artista: 'The Beatles', capa: capa('help') };
+    const abbey = { id: '9', titulo: 'Abbey Road', artista: 'The Beatles', capa: capa('abbey') };
+    const olivia = { id: '5', titulo: 'Olivia Rodrigo', capa: capa('olivia') };
+    const vazios = { musicas: [], albuns: [], artistas: [] };
+
+    it('mostra as fileiras que a pessoa preencheu, com título e artista', async () => {
+      usersApi.profile.mockResolvedValue(profile({ favoritos: { musicas: [help], albuns: [], artistas: [olivia] } }));
+      renderProfile();
+
+      const secao = await screen.findByRole('region', { name: 'Favoritos' });
+      const musicas = within(secao).getByRole('list', { name: 'Músicas favoritas' });
+      expect(within(musicas).getByText('Help!')).toBeInTheDocument();
+      expect(within(musicas).getByText('The Beatles')).toBeInTheDocument();
+      expect(within(secao).getByRole('list', { name: 'Artistas favoritos' })).toHaveTextContent('Olivia Rodrigo');
+      expect(within(secao).queryByRole('list', { name: 'Álbuns favoritos' })).toBeNull();
+      expect(within(secao).queryByRole('button', { name: 'Editar favoritos' })).toBeNull();
+    });
+
+    it('perfil de outra pessoa sem favoritos não mostra a seção; dado estranho não quebra', async () => {
+      usersApi.profile.mockResolvedValue(profile({ favoritos: { musicas: 'x', albuns: [null] } }));
+      renderProfile();
+      await screen.findByRole('heading', { level: 1, name: 'bia' });
+      expect(screen.queryByRole('region', { name: 'Favoritos' })).toBeNull();
+    });
+
+    it('no próprio perfil vazio, convida a escolher', async () => {
+      usersApi.profile.mockResolvedValue(profile({ usuario: ana, favoritos: vazios }));
+      renderProfile(1);
+      await userEvent.click(await screen.findByRole('button', { name: /Escolha suas 5 músicas, álbuns e artistas/ }));
+      expect(screen.getByRole('dialog', { name: 'Favoritos' })).toBeInTheDocument();
+    });
+
+    it('edita: busca, adiciona, reordena, tira e salva', async () => {
+      usersApi.profile.mockResolvedValue(profile({ usuario: ana, favoritos: { ...vazios, musicas: [help] } }));
+      musicApi.search.mockImplementation(async (q, tipo) => (tipo === 'album'
+        ? [{ id: 9, tipo: 'album', titulo: 'Abbey Road', artista: 'The Beatles', capa: capa('abbey'), faixas: 17 }]
+        : [{ id: 2, tipo: 'musica', titulo: 'Yesterday', artista: 'The Beatles', capa: capa('y'), duracao: 125 },
+          { id: 1, tipo: 'musica', titulo: 'Help!', artista: 'The Beatles', capa: capa('help'), duracao: 138 }]));
+      usersApi.updateFavorites.mockImplementation(async (f) => f);
+      renderProfile(1);
+
+      await userEvent.click(await screen.findByRole('button', { name: 'Editar favoritos' }));
+      const dialog = screen.getByRole('dialog', { name: 'Favoritos' });
+      expect(within(dialog).getByText('1 de 5')).toBeInTheDocument();
+
+      await userEvent.type(within(dialog).getByLabelText('Buscar músicas'), 'beatles');
+      // Quem já está na lista aparece desligado.
+      expect(await within(dialog).findByRole('button', { name: /Help!The Beatles/ })).toBeDisabled();
+      await userEvent.click(within(dialog).getByRole('button', { name: /Yesterday/ }));
+      expect(within(dialog).getByText('2 de 5')).toBeInTheDocument();
+      await userEvent.click(within(dialog).getByRole('button', { name: 'Mover Yesterday para antes' }));
+
+      await userEvent.click(within(dialog).getByRole('tab', { name: 'Álbuns' }));
+      await userEvent.type(within(dialog).getByLabelText('Buscar álbuns'), 'abbey');
+      await userEvent.click(await within(dialog).findByRole('button', { name: /Abbey Road/ }));
+      expect(musicApi.search).toHaveBeenLastCalledWith('abbey', 'album');
+
+      await userEvent.click(within(dialog).getByRole('tab', { name: 'Músicas' }));
+      await userEvent.click(within(dialog).getByRole('button', { name: 'Tirar Help!' }));
+      await userEvent.click(within(dialog).getByRole('button', { name: 'Salvar' }));
+
+      expect(usersApi.updateFavorites).toHaveBeenCalledWith({
+        musicas: [{ id: '2', titulo: 'Yesterday', artista: 'The Beatles', capa: capa('y') }],
+        albuns: [abbey],
+        artistas: [],
+      });
+      await waitFor(() => expect(screen.queryByRole('dialog')).toBeNull());
+      const secao = screen.getByRole('region', { name: 'Favoritos' });
+      expect(within(secao).getByRole('list', { name: 'Músicas favoritas' })).toHaveTextContent('Yesterday');
+      expect(within(secao).getByRole('list', { name: 'Álbuns favoritos' })).toHaveTextContent('Abbey Road');
+    });
+
+    it('com 5 na lista, a busca trava até tirar um', async () => {
+      const cinco = [1, 2, 3, 4, 5].map((i) => ({ ...help, id: String(i), titulo: `Música ${i}` }));
+      usersApi.profile.mockResolvedValue(profile({ usuario: ana, favoritos: { ...vazios, musicas: cinco } }));
+      renderProfile(1);
+      await userEvent.click(await screen.findByRole('button', { name: 'Editar favoritos' }));
+      const busca = screen.getByLabelText('Buscar músicas');
+      expect(busca).toBeDisabled();
+      await userEvent.click(screen.getByRole('button', { name: 'Tirar Música 3' }));
+      expect(busca).toBeEnabled();
+    });
+
+    it('erro ao salvar aparece e mantém a edição aberta', async () => {
+      usersApi.profile.mockResolvedValue(profile({ usuario: ana, favoritos: { ...vazios, musicas: [help] } }));
+      usersApi.updateFavorites.mockRejectedValue(new Error('Favorito inválido. Escolha de novo pela busca.'));
+      renderProfile(1);
+      await userEvent.click(await screen.findByRole('button', { name: 'Editar favoritos' }));
+      await userEvent.click(screen.getByRole('button', { name: 'Salvar' }));
+      expect(await screen.findByRole('alert')).toHaveTextContent('Favorito inválido.');
+      expect(screen.getByRole('dialog', { name: 'Favoritos' })).toBeInTheDocument();
+    });
   });
 });

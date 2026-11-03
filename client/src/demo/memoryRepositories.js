@@ -90,6 +90,14 @@ export function createMemoryRepositories(state, onChange) {
       Object.assign(userById(id), changes);
       changed();
     },
+    async getFavorites(id) {
+      const usuario = state.usuarios.find((u) => u.id === id);
+      return usuario ? (usuario.favoritos ?? {}) : null;
+    },
+    async setFavorites(id, favoritos) {
+      userById(id).favoritos = favoritos;
+      changed();
+    },
   };
 
   const follows = {

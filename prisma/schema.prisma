@@ -27,6 +27,8 @@ model Usuario {
   bio                 String?   @db.VarChar(255)
   // Nome de exibição (livre, como no Twitter); sem ele, o perfil mostra o nome de usuário.
   nomeExibicao        String?   @map("nome_exibicao") @db.VarChar(50)
+  // Favoritos do perfil: { musicas, albuns, artistas }, até 5 de cada (dados do Deezer).
+  favoritos           Json      @default("{}")
   // Capa do perfil, enviada direto ao Cloudinary (pasta tunetalk/banners).
   bannerUrl           String?   @map("banner_url") @db.VarChar(500)
   // Conta que veio do TuneTalk antigo (ids preservados na migração). Ganha o selo de fundador

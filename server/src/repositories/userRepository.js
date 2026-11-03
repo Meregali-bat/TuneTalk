@@ -80,6 +80,14 @@ export function createUserRepository(prisma) {
       return user.id;
     },
 
+    async getFavorites(id) {
+      return (await prisma.usuario.findUnique({ where: { id }, select: { favoritos: true } }))?.favoritos ?? null;
+    },
+
+    async setFavorites(id, favoritos) {
+      await prisma.usuario.update({ where: { id }, data: { favoritos } });
+    },
+
     findById(id) {
       return prisma.usuario.findUnique({ where: { id }, select: PUBLIC_USER_SELECT });
     },

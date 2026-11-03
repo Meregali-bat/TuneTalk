@@ -37,6 +37,21 @@ describe('musicService', () => {
     expect(result).toEqual([{ id: 9, tipo: 'album', titulo: 'Abbey Road', artista: 'The Beatles', capa: 'abbey.jpg', faixas: 17 }]);
   });
 
+  it('busca artistas na busca de artistas do Deezer', async () => {
+    const fetch = vi.fn().mockResolvedValue(okResponse({
+      data: [{ id: 5, name: 'Olivia Rodrigo', picture_medium: 'olivia.jpg', nb_fan: 1000 }],
+    }));
+    const result = await createMusicService({ fetch }).search('olivia', 'artista');
+    expect(fetch).toHaveBeenCalledWith('https://api.deezer.com/search/artist?q=olivia');
+    expect(result).toEqual([{ id: 5, tipo: 'artista', titulo: 'Olivia Rodrigo', capa: 'olivia.jpg', fas: 1000 }]);
+  });
+
+  it('tipo desconhecido busca faixas', async () => {
+    const fetch = vi.fn().mockResolvedValue(okResponse({ data: [] }));
+    await createMusicService({ fetch }).search('x', 'constructor');
+    expect(fetch).toHaveBeenCalledWith('https://api.deezer.com/search?q=x');
+  });
+
   describe('preview (renovar o link da prévia)', () => {
     it('busca a faixa pelo artista e título e devolve o link novo da prévia', async () => {
       const fetch = vi.fn().mockResolvedValue(okResponse({ data: [{ ...deezerTrack, preview: 'novo.mp3?hdnea=exp=999' }] }));

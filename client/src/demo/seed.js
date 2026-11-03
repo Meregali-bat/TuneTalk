@@ -17,6 +17,12 @@ export const ALBUM_CATALOG = [
   ['SOUR', 'Olivia Rodrigo', 11], ['Elis & Tom', 'Elis Regina & Tom Jobim', 14], ['A Night at the Opera', 'Queen', 12],
 ].map(([titulo, artista, faixas], i) => ({ id: 100 + i, tipo: 'album', titulo, artista, capa: coverArt(titulo, artista), faixas }));
 
+// Artistas da busca da demo: os do catálogo, com uma "foto" desenhada.
+export const ARTIST_CATALOG = [...new Set([...CATALOG, ...ALBUM_CATALOG].map((t) => t.artista))]
+  .map((nome, i) => ({ id: 200 + i, tipo: 'artista', titulo: nome, capa: avatar(nome), fas: 1000 * (i + 1) }));
+
+const favorito = (t) => ({ id: String(t.id), titulo: t.titulo, ...(t.tipo !== 'artista' && { artista: t.artista }), capa: t.capa });
+
 const minutesAgo = (n) => new Date(Date.now() - n * 60 * 1000).toISOString();
 
 const user = (id, nome, email, bio, nomeExibicao = null) => ({
@@ -51,7 +57,14 @@ export function createSeed() {
     session: null,
     usuarios: [
       { ...user(1, 'ana.souza', DEMO_LOGIN.email, 'MPB de manhã, rock à noite', 'Ana Souza'), veterano: true },
-      user(2, 'bruno.lima', 'bruno@demo.com', 'Colecionador de vinil', 'Bruno Lima 💿'),
+      {
+        ...user(2, 'bruno.lima', 'bruno@demo.com', 'Colecionador de vinil', 'Bruno Lima 💿'),
+        favoritos: {
+          musicas: CATALOG.slice(0, 4).map(favorito),
+          albuns: ALBUM_CATALOG.slice(0, 5).map(favorito),
+          artistas: ARTIST_CATALOG.slice(0, 3).map(favorito),
+        },
+      },
       user(3, 'carla.mendes', 'carla@demo.com', 'Toco baixo numa banda de garagem'),
       user(4, 'diego.rocha', 'diego@demo.com', null),
     ],

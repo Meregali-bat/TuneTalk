@@ -25,6 +25,9 @@ export default defineConfig(({ mode }) => ({
           name: 'server',
           environment: 'node',
           include: ['server/tests/**/*.test.js'],
+          // Cada arquivo de banco sobe um Postgres em memória (PGlite) e aplica as migrations:
+          // com a suíte toda em paralelo, isso passa dos 10s padrão.
+          hookTimeout: 30000,
         },
       },
       {

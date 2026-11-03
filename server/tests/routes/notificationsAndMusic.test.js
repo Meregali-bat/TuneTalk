@@ -74,6 +74,11 @@ describe('rotas /api/notifications e /api/music', () => {
 
     await agent.get('/api/music/search?q=abbey&tipo=album');
     expect(deps.musicService.search).toHaveBeenLastCalledWith('abbey', 'album');
+
+    await agent.get('/api/music/search?q=olivia&tipo=artista');
+    expect(deps.musicService.search).toHaveBeenLastCalledWith('olivia', 'artista');
+    await agent.get('/api/music/search?q=x&tipo=outro');
+    expect(deps.musicService.search).toHaveBeenLastCalledWith('x', 'musica');
   });
 
   it('rotas /api desconhecidas respondem 404 em JSON', async () => {

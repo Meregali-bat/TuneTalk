@@ -1,6 +1,6 @@
 import { useEffect, useId, useLayoutEffect, useRef, useState } from 'react';
-import { musicApi, postsApi } from '../../api/index.js';
-import { useDebouncedValue } from '../../hooks/useDebouncedValue.js';
+import { postsApi } from '../../api/index.js';
+import { useMusicSearch } from '../../hooks/useMusicSearch.js';
 import { formatDuration } from '../../utils/postFormat.js';
 import { StarRatingInput } from './StarRatingInput.jsx';
 import { IMAGEM_MAX_MB } from '../../api/limits.js';
@@ -58,27 +58,6 @@ function CropPreview({ src, recorte }) {
       />
     </div>
   );
-}
-
-// tipo: 'musica' (faixas) ou 'album'.
-function useMusicSearch(query, tipo) {
-  const [search, setSearch] = useState({ status: 'idle', results: [] });
-  const term = useDebouncedValue(query.trim(), 300);
-
-  useEffect(() => {
-    if (!term) {
-      setSearch({ status: 'idle', results: [] });
-      return undefined;
-    }
-    let active = true;
-    setSearch((current) => ({ ...current, status: 'loading' }));
-    (tipo === 'album' ? musicApi.search(term, 'album') : musicApi.search(term))
-      .then((results) => active && setSearch({ status: 'done', results, term }))
-      .catch(() => active && setSearch({ status: 'error', results: [] }));
-    return () => { active = false; };
-  }, [term, tipo]);
-
-  return search;
 }
 
 const BUSCAS = {

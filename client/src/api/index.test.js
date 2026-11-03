@@ -37,6 +37,8 @@ describe('endpoints da API', () => {
     ['notificationsApi.readAll', () => notificationsApi.readAll(), ['/notifications/read-all', { method: 'POST' }]],
     ['musicApi.search', () => musicApi.search('a b'), ['/music/search?q=a%20b']],
     ['musicApi.search (álbuns)', () => musicApi.search('abbey', 'album'), ['/music/search?q=abbey&tipo=album']],
+    ['musicApi.search (artistas)', () => musicApi.search('olivia', 'artista'), ['/music/search?q=olivia&tipo=artista']],
+    ['usersApi.updateFavorites', () => usersApi.updateFavorites({ musicas: [] }), ['/users/me/favoritos', { method: 'PUT', body: { musicas: [] } }]],
   ])('%s chama o endpoint certo', async (_, call, args) => {
     await call();
     expect(request).toHaveBeenCalledWith(...args);

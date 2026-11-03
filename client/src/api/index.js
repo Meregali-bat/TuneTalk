@@ -53,6 +53,8 @@ export const usersApi = {
   updateMe: (changes) => request('/users/me', { method: 'PUT', body: changes }),
   uploadPhoto: (file) => uploadImage('/users/me/photo-upload', file),
   uploadBanner: (file) => uploadImage('/users/me/banner-upload', file),
+  // { musicas, albuns, artistas }, até 5 de cada.
+  updateFavorites: (favoritos) => request('/users/me/favoritos', { method: 'PUT', body: favoritos }),
   setUsername: (nome) => request('/users/me/username', { method: 'PUT', body: { nome } }),
   changePassword: (senhaAtual, novaSenha) =>
     request('/users/me/password', { method: 'PUT', body: { senhaAtual, novaSenha } }),
@@ -87,6 +89,6 @@ export const musicApi = {
       throw err;
     }
   },
-  // tipo 'album' busca álbuns; sem tipo, faixas.
-  search: (q, tipo) => request(`/music/search?q=${encodeURIComponent(q)}${tipo === 'album' ? '&tipo=album' : ''}`),
+  // tipo 'album' busca álbuns, 'artista' busca artistas; sem tipo, faixas.
+  search: (q, tipo) => request(`/music/search?q=${encodeURIComponent(q)}${['album', 'artista'].includes(tipo) ? `&tipo=${tipo}` : ''}`),
 };

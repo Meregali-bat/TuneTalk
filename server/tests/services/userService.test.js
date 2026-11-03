@@ -22,6 +22,8 @@ describe('userService', () => {
       isNameTaken: vi.fn().mockResolvedValue(false),
       findAuthById: vi.fn().mockResolvedValue({ id: 1, senha: md5('Atual!1') }),
       updatePassword: vi.fn(),
+      getFavorites: vi.fn().mockResolvedValue(null),
+      setFavorites: vi.fn(),
     };
     follows = {
       isFollowing: vi.fn().mockResolvedValue(false),
@@ -53,11 +55,37 @@ describe('userService', () => {
         seguidores: [bia],
         seguindo: [],
         seguindoIds: [2],
+        favoritos: { musicas: [], albuns: [], artistas: [] },
       });
+    });
+
+    it('traz os favoritos guardados, sem os itens estragados', async () => {
+      const capa = 'https://cdn-images.dzcdn.net/images/cover/a/250x250.jpg';
+      users.getFavorites.mockResolvedValue({ albuns: [{ id: '9', titulo: 'Abbey Road', artista: 'The Beatles', capa }, { lixo: true }] });
+      const { favoritos } = await service.getProfile(1, 2);
+      expect(users.getFavorites).toHaveBeenCalledWith(1);
+      expect(favoritos.albuns).toEqual([{ id: '9', titulo: 'Abbey Road', artista: 'The Beatles', capa }]);
     });
 
     it('lança 404 para usuário inexistente', async () => {
       await expect(service.getProfile(99, 1)).rejects.toMatchObject({ status: 404 });
+    });
+  });
+
+  describe('updateFavorites', () => {
+    const capa = 'https://cdn-images.dzcdn.net/images/artist/a/250x250.jpg';
+
+    it('valida e guarda os favoritos', async () => {
+      const favoritos = await service.updateFavorites(1, { artistas: [{ id: 5, titulo: 'Olivia Rodrigo', capa }] });
+      expect(favoritos.artistas).toEqual([{ id: '5', titulo: 'Olivia Rodrigo', capa }]);
+      expect(users.setFavorites).toHaveBeenCalledWith(1, favoritos);
+    });
+
+    it('recusa o que não passar na validação', async () => {
+      await expect(service.updateFavorites(1, { musicas: 'x' })).rejects.toMatchObject({ status: 400 });
+      await expect(service.updateFavorites(1, { artistas: [{ id: 5, titulo: 'X', capa: 'https://outro.com/a.jpg' }] }))
+        .rejects.toMatchObject({ status: 400 });
+      expect(users.setFavorites).not.toHaveBeenCalled();
     });
   });
 

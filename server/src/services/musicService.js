@@ -4,6 +4,7 @@ import { badGateway } from '../errors.js';
 const DEEZER_SEARCH_URL = {
   musica: 'https://api.deezer.com/search',
   album: 'https://api.deezer.com/search/album',
+  artista: 'https://api.deezer.com/search/artist',
 };
 
 const toTrack = (track) => ({
@@ -25,6 +26,16 @@ const toAlbum = (album) => ({
   faixas: album.nb_tracks,
 });
 
+const toArtist = (artist) => ({
+  id: artist.id,
+  tipo: 'artista',
+  titulo: artist.name,
+  capa: artist.picture_medium,
+  fas: artist.nb_fan,
+});
+
+const MAPEAR = { musica: toTrack, album: toAlbum, artista: toArtist };
+
 export function createMusicService({ fetch = globalThis.fetch } = {}) {
   const firstPreview = async (q) => {
     const response = await fetch(`${DEEZER_SEARCH_URL.musica}?q=${encodeURIComponent(q)}&limit=1`);
@@ -43,17 +54,17 @@ export function createMusicService({ fetch = globalThis.fetch } = {}) {
       return (await firstPreview(`artist:"${a}" track:"${t}"`)) ?? firstPreview(`${a} ${t}`.trim());
     },
 
-    // tipo: 'musica' (faixas, padrão) ou 'album'.
+    // tipo: 'musica' (faixas, padrão), 'album' ou 'artista'.
     async search(query, tipo = 'musica') {
       const q = (query ?? '').trim();
       if (!q) return [];
-      const isAlbum = tipo === 'album';
+      const chave = Object.hasOwn(MAPEAR, tipo) ? tipo : 'musica';
 
-      const response = await fetch(`${DEEZER_SEARCH_URL[isAlbum ? 'album' : 'musica']}?q=${encodeURIComponent(q)}`);
+      const response = await fetch(`${DEEZER_SEARCH_URL[chave]}?q=${encodeURIComponent(q)}`);
       if (!response.ok) throw badGateway('Falha ao buscar músicas.');
 
       const body = await response.json();
-      return (body.data ?? []).map(isAlbum ? toAlbum : toTrack);
+      return (body.data ?? []).map(MAPEAR[chave]);
     },
   };
 }

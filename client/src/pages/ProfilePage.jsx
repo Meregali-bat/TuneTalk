@@ -15,6 +15,8 @@ import { profileEffectFor } from '../components/effects/profileEffects.js';
 import { VerifiedBadge } from '../components/effects/VerifiedBadge.jsx';
 import { FounderBadge, mostraSeloFundador } from '../components/effects/FounderBadge.jsx';
 import { PullToRefresh } from '../components/common/PullToRefresh.jsx';
+import { ProfileFavorites } from '../components/profile/ProfileFavorites.jsx';
+import { EditFavoritesModal } from '../components/profile/EditFavoritesModal.jsx';
 
 // Só posts com música têm nota. A média sai na escala guardada (0 a 10) e é mostrada em estrelas.
 function notaMedia(posts) {
@@ -174,6 +176,7 @@ export function ProfilePage() {
   const [openList, setOpenList] = useState(null);
   const [editing, setEditing] = useState(false);
   const [changingPassword, setChangingPassword] = useState(false);
+  const [editingFavorites, setEditingFavorites] = useState(false);
   const [notice, setNotice] = useState('');
   const [composerOpen, setComposerOpen] = useState(false);
   const [aba, setAba] = useState('posts');
@@ -217,6 +220,12 @@ export function ProfilePage() {
           <i className="bi bi-check-circle-fill" aria-hidden="true" /> {notice}
         </p>
       )}
+
+      <ProfileFavorites
+        favoritos={profile.favoritos}
+        editavel={isOwnProfile}
+        onEditar={() => setEditingFavorites(true)}
+      />
 
       <div role="tablist" aria-label="Conteúdo do perfil" className="feed-tabs profile-tabs">
         {[['posts', 'Posts'], ['comentarios', 'Comentários']].map(([chave, rotulo]) => (
@@ -275,6 +284,16 @@ export function ProfilePage() {
           onChanged={() => {
             setChangingPassword(false);
             setNotice('Senha alterada. Os outros aparelhos conectados precisam entrar de novo.');
+          }}
+        />
+      )}
+      {isOwnProfile && editingFavorites && (
+        <EditFavoritesModal
+          favoritos={profile.favoritos}
+          onClose={() => setEditingFavorites(false)}
+          onSaved={(favoritos) => {
+            setData((p) => ({ ...p, favoritos }));
+            setEditingFavorites(false);
           }}
         />
       )}
