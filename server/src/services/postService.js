@@ -8,15 +8,6 @@ const CREATE_FIELDS = [
   'posterAlbum', 'postType', 'releaseDate', 'nota', 'musicPreview', 'imagemUrl',
 ];
 
-export function fisherYatesShuffle(list) {
-  const copy = [...list];
-  for (let i = copy.length - 1; i > 0; i--) {
-    const j = Math.floor(Math.random() * (i + 1));
-    [copy[i], copy[j]] = [copy[j], copy[i]];
-  }
-  return copy;
-}
-
 const pick = (source, fields) =>
   Object.fromEntries(fields.filter((f) => source[f] !== undefined).map((f) => [f, source[f]]));
 
@@ -32,7 +23,6 @@ export function createPostService({
   likes,
   notifications,
   users,
-  shuffle = fisherYatesShuffle,
   now = () => new Date(),
 }) {
   const markLiked = async (list, viewerId) => {
@@ -53,7 +43,8 @@ export function createPostService({
 
   return {
     async forYou(viewerId) {
-      return markLiked(shuffle(await posts.listLatest()), viewerId);
+      // Os mais recentes primeiro: quem acabou de postar aparece no topo.
+      return markLiked(await posts.listLatest(), viewerId);
     },
 
     async following(viewerId) {

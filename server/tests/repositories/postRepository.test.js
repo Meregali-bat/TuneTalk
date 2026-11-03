@@ -98,14 +98,12 @@ describe('postRepository (Postgres)', () => {
     });
   });
 
-  it('listLatest devolve os 20 mais recentes, do mais novo para o mais antigo', async () => {
-    for (let i = 0; i < 22; i++) {
+  it('listLatest devolve os mais recentes (50 por padrão), do mais novo para o mais antigo', async () => {
+    for (let i = 0; i < 5; i++) {
       await factory.post(ana.id, { texto: `p${i}`, createdAt: new Date(Date.UTC(2024, 0, i + 1)) });
     }
-    const posts = await repo.listLatest();
-    expect(posts).toHaveLength(20);
-    expect(posts[0].texto).toBe('p21');
-    expect(posts[19].texto).toBe('p2');
+    expect((await repo.listLatest()).map((p) => p.texto)).toEqual(['p4', 'p3', 'p2', 'p1', 'p0']);
+    expect((await repo.listLatest(3)).map((p) => p.texto)).toEqual(['p4', 'p3', 'p2']);
   });
 
   it('os feeds e o perfil não mostram respostas', async () => {

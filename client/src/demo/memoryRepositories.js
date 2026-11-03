@@ -103,8 +103,8 @@ export function createMemoryRepositories(state, onChange) {
   };
 
   const posts = {
-    async listLatest() {
-      return topLevel().sort((a, b) => b.createdAt.localeCompare(a.createdAt)).slice(0, 20).map(postRow);
+    async listLatest(limit = 50) {
+      return topLevel().sort((a, b) => b.createdAt.localeCompare(a.createdAt) || b.id - a.id).slice(0, limit).map(postRow);
     },
     async listByAuthor(autorId) {
       return topLevel().filter((p) => p.autorId === autorId).sort(byIdDesc).map(postRow);

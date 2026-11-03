@@ -35,16 +35,16 @@ describe('postService', () => {
       likes,
       notifications,
       users,
-      shuffle: (list) => [...list].reverse(),
       now: () => now,
     });
   });
 
   describe('feeds', () => {
-    it('forYou embaralha os mais recentes e marca os curtidos pelo usuário', async () => {
+    it('forYou mostra os mais recentes primeiro, sem embaralhar, e marca os curtidos pelo usuário', async () => {
+      posts.listLatest.mockResolvedValue([post(3), post(2), post(1)]);
       const feed = await service.forYou(7);
       expect(likes.likedPostIds).toHaveBeenCalledWith(7);
-      expect(feed.map((p) => [p.id, p.curtido])).toEqual([[2, true], [1, false]]);
+      expect(feed.map((p) => [p.id, p.curtido])).toEqual([[3, true], [2, true], [1, false]]);
     });
 
     it('following lista os posts de quem o usuário segue', async () => {

@@ -42,8 +42,8 @@ export function createPostRepository(prisma) {
   const findPosts = async (args) => (await prisma.post.findMany({ ...args, include: POST_INCLUDE })).map(toPost);
 
   return {
-    listLatest() {
-      return findPosts({ where: TOP_LEVEL, orderBy: { createdAt: 'desc' }, take: 20 });
+    listLatest(limit = 50) {
+      return findPosts({ where: TOP_LEVEL, orderBy: [{ createdAt: 'desc' }, { id: 'desc' }], take: limit });
     },
 
     listByAuthor(autorId) {
