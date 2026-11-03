@@ -11,9 +11,15 @@ import { createMemoryRepositories } from './memoryRepositories.js';
 import { ALBUM_CATALOG, CATALOG, DEMO_LOGIN, createSeed } from './seed.js';
 import { avatar } from './art.js';
 
+const LETRA_DEMO = [
+  'A cidade acorda devagar', 'E eu ainda penso no que você disse', 'Toda vez que esse som começa a tocar',
+  'Eu volto pra noite em que tudo existe', 'O rádio baixinho, a janela aberta', 'O mundo inteiro cabia no carro',
+  'E a gente cantava a parte errada', 'Rindo de tudo que era tão raro',
+];
+
 export { DEMO_LOGIN };
 
-const STORAGE_KEY = 'tunetalk-demo-v9';
+const STORAGE_KEY = 'tunetalk-demo-v10';
 
 const readState = (storage) => {
   try {
@@ -166,6 +172,8 @@ export function createFakeApi({ storage = globalThis.localStorage } = {}) {
 
     ['GET', /^\/hashtags\/em-alta$/, async () => { me(); return ok(await services.hashtags.trending()); }],
     ['GET', /^\/hashtags$/, async ({ query }) => { me(); return ok(await services.hashtags.search(query.get('q'))); }],
+    // Letra de mentira (versos inventados): o demo não acessa a LRCLIB.
+    ['GET', /^\/music\/lyrics$/, () => { me(); return ok({ versos: LETRA_DEMO }); }],
     ['GET', /^\/music\/search$/, ({ query }) => { me(); return ok(searchCatalog(query.get('q'), query.get('tipo'))); }],
   ];
 

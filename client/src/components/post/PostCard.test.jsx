@@ -60,6 +60,23 @@ describe('PostCard', () => {
     expect(screen.getByRole('article')).toHaveAccessibleName('Post de Twit da Carol sobre Help!');
   });
 
+  it('mostra o trecho da letra com a música creditada', () => {
+    renderWithProviders(<PostCard post={{ ...musicPost, trechoLetra: ['Primeiro verso', 'Segundo verso'] }} />);
+    const trecho = screen.getByLabelText('Trecho da letra de Help!');
+    expect(trecho.querySelectorAll('p')).toHaveLength(2);
+    expect(trecho).toHaveTextContent('Primeiro versoSegundo verso');
+    expect(screen.getByText('Help! · The Beatles')).toBeInTheDocument();
+  });
+
+  it('sem trecho (ou com dado estranho) não mostra o bloco nem quebra', () => {
+    for (const trechoLetra of [null, undefined, [], 'texto', [null, '  ']]) {
+      const { unmount } = renderWithProviders(<PostCard post={{ ...musicPost, trechoLetra }} />);
+      expect(screen.queryByLabelText(/Trecho da letra/)).toBeNull();
+      expect(screen.getByRole('article', { name: 'Post de Bia sobre Help!' })).toBeInTheDocument();
+      unmount();
+    }
+  });
+
   it('linka para o perfil do autor e para o post', () => {
     renderWithProviders(<PostCard post={musicPost} />);
     expect(screen.getByRole('link', { name: 'Bia' })).toHaveAttribute('href', '/perfil/2');

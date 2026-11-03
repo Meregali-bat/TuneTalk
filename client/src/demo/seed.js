@@ -58,7 +58,7 @@ export function createSeed() {
     posts: [
       musicPost(1, 2, 'Help!', 'Até hoje não entendo como fizeram isso em 1965. #beatles', 10, 35),
       albumPost(2, 3, 'Clube da Esquina', 'Milton Nascimento & Lô Borges', '1972-03-01', 'Disco perfeito do começo ao fim.', 10, 180),
-      musicPost(3, 4, 'Blinding Lights', 'Viciado nesse synth. #pop', 8, 300),
+      { ...musicPost(3, 4, 'Blinding Lights', 'Viciado nesse synth. #pop', 8, 300), trechoLetra: 'Toda vez que esse som começa a tocar\nEu volto pra noite em que tudo existe' },
       musicPost(4, 1, 'Águas de Março', 'Trilha sonora oficial de dia de chuva. #mpb', 9, 600),
       musicPost(5, 3, 'Bohemian Rhapsody', 'Quem nunca cantou junto?', 9, 1500),
       albumPost(6, 2, 'Abbey Road', 'The Beatles', '1969-09-26', 'O lado B é uma obra-prima. #Beatles #vinil', 10, 2900),

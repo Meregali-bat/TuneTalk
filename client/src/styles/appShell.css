@@ -2395,3 +2395,114 @@ button.feed-tabs__tab {
   color: var(--texto-suave);
   font-size: .82rem;
 }
+
+/* Trecho da letra: no post e na prévia do compositor. */
+.lyric-quote {
+  position: relative;
+  margin: .85rem 0 0;
+  padding: .9rem 2.6rem .8rem 1.1rem;
+  border-left: 3px solid var(--destaque);
+  border-radius: 14px;
+  background: linear-gradient(135deg, rgba(43, 168, 74, .16), rgba(43, 168, 74, .04));
+}
+
+.lyric-quote__icon {
+  position: absolute;
+  top: .45rem;
+  right: .8rem;
+  color: rgba(63, 196, 99, .45);
+  font-size: 1.6rem;
+}
+
+.lyric-quote__versos {
+  margin: 0;
+
+  p {
+    margin: 0;
+    color: var(--texto);
+    font-size: 1.05rem;
+    font-weight: 600;
+    line-height: 1.5;
+    overflow-wrap: anywhere;
+  }
+}
+
+.lyric-quote__credito {
+  margin-top: .55rem;
+  color: var(--texto-suave);
+  font-size: .78rem;
+}
+
+.composer-lyric {
+  .lyric-quote {
+    margin-top: 0;
+  }
+}
+
+.composer-lyric__tools {
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  gap: .25rem;
+  margin-top: .35rem;
+}
+
+.lyrics-picker__titulo {
+  margin: 0;
+  font-size: 1.05rem;
+}
+
+.lyrics-picker__musica {
+  margin: 0;
+  color: var(--texto-suave);
+  font-size: .9rem;
+}
+
+.lyrics-picker__contador {
+  color: var(--destaque);
+}
+
+.lyrics-picker__versos {
+  display: grid;
+  gap: .2rem;
+  max-height: min(50vh, 420px);
+  margin: 0;
+  padding: 0;
+  overflow-y: auto;
+  list-style: none;
+}
+
+button.lyrics-picker__verso {
+  width: 100%;
+  padding: .55rem .8rem;
+  border: 0;
+  border-radius: 10px;
+  background: none;
+  color: var(--texto-suave);
+  font-size: .98rem;
+  text-align: left;
+  transition: background-color .15s ease, color .15s ease;
+
+  &:hover {
+    background: rgba(43, 168, 74, .06);
+  }
+
+  &.is-selected {
+    background: rgba(43, 168, 74, .18);
+    box-shadow: inset 3px 0 0 var(--destaque);
+    color: var(--texto);
+    font-weight: 600;
+  }
+}
+
+.lyrics-picker__acoes {
+  display: flex;
+  justify-content: flex-end;
+  align-items: center;
+  gap: .75rem;
+
+  .composer-submit {
+    width: auto;
+    padding: 0 1.6rem;
+  }
+}

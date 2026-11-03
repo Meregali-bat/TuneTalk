@@ -197,6 +197,32 @@ describe('postService', () => {
       await expect(service.create(7, { texto: 'oi', imagemProporcao: 1 })).rejects.toMatchObject(erro);
     });
 
+    describe('trecho da letra', () => {
+      const musica = { musicName: 'Help!', artistName: 'The Beatles', postType: 'música', nota: 8 };
+
+      it('guarda até 4 versos junto com a música', async () => {
+        await service.create(7, { ...musica, trechoLetra: [' um ', 'dois'] });
+        expect(posts.create.mock.calls[0][0].trechoLetra).toEqual(['um', 'dois']);
+      });
+
+      it('trecho vazio é ignorado', async () => {
+        await service.create(7, { ...musica, trechoLetra: [] });
+        expect(posts.create.mock.calls[0][0]).not.toHaveProperty('trechoLetra');
+      });
+
+      it('recusa trecho sem música, com álbum, longo demais ou em formato errado', async () => {
+        await expect(service.create(7, { texto: 'oi', trechoLetra: ['um'] }))
+          .rejects.toMatchObject({ status: 400, message: 'Escolha uma música para postar um trecho da letra.' });
+        await expect(service.create(7, { albumName: 'Help!', postType: 'album', nota: 8, trechoLetra: ['um'] }))
+          .rejects.toMatchObject({ status: 400 });
+        await expect(service.create(7, { ...musica, trechoLetra: ['1', '2', '3', '4', '5'] }))
+          .rejects.toMatchObject({ status: 400, message: 'Escolha no máximo 4 versos da letra.' });
+        await expect(service.create(7, { ...musica, trechoLetra: 'um verso' }))
+          .rejects.toMatchObject({ status: 400, message: 'Trecho da letra inválido.' });
+        expect(posts.create).not.toHaveBeenCalled();
+      });
+    });
+
     it('sem música nem imagem, exige texto', async () => {
       await expect(service.create(7, { texto: '   ' })).rejects.toMatchObject({
         status: 400,

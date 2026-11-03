@@ -55,6 +55,7 @@ describe('postRepository (Postgres)', () => {
         preview: 'help.mp3',
         imagem: null,
         imagemProporcao: null,
+        trechoLetra: null,
         fixado: false,
         autor: { id: ana.id, nome: 'Ana', nomeExibicao: null, fotoPerfil: 'ana.png', fundador: false },
       });
@@ -92,6 +93,14 @@ describe('postRepository (Postgres)', () => {
       const url = 'https://res.cloudinary.com/t/image/upload/v1/tunetalk/posts/a.gif';
       const id = await repo.create({ autorId: ana.id, texto: 'olha', imagemUrl: url, imagemProporcao: 0.8, data: new Date() });
       expect(await repo.findById(id)).toMatchObject({ imagem: url, imagemProporcao: 0.8, titulo: null, nota: null });
+    });
+
+    it('grava e devolve o trecho da letra (um verso por linha)', async () => {
+      const id = await repo.create({
+        autorId: ana.id, texto: '', musicName: 'Help!', artistName: 'The Beatles', postType: 'música', nota: 8,
+        trechoLetra: ['primeiro verso', 'segundo verso'], data: new Date(),
+      });
+      expect((await repo.findById(id)).trechoLetra).toEqual(['primeiro verso', 'segundo verso']);
     });
 
     it('findById devolve null para post inexistente', async () => {

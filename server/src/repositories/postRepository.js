@@ -36,6 +36,7 @@ export function toPost(row) {
     preview: row.musicPreview ?? null,
     imagem: row.imagemUrl ?? null,
     imagemProporcao: row.imagemProporcao ?? null,
+    trechoLetra: row.trechoLetra ? row.trechoLetra.split('\n') : null,
     fixado: row.autor.postFixadoId === row.id,
     autor: {
       id: row.autor.id,
@@ -139,6 +140,7 @@ export function createPostRepository(prisma) {
           musicPreview: post.musicPreview ?? null,
           imagemUrl: post.imagemUrl ?? null,
           imagemProporcao: post.imagemProporcao ?? null,
+          trechoLetra: post.trechoLetra?.length ? post.trechoLetra.join('\n') : null,
           createdAt: post.data,
         },
         select: { id: true },

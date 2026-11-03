@@ -43,6 +43,29 @@ describe('rotas /api/notifications e /api/music', () => {
     await agent.get('/api/music/preview?titulo=x&artista=y').expect(404);
   });
 
+  describe('GET /api/music/lyrics', () => {
+    it('devolve os versos da letra', async () => {
+      deps.lyricsService.letra.mockResolvedValue({ versos: ['um', 'dois'] });
+      const res = await agent.get('/api/music/lyrics?titulo=Help!&artista=The%20Beatles&duracao=138').expect(200);
+      expect(res.body).toEqual({ versos: ['um', 'dois'] });
+      expect(deps.lyricsService.letra).toHaveBeenCalledWith('Help!', 'The Beatles', '138');
+    });
+
+    it('responde 404 quando a música não tem letra', async () => {
+      deps.lyricsService.letra.mockResolvedValue(null);
+      const res = await agent.get('/api/music/lyrics?titulo=x&artista=y').expect(404);
+      expect(res.body).toEqual({ error: 'Letra não encontrada.' });
+    });
+
+    it('responde 503 (e não derruba nada) quando a base de letras falha', async () => {
+      const { letrasIndisponiveis } = await import('../../src/services/lyricsService.js');
+      deps.lyricsService.letra.mockRejectedValue(letrasIndisponiveis());
+      const res = await agent.get('/api/music/lyrics?titulo=x&artista=y').expect(503);
+      expect(res.body).toEqual({ error: 'Não foi possível carregar a letra agora.' });
+      await agent.get('/api/notifications/unread-count').expect(200);
+    });
+  });
+
   it('GET /api/music/search busca músicas', async () => {
     deps.musicService.search.mockResolvedValue([{ id: 1, titulo: 'Help!' }]);
     const res = await agent.get('/api/music/search?q=help');

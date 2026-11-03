@@ -113,6 +113,30 @@ describe('endpoints da API', () => {
     expect(request).toHaveBeenCalledWith('/music/preview?titulo=Help!&artista=The%20Beatles');
   });
 
+  describe('musicApi.lyrics', () => {
+    it('pede os versos com título, artista e duração', async () => {
+      request.mockResolvedValueOnce({ versos: ['um', 'dois'] });
+      expect(await musicApi.lyrics('Help!', 'The Beatles', 138)).toEqual(['um', 'dois']);
+      expect(request).toHaveBeenCalledWith('/music/lyrics?titulo=Help%21&artista=The+Beatles&duracao=138');
+    });
+
+    it('sem letra (404) ou resposta estranha vira lista vazia', async () => {
+      const { ApiError } = await import('./http.js');
+      request.mockRejectedValueOnce(new ApiError(404, 'Letra não encontrada.'));
+      expect(await musicApi.lyrics('x', 'y')).toEqual([]);
+      request.mockResolvedValueOnce({ versos: 'nada' });
+      expect(await musicApi.lyrics('x', 'y')).toEqual([]);
+      request.mockResolvedValueOnce({ versos: ['ok', 3, null, ' '] });
+      expect(await musicApi.lyrics('x', 'y')).toEqual(['ok']);
+    });
+
+    it('outras falhas (base de letras fora do ar) seguem como erro para a tela avisar', async () => {
+      const { ApiError } = await import('./http.js');
+      request.mockRejectedValueOnce(new ApiError(503, 'Não foi possível carregar a letra agora.'));
+      await expect(musicApi.lyrics('x', 'y')).rejects.toMatchObject({ status: 503 });
+    });
+  });
+
   it('notificationsApi.unreadCount devolve só o número', async () => {
     request.mockResolvedValueOnce({ count: 4 });
     expect(await notificationsApi.unreadCount()).toBe(4);

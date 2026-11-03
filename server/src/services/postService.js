@@ -1,6 +1,7 @@
 import { badRequest, forbidden, notFound } from '../errors.js';
 import { isValidNota, parseNota } from '../../../shared/rating.js';
 import { extractMentions } from '../../../shared/mentions.js';
+import { validarTrecho } from '../../../shared/lyrics.js';
 
 const TEXTO_MAX = 500;
 const MAX_MARCACOES = 10;
@@ -126,6 +127,12 @@ export function createPostService({
       const imagemProporcao = parseProporcao(data.imagemProporcao, Boolean(data.imagemUrl));
       if (imagemProporcao !== undefined) data.imagemProporcao = imagemProporcao;
       const hasMusic = Boolean(data.musicName || data.albumName);
+
+      // Trecho da letra: só com uma música (álbum não tem letra única), até 4 versos.
+      const trecho = validarTrecho(body.trechoLetra);
+      if (trecho.erro) throw badRequest(trecho.erro);
+      if (trecho.versos && !data.musicName) throw badRequest('Escolha uma música para postar um trecho da letra.');
+      if (trecho.versos) data.trechoLetra = trecho.versos;
 
       if (hasMusic) {
         const nota = parseNota(data.nota);

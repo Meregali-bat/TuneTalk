@@ -20,7 +20,7 @@ vi.mock('react-easy-crop', async () => {
 });
 
 vi.mock('../../api/index.js', () => ({
-  musicApi: { search: vi.fn() },
+  musicApi: { search: vi.fn(), lyrics: vi.fn() },
   postsApi: { create: vi.fn(), uploadImage: vi.fn() },
   usersApi: { search: vi.fn() },
 }));
@@ -293,6 +293,111 @@ describe('CreatePost', () => {
     expect(await screen.findByRole('alert')).toHaveTextContent('Dê uma nota de 0 a 5 estrelas.');
     expect(texto()).toHaveValue('ótima');
     expect(screen.getByRole('button', { name: 'Publicar' })).toBeEnabled();
+  });
+
+  describe('trecho da letra', () => {
+    const versos = ['Primeiro verso', 'Segundo verso', 'Terceiro verso', 'Quarto verso', 'Quinto verso', 'Sexto verso'];
+    const verso = (nome) => screen.getByRole('button', { name: nome });
+    const abrirLetra = () => userEvent.click(screen.getByRole('button', { name: 'Adicionar trecho da letra' }));
+
+    it('só aparece com uma música escolhida (álbum não tem)', async () => {
+      render(<CreatePost onCreated={vi.fn()} />);
+      await open();
+      expect(screen.queryByRole('button', { name: 'Adicionar trecho da letra' })).toBeNull();
+      await addMusic();
+      await search('help');
+      await userEvent.click(await screen.findByRole('button', { name: /Help!/ }));
+      expect(screen.getByRole('button', { name: 'Adicionar trecho da letra' })).toBeInTheDocument();
+    });
+
+    it('escolhe versos seguidos (até 4) e publica junto com a música', async () => {
+      musicApi.lyrics.mockResolvedValue(versos);
+      render(<CreatePost onCreated={vi.fn()} />);
+      await chooseHelp();
+      await abrirLetra();
+
+      expect(musicApi.lyrics).toHaveBeenCalledWith('Help!', 'The Beatles', 138);
+      expect(await screen.findByRole('list', { name: 'Versos da letra' })).toBeInTheDocument();
+      expect(screen.getByRole('button', { name: 'Usar trecho' })).toBeDisabled();
+
+      await userEvent.click(verso('Segundo verso'));
+      await userEvent.click(verso('Terceiro verso'));
+      expect(verso('Segundo verso')).toHaveAttribute('aria-pressed', 'true');
+      expect(screen.getByText('2 de 4')).toBeInTheDocument();
+      await userEvent.click(verso('Quarto verso'));
+      await userEvent.click(verso('Quinto verso'));
+      await userEvent.click(verso('Sexto verso'));
+      expect(screen.getByText('Dá pra escolher até 4 versos.')).toBeInTheDocument();
+      expect(verso('Sexto verso')).toHaveAttribute('aria-pressed', 'false');
+
+      await userEvent.click(screen.getByRole('button', { name: 'Usar trecho' }));
+      const trecho = screen.getByLabelText('Trecho da letra de Help!');
+      expect(trecho).toHaveTextContent('Segundo versoTerceiro versoQuarto versoQuinto verso');
+
+      await userEvent.click(screen.getByRole('button', { name: 'Estrela 4' }));
+      await userEvent.click(screen.getByRole('button', { name: 'Publicar' }));
+      expect(postsApi.create).toHaveBeenCalledWith(expect.objectContaining({
+        musicName: 'Help!',
+        trechoLetra: ['Segundo verso', 'Terceiro verso', 'Quarto verso', 'Quinto verso'],
+      }));
+    });
+
+    it('"Trocar trecho" reabre com os versos marcados; remover tira o trecho', async () => {
+      musicApi.lyrics.mockResolvedValue(versos);
+      render(<CreatePost onCreated={vi.fn()} />);
+      await chooseHelp();
+      await abrirLetra();
+      await userEvent.click(await screen.findByRole('button', { name: 'Terceiro verso' }));
+      await userEvent.click(screen.getByRole('button', { name: 'Usar trecho' }));
+
+      await userEvent.click(screen.getByRole('button', { name: 'Trocar trecho' }));
+      expect(await screen.findByRole('button', { name: 'Terceiro verso' })).toHaveAttribute('aria-pressed', 'true');
+      await userEvent.click(screen.getByRole('button', { name: 'Cancelar' }));
+
+      await userEvent.click(screen.getByRole('button', { name: 'Remover trecho da letra' }));
+      expect(screen.queryByLabelText('Trecho da letra de Help!')).toBeNull();
+      await userEvent.click(screen.getByRole('button', { name: 'Estrela 4' }));
+      await userEvent.click(screen.getByRole('button', { name: 'Publicar' }));
+      expect(postsApi.create.mock.calls[0][0]).not.toHaveProperty('trechoLetra');
+    });
+
+    it('trocar de música apaga o trecho da música anterior', async () => {
+      musicApi.lyrics.mockResolvedValue(versos);
+      render(<CreatePost onCreated={vi.fn()} />);
+      await chooseHelp();
+      await abrirLetra();
+      await userEvent.click(await screen.findByRole('button', { name: 'Primeiro verso' }));
+      await userEvent.click(screen.getByRole('button', { name: 'Usar trecho' }));
+
+      await userEvent.click(screen.getByRole('button', { name: 'Trocar música' }));
+      await userEvent.click(screen.getByRole('button', { name: /Yesterday/ }));
+      expect(screen.queryByLabelText(/Trecho da letra/)).toBeNull();
+    });
+
+    it('se a base de letras falhar, avisa e deixa postar sem o trecho', async () => {
+      musicApi.lyrics.mockRejectedValue(new Error('Não foi possível carregar a letra agora.'));
+      render(<CreatePost onCreated={vi.fn()} />);
+      await chooseHelp();
+      await userEvent.type(texto(), 'ótima');
+      await abrirLetra();
+
+      expect(await screen.findByRole('alert')).toHaveTextContent('Não foi possível carregar a letra agora. Você pode postar sem o trecho');
+      expect(screen.queryByRole('button', { name: 'Usar trecho' })).toBeNull();
+      await userEvent.click(screen.getByRole('button', { name: 'Voltar' }));
+
+      expect(texto()).toHaveValue('ótima');
+      await userEvent.click(screen.getByRole('button', { name: 'Estrela 4' }));
+      await userEvent.click(screen.getByRole('button', { name: 'Publicar' }));
+      expect(postsApi.create).toHaveBeenCalledWith(expect.objectContaining({ texto: 'ótima', musicName: 'Help!' }));
+    });
+
+    it('sem letra encontrada, avisa', async () => {
+      musicApi.lyrics.mockResolvedValue([]);
+      render(<CreatePost onCreated={vi.fn()} />);
+      await chooseHelp();
+      await abrirLetra();
+      expect(await screen.findByText('Não encontramos a letra dessa música. Você pode postar sem o trecho.')).toBeInTheDocument();
+    });
   });
 
   describe('imagem ou GIF', () => {

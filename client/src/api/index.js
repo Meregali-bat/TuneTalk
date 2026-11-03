@@ -75,6 +75,18 @@ export const musicApi = {
   // Link novo da prévia (os do Deezer vencem).
   preview: async (titulo, artista) =>
     (await request(`/music/preview?titulo=${encodeURIComponent(titulo)}&artista=${encodeURIComponent(artista ?? '')}`)).preview,
+  // Versos da letra para escolher o trecho. [] quando não há letra; erro (com status) se a base de letras falhar.
+  // Confere o formato: se a resposta vier estranha, trata como "sem letra" em vez de quebrar a tela.
+  lyrics: async (titulo, artista, duracao) => {
+    const params = new URLSearchParams({ titulo, artista: artista ?? '', ...(duracao && { duracao: String(duracao) }) });
+    try {
+      const resposta = await request(`/music/lyrics?${params}`);
+      return Array.isArray(resposta?.versos) ? resposta.versos.filter((v) => typeof v === 'string' && v.trim()) : [];
+    } catch (err) {
+      if (err.status === 404) return [];
+      throw err;
+    }
+  },
   // tipo 'album' busca álbuns; sem tipo, faixas.
   search: (q, tipo) => request(`/music/search?q=${encodeURIComponent(q)}${tipo === 'album' ? '&tipo=album' : ''}`),
 };

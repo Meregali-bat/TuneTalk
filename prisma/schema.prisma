@@ -70,6 +70,8 @@ model Post {
   imagemUrl       String?  @map("imagem_url") @db.VarChar(500)
   // Proporção (largura/altura) escolhida ao cortar. Vazia nos posts antigos, que seguem como eram.
   imagemProporcao Float?   @map("imagem_proporcao") @db.Real
+  // Trecho da letra (até 4 versos, um por linha), escolhido na LRCLIB. Só em posts de música.
+  trechoLetra     String?  @map("trecho_letra") @db.VarChar(700)
   createdAt       DateTime @default(now()) @map("created_at")
   autorId         Int      @map("autor_id")
   parentId        Int?     @map("parent_id")

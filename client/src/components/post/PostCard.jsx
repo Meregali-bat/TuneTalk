@@ -13,6 +13,7 @@ import { LikeButton } from './LikeButton.jsx';
 import { PlayButton } from './PlayButton.jsx';
 import { ShareButton } from './ShareButton.jsx';
 import { PostMenu } from './PostMenu.jsx';
+import { LyricQuote } from './LyricQuote.jsx';
 
 // Texto com as marcações (@usuario, link para o perfil) e hashtags (link para a página da tag).
 function TextoComMarcacoes({ texto }) {
@@ -152,6 +153,7 @@ export function PostCard({
         </Link>
       )}
 
+      {post.titulo && <LyricQuote versos={post.trechoLetra} titulo={post.titulo} artista={post.artista} />}
       {post.titulo && <MusicBlock post={post} postUrl={postUrl} />}
 
       <footer className="post-card__actions">

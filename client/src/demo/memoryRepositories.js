@@ -194,6 +194,7 @@ export function createMemoryRepositories(state, onChange) {
         musicPreview: post.musicPreview ?? null,
         imagemUrl: post.imagemUrl ?? null,
         imagemProporcao: post.imagemProporcao ?? null,
+        trechoLetra: post.trechoLetra?.length ? post.trechoLetra.join('\n') : null,
         createdAt: post.data.toISOString(),
       });
       return changed(id);

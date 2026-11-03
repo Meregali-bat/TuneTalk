@@ -7,6 +7,8 @@ import { IMAGEM_MAX_MB } from '../../api/limits.js';
 import { croppedImageUrl } from '../../utils/cloudinaryCrop.js';
 import { ImageCropper } from './ImageCropper.jsx';
 import { useMentions } from './useMentions.js';
+import { LyricsPicker } from './LyricsPicker.jsx';
+import { LyricQuote } from './LyricQuote.jsx';
 
 const TEXTO_MAX = 500;
 
@@ -188,6 +190,8 @@ export function Composer({
   const [track, setTrack] = useState(null);
   const [nota, setNota] = useState(null);
   const [searching, setSearching] = useState(false);
+  const [trecho, setTrecho] = useState(null); // versos da letra escolhidos
+  const [escolhendoTrecho, setEscolhendoTrecho] = useState(false);
   const [query, setQuery] = useState('');
   const [tipoBusca, setTipoBusca] = useState('musica');
   const search = useMusicSearch(query, tipoBusca);
@@ -259,7 +263,10 @@ export function Composer({
   };
 
   const chooseTrack = (chosen) => {
-    if (chosen.id !== track?.id) setNota(null);
+    if (chosen.id !== track?.id) {
+      setNota(null);
+      setTrecho(null);
+    }
     setTrack(chosen);
     setSearching(false);
   };
@@ -267,6 +274,7 @@ export function Composer({
   const removeTrack = () => {
     setTrack(null);
     setNota(null);
+    setTrecho(null);
   };
 
   const submit = async (event) => {
@@ -284,6 +292,7 @@ export function Composer({
         texto: clean,
         ...(parentId !== undefined && { parentId }),
         ...(track && { ...musicFields(track), nota }),
+        ...(track && track.tipo !== 'album' && trecho?.length && { trechoLetra: trecho }),
         ...(imagemUrl && { imagemUrl, imagemProporcao: recorte.proporcao }),
       });
       onPublished();
@@ -299,6 +308,17 @@ export function Composer({
         src={previaPendente}
         onConfirm={confirmarRecorte}
         onCancel={() => setPendente(null)}
+      />
+    );
+  }
+
+  if (escolhendoTrecho && track) {
+    return (
+      <LyricsPicker
+        track={track}
+        inicial={trecho}
+        onConfirm={(versos) => { setTrecho(versos); setEscolhendoTrecho(false); }}
+        onCancel={() => setEscolhendoTrecho(false)}
       />
     );
   }
@@ -389,6 +409,23 @@ export function Composer({
             </button>
           </div>
           <StarRatingInput value={nota} onChange={setNota} />
+          {track.tipo !== 'album' && (trecho ? (
+            <div className="composer-lyric">
+              <LyricQuote versos={trecho} titulo={track.titulo} artista={track.artista} />
+              <div className="composer-lyric__tools">
+                <button type="button" className="composer-link" onClick={() => setEscolhendoTrecho(true)}>Trocar trecho</button>
+                <button type="button" className="icon-button" aria-label="Remover trecho da letra" onClick={() => setTrecho(null)}>
+                  <i className="bi bi-x-lg" aria-hidden="true" />
+                </button>
+              </div>
+            </div>
+          ) : (
+            <button type="button" className="composer-attach" onClick={() => setEscolhendoTrecho(true)}>
+              <i className="bi bi-quote" aria-hidden="true" />
+              Adicionar trecho da letra
+              <span className="composer-attach__hint" aria-hidden="true">opcional</span>
+            </button>
+          ))}
         </div>
       ) : (
         <button type="button" className="composer-attach" onClick={() => setSearching(true)}>
