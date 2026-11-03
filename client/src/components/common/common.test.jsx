@@ -86,4 +86,21 @@ describe('FollowButton', () => {
     expect(usersApi.unfollow).toHaveBeenCalledWith(2);
     expect(onChange).toHaveBeenCalledWith(false);
   });
+
+  it('"Seguindo" avisa que o toque deixa de seguir', () => {
+    render(<FollowButton userId={2} following />);
+    expect(screen.getByRole('button', { name: 'Seguindo' })).toHaveAttribute('data-acao', 'Deixar de seguir');
+  });
+
+  it('se falhar, avisa e deixa tentar de novo', async () => {
+    usersApi.follow.mockRejectedValueOnce(new Error('rede')).mockResolvedValueOnce(null);
+    const onChange = vi.fn();
+    render(<FollowButton userId={2} following={false} onChange={onChange} />);
+
+    await userEvent.click(screen.getByRole('button', { name: 'Seguir' }));
+    expect(await screen.findByRole('alert')).toHaveTextContent('Não deu para seguir. Tente de novo.');
+    expect(onChange).not.toHaveBeenCalled();
+    await userEvent.click(screen.getByRole('button', { name: 'Tentar de novo' }));
+    expect(onChange).toHaveBeenCalledWith(true);
+  });
 });

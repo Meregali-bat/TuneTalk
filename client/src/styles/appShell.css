@@ -91,6 +91,27 @@
   gap: .25rem;
 }
 
+/* Telas bem estreitas (320px): logo e ícones juntos passavam da largura da tela. */
+@media (max-width: 359.98px) {
+  .app-header__inner {
+    gap: .5rem;
+  }
+
+  .app-logo {
+    gap: .4rem;
+    font-size: 1.05rem;
+
+    img {
+      width: 2rem;
+      height: 2rem;
+    }
+  }
+
+  .app-header__actions {
+    gap: 0;
+  }
+}
+
 .app-badge {
   position: absolute;
   top: .1rem;
@@ -1220,7 +1241,8 @@ button.track-row:hover {
 
   span {
     color: var(--texto-suave);
-    font-size: .78rem;
+    /* Encolhe em telas bem estreitas (320px) para "Seguidores" caber na coluna. */
+    font-size: clamp(.7rem, 3.4vw, .78rem);
     white-space: nowrap;
   }
 
@@ -1239,7 +1261,7 @@ button.track-row:hover {
   padding-top: .75rem;
 
   .follow-button--md {
-    min-height: 2.4rem;
+    min-height: 2.75rem;
     padding: 0 1.1rem;
     font-size: .9rem;
   }
@@ -1297,6 +1319,43 @@ button.track-row:hover {
   &:disabled {
     opacity: .6;
   }
+
+  &.is-error {
+    border-color: var(--erro);
+  }
+}
+
+/* "Seguindo" vira "Deixar de seguir" ao apontar ou focar, como no Twitter (só onde há mouse:
+   no toque o :hover gruda depois do toque e mostraria o aviso logo após seguir). */
+@media (hover: hover) {
+  .follow-button[data-acao]:hover:not(:disabled) {
+    border-color: rgba(245, 91, 100, .6);
+    background: rgba(245, 91, 100, .08);
+    color: var(--erro);
+  }
+}
+
+.follow-button[data-acao]:focus-visible:not(:disabled) {
+  border-color: rgba(245, 91, 100, .6);
+  color: var(--erro);
+}
+
+@media (hover: hover) {
+  .follow-button[data-acao]:hover:not(:disabled) .follow-button__texto {
+    display: none;
+  }
+
+  .follow-button[data-acao]:hover:not(:disabled)::after {
+    content: attr(data-acao);
+  }
+}
+
+.follow-button[data-acao]:focus-visible:not(:disabled) .follow-button__texto {
+  display: none;
+}
+
+.follow-button[data-acao]:focus-visible:not(:disabled)::after {
+  content: attr(data-acao);
 }
 
 .follow-button--md {
@@ -2524,9 +2583,12 @@ button.lyrics-picker__verso {
 .profile-favorites {
   display: grid;
   gap: 1rem;
-  /* Respiro entre o cartão do perfil e "Editar favoritos". */
-  padding: 1.25rem 1.25rem 1.25rem;
-  border-bottom: 1px solid var(--linhas);
+  /* Cartão próprio, com a mesma moldura do cabeçalho do perfil e dos posts. */
+  margin-top: 1rem;
+  padding: 1rem 1.25rem 1.25rem;
+  border: 1px solid var(--linhas);
+  border-radius: 22px;
+  background: var(--superficie);
 
   h2 {
     margin: 0;
@@ -2654,7 +2716,8 @@ button.lyrics-picker__verso {
   font-size: .78rem;
   font-weight: 600;
   line-height: 1.25;
-  overflow-wrap: anywhere;
+  overflow-wrap: break-word;
+  hyphens: auto;
   -webkit-box-orient: vertical;
   -webkit-line-clamp: 2;
 }
@@ -2665,6 +2728,11 @@ button.lyrics-picker__verso {
   font-size: .75rem;
   white-space: nowrap;
   text-overflow: ellipsis;
+
+  /* No celular cada capa tem ~60px: o artista virava "The Be…". Ele continua no nome do link. */
+  @media (max-width: 575.98px) {
+    display: none;
+  }
 }
 
 .favorites-editor {
@@ -2674,6 +2742,52 @@ button.lyrics-picker__verso {
 
   .track-row:disabled {
     opacity: .55;
+  }
+}
+
+.favorites-editor__conta {
+  margin-left: .2rem;
+  font-size: .78rem;
+  font-weight: 500;
+  opacity: .8;
+}
+
+.favorites-editor__acoes {
+  position: sticky;
+  bottom: -.35rem;
+  z-index: 2;
+  margin: 0 -.35rem;
+  padding: .75rem .35rem;
+  border-top: 1px solid var(--linhas);
+  background: var(--superficie);
+}
+
+.lyrics-picker__acoes .composer-link,
+.edit-profile__actions .composer-link {
+  min-height: 3rem;
+  padding: 0 1.25rem;
+}
+
+.edit-profile__conta {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: .75rem;
+  padding: .85rem 0 .25rem;
+  border-top: 1px solid var(--linhas);
+
+  span {
+    color: var(--texto-suave);
+    font-size: .85rem;
+    font-weight: 600;
+  }
+
+  .composer-link {
+    display: inline-flex;
+    align-items: center;
+    gap: .4rem;
+    min-height: 2.75rem;
+    padding: 0 1rem;
   }
 }
 

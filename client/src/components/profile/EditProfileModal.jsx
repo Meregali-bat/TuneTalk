@@ -39,7 +39,7 @@ function usernameProblem(nome, original) {
   return broken ? USERNAME_MESSAGES[broken[0]] : '';
 }
 
-export function EditProfileModal({ open, usuario, onClose, onSaved }) {
+export function EditProfileModal({ open, usuario, onClose, onSaved, onChangePassword }) {
   const nomeId = useId();
   const exibicaoId = useId();
   const bioId = useId();
@@ -169,6 +169,15 @@ export function EditProfileModal({ open, usuario, onClose, onSaved }) {
               <i className="bi bi-award-fill founder-badge" aria-hidden="true" /> Mostrar selo de fundador no meu perfil
             </span>
           </label>
+        )}
+
+        {onChangePassword && (
+          <div className="edit-profile__conta">
+            <span>Conta</span>
+            <button type="button" className="composer-link" onClick={onChangePassword}>
+              <i className="bi bi-key" aria-hidden="true" /> Trocar senha
+            </button>
+          </div>
         )}
 
         {error && <p role="alert" className="composer-error">{error}</p>}

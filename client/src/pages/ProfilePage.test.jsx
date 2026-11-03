@@ -164,12 +164,16 @@ describe('ProfilePage', () => {
       expect(within(primeiro).getByText('post 11')).toBeInTheDocument();
     });
 
-    it('troca a senha e confirma na tela', async () => {
+    it('troca a senha pela seção Conta de "Editar perfil" e confirma na tela', async () => {
       usersApi.profile.mockResolvedValue(profile({ usuario: ana }));
       usersApi.changePassword.mockResolvedValue(null);
       renderProfile(1);
 
-      await userEvent.click(await screen.findByRole('button', { name: 'Trocar senha' }));
+      expect(await screen.findByRole('button', { name: 'Editar perfil' })).toBeInTheDocument();
+      expect(screen.queryByRole('button', { name: 'Trocar senha' })).toBeNull();
+      await userEvent.click(screen.getByRole('button', { name: 'Editar perfil' }));
+      await userEvent.click(within(screen.getByRole('dialog', { name: 'Editar perfil' })).getByRole('button', { name: 'Trocar senha' }));
+      expect(screen.queryByRole('dialog', { name: 'Editar perfil' })).toBeNull();
       const dialog = screen.getByRole('dialog', { name: 'Trocar senha' });
       await userEvent.type(within(dialog).getByLabelText('Senha atual'), 'Atual!1');
       await userEvent.type(within(dialog).getByLabelText('Nova senha'), 'Nova!123');
@@ -297,6 +301,18 @@ describe('ProfilePage', () => {
     expect(await screen.findByRole('alert')).toHaveTextContent('Esse perfil não existe ou mudou de @.');
   });
 
+  it('setas do teclado trocam entre Posts e Comentários', async () => {
+    usersApi.comments.mockResolvedValue([]);
+    renderProfile();
+    const posts = await screen.findByRole('tab', { name: 'Posts' });
+    posts.focus();
+    await userEvent.keyboard('{ArrowRight}');
+    const comentarios = screen.getByRole('tab', { name: 'Comentários' });
+    expect(comentarios).toHaveAttribute('aria-selected', 'true');
+    expect(comentarios).toHaveFocus();
+    expect(posts).toHaveAttribute('tabindex', '-1');
+  });
+
   it('falha de conexão explica e deixa tentar de novo', async () => {
     usersApi.profile.mockRejectedValueOnce(new Error('Failed to fetch'));
     renderProfile();
@@ -385,12 +401,12 @@ describe('ProfilePage', () => {
       expect(within(dialog).getByText('2 de 5')).toBeInTheDocument();
       await userEvent.click(within(dialog).getByRole('button', { name: 'Mover Yesterday para antes' }));
 
-      await userEvent.click(within(dialog).getByRole('tab', { name: 'Álbuns' }));
+      await userEvent.click(within(dialog).getByRole('tab', { name: /^Álbuns/ }));
       await userEvent.type(within(dialog).getByLabelText('Buscar álbuns'), 'abbey');
       await userEvent.click(await within(dialog).findByRole('button', { name: /Abbey Road/ }));
       expect(musicApi.search).toHaveBeenLastCalledWith('abbey', 'album');
 
-      await userEvent.click(within(dialog).getByRole('tab', { name: 'Músicas' }));
+      await userEvent.click(within(dialog).getByRole('tab', { name: /^Músicas/ }));
       await userEvent.click(within(dialog).getByRole('button', { name: 'Tirar Help!' }));
       await userEvent.click(within(dialog).getByRole('button', { name: 'Salvar' }));
 
@@ -404,6 +420,18 @@ describe('ProfilePage', () => {
       const secao = screen.getByRole('region', { name: 'Favoritos' });
       expect(within(secao).getByRole('list', { name: 'Músicas favoritas' })).toHaveTextContent('Yesterday');
       expect(within(secao).getByRole('list', { name: 'Álbuns favoritos' })).toHaveTextContent('Abbey Road');
+    });
+
+    it('as abas mostram quantos já foram escolhidos e Salvar só liga com mudança', async () => {
+      usersApi.profile.mockResolvedValue(profile({ usuario: ana, favoritos: { ...vazios, musicas: [help] } }));
+      renderProfile(1);
+      await userEvent.click(await screen.findByRole('button', { name: 'Editar favoritos' }));
+      expect(screen.getByRole('tab', { name: 'Músicas: 1 de 5' })).toBeInTheDocument();
+      expect(screen.getByRole('tab', { name: 'Álbuns: 0 de 5' })).toBeInTheDocument();
+      expect(screen.getByRole('button', { name: 'Salvar' })).toBeDisabled();
+      await userEvent.click(screen.getByRole('button', { name: 'Tirar Help!' }));
+      expect(screen.getByRole('tab', { name: 'Músicas: 0 de 5' })).toBeInTheDocument();
+      expect(screen.getByRole('button', { name: 'Salvar' })).toBeEnabled();
     });
 
     it('com 5 na lista, a busca trava até tirar um', async () => {
@@ -422,6 +450,7 @@ describe('ProfilePage', () => {
       usersApi.updateFavorites.mockRejectedValue(new Error('Favorito inválido. Escolha de novo pela busca.'));
       renderProfile(1);
       await userEvent.click(await screen.findByRole('button', { name: 'Editar favoritos' }));
+      await userEvent.click(screen.getByRole('button', { name: 'Tirar Help!' }));
       await userEvent.click(screen.getByRole('button', { name: 'Salvar' }));
       expect(await screen.findByRole('alert')).toHaveTextContent('Favorito inválido.');
       expect(screen.getByRole('dialog', { name: 'Favoritos' })).toBeInTheDocument();

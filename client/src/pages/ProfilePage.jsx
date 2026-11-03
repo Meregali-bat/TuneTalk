@@ -69,7 +69,7 @@ function Stat({ value, label, onClick }) {
 // Nome de exibição (livre) quando existe; senão, o nome de usuário. O @ é sempre o nome de usuário.
 export const displayName = (usuario) => usuario.nomeExibicao || usuario.nome;
 
-function ProfileHeader({ profile, isOwnProfile, onEdit, onChangePassword, onOpenList, onFollowChange }) {
+function ProfileHeader({ profile, isOwnProfile, onEdit, onOpenList, onFollowChange }) {
   const { usuario } = profile;
   const nome = displayName(usuario);
   const media = notaMedia(profile.posts);
@@ -90,16 +90,6 @@ function ProfileHeader({ profile, isOwnProfile, onEdit, onChangePassword, onOpen
               <>
                 <button type="button" className="follow-button follow-button--md is-following" onClick={onEdit}>
                   Editar perfil
-                </button>
-                {/* No celular vira só o ícone de chave; o nome continua para leitores de tela. */}
-                <button
-                  type="button"
-                  className="follow-button follow-button--md is-following profile-action--senha"
-                  aria-label="Trocar senha"
-                  onClick={onChangePassword}
-                >
-                  <i className="bi bi-key" aria-hidden="true" />
-                  <span className="profile-action__label">Trocar senha</span>
                 </button>
               </>
             ) : (
@@ -221,6 +211,19 @@ export function ProfilePage() {
     reload();
   };
 
+  const abrirAba = (chave) => {
+    setAba(chave);
+    if (chave === 'comentarios') setAbriuComentarios(true);
+  };
+  // Setas trocam de aba, como em qualquer lista de abas (o Tab pula direto para o conteúdo).
+  const moverAba = (event, chave) => {
+    if (event.key !== 'ArrowRight' && event.key !== 'ArrowLeft') return;
+    event.preventDefault();
+    const proxima = chave === 'posts' ? 'comentarios' : 'posts';
+    abrirAba(proxima);
+    document.getElementById(`aba-${proxima}`)?.focus();
+  };
+
   const removePost = (postId) =>
     setData((p) => ({ ...p, posts: p.posts.filter((post) => post.id !== postId), quantidadePosts: p.quantidadePosts - 1 }));
 
@@ -233,7 +236,6 @@ export function ProfilePage() {
         profile={profile}
         isOwnProfile={isOwnProfile}
         onEdit={() => setEditing(true)}
-        onChangePassword={() => { setNotice(''); setChangingPassword(true); }}
         onOpenList={setOpenList}
         onFollowChange={reload}
       />
@@ -261,7 +263,9 @@ export function ProfilePage() {
             aria-selected={aba === chave}
             aria-controls={`painel-${chave}`}
             className={`feed-tabs__tab${aba === chave ? ' is-active' : ''}`}
-            onClick={() => { setAba(chave); if (chave === 'comentarios') setAbriuComentarios(true); }}
+            tabIndex={aba === chave ? 0 : -1}
+            onClick={() => abrirAba(chave)}
+            onKeyDown={(event) => moverAba(event, chave)}
           >
             {rotulo}
           </button>
@@ -324,7 +328,14 @@ export function ProfilePage() {
         />
       )}
       {isOwnProfile && editing && (
-        <EditProfileModal open usuario={profile.usuario} onClose={() => setEditing(false)} onSaved={handleSaved} />
+        <EditProfileModal
+          open
+          usuario={profile.usuario}
+          onClose={() => setEditing(false)}
+          onSaved={handleSaved}
+          /* Trocar senha mora em "Editar perfil": é coisa da conta, não da identidade do perfil. */
+          onChangePassword={() => { setEditing(false); setNotice(''); setChangingPassword(true); }}
+        />
       )}
       {isOwnProfile && (
         <CreatePost open={composerOpen} onOpenChange={setComposerOpen} onCreated={reload} />

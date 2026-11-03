@@ -79,10 +79,11 @@ export function EditFavoritesModal({ favoritos, onClose, onSaved }) {
               type="button"
               role="tab"
               aria-selected={chave === aba}
+              aria-label={`${rotulo}: ${rascunho[chave].length} de ${FAVORITOS_MAX}`}
               className={`composer-tabs__tab${chave === aba ? ' is-active' : ''}`}
               onClick={() => trocarAba(chave)}
             >
-              {rotulo}
+              {rotulo} <span className="favorites-editor__conta" aria-hidden="true">{rascunho[chave].length}/{FAVORITOS_MAX}</span>
             </button>
           ))}
         </div>
@@ -155,9 +156,10 @@ export function EditFavoritesModal({ favoritos, onClose, onSaved }) {
         )}
 
         {erro && <p role="alert" className="composer-error">{erro}</p>}
-        <div className="lyrics-picker__acoes">
+        {/* Fica presa embaixo da folha: com muitos resultados, Salvar não some da tela. */}
+        <div className="lyrics-picker__acoes favorites-editor__acoes">
           <button type="button" className="composer-link" onClick={fechar}>Cancelar</button>
-          <button type="button" className="composer-submit" disabled={salvando} onClick={salvar}>
+          <button type="button" className="composer-submit" disabled={salvando || !alterado} onClick={salvar}>
             {salvando ? 'Salvando…' : 'Salvar'}
           </button>
         </div>
