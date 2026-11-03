@@ -62,7 +62,7 @@ describe('ProfilePage', () => {
 
     const stats = screen.getByRole('list', { name: 'Números do perfil' });
     expect(within(stats).getAllByRole('listitem').map((item) => item.textContent)).toEqual([
-      '2Posts', '1Seguidores', '0Seguindo', ' 3,8/5Nota média',
+      '2Posts', '1Seguidores', '0Seguindo', ' 3,8/5Média de 2 notas',
     ]);
     expect(screen.getByRole('tab', { name: 'Posts' })).toHaveAttribute('aria-selected', 'true');
     expect(screen.getByText('post 10')).toBeInTheDocument();
@@ -73,7 +73,7 @@ describe('ProfilePage', () => {
     usersApi.profile.mockResolvedValue(profile({ posts: [post(10, 8), soTexto], quantidadePosts: 2 }));
     renderProfile();
     const stats = await screen.findByRole('list', { name: 'Números do perfil' });
-    expect(stats).toHaveTextContent('4,0/5Nota média');
+    expect(stats).toHaveTextContent('4,0/5Média de 1 nota');
   });
 
   it('sem posts com nota não mostra nota média', async () => {
@@ -81,7 +81,7 @@ describe('ProfilePage', () => {
     usersApi.profile.mockResolvedValue(profile({ posts: [soTexto], quantidadePosts: 1 }));
     renderProfile();
     await screen.findByRole('heading', { level: 1, name: 'bia' });
-    expect(screen.queryByText('Nota média')).toBeNull();
+    expect(screen.queryByText(/^Média de/)).toBeNull();
   });
 
   describe('cabeçalho no estilo do Twitter', () => {
@@ -110,7 +110,7 @@ describe('ProfilePage', () => {
     usersApi.profile.mockResolvedValue(profile({ posts: [], quantidadePosts: 0 }));
     renderProfile();
     await screen.findByRole('heading', { level: 1, name: 'bia' });
-    expect(screen.queryByText('Nota média')).toBeNull();
+    expect(screen.queryByText(/^Média de/)).toBeNull();
   });
 
   it('permite seguir e atualiza os números', async () => {
@@ -287,7 +287,8 @@ describe('ProfilePage', () => {
 
   describe('abas Posts e Comentários', () => {
     const comentario = {
-      ...post(30, null), texto: 'concordo demais', titulo: null, tipo: null, parentId: 7, respondendoA: { postId: 7, nome: 'caio' },
+      ...post(30, null), texto: 'concordo demais', titulo: null, tipo: null, parentId: 7,
+      respondendoA: { postId: 7, nome: 'caio', titulo: 'Help!', artista: 'The Beatles', capa: 'h.jpg', trecho: null },
     };
 
     it('"Comentários" carrega (só ao abrir) os comentários da pessoa, com a quem ela respondeu', async () => {
@@ -301,7 +302,8 @@ describe('ProfilePage', () => {
       expect(screen.getByRole('tab', { name: 'Comentários' })).toHaveAttribute('aria-selected', 'true');
       expect(await screen.findByText('concordo demais')).toBeInTheDocument();
       expect(usersApi.comments).toHaveBeenCalledWith(2);
-      expect(screen.getByRole('link', { name: 'Respondendo a @caio' })).toHaveAttribute('href', '/post/7');
+      // Mostra sobre qual música é a conversa, sem precisar abrir.
+      expect(screen.getByRole('link', { name: /^Respondendo a @caio\s*Help! · The Beatles$/ })).toHaveAttribute('href', '/post/7');
       expect(screen.getByText('post 10')).not.toBeVisible();
 
       await userEvent.click(screen.getByRole('tab', { name: 'Posts' }));

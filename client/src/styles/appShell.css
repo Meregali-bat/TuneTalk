@@ -1104,8 +1104,10 @@ button.track-row:hover {
     background: var(--destaque-claro);
   }
 
+  /* Desligado em tom neutro: o verde apagado parecia "meio ligado". */
   &:disabled {
-    opacity: .45;
+    background: var(--superficie-2);
+    color: var(--texto-suave);
     cursor: not-allowed;
   }
 }
@@ -2396,14 +2398,40 @@ button.track-row:hover {
 /* "Respondendo a @fulano" nos comentários listados fora da conversa */
 .post-card__context {
   display: inline-flex;
+  flex-wrap: wrap;
   align-items: center;
   gap: .35rem;
+  max-width: 100%;
   margin-bottom: .55rem;
   color: var(--texto-suave);
   font-size: .82rem;
 
   &:hover {
     color: var(--destaque-claro);
+  }
+}
+
+/* A música (ou o texto) do post respondido, em pílula ao lado de "Respondendo a". */
+.post-card__context-sobre {
+  display: inline-flex;
+  align-items: center;
+  gap: .4rem;
+  min-width: 0;
+  max-width: 100%;
+  padding: .15rem .55rem .15rem .2rem;
+  border: 1px solid var(--linhas);
+  border-radius: 999px;
+  overflow: hidden;
+  color: var(--texto);
+  white-space: nowrap;
+  text-overflow: ellipsis;
+
+  img {
+    flex: none;
+    width: 1.35rem;
+    height: 1.35rem;
+    border-radius: 4px;
+    object-fit: cover;
   }
 }
 
@@ -2896,6 +2924,29 @@ button.favorites-editor__capa {
     outline: 2px solid var(--destaque);
     outline-offset: 3px;
   }
+}
+
+.favorites-editor__capa-imagem {
+  position: relative;
+  display: block;
+}
+
+/* Posição no top 5, sempre visível no editor. */
+.favorites-editor__posicao {
+  position: absolute;
+  top: .25rem;
+  left: .25rem;
+  display: grid;
+  place-items: center;
+  min-width: 1.3rem;
+  height: 1.3rem;
+  padding: 0 .3rem;
+  border-radius: 999px;
+  background: rgba(0, 5, 5, .82);
+  color: var(--texto);
+  font-size: .72rem;
+  font-weight: 700;
+  font-variant-numeric: tabular-nums;
 }
 
 .favorites-editor__barra {

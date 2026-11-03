@@ -48,6 +48,21 @@ export function toPost(row) {
   };
 }
 
+// O que a aba "Comentários" do perfil mostra do post respondido: a música (com capa) ou o começo do texto.
+export function resumoDoPai(pai, nomeDoAutor) {
+  const isAlbum = normalizeType(pai.postType) === 'album';
+  const titulo = (isAlbum ? pai.albumName : pai.musicName) || null;
+  const texto = (pai.texto ?? '').trim();
+  return {
+    postId: pai.id,
+    nome: nomeDoAutor,
+    titulo,
+    artista: titulo ? pai.artistName ?? null : null,
+    capa: titulo ? (isAlbum ? pai.posterAlbum : pai.posterMusica) ?? null : null,
+    trecho: !titulo && texto ? (texto.length > 80 ? `${texto.slice(0, 79)}…` : texto) : null,
+  };
+}
+
 export function createPostRepository(prisma) {
   const findPosts = async (args) => (await prisma.post.findMany({ ...args, include: POST_INCLUDE })).map(toPost);
 
@@ -87,9 +102,17 @@ export function createPostRepository(prisma) {
         where: { autorId, parentId: { not: null } },
         orderBy: [{ createdAt: 'desc' }, { id: 'desc' }],
         take: limit,
-        include: { ...POST_INCLUDE, pai: { select: { id: true, autor: { select: { nome: true } } } } },
+        include: {
+          ...POST_INCLUDE,
+          pai: {
+            select: {
+              id: true, texto: true, musicName: true, albumName: true, artistName: true,
+              posterMusica: true, posterAlbum: true, postType: true, autor: { select: { nome: true } },
+            },
+          },
+        },
       });
-      return rows.map((row) => ({ ...toPost(row), respondendoA: { postId: row.pai.id, nome: row.pai.autor.nome } }));
+      return rows.map((row) => ({ ...toPost(row), respondendoA: resumoDoPai(row.pai, row.pai.autor.nome) }));
     },
 
     // Posts e comentários com a hashtag inteira (o banco filtra por "contém"; aqui conferimos a tag).

@@ -145,7 +145,10 @@ export function EditFavoritesModal({ favoritos, onClose, onSaved }) {
                 aria-label={`${i + 1}º: ${item.titulo}`}
                 onClick={() => setSelecionado(selecionado === item.id ? null : item.id)}
               >
-                <FavoriteCover item={item} redondo={redondo} />
+                <span className="favorites-editor__capa-imagem">
+                  <FavoriteCover item={item} redondo={redondo} />
+                  <span className="favorites-editor__posicao" aria-hidden="true">{i + 1}</span>
+                </span>
                 <span className="favorites-grid__titulo" aria-hidden="true">{item.titulo}</span>
               </button>
             </li>

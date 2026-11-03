@@ -22,7 +22,7 @@ import { EditFavoritesModal } from '../components/profile/EditFavoritesModal.jsx
 function notaMedia(posts) {
   const notas = posts.map((post) => post.nota).filter((nota) => nota !== null && nota !== undefined);
   if (notas.length === 0) return null;
-  return notas.reduce((soma, nota) => soma + nota, 0) / notas.length;
+  return { media: notas.reduce((soma, nota) => soma + nota, 0) / notas.length, quantidade: notas.length };
 }
 
 function ProfileSkeleton() {
@@ -118,8 +118,9 @@ function ProfileHeader({ profile, isOwnProfile, onEdit, onOpenList, onOpenPosts,
           <Stat value={profile.quantidadeSeguindo} label="Seguindo" onClick={() => onOpenList('seguindo')} />
           {media !== null && (
             <Stat
-              value={<><i className="bi bi-star-fill profile-stat__estrela" aria-hidden="true" /> {formatMediaEstrelas(media)}/5</>}
-              label="Nota média"
+              value={<><i className="bi bi-star-fill profile-stat__estrela" aria-hidden="true" /> {formatMediaEstrelas(media.media)}/5</>}
+              // Com quantas notas: 5,0 de 2 posts não é o mesmo que 5,0 de 200.
+              label={`Média de ${media.quantidade} ${media.quantidade === 1 ? 'nota' : 'notas'}`}
             />
           )}
         </ul>
@@ -251,6 +252,7 @@ export function ProfilePage() {
         onOpenPosts={() => {
           abrirAba('posts');
           document.querySelector('.profile-tabs-bar')?.scrollIntoView?.({ behavior: 'smooth', block: 'start' });
+          document.getElementById('aba-posts')?.focus({ preventScroll: true });
         }}
         onFollowChange={reload}
       />
