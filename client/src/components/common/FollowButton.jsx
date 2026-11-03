@@ -46,10 +46,12 @@ export function FollowButton({ userId, following, onChange, size = 'md' }) {
       <button
         type="button"
         className={`follow-button follow-button--${size}${following ? ' is-following' : ''}${confirmando || falhou ? ' is-error' : ''}`}
+        aria-pressed={following}
         disabled={pending}
         onClick={toggle}
         onBlur={() => setConfirmando(false)}
       >
+        {following && !confirmando && !falhou && <i className="bi bi-check2 follow-button__check" aria-hidden="true" />}
         {texto}
       </button>
       {confirmando && (

@@ -108,21 +108,25 @@ function ProfileHeader({ profile, isOwnProfile, onEdit, onOpenList, onOpenPosts,
             <VerifiedBadge nome={usuario.nome} />
             <FounderBadge ativo={mostraSeloFundador(usuario)} />
           </div>
-          <p className="profile-header__handle">@{usuario.nome}</p>
+          <p className="profile-header__handle">
+            @{usuario.nome}
+            {/* O selo de fundador só explicava no "title" (que não aparece no toque): aqui fica escrito. */}
+            {mostraSeloFundador(usuario) && <span className="profile-header__desde"> · no TuneTalk desde o início</span>}
+          </p>
           {usuario.bio && <p className="profile-header__bio">{usuario.bio}</p>}
+          {/* A média fica numa linha própria: na fileira dos números, o rótulo comprido batia nos vizinhos. */}
+          {media !== null && (
+            <p className="profile-header__nota">
+              <i className="bi bi-star-fill" aria-hidden="true" />
+              <strong>{formatMediaEstrelas(media.media)}/5</strong> de média em {media.quantidade} {media.quantidade === 1 ? 'nota' : 'notas'}
+            </p>
+          )}
         </div>
 
         <ul className="profile-stats" aria-label="Números do perfil">
           <Stat value={profile.quantidadePosts} label="Posts" onClick={onOpenPosts} />
           <Stat value={profile.quantidadeSeguidores} label="Seguidores" onClick={() => onOpenList('seguidores')} />
           <Stat value={profile.quantidadeSeguindo} label="Seguindo" onClick={() => onOpenList('seguindo')} />
-          {media !== null && (
-            <Stat
-              value={<><i className="bi bi-star-fill profile-stat__estrela" aria-hidden="true" /> {formatMediaEstrelas(media.media)}/5</>}
-              // Com quantas notas: 5,0 de 2 posts não é o mesmo que 5,0 de 200.
-              label={`Média de ${media.quantidade} ${media.quantidade === 1 ? 'nota' : 'notas'}`}
-            />
-          )}
         </ul>
       </div>
     </header>

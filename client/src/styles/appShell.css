@@ -1192,6 +1192,60 @@ button.track-row:hover {
   overflow-wrap: anywhere;
 }
 
+.profile-header__desde {
+  font-size: .85rem;
+}
+
+.profile-header__nota {
+  display: flex;
+  align-items: baseline;
+  gap: .35rem;
+  margin: 0;
+  color: var(--texto-suave);
+  font-size: .9rem;
+
+  i {
+    align-self: center;
+    color: var(--destaque-claro);
+    font-size: .85rem;
+  }
+
+  strong {
+    color: var(--texto);
+    font-variant-numeric: tabular-nums;
+  }
+}
+
+/* Escolhe qual fileira de favoritos mostrar (Músicas / Álbuns / Artistas). */
+.profile-favorites__seletor {
+  display: flex;
+  gap: .4rem;
+  overflow-x: auto;
+  scrollbar-width: none;
+
+  button {
+    flex: none;
+    min-height: 2.25rem;
+    padding: 0 .9rem;
+    border: 1px solid var(--linhas);
+    border-radius: 999px;
+    background: none;
+    color: var(--texto-suave);
+    font-size: .85rem;
+    font-weight: 600;
+
+    &.is-active {
+      border-color: var(--destaque);
+      background: var(--superficie-2);
+      color: var(--texto);
+    }
+  }
+}
+
+.follow-button__check {
+  margin-right: .3rem;
+}
+
 .profile-header__identity {
   display: grid;
   gap: .35rem;
@@ -1716,11 +1770,12 @@ button.track-row:hover {
   gap: .6rem;
 }
 
-/* Aviso do perfil: flutua acima do botão de postar, sem empurrar a página. */
+/* Aviso do perfil: flutua no alto, sem empurrar a página. */
 .profile-notice {
   position: fixed;
   left: 50%;
-  bottom: calc(env(safe-area-inset-bottom, 0px) + 6rem);
+  /* No alto, logo abaixo do cabeçalho: embaixo cobria justamente as capas recém-salvas. */
+  top: calc(env(safe-area-inset-top, 0px) + var(--app-header-h) + .75rem);
   z-index: 1030;
   display: flex;
   align-items: center;
@@ -1732,7 +1787,7 @@ button.track-row:hover {
   box-shadow: 0 10px 30px -10px rgba(0, 0, 0, .8);
   opacity: 0;
   pointer-events: none;
-  transform: translate(-50%, .5rem);
+  transform: translate(-50%, -.5rem);
   transition: opacity .2s ease-out, transform .2s ease-out;
 
   &.is-visible {

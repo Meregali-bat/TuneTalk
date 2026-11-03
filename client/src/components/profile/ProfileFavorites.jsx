@@ -1,3 +1,5 @@
+import { useState } from 'react';
+
 // Favoritos do perfil, como os filmes favoritos do Letterboxd: até 5 músicas, 5 álbuns e 5 artistas.
 export const SECOES_FAVORITOS = [
   { chave: 'musicas', titulo: 'Músicas favoritas', aba: 'Músicas', tipo: 'musica', deezer: 'track' },
@@ -20,8 +22,13 @@ export function FavoriteCover({ item, redondo }) {
 
 export function ProfileFavorites({ favoritos, editavel, onEditar }) {
   const secoes = SECOES_FAVORITOS.map((secao) => ({ ...secao, lista: listaDeFavoritos(favoritos, secao.chave) }));
-  const algum = secoes.some((secao) => secao.lista.length > 0);
+  const preenchidas = secoes.filter((secao) => secao.lista.length > 0);
+  const algum = preenchidas.length > 0;
+  // Uma fileira por vez (com um seletor quando há mais de uma): o perfil não vira uma vitrine
+  // de 15 capas antes dos posts.
+  const [escolhida, setEscolhida] = useState(null);
   if (!algum && !editavel) return null;
+  const visivel = preenchidas.find((secao) => secao.chave === escolhida) ?? preenchidas[0];
 
   return (
     <section className="profile-favorites" aria-label="Favoritos">
@@ -42,9 +49,25 @@ export function ProfileFavorites({ favoritos, editavel, onEditar }) {
         </div>
       )}
 
-      {secoes.filter((secao) => secao.lista.length > 0).map((secao) => (
+      {preenchidas.length > 1 && (
+        <div className="profile-favorites__seletor" role="group" aria-label="Tipo de favorito">
+          {preenchidas.map((secao) => (
+            <button
+              key={secao.chave}
+              type="button"
+              aria-pressed={secao === visivel}
+              className={secao === visivel ? 'is-active' : undefined}
+              onClick={() => setEscolhida(secao.chave)}
+            >
+              {secao.aba}
+            </button>
+          ))}
+        </div>
+      )}
+
+      {visivel && [visivel].map((secao) => (
         <div key={secao.chave} className="profile-favorites__secao">
-          <h3>{secao.titulo}</h3>
+          <h3 className={preenchidas.length > 1 ? 'visually-hidden' : undefined}>{secao.titulo}</h3>
           <ul className="favorites-grid" aria-label={secao.titulo}>
             {secao.lista.map((item) => (
               <li key={item.id} className="favorites-grid__item">

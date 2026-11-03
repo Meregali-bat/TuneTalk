@@ -62,8 +62,9 @@ describe('ProfilePage', () => {
 
     const stats = screen.getByRole('list', { name: 'Números do perfil' });
     expect(within(stats).getAllByRole('listitem').map((item) => item.textContent)).toEqual([
-      '2Posts', '1Seguidores', '0Seguindo', ' 3,8/5Média de 2 notas',
+      '2Posts', '1Seguidores', '0Seguindo',
     ]);
+    expect(screen.getByText(/de média em 2 notas/)).toHaveTextContent('3,8/5 de média em 2 notas');
     expect(screen.getByRole('tab', { name: 'Posts' })).toHaveAttribute('aria-selected', 'true');
     expect(screen.getByText('post 10')).toBeInTheDocument();
   });
@@ -72,8 +73,7 @@ describe('ProfilePage', () => {
     const soTexto = { ...post(12, null), titulo: null, tipo: null };
     usersApi.profile.mockResolvedValue(profile({ posts: [post(10, 8), soTexto], quantidadePosts: 2 }));
     renderProfile();
-    const stats = await screen.findByRole('list', { name: 'Números do perfil' });
-    expect(stats).toHaveTextContent('4,0/5Média de 1 nota');
+    expect(await screen.findByText(/de média em 1 nota/)).toHaveTextContent('4,0/5 de média em 1 nota');
   });
 
   it('sem posts com nota não mostra nota média', async () => {
@@ -81,7 +81,7 @@ describe('ProfilePage', () => {
     usersApi.profile.mockResolvedValue(profile({ posts: [soTexto], quantidadePosts: 1 }));
     renderProfile();
     await screen.findByRole('heading', { level: 1, name: 'bia' });
-    expect(screen.queryByText(/^Média de/)).toBeNull();
+    expect(screen.queryByText(/de média em/)).toBeNull();
   });
 
   describe('cabeçalho no estilo do Twitter', () => {
@@ -110,7 +110,7 @@ describe('ProfilePage', () => {
     usersApi.profile.mockResolvedValue(profile({ posts: [], quantidadePosts: 0 }));
     renderProfile();
     await screen.findByRole('heading', { level: 1, name: 'bia' });
-    expect(screen.queryByText(/^Média de/)).toBeNull();
+    expect(screen.queryByText(/de média em/)).toBeNull();
   });
 
   it('permite seguir e atualiza os números', async () => {
@@ -390,11 +390,14 @@ describe('ProfilePage', () => {
       const musicas = within(secao).getByRole('list', { name: 'Músicas favoritas' });
       expect(within(musicas).getByText('Help!')).toBeInTheDocument();
       expect(within(musicas).getByText('The Beatles')).toBeInTheDocument();
-      expect(within(secao).getByRole('list', { name: 'Artistas favoritos' })).toHaveTextContent('Olivia Rodrigo');
-      expect(within(secao).queryByRole('list', { name: 'Álbuns favoritos' })).toBeNull();
-      expect(within(secao).queryByRole('button', { name: 'Editar favoritos' })).toBeNull();
       const link = within(musicas).getByRole('link', { name: 'Help! · The Beatles (abre no Deezer)' });
       expect(link).toHaveAttribute('href', 'https://www.deezer.com/track/1');
+      expect(within(secao).queryByRole('button', { name: 'Editar favoritos' })).toBeNull();
+      // Uma fileira por vez: o seletor só oferece os tipos preenchidos.
+      expect(within(secao).queryByRole('button', { name: 'Álbuns' })).toBeNull();
+      await userEvent.click(within(secao).getByRole('button', { name: 'Artistas' }));
+      expect(within(secao).getByRole('list', { name: 'Artistas favoritos' })).toHaveTextContent('Olivia Rodrigo');
+      expect(within(secao).queryByRole('list', { name: 'Músicas favoritas' })).toBeNull();
       expect(within(secao).getByRole('link', { name: /Olivia Rodrigo/ })).toHaveAttribute('href', 'https://www.deezer.com/artist/5');
     });
 
@@ -469,6 +472,7 @@ describe('ProfilePage', () => {
       expect(screen.getByRole('status')).toHaveTextContent('Favoritos salvos.');
       const secao = screen.getByRole('region', { name: 'Favoritos' });
       expect(within(secao).getByRole('list', { name: 'Músicas favoritas' })).toHaveTextContent('Yesterday');
+      await userEvent.click(within(secao).getByRole('button', { name: 'Álbuns' }));
       expect(within(secao).getByRole('list', { name: 'Álbuns favoritos' })).toHaveTextContent('Abbey Road');
     });
 
