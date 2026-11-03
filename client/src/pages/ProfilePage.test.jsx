@@ -175,6 +175,19 @@ describe('ProfilePage', () => {
     });
   });
 
+  it('no perfil da sweetener caem pétalas; nos outros, não', async () => {
+    usersApi.profile.mockResolvedValue(profile({ usuario: { ...bia, nome: 'sweetener' } }));
+    const { unmount } = renderProfile();
+    await screen.findByRole('heading', { level: 1, name: 'sweetener' });
+    expect(screen.getByTestId('petalas')).toBeInTheDocument();
+    unmount();
+
+    usersApi.profile.mockResolvedValue(profile());
+    renderProfile();
+    await screen.findByRole('heading', { level: 1, name: 'bia' });
+    expect(screen.queryByTestId('petalas')).toBeNull();
+  });
+
   it('mostra erro para perfil inexistente', async () => {
     usersApi.profile.mockRejectedValue(new Error('Usuário não encontrado.'));
     renderProfile(99);

@@ -9,6 +9,8 @@ import { FollowButton } from '../components/common/FollowButton.jsx';
 import { UserListModal } from '../components/profile/UserListModal.jsx';
 import { EditProfileModal } from '../components/profile/EditProfileModal.jsx';
 import { ChangePasswordModal } from '../components/profile/ChangePasswordModal.jsx';
+import { PetalRain } from '../components/effects/PetalRain.jsx';
+import { profileEffectFor } from '../components/effects/profileEffects.js';
 
 const formatMedia = (valor) =>
   valor.toLocaleString('pt-BR', { minimumFractionDigits: 1, maximumFractionDigits: 1 });
@@ -149,6 +151,8 @@ export function ProfilePage() {
 
   return (
     <div className="feed profile">
+      {/* key: só cai de novo ao abrir outro perfil, não quando os dados deste recarregam (ex.: seguir). */}
+      {profileEffectFor(profile.usuario.nome) === 'petalas' && <PetalRain key={profile.usuario.id} />}
       <ProfileHeader
         profile={profile}
         isOwnProfile={isOwnProfile}
