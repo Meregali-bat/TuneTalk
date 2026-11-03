@@ -902,6 +902,34 @@
   font-size: 1.15rem;
 }
 
+/* Na lista da busca, o play é contornado: uma coluna de círculos verdes cheios pesava demais. */
+.composer-results__item {
+  .play-button--sm:not(.is-playing) {
+    border: 1px solid var(--linhas);
+    background: none;
+    color: var(--destaque-claro);
+  }
+
+  .track-row__chevron {
+    flex: none;
+    width: 2.5rem;
+    text-align: center;
+  }
+}
+
+/* Abas Músicas/Álbuns da busca: menores, abaixo do campo. */
+.composer-tabs--compacto {
+  align-self: flex-start;
+  grid-template-columns: auto auto;
+  padding: .2rem;
+
+  .composer-tabs__tab {
+    min-height: 2.25rem;
+    padding: .3rem 1.1rem;
+    font-size: .9rem;
+  }
+}
+
 .track-row {
   display: flex;
   align-items: center;

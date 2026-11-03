@@ -70,20 +70,6 @@ function SearchStep({ query, onQueryChange, tipo, onTipoChange, search, onSelect
   const busca = BUSCAS[tipo];
   return (
     <div className="composer-step">
-      <div role="tablist" aria-label="O que buscar" className="composer-tabs">
-        {Object.entries(BUSCAS).map(([chave, { aba }]) => (
-          <button
-            key={chave}
-            type="button"
-            role="tab"
-            aria-selected={chave === tipo}
-            className={`composer-tabs__tab${chave === tipo ? ' is-active' : ''}`}
-            onClick={() => onTipoChange(chave)}
-          >
-            {aba}
-          </button>
-        ))}
-      </div>
       <div className="composer-search-bar">
         <button type="button" className="icon-button" aria-label="Voltar" onClick={onBack}>
           <i className="bi bi-arrow-left" aria-hidden="true" />
@@ -103,6 +89,22 @@ function SearchStep({ query, onQueryChange, tipo, onTipoChange, search, onSelect
         </div>
       </div>
 
+      {/* No celular: a busca vem primeiro (com o voltar ao lado); o tipo fica logo abaixo, compacto. */}
+      <div role="tablist" aria-label="O que buscar" className="composer-tabs composer-tabs--compacto">
+        {Object.entries(BUSCAS).map(([chave, { aba }]) => (
+          <button
+            key={chave}
+            type="button"
+            role="tab"
+            aria-selected={chave === tipo}
+            className={`composer-tabs__tab${chave === tipo ? ' is-active' : ''}`}
+            onClick={() => onTipoChange(chave)}
+          >
+            {aba}
+          </button>
+        ))}
+      </div>
+
       {search.status === 'idle' && <p className="composer-hint">{busca.dica}</p>}
       {search.status === 'loading' && <p role="status" className="composer-hint">Buscando…</p>}
       {search.status === 'error' && (
@@ -117,11 +119,12 @@ function SearchStep({ query, onQueryChange, tipo, onTipoChange, search, onSelect
             <li key={track.id} className="composer-results__item">
               <button type="button" className="track-row" onClick={() => onSelect(track)}>
                 <TrackInfo track={track} />
-                <i className="bi bi-chevron-right track-row__chevron" aria-hidden="true" />
               </button>
-              {/* Ouvir antes de escolher (faixas têm prévia de 30 s; álbuns não). */}
-              {track.tipo !== 'album' && track.preview && (
+              {/* Ouvir antes de escolher (faixas têm prévia de 30 s; álbuns não). Sem prévia, a seta indica o toque. */}
+              {track.tipo !== 'album' && track.preview ? (
                 <PlayButton src={track.preview} titulo={track.titulo} artista={track.artista} rotulo={track.titulo} size="sm" />
+              ) : (
+                <i className="bi bi-chevron-right track-row__chevron" aria-hidden="true" />
               )}
             </li>
           ))}
