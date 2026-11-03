@@ -1,5 +1,5 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest';
-import { render, screen, waitFor, within } from '@testing-library/react';
+import { fireEvent, render, screen, waitFor, within } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { CreatePost } from './CreatePost.jsx';
 import { StarRatingInput } from './StarRatingInput.jsx';
@@ -389,6 +389,24 @@ describe('CreatePost', () => {
       await userEvent.click(screen.getByRole('button', { name: 'Remover imagem' }));
       expect(screen.queryByAltText('Imagem escolhida')).toBeNull();
       expect(screen.getByRole('button', { name: 'Publicar' })).toBeDisabled();
+    });
+
+    it('colar uma imagem/GIF no texto funciona como anexar', async () => {
+      render(<CreatePost onCreated={vi.fn()} />);
+      await open();
+      const colado = gif();
+      fireEvent.paste(texto(), { clipboardData: { files: [colado], getData: () => '' } });
+
+      expect(screen.getByRole('group', { name: 'Formato da imagem' })).toBeInTheDocument();
+      await usar();
+      expect(screen.getByAltText('Imagem escolhida')).toBeInTheDocument();
+    });
+
+    it('colar texto continua colando texto', async () => {
+      render(<CreatePost onCreated={vi.fn()} />);
+      await open();
+      fireEvent.paste(texto(), { clipboardData: { files: [], getData: () => 'oi' } });
+      expect(screen.queryByRole('group', { name: 'Formato da imagem' })).toBeNull();
     });
 
     it('recusa na hora imagem acima de 10 MB', async () => {

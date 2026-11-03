@@ -199,6 +199,14 @@ export function Composer({
     setPendente(file);
   };
 
+  // Colar uma imagem ou GIF (copiar e colar) entra como se tivesse sido anexada; texto cola normal.
+  const colar = (event) => {
+    const imagemColada = Array.from(event.clipboardData?.files ?? []).find((f) => f.type.startsWith('image/'));
+    if (!imagemColada) return;
+    event.preventDefault();
+    chooseImagem(imagemColada);
+  };
+
   const confirmarRecorte = (resultado) => {
     setImagem(pendente);
     setRecorte(resultado);
@@ -281,6 +289,7 @@ export function Composer({
           placeholder={placeholder}
           value={texto}
           onChange={(event) => setTexto(event.target.value)}
+          onPaste={colar}
         />
         <span className="composer-counter">{texto.length}/{TEXTO_MAX}</span>
       </div>
@@ -328,7 +337,7 @@ export function Composer({
         <button type="button" className="composer-attach" onClick={() => imagemInput.current?.click()}>
           <i className="bi bi-image" aria-hidden="true" />
           Adicionar imagem
-          <span className="composer-attach__hint" aria-hidden="true">GIF também</span>
+          <span className="composer-attach__hint" aria-hidden="true">ou cole um GIF</span>
         </button>
       )}
       <input
