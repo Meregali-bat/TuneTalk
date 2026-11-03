@@ -12,6 +12,7 @@ import { EditProfileModal } from '../components/profile/EditProfileModal.jsx';
 import { ChangePasswordModal } from '../components/profile/ChangePasswordModal.jsx';
 import { PetalRain } from '../components/effects/PetalRain.jsx';
 import { profileEffectFor } from '../components/effects/profileEffects.js';
+import { VerifiedBadge } from '../components/effects/VerifiedBadge.jsx';
 
 // Só posts com música têm nota. A média sai na escala guardada (0 a 10) e é mostrada em estrelas.
 function notaMedia(posts) {
@@ -103,7 +104,10 @@ function ProfileHeader({ profile, isOwnProfile, onEdit, onChangePassword, onOpen
         </div>
 
         <div className="profile-header__identity">
-          <h1>{nome}</h1>
+          <div className="profile-header__name">
+            <h1>{nome}</h1>
+            <VerifiedBadge nome={usuario.nome} />
+          </div>
           <p className="profile-header__handle">@{usuario.nome}</p>
           {usuario.bio && <p className="profile-header__bio">{usuario.bio}</p>}
         </div>

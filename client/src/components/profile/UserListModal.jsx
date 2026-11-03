@@ -2,6 +2,7 @@ import { Link } from 'react-router-dom';
 import { useAuth } from '../../auth/AuthContext.jsx';
 import { Modal } from '../common/Modal.jsx';
 import { FollowButton } from '../common/FollowButton.jsx';
+import { VerifiedBadge } from '../effects/VerifiedBadge.jsx';
 
 export function UserListModal({ open, title, users, seguindoIds, onClose, onFollowChange }) {
   const { user: me } = useAuth();
@@ -16,7 +17,9 @@ export function UserListModal({ open, title, users, seguindoIds, onClose, onFoll
               <Link to={`/perfil/${usuario.id}`} className="user-row__link" onClick={onClose}>
                 <img src={usuario.fotoPerfil} alt="" className="user-row__avatar" />
                 <span className="user-row__info">
-                  <span className="user-row__name">{usuario.nomeExibicao || usuario.nome}</span>
+                  <span className="user-row__name">
+                    {usuario.nomeExibicao || usuario.nome} <VerifiedBadge nome={usuario.nome} />
+                  </span>
                   <span className="user-row__handle">@{usuario.nome}</span>
                   {usuario.bio && <span className="user-row__bio">{usuario.bio}</span>}
                 </span>

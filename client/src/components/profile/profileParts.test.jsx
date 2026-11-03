@@ -142,6 +142,13 @@ describe('UserListModal', () => {
     expect(screen.getByText('@bia')).toBeInTheDocument();
   });
 
+  it('mostra o selo de quem é verificado', () => {
+    renderWithProviders(
+      <UserListModal open title="Seguidores" users={[{ id: 11, nome: 'meregali.bat', fotoPerfil: 'm.png' }]} seguindoIds={[]} onClose={vi.fn()} />,
+    );
+    expect(screen.getByRole('img', { name: 'Verificado' })).toHaveClass('verified-badge--tunetalk');
+  });
+
   it('lista usuários com link e botão de seguir conforme quem eu sigo (exceto eu mesmo)', () => {
     renderWithProviders(
       <UserListModal open title="Seguidores" users={users} seguindoIds={[2]} onClose={vi.fn()} onFollowChange={vi.fn()} />,

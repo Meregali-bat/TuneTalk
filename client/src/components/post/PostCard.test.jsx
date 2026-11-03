@@ -95,6 +95,12 @@ describe('PostCard', () => {
     expect(screen.getByAltText('Imagem do post de Bia').closest('a')).not.toHaveClass('post-card__image--ajustada');
   });
 
+  it('autor verificado tem o selo ao lado do nome', () => {
+    renderWithProviders(<PostCard post={{ ...musicPost, autor: { id: 5, nome: 'sweetener', fotoPerfil: 's.png' } }} />);
+    expect(screen.getByRole('link', { name: 'sweetener' })).toBeInTheDocument();
+    expect(screen.getByRole('img', { name: 'Verificado' })).toHaveClass('verified-badge--olivia');
+  });
+
   it('mostra a imagem (ou GIF) do post', () => {
     renderWithProviders(<PostCard post={{ ...musicPost, imagem: 'https://res.cloudinary.com/t/gato.gif' }} />);
     expect(screen.getByAltText('Imagem do post de Bia')).toHaveAttribute('src', 'https://res.cloudinary.com/t/gato.gif');

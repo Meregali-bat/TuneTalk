@@ -229,6 +229,13 @@ describe('ProfilePage', () => {
     expect(screen.queryByTestId('petalas')).toBeNull();
   });
 
+  it('perfil verificado mostra o selo ao lado do nome', async () => {
+    usersApi.profile.mockResolvedValue(profile({ usuario: { ...bia, nome: 'meregali.bat', nomeExibicao: 'Lucas' } }));
+    renderProfile();
+    const nome = await screen.findByRole('heading', { level: 1, name: 'Lucas' });
+    expect(nome.parentElement).toContainElement(screen.getByRole('img', { name: 'Verificado' }));
+  });
+
   it('mostra erro para perfil inexistente', async () => {
     usersApi.profile.mockRejectedValue(new Error('Usuário não encontrado.'));
     renderProfile(99);

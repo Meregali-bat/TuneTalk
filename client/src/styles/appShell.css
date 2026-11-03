@@ -1934,3 +1934,42 @@ button.track-row:hover {
     color: var(--background);
   }
 }
+
+/* --- Selo de verificado --- */
+.verified-badge {
+  display: inline-block;
+  flex: none;
+  font-size: .95em;
+  line-height: 1;
+  vertical-align: -.05em;
+}
+
+.verified-badge--tunetalk {
+  color: var(--destaque);
+}
+
+/* Roxo, lilás e rosa (Olivia Rodrigo): o degradê preenche o desenho do ícone. */
+.verified-badge--olivia {
+  background: linear-gradient(135deg, #9b5de5 0%, #c084fc 45%, #f4a6c8 100%);
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent;
+}
+
+.profile-header__name {
+  display: flex;
+  align-items: center;
+  gap: .4rem;
+  min-width: 0;
+
+  .verified-badge {
+    font-size: 1.35rem;
+  }
+}
+
+.post-card__author-line {
+  display: inline-flex;
+  align-items: center;
+  gap: .3rem;
+  min-width: 0;
+}

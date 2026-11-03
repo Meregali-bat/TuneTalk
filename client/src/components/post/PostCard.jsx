@@ -6,6 +6,7 @@ import { releaseInfo } from '../../utils/postFormat.js';
 import { relativeTime } from '../../utils/relativeTime.js';
 import { StarRating } from './StarRating.jsx';
 import { formatEstrelas } from '../../../../shared/rating.js';
+import { VerifiedBadge } from '../effects/VerifiedBadge.jsx';
 import { LikeButton } from './LikeButton.jsx';
 import { PlayButton } from './PlayButton.jsx';
 import { ShareButton } from './ShareButton.jsx';
@@ -78,7 +79,10 @@ export function PostCard({
           <img src={post.autor.fotoPerfil} alt="" />
         </Link>
         <div className="post-card__who">
-          <Link to={profileUrl} className="post-card__author" id={authorId}>{post.autor.nome}</Link>
+          <span className="post-card__author-line">
+            <Link to={profileUrl} className="post-card__author" id={authorId}>{post.autor.nome}</Link>
+            <VerifiedBadge nome={post.autor.nome} />
+          </span>
           <time className="post-card__time" dateTime={post.data}>{relativeTime(post.data)}</time>
         </div>
         {showMenu && (
