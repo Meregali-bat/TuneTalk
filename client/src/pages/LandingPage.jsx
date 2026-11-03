@@ -11,7 +11,7 @@ const FEATURES = [
 
 const STEPS = [
   { titulo: 'Busque a música', texto: 'Digite o nome da faixa e escolha o resultado certo.' },
-  { titulo: 'Dê sua nota', texto: 'De 0 a 10, em estrelas com meia estrela, e diga o porquê.' },
+  { titulo: 'Dê sua nota', texto: 'De 0 a 5 estrelas, com meia estrela, e diga o porquê.' },
   { titulo: 'Converse', texto: 'Receba curtidas, comentários e novos seguidores.' },
 ];
 
@@ -53,7 +53,7 @@ export function LandingPage() {
             Avalie, comente e <em>descubra</em> música
           </h1>
           <p className="landing-lead">
-            Poste a faixa ou o álbum que está ouvindo, dê sua nota de 0 a 10 e converse com quem curte o mesmo som.
+            Poste a faixa ou o álbum que está ouvindo, dê sua nota de 0 a 5 estrelas e converse com quem curte o mesmo som.
           </p>
           <div className="landing-ctas">
             <Link to="/cadastrar" className="landing-button landing-button--primary">Criar conta</Link>

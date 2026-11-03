@@ -1,4 +1,5 @@
 import { useState } from 'react';
+import { formatMediaEstrelas } from '../../../shared/rating.js';
 import { useParams } from 'react-router-dom';
 import { usersApi } from '../api/index.js';
 import { useAuth } from '../auth/AuthContext.jsx';
@@ -12,10 +13,7 @@ import { ChangePasswordModal } from '../components/profile/ChangePasswordModal.j
 import { PetalRain } from '../components/effects/PetalRain.jsx';
 import { profileEffectFor } from '../components/effects/profileEffects.js';
 
-const formatMedia = (valor) =>
-  valor.toLocaleString('pt-BR', { minimumFractionDigits: 1, maximumFractionDigits: 1 });
-
-// Só posts com música têm nota.
+// Só posts com música têm nota. A média sai na escala guardada (0 a 10) e é mostrada em estrelas.
 function notaMedia(posts) {
   const notas = posts.map((post) => post.nota).filter((nota) => nota !== null && nota !== undefined);
   if (notas.length === 0) return null;
@@ -75,7 +73,7 @@ function ProfileHeader({ profile, isOwnProfile, onEdit, onChangePassword, onOpen
         <Stat value={profile.quantidadePosts} label="Posts" />
         <Stat value={profile.quantidadeSeguidores} label="Seguidores" onClick={() => onOpenList('seguidores')} />
         <Stat value={profile.quantidadeSeguindo} label="Seguindo" onClick={() => onOpenList('seguindo')} />
-        {media !== null && <Stat value={formatMedia(media)} label="Nota média" />}
+        {media !== null && <Stat value={`${formatMediaEstrelas(media)}/5`} label="Nota média" />}
       </ul>
 
       <div className="profile-header__actions">

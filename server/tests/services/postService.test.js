@@ -128,7 +128,7 @@ describe('postService', () => {
     it('com música, exige a nota', async () => {
       await expect(service.create(7, { musicName: 'x' })).rejects.toMatchObject({
         status: 400,
-        message: 'Dê uma nota de 0 a 10.',
+        message: 'Dê uma nota de 0 a 5 estrelas.',
       });
     });
 
@@ -136,7 +136,7 @@ describe('postService', () => {
       for (const nota of [-1, 11, 4.5, 'abc', '']) {
         await expect(service.create(7, { musicName: 'x', nota })).rejects.toMatchObject({
           status: 400,
-          message: 'A nota deve ser um número inteiro de 0 a 10.',
+          message: 'A nota vai de 0 a 5 estrelas, de meia em meia.',
         });
       }
       expect(posts.create).not.toHaveBeenCalled();

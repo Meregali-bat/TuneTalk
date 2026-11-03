@@ -1,5 +1,12 @@
-// Nota de 0 a 10: cada ponto é meia estrela (10 = 5 estrelas).
+// Nota guardada de 0 a 10: cada ponto é meia estrela (10 = 5 estrelas).
+// Na tela ela aparece sempre em estrelas, de 0 a 5 (ex.: 7 → "3,5").
 export const NOTA_MAX = 10;
+export const ESTRELAS_MAX = 5;
+
+export const formatEstrelas = (nota) => (nota / 2).toLocaleString('pt-BR', { maximumFractionDigits: 1 });
+
+export const formatMediaEstrelas = (mediaNota) =>
+  (mediaNota / 2).toLocaleString('pt-BR', { minimumFractionDigits: 1, maximumFractionDigits: 1 });
 
 export function parseNota(value) {
   if (value === null || value === undefined) return null;

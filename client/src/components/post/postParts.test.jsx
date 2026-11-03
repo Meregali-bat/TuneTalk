@@ -16,7 +16,7 @@ describe('StarRating', () => {
     expect(container.querySelectorAll('.bi-star-fill')).toHaveLength(3);
     expect(container.querySelectorAll('.bi-star-half')).toHaveLength(1);
     expect(container.querySelectorAll('.bi-star')).toHaveLength(1);
-    expect(screen.getByLabelText('Nota 7 de 10')).toBeInTheDocument();
+    expect(screen.getByLabelText('Nota 3,5 de 5')).toBeInTheDocument();
   });
 
   it('nota 0 é cinco estrelas vazias e 10 é cinco cheias', () => {

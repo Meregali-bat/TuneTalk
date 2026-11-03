@@ -44,8 +44,8 @@ describe('PostCard', () => {
     expect(screen.getByText('que som')).toBeInTheDocument();
     expect(screen.getByRole('heading', { name: 'Help!' })).toBeInTheDocument();
     expect(screen.getByText('The Beatles • música • 2 min')).toBeInTheDocument();
-    expect(screen.getByLabelText('Nota 7 de 10')).toBeInTheDocument();
-    expect(screen.getByText('7/10')).toBeInTheDocument();
+    expect(screen.getByLabelText('Nota 3,5 de 5')).toBeInTheDocument();
+    expect(screen.getByText('3,5/5')).toBeInTheDocument();
     expect(screen.getByAltText('Poster da música')).toHaveAttribute('src', 'help.jpg');
     expect(screen.getByRole('button', { name: 'Tocar prévia' })).toBeInTheDocument();
   });
@@ -91,7 +91,7 @@ describe('PostCard', () => {
       expect(screen.getByRole('article', { name: 'Post de Bia' })).toBeInTheDocument();
       expect(screen.getByText('que som')).toBeInTheDocument();
       expect(screen.queryByRole('img', { name: /Poster/ })).toBeNull();
-      expect(screen.queryByText(/\/10/)).toBeNull();
+      expect(screen.queryByText(/\/5/)).toBeNull();
     });
   });
 

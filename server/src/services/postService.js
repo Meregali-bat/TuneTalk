@@ -86,8 +86,8 @@ export function createPostService({
 
       if (hasMusic) {
         const nota = parseNota(data.nota);
-        if (nota === null) throw badRequest('Dê uma nota de 0 a 10.');
-        if (!isValidNota(nota)) throw badRequest('A nota deve ser um número inteiro de 0 a 10.');
+        if (nota === null) throw badRequest('Dê uma nota de 0 a 5 estrelas.');
+        if (!isValidNota(nota)) throw badRequest('A nota vai de 0 a 5 estrelas, de meia em meia.');
         data.nota = nota;
       } else {
         if (!data.texto) throw badRequest('Escreva algo ou escolha uma música.');

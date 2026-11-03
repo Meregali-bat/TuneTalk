@@ -56,7 +56,7 @@ describe('ProfilePage', () => {
 
     const stats = screen.getByRole('list', { name: 'Números do perfil' });
     expect(within(stats).getAllByRole('listitem').map((item) => item.textContent)).toEqual([
-      '2Posts', '1Seguidores', '0Seguindo', '7,5Nota média',
+      '2Posts', '1Seguidores', '0Seguindo', '3,8/5Nota média',
     ]);
     expect(screen.getByRole('heading', { level: 2, name: 'Posts' })).toBeInTheDocument();
     expect(screen.getByText('post 10')).toBeInTheDocument();
@@ -67,7 +67,7 @@ describe('ProfilePage', () => {
     usersApi.profile.mockResolvedValue(profile({ posts: [post(10, 8), soTexto], quantidadePosts: 2 }));
     renderProfile();
     const stats = await screen.findByRole('list', { name: 'Números do perfil' });
-    expect(stats).toHaveTextContent('8,0Nota média');
+    expect(stats).toHaveTextContent('4,0/5Nota média');
   });
 
   it('sem posts com nota não mostra nota média', async () => {

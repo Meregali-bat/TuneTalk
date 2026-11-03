@@ -45,8 +45,8 @@ describe('StarRatingInput (nota de 0 a 10)', () => {
 
   it('mostra número e descrição da nota atual', () => {
     render(<StarRatingInput value={7} onChange={() => {}} />);
-    expect(screen.getByRole('group', { name: 'Nota de 0 a 10' })).toBeInTheDocument();
-    expect(screen.getByText('7/10 · Bom')).toBeInTheDocument();
+    expect(screen.getByRole('group', { name: 'Nota de 0 a 5 estrelas' })).toBeInTheDocument();
+    expect(screen.getByText('3,5/5 · Bom')).toBeInTheDocument();
   });
 
   it('sem nota explica como funciona', () => {
@@ -172,7 +172,7 @@ describe('CreatePost', () => {
     expect(publicar).toBeDisabled();
 
     await userEvent.click(screen.getByRole('button', { name: 'Estrela 4' }));
-    expect(screen.getByText('7/10 · Bom')).toBeInTheDocument();
+    expect(screen.getByText('3,5/5 · Bom')).toBeInTheDocument();
     expect(publicar).toBeEnabled();
   });
 
@@ -194,7 +194,7 @@ describe('CreatePost', () => {
     await userEvent.click(screen.getByRole('button', { name: 'Remover música' }));
 
     expect(screen.queryByRole('group', { name: 'Música escolhida' })).toBeNull();
-    expect(screen.queryByRole('group', { name: 'Nota de 0 a 10' })).toBeNull();
+    expect(screen.queryByRole('group', { name: 'Nota de 0 a 5 estrelas' })).toBeNull();
     expect(screen.getByRole('button', { name: 'Adicionar música' })).toBeInTheDocument();
   });
 
@@ -219,15 +219,15 @@ describe('CreatePost', () => {
   });
 
   it('mostra o erro do servidor e mantém o que foi preenchido', async () => {
-    postsApi.create.mockRejectedValue(new Error('A nota deve ser um número inteiro de 0 a 10.'));
+    postsApi.create.mockRejectedValue(new Error('Dê uma nota de 0 a 5 estrelas.'));
     render(<CreatePost onCreated={vi.fn()} />);
     await chooseHelp();
     await userEvent.type(texto(), 'ótima');
     await userEvent.dblClick(screen.getByRole('button', { name: 'Estrela 3' }));
-    expect(screen.getByText('6/10 · Bom')).toBeInTheDocument();
+    expect(screen.getByText('3/5 · Bom')).toBeInTheDocument();
     await userEvent.click(screen.getByRole('button', { name: 'Publicar' }));
 
-    expect(await screen.findByRole('alert')).toHaveTextContent('A nota deve ser um número inteiro de 0 a 10.');
+    expect(await screen.findByRole('alert')).toHaveTextContent('Dê uma nota de 0 a 5 estrelas.');
     expect(texto()).toHaveValue('ótima');
     expect(screen.getByRole('button', { name: 'Publicar' })).toBeEnabled();
   });

@@ -5,6 +5,7 @@ import { postsApi } from '../../api/index.js';
 import { releaseInfo } from '../../utils/postFormat.js';
 import { relativeTime } from '../../utils/relativeTime.js';
 import { StarRating } from './StarRating.jsx';
+import { formatEstrelas } from '../../../../shared/rating.js';
 import { LikeButton } from './LikeButton.jsx';
 import { PlayButton } from './PlayButton.jsx';
 import { ShareButton } from './ShareButton.jsx';
@@ -30,7 +31,7 @@ function MusicBlock({ post, postUrl }) {
           <p className="post-card__meta">{meta}</p>
           <span className="post-card__rating">
             <span className="post-card__stars"><StarRating nota={post.nota} /></span>
-            <span className="post-card__score" aria-hidden="true">{post.nota}/10</span>
+            <span className="post-card__score" aria-hidden="true">{formatEstrelas(post.nota)}/5</span>
           </span>
         </div>
       </Link>

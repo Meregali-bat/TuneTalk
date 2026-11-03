@@ -1,4 +1,4 @@
-import { notaLabel } from '../../../../shared/rating.js';
+import { formatEstrelas, notaLabel } from '../../../../shared/rating.js';
 
 const STARS = [1, 2, 3, 4, 5];
 
@@ -17,7 +17,7 @@ export function StarRatingInput({ value, onChange }) {
 
   return (
     <div className="rating-input">
-      <div role="group" aria-label="Nota de 0 a 10" className="rating-input__stars">
+      <div role="group" aria-label="Nota de 0 a 5 estrelas" className="rating-input__stars">
         {STARS.map((star) => {
           const fill = Math.min(2, Math.max(0, shown - (star - 1) * 2));
           return (
@@ -39,7 +39,7 @@ export function StarRatingInput({ value, onChange }) {
       <p className="rating-input__caption" aria-live="polite">
         {value === null || value === undefined
           ? 'Toque numa estrela: 1 toque deixa meia, 2 enche, 3 esvazia.'
-          : `${value}/10 · ${notaLabel(value)}`}
+          : `${formatEstrelas(value)}/5 · ${notaLabel(value)}`}
       </p>
     </div>
   );
