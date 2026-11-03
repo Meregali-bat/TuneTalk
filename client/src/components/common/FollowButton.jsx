@@ -46,13 +46,15 @@ export function FollowButton({ userId, following, onChange, size = 'md' }) {
       <button
         type="button"
         className={`follow-button follow-button--${size}${following ? ' is-following' : ''}${confirmando || falhou ? ' is-error' : ''}`}
-        aria-pressed={following}
         disabled={pending}
         onClick={toggle}
         onBlur={() => setConfirmando(false)}
       >
         {texto}
       </button>
+      {confirmando && (
+        <span role="status" className="visually-hidden">Toque de novo para deixar de seguir.</span>
+      )}
       {falhou && (
         <span role="alert" className="visually-hidden">
           {following ? 'Não deu para deixar de seguir.' : 'Não deu para seguir.'} Tente de novo.

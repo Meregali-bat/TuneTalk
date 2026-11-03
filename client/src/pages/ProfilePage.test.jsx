@@ -31,6 +31,12 @@ const profile = (overrides = {}) => ({
   ...overrides,
 });
 
+// No editor de favoritos: toca na capa (abre a barra de ações) e depois em "Tirar".
+const tirarFavorito = async (titulo, onde = screen) => {
+  await userEvent.click(onde.getByRole('button', { name: new RegExp(`º: ${titulo.replace(/[!?.]/g, '\\$&')}$`) }));
+  await userEvent.click(onde.getByRole('button', { name: `Tirar ${titulo}` }));
+};
+
 const renderProfile = (id = 2, auth) =>
   renderWithProviders(<ProfilePage />, { route: `/perfil/${id}`, path: '/perfil/:id', auth });
 
@@ -381,7 +387,7 @@ describe('ProfilePage', () => {
       const confirmar = vi.spyOn(window, 'confirm').mockReturnValueOnce(false).mockReturnValueOnce(true);
       renderProfile(1);
       await userEvent.click(await screen.findByRole('button', { name: 'Editar favoritos' }));
-      await userEvent.click(screen.getByRole('button', { name: 'Tirar Help!' }));
+      await tirarFavorito('Help!');
 
       await userEvent.click(screen.getByRole('button', { name: 'Cancelar' }));
       expect(confirmar).toHaveBeenCalledWith('Descartar as mudanças nos favoritos?');
@@ -421,20 +427,21 @@ describe('ProfilePage', () => {
 
       await userEvent.type(within(dialog).getByLabelText('Buscar músicas'), 'beatles');
       // Quem já está na lista aparece desligado.
-      expect(await within(dialog).findByRole('button', { name: /Help!The Beatles/ })).toBeDisabled();
-      await userEvent.click(within(dialog).getByRole('button', { name: /Yesterday/ }));
+      expect(await within(dialog).findByRole('button', { name: 'Já adicionado: Help!, The Beatles' })).toBeDisabled();
+      await userEvent.click(within(dialog).getByRole('button', { name: 'Adicionar: Yesterday, The Beatles' }));
       expect(within(dialog).getByRole('tab', { name: 'Músicas: 2 de 5' })).toBeInTheDocument();
+      await userEvent.click(within(dialog).getByRole('button', { name: '1º: Help!' }));
       expect(within(dialog).getByRole('button', { name: 'Mover Help! para antes' })).toBeDisabled();
       await userEvent.click(within(dialog).getByRole('button', { name: 'Mover Help! para depois' }));
       expect(within(dialog).getByRole('button', { name: 'Mover Help! para depois' })).toBeDisabled();
 
       await userEvent.click(within(dialog).getByRole('tab', { name: /^Álbuns/ }));
       await userEvent.type(within(dialog).getByLabelText('Buscar álbuns'), 'abbey');
-      await userEvent.click(await within(dialog).findByRole('button', { name: /Abbey Road/ }));
+      await userEvent.click(await within(dialog).findByRole('button', { name: /^Adicionar: Abbey Road/ }));
       expect(musicApi.search).toHaveBeenLastCalledWith('abbey', 'album');
 
       await userEvent.click(within(dialog).getByRole('tab', { name: /^Músicas/ }));
-      await userEvent.click(within(dialog).getByRole('button', { name: 'Tirar Help!' }));
+      await tirarFavorito('Help!', within(dialog));
       await userEvent.click(within(dialog).getByRole('button', { name: 'Salvar' }));
 
       expect(usersApi.updateFavorites).toHaveBeenCalledWith({
@@ -456,7 +463,7 @@ describe('ProfilePage', () => {
       expect(screen.getByRole('tab', { name: 'Músicas: 1 de 5' })).toBeInTheDocument();
       expect(screen.getByRole('tab', { name: 'Álbuns: 0 de 5' })).toBeInTheDocument();
       expect(screen.getByRole('button', { name: 'Salvar' })).toBeDisabled();
-      await userEvent.click(screen.getByRole('button', { name: 'Tirar Help!' }));
+      await tirarFavorito('Help!');
       expect(screen.getByRole('tab', { name: 'Músicas: 0 de 5' })).toBeInTheDocument();
       expect(screen.getByRole('button', { name: 'Salvar' })).toBeEnabled();
     });
@@ -468,7 +475,7 @@ describe('ProfilePage', () => {
       await userEvent.click(await screen.findByRole('button', { name: 'Editar favoritos' }));
       const busca = screen.getByLabelText('Buscar músicas');
       expect(busca).toBeDisabled();
-      await userEvent.click(screen.getByRole('button', { name: 'Tirar Música 3' }));
+      await tirarFavorito('Música 3');
       expect(busca).toBeEnabled();
     });
 
@@ -477,7 +484,7 @@ describe('ProfilePage', () => {
       usersApi.updateFavorites.mockRejectedValue(new Error('Favorito inválido. Escolha de novo pela busca.'));
       renderProfile(1);
       await userEvent.click(await screen.findByRole('button', { name: 'Editar favoritos' }));
-      await userEvent.click(screen.getByRole('button', { name: 'Tirar Help!' }));
+      await tirarFavorito('Help!');
       await userEvent.click(screen.getByRole('button', { name: 'Salvar' }));
       expect(await screen.findByRole('alert')).toHaveTextContent('Favorito inválido.');
       expect(screen.getByRole('dialog', { name: 'Favoritos' })).toBeInTheDocument();

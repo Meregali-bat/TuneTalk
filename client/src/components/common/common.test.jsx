@@ -93,9 +93,9 @@ describe('FollowButton', () => {
   it('a confirmação de deixar de seguir some se a pessoa não tocar de novo', async () => {
     render(<FollowButton userId={2} following />);
     const botao = screen.getByRole('button', { name: 'Seguindo' });
-    expect(botao).toHaveAttribute('aria-pressed', 'true');
     await userEvent.click(botao);
     expect(botao).toHaveTextContent('Deixar de seguir?');
+    expect(screen.getByRole('status')).toHaveTextContent('Toque de novo para deixar de seguir.');
     await act(() => { botao.blur(); });
     expect(botao).toHaveTextContent('Seguindo');
     expect(usersApi.unfollow).not.toHaveBeenCalled();

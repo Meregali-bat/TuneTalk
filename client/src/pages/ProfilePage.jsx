@@ -319,7 +319,8 @@ export function ProfilePage() {
       {isOwnProfile && changingPassword && (
         <ChangePasswordModal
           open
-          onClose={() => setChangingPassword(false)}
+          /* Desistir de trocar a senha volta para "Editar perfil", de onde a pessoa veio. */
+          onClose={() => { setChangingPassword(false); setEditing(true); }}
           onChanged={() => {
             setChangingPassword(false);
             setNotice('Senha alterada. Os outros aparelhos conectados precisam entrar de novo.');

@@ -192,7 +192,7 @@ export function EditProfileModal({ open, usuario, onClose, onSaved, onChangePass
 
         <div className="edit-profile__actions">
           <button type="button" className="composer-link" onClick={fechar}>Cancelar</button>
-          <button type="submit" className="composer-submit" disabled={Boolean(saving) || Boolean(problem)}>
+          <button type="submit" className="composer-submit" disabled={Boolean(saving) || Boolean(problem) || !alterado}>
             {{ foto: 'Enviando foto…', capa: 'Enviando capa…', dados: 'Salvando…' }[saving] ?? 'Salvar'}
           </button>
         </div>

@@ -1137,11 +1137,13 @@ button.track-row:hover {
   background: var(--superficie-2);
 }
 
-@media (max-width: 575.98px) {
-  /* Sem capa escolhida, o degradê não precisa empurrar o conteúdo tão para baixo. */
-  .profile-banner--padrao {
-    aspect-ratio: 5 / 1;
-  }
+/* Sem capa escolhida, o degradê não precisa empurrar o conteúdo para baixo. */
+.profile-banner--padrao {
+  aspect-ratio: 5 / 1;
+}
+
+.profile-banner {
+  max-height: 14rem;
 }
 
 .profile-banner--padrao {
@@ -1342,6 +1344,8 @@ button.track-row:hover {
 
 .follow-button--sm {
   flex: none;
+  /* Largura fixa: "Deixar de seguir?" não espreme o nome ao lado. */
+  min-width: 7.5rem;
   min-height: 2rem;
   padding: 0 .9rem;
   font-size: .85rem;
@@ -2584,10 +2588,8 @@ button.lyrics-picker__verso {
   h3 {
     margin: 0 0 .5rem;
     color: var(--texto-suave);
-    font-size: .72rem;
+    font-size: .85rem;
     font-weight: 600;
-    letter-spacing: .06em;
-    text-transform: uppercase;
   }
 }
 
@@ -2643,6 +2645,10 @@ button.lyrics-picker__verso {
 
   span:nth-child(2) {
     transform: translateY(-.3rem);
+  }
+
+  span.favorite-cover--redondo {
+    border-radius: 50%;
   }
 }
 
@@ -2705,7 +2711,8 @@ button.lyrics-picker__verso {
   font-size: .78rem;
   font-weight: 600;
   line-height: 1.25;
-  overflow-wrap: break-word;
+  overflow-wrap: normal;
+  hyphens: auto;
   -webkit-box-orient: vertical;
   -webkit-line-clamp: 2;
 }
@@ -2716,16 +2723,38 @@ button.lyrics-picker__verso {
   font-size: .75rem;
   white-space: nowrap;
   text-overflow: ellipsis;
+}
 
-  /* No celular cada capa tem ~60px: o artista virava "The Be…". Ele continua no nome do link. */
-  @media (max-width: 575.98px) {
-    display: none;
+/* No celular, cada fileira do perfil vira um trilho que rola para o lado: capas de ~95px
+   em vez de 60px, com espaço para o título e o artista. */
+@media (max-width: 575.98px) {
+  .profile-favorites .favorites-grid {
+    grid-template-columns: none;
+    grid-auto-flow: column;
+    grid-auto-columns: 28%;
+    margin-inline: -1.25rem;
+    padding-inline: 1.25rem;
+    overflow-x: auto;
+    scroll-padding-inline: 1.25rem;
+    scroll-snap-type: x mandatory;
+    scrollbar-width: none;
+
+    > li {
+      scroll-snap-align: start;
+    }
   }
 }
 
 .favorites-editor {
   .composer-tabs {
     grid-template-columns: repeat(3, 1fr);
+  }
+
+  /* Mesmo estilo de aba ativa do perfil (neutro com risco verde). */
+  .composer-tabs__tab.is-active {
+    background: var(--superficie-2);
+    box-shadow: inset 0 -2px 0 var(--destaque);
+    color: var(--texto);
   }
 
   .track-row:disabled {
@@ -2749,7 +2778,17 @@ button.lyrics-picker__verso {
   border-top: 1px solid var(--linhas);
   background: var(--superficie);
   /* Cobre a sobra de padding embaixo, para os resultados não aparecerem por baixo do Salvar. */
-  box-shadow: 0 .35rem 0 var(--superficie);
+  box-shadow: 0 1rem 0 var(--superficie);
+}
+
+.edit-profile__actions {
+  position: sticky;
+  bottom: -.35rem;
+  z-index: 2;
+  padding: .75rem 0;
+  border-top: 1px solid var(--linhas);
+  background: var(--superficie);
+  box-shadow: 0 1rem 0 var(--superficie);
 }
 
 .lyrics-picker__acoes .composer-link,
@@ -2800,53 +2839,59 @@ button.lyrics-picker__verso {
   font-size: .85rem;
 }
 
-.favorites-editor__tirar {
-  position: absolute;
-  top: .2rem;
-  right: .2rem;
-  display: grid;
-  place-items: center;
-  width: 1.6rem;
-  height: 1.6rem;
+/* No editor, cada capa é um botão: tocar seleciona e abre a barra de ações embaixo da fileira. */
+button.favorites-editor__capa {
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
   padding: 0;
   border: 0;
-  border-radius: 50%;
-  background: rgba(0, 5, 5, .82);
-  color: var(--texto);
-  font-size: .75rem;
+  border-radius: 10px;
+  background: none;
+  color: inherit;
+  text-align: left;
 
-  /* Área de toque maior que o desenho. */
-  &::after {
-    content: '';
-    position: absolute;
-    inset: -.5rem;
+  &.is-selected .favorite-cover {
+    box-shadow: 0 0 0 2px var(--destaque);
+  }
+
+  &:focus-visible {
+    outline: 2px solid var(--destaque);
+    outline-offset: 3px;
   }
 }
 
-/* Mudar a ordem fica embaixo da capa, longe do X. */
-.favorites-editor__ordem {
-  display: flex;
-  justify-content: space-between;
-  margin-top: .2rem;
+.favorites-editor__barra {
+  display: grid;
+  grid-template-columns: 1fr 1fr 1fr;
+  gap: .5rem;
 
   button {
-    display: grid;
-    place-items: center;
-    width: 1.75rem;
-    height: 2.75rem;
-    padding: 0;
-    border: 0;
-    border-radius: 8px;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: .35rem;
+    min-height: 2.75rem;
+    border: 1px solid var(--linhas);
+    border-radius: 999px;
     background: none;
-    color: var(--texto-suave);
-
-    &:hover:not(:disabled) {
-      color: var(--texto);
-      background: var(--superficie-2);
-    }
+    color: var(--texto);
+    font-size: .85rem;
+    font-weight: 600;
 
     &:disabled {
-      opacity: .25;
+      opacity: .35;
     }
   }
+
+  .favorites-editor__barra-tirar {
+    border-color: rgba(245, 91, 100, .5);
+    color: var(--erro);
+  }
+}
+
+.favorites-editor__painel {
+  display: flex;
+  flex-direction: column;
+  gap: inherit;
 }

@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useId, useState } from 'react';
 import { usersApi } from '../../api/index.js';
 import { Modal } from '../common/Modal.jsx';
 import { useMusicSearch } from '../../hooks/useMusicSearch.js';
@@ -26,6 +26,8 @@ export function EditFavoritesModal({ favoritos, onClose, onSaved }) {
   const [query, setQuery] = useState('');
   const [salvando, setSalvando] = useState(false);
   const [erro, setErro] = useState('');
+  const [selecionado, setSelecionado] = useState(null); // id do favorito com a barra de ações aberta
+  const painelId = useId();
 
   const secao = SECOES_FAVORITOS.find((s) => s.chave === aba);
   const search = useMusicSearch(query, secao.tipo);
@@ -38,7 +40,10 @@ export function EditFavoritesModal({ favoritos, onClose, onSaved }) {
     if (cheia || lista.some((f) => f.id === String(resultado.id))) return;
     mudarLista([...lista, paraFavorito(resultado, aba)]);
   };
-  const remover = (i) => mudarLista(lista.filter((_, j) => j !== i));
+  const remover = (i) => {
+    mudarLista(lista.filter((_, j) => j !== i));
+    setSelecionado(null);
+  };
   // Troca o item de lugar com o vizinho (para a esquerda: -1; para a direita: +1).
   const mover = (i, passo) => {
     const k = i + passo;
@@ -49,6 +54,17 @@ export function EditFavoritesModal({ favoritos, onClose, onSaved }) {
   const trocarAba = (chave) => {
     setAba(chave);
     setQuery('');
+    setSelecionado(null);
+  };
+  // Setas trocam de aba, como nas abas do perfil.
+  const teclaNaAba = (event, chave) => {
+    if (event.key !== 'ArrowRight' && event.key !== 'ArrowLeft') return;
+    event.preventDefault();
+    const i = SECOES_FAVORITOS.findIndex((secaoAtual) => secaoAtual.chave === chave);
+    const passo = event.key === 'ArrowRight' ? 1 : -1;
+    const proxima = SECOES_FAVORITOS[(i + passo + SECOES_FAVORITOS.length) % SECOES_FAVORITOS.length].chave;
+    trocarAba(proxima);
+    document.getElementById(`${painelId}-aba-${proxima}`)?.focus();
   };
 
   const salvar = async () => {
@@ -83,47 +99,39 @@ export function EditFavoritesModal({ favoritos, onClose, onSaved }) {
               key={chave}
               type="button"
               role="tab"
+              id={`${painelId}-aba-${chave}`}
               aria-selected={chave === aba}
+              aria-controls={painelId}
+              tabIndex={chave === aba ? 0 : -1}
               aria-label={`${rotulo}: ${rascunho[chave].length} de ${FAVORITOS_MAX}`}
               className={`composer-tabs__tab${chave === aba ? ' is-active' : ''}`}
               onClick={() => trocarAba(chave)}
+              onKeyDown={(event) => teclaNaAba(event, chave)}
             >
               {rotulo} <span className="favorites-editor__conta" aria-hidden="true">{rascunho[chave].length}/{FAVORITOS_MAX}</span>
             </button>
           ))}
         </div>
 
+        <div role="tabpanel" id={painelId} aria-labelledby={`${painelId}-aba-${aba}`} className="favorites-editor__painel">
         <p className="composer-hint favorites-editor__contador">
-          {secao.titulo}: toque numa capa da busca para adicionar.
+          {lista.length === 0
+            ? 'Busque abaixo e toque num resultado para adicionar.'
+            : 'Toque numa capa para mudar a ordem ou tirar.'}
         </p>
         <ol className="favorites-grid favorites-editor__slots" aria-label={`${secao.titulo} escolhidos`}>
           {Array.from({ length: FAVORITOS_MAX }, (_, i) => lista[i]).map((item, i) => (item ? (
             <li key={item.id} className="favorites-grid__item">
-              <FavoriteCover item={item} redondo={redondo} />
-              <span className="favorites-grid__titulo">{item.titulo}</span>
               <button
                 type="button"
-                className="favorites-editor__tirar"
-                aria-label={`Tirar ${item.titulo}`}
-                onClick={() => remover(i)}
+                className={`favorites-editor__capa${selecionado === item.id ? ' is-selected' : ''}`}
+                aria-pressed={selecionado === item.id}
+                aria-label={`${i + 1}º: ${item.titulo}`}
+                onClick={() => setSelecionado(selecionado === item.id ? null : item.id)}
               >
-                <i className="bi bi-x-lg" aria-hidden="true" />
+                <FavoriteCover item={item} redondo={redondo} />
+                <span className="favorites-grid__titulo" aria-hidden="true">{item.titulo}</span>
               </button>
-              {lista.length > 1 && (
-                <span className="favorites-editor__ordem">
-                  <button type="button" aria-label={`Mover ${item.titulo} para antes`} disabled={i === 0} onClick={() => mover(i, -1)}>
-                    <i className="bi bi-chevron-left" aria-hidden="true" />
-                  </button>
-                  <button
-                    type="button"
-                    aria-label={`Mover ${item.titulo} para depois`}
-                    disabled={i === lista.length - 1}
-                    onClick={() => mover(i, 1)}
-                  >
-                    <i className="bi bi-chevron-right" aria-hidden="true" />
-                  </button>
-                </span>
-              )}
             </li>
           ) : (
             <li key={`vazio-${i}`} className={`favorites-editor__vazio${redondo ? ' favorite-cover--redondo' : ''}`} aria-hidden="true">
@@ -131,6 +139,30 @@ export function EditFavoritesModal({ favoritos, onClose, onSaved }) {
             </li>
           )))}
         </ol>
+
+        {(() => {
+          const i = lista.findIndex((f) => f.id === selecionado);
+          if (i < 0) return null;
+          const item = lista[i];
+          return (
+            <div className="favorites-editor__barra" role="group" aria-label={`Ações para ${item.titulo}`}>
+              <button type="button" aria-label={`Mover ${item.titulo} para antes`} disabled={i === 0} onClick={() => mover(i, -1)}>
+                <i className="bi bi-chevron-left" aria-hidden="true" /> Mover
+              </button>
+              <button
+                type="button"
+                aria-label={`Mover ${item.titulo} para depois`}
+                disabled={i === lista.length - 1}
+                onClick={() => mover(i, 1)}
+              >
+                Mover <i className="bi bi-chevron-right" aria-hidden="true" />
+              </button>
+              <button type="button" className="favorites-editor__barra-tirar" aria-label={`Tirar ${item.titulo}`} onClick={() => remover(i)}>
+                <i className="bi bi-trash3" aria-hidden="true" /> Tirar
+              </button>
+            </div>
+          );
+        })()}
 
         <div className="composer-search">
           <i className="bi bi-search" aria-hidden="true" />
@@ -159,7 +191,13 @@ export function EditFavoritesModal({ favoritos, onClose, onSaved }) {
               const ja = lista.some((f) => f.id === String(resultado.id));
               return (
                 <li key={resultado.id}>
-                  <button type="button" className="track-row" disabled={ja} onClick={() => adicionar(resultado)}>
+                  <button
+                    type="button"
+                    className="track-row"
+                    disabled={ja}
+                    aria-label={`${ja ? 'Já adicionado' : 'Adicionar'}: ${resultado.titulo}${descricao(resultado) ? `, ${descricao(resultado)}` : ''}`}
+                    onClick={() => adicionar(resultado)}
+                  >
                     <img src={resultado.capa} alt="" className={`track-row__cover${redondo ? ' favorite-cover--redondo' : ''}`} />
                     <span className="track-row__info">
                       <span className="track-row__title">{resultado.titulo}</span>
@@ -172,6 +210,8 @@ export function EditFavoritesModal({ favoritos, onClose, onSaved }) {
             })}
           </ul>
         )}
+
+        </div>
 
         {erro && <p role="alert" className="composer-error">{erro}</p>}
         {/* Fica presa embaixo da folha: com muitos resultados, Salvar não some da tela. */}
