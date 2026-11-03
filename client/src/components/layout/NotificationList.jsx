@@ -1,7 +1,17 @@
 import { Link } from 'react-router-dom';
 import { relativeTime } from '../../utils/relativeTime.js';
+import { asset } from '../../utils/asset.js';
 
-const ICONS = { like: 'bi-heart-fill', comment: 'bi-chat-fill', new_follower: 'bi-person-plus-fill' };
+const ICONS = {
+  like: 'bi-heart-fill',
+  comment: 'bi-chat-fill',
+  new_follower: 'bi-person-plus-fill',
+  selo_fundador: 'bi-award-fill',
+  mention: 'bi-at',
+};
+
+// Avisos do próprio TuneTalk (ex.: selo de fundador) aparecem com o logo, não com o nome de alguém.
+const DO_TUNETALK = new Set(['selo_fundador']);
 
 const targetOf = (notification) =>
   notification.tipo === 'new_follower' || !notification.postId
@@ -29,14 +39,17 @@ export function NotificationList({ notifications, onNavigate }) {
         <li key={notification.id} className={notification.lida ? undefined : 'is-unread'}>
           <Link to={targetOf(notification)} className="notif" onClick={onNavigate}>
             <span className="notif__avatar">
-              <img src={notification.autor.fotoPerfil} alt="" />
+              {DO_TUNETALK.has(notification.tipo)
+                ? <img src={asset('img/tunetalk-logo.svg')} alt="" className="notif__logo" />
+                : <img src={notification.autor.fotoPerfil} alt="" />}
               <span className={`notif__icon notif__icon--${notification.tipo}`} aria-hidden="true">
                 <i className={`bi ${ICONS[notification.tipo] ?? 'bi-bell-fill'}`} />
               </span>
             </span>
             <span className="notif__body">
               <span className="notif__text">
-                <strong>{notification.autor.nome}</strong> <span>{notification.conteudo}</span>
+                <strong>{DO_TUNETALK.has(notification.tipo) ? 'TuneTalk' : notification.autor.nome}</strong>{' '}
+                <span>{notification.conteudo}</span>
               </span>
               {notification.data && (
                 <time className="notif__time" dateTime={notification.data}>{relativeTime(notification.data)}</time>

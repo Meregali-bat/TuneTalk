@@ -54,7 +54,7 @@ describe('userRepository (Postgres)', () => {
     expect((await repo.search('olivia')).map((u) => u.id)).toEqual([olivia.id]);
     expect((await repo.search('mat')).map((u) => u.id)).toEqual([mateus.id]);
     expect(await repo.search('ninguém-assim')).toEqual([]);
-    expect(Object.keys((await repo.search('e'))[0]).sort()).toEqual(['bannerUrl', 'bio', 'fotoPerfil', 'fundadorDesde', 'id', 'nome', 'nomeExibicao']);
+    expect(Object.keys((await repo.search('e'))[0]).sort()).toEqual(['bannerUrl', 'bio', 'fotoPerfil', 'fundadorDesde', 'id', 'mostrarSeloFundador', 'nome', 'nomeExibicao']);
   });
 
   it('search põe primeiro quem começa com o que foi digitado e devolve no máximo 20', async () => {
@@ -120,16 +120,18 @@ describe('userRepository (Postgres)', () => {
   it('findById devolve o usuário público ou null', async () => {
     const ana = await factory.user({ nome: 'Ana', bio: 'oi' });
     expect(await repo.findById(ana.id)).toEqual({
-      id: ana.id, nome: 'Ana', nomeExibicao: null, fotoPerfil: ana.fotoPerfil, bannerUrl: null, bio: 'oi', fundadorDesde: null,
+      id: ana.id, nome: 'Ana', nomeExibicao: null, fotoPerfil: ana.fotoPerfil, bannerUrl: null, bio: 'oi', fundadorDesde: null, mostrarSeloFundador: true,
     });
     expect(await repo.findById(9999)).toBeNull();
   });
 
   it('update altera nome, nome de exibição, foto, capa e bio', async () => {
     const ana = await factory.user();
-    await repo.update(ana.id, { nome: 'Novo', nomeExibicao: 'Ana Souza', fotoPerfil: 'n.png', bannerUrl: 'b.png', bio: 'bio' });
+    await repo.update(ana.id, {
+      nome: 'Novo', nomeExibicao: 'Ana Souza', fotoPerfil: 'n.png', bannerUrl: 'b.png', bio: 'bio', mostrarSeloFundador: false,
+    });
     expect(await repo.findById(ana.id)).toEqual({
-      id: ana.id, nome: 'Novo', nomeExibicao: 'Ana Souza', fotoPerfil: 'n.png', bannerUrl: 'b.png', bio: 'bio', fundadorDesde: null,
+      id: ana.id, nome: 'Novo', nomeExibicao: 'Ana Souza', fotoPerfil: 'n.png', bannerUrl: 'b.png', bio: 'bio', fundadorDesde: null, mostrarSeloFundador: false,
     });
   });
 });

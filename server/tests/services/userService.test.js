@@ -136,6 +136,15 @@ describe('userService', () => {
       expect(users.update.mock.calls[1][1].bannerUrl).toBe('nova.png');
     });
 
+    it('a pessoa escolhe se a medalha de fundador aparece (sem mudar quando não enviado)', async () => {
+      users.findById.mockResolvedValue({ ...ana, mostrarSeloFundador: true });
+      await service.updateProfile(1, { mostrarSeloFundador: false });
+      expect(users.update.mock.calls[0][1].mostrarSeloFundador).toBe(false);
+
+      await service.updateProfile(1, { bio: 'x' });
+      expect(users.update.mock.calls[1][1].mostrarSeloFundador).toBe(true);
+    });
+
     it('mantém a foto e o nome atuais quando não enviados', async () => {
       await service.updateProfile(1, { nome: '', bio: 'nova' });
       expect(users.update).toHaveBeenCalledWith(1, { nome: 'Ana', bio: 'nova', fotoPerfil: 'ana.png' });

@@ -13,7 +13,7 @@ import { ChangePasswordModal } from '../components/profile/ChangePasswordModal.j
 import { PetalRain } from '../components/effects/PetalRain.jsx';
 import { profileEffectFor } from '../components/effects/profileEffects.js';
 import { VerifiedBadge } from '../components/effects/VerifiedBadge.jsx';
-import { FounderBadge } from '../components/effects/FounderBadge.jsx';
+import { FounderBadge, mostraSeloFundador } from '../components/effects/FounderBadge.jsx';
 import { PullToRefresh } from '../components/common/PullToRefresh.jsx';
 
 // Só posts com música têm nota. A média sai na escala guardada (0 a 10) e é mostrada em estrelas.
@@ -109,7 +109,7 @@ function ProfileHeader({ profile, isOwnProfile, onEdit, onChangePassword, onOpen
           <div className="profile-header__name">
             <h1>{nome}</h1>
             <VerifiedBadge nome={usuario.nome} />
-            <FounderBadge ativo={Boolean(usuario.fundadorDesde)} />
+            <FounderBadge ativo={mostraSeloFundador(usuario)} />
           </div>
           <p className="profile-header__handle">@{usuario.nome}</p>
           {usuario.bio && <p className="profile-header__bio">{usuario.bio}</p>}

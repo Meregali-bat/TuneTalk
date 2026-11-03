@@ -40,7 +40,7 @@ export function buildContainer(config) {
   const postService = createPostService({ posts, likes, notifications, users });
 
   return {
-    authService: createAuthService({ users, passwords }),
+    authService: createAuthService({ users, passwords, notifications }),
     passwordResetService: createPasswordResetService({
       users, resets: createPasswordResetRepository(prisma), passwords, mailer, sessions, appUrl: config.appUrl,
     }),

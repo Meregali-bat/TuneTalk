@@ -5,7 +5,7 @@ const toSessionUser = ({ id, nome, email }) => ({ id, nome, email });
 
 const EMAIL_PATTERN = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 
-export function createAuthService({ users, passwords }) {
+export function createAuthService({ users, passwords, notifications }) {
   return {
     async login(email, senha) {
       const cleanEmail = (email ?? '').trim();
@@ -17,7 +17,15 @@ export function createAuthService({ users, passwords }) {
       // Senhas antigas (md5) passam para bcrypt no primeiro login depois da mudança.
       if (needsRehash) await users.updatePassword(user.id, await passwords.hash(senha));
       // Quem veio do TuneTalk antigo ganha o selo de fundador no primeiro login depois da mudança.
-      if (user.veterano && !user.fundadorDesde) await users.activateFounder(user.id);
+      if (user.veterano && !user.fundadorDesde) {
+        await users.activateFounder(user.id);
+        await notifications.create({
+          destinatarioId: user.id,
+          autorId: user.id,
+          tipo: 'selo_fundador',
+          conteudo: 'Você ganhou o selo de fundador por estar no TuneTalk desde o início! Dá para escondê-lo em Editar perfil.',
+        });
+      }
 
       return toSessionUser(user);
     },

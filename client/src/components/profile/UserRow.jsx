@@ -2,7 +2,7 @@ import { Link } from 'react-router-dom';
 import { useAuth } from '../../auth/AuthContext.jsx';
 import { FollowButton } from '../common/FollowButton.jsx';
 import { VerifiedBadge } from '../effects/VerifiedBadge.jsx';
-import { FounderBadge } from '../effects/FounderBadge.jsx';
+import { FounderBadge, mostraSeloFundador } from '../effects/FounderBadge.jsx';
 
 // Uma pessoa numa lista (seguidores, busca): foto, nome de exibição, @, selo, bio e o botão de seguir.
 export function UserRow({ usuario, following, onFollowChange, onNavigate }) {
@@ -14,7 +14,7 @@ export function UserRow({ usuario, following, onFollowChange, onNavigate }) {
         <span className="user-row__info">
           <span className="user-row__name">
             {usuario.nomeExibicao || usuario.nome} <VerifiedBadge nome={usuario.nome} />
-            <FounderBadge ativo={Boolean(usuario.fundadorDesde)} />
+            <FounderBadge ativo={mostraSeloFundador(usuario)} />
           </span>
           <span className="user-row__handle">@{usuario.nome}</span>
           {usuario.bio && <span className="user-row__bio">{usuario.bio}</span>}

@@ -2,9 +2,9 @@
 // para que os serviços reais (server/src/services) rodem no navegador.
 import { toPost } from '../../../server/src/repositories/postRepository.js';
 
-const publicUser = ({ id, nome, nomeExibicao = null, fotoPerfil, bannerUrl = null, bio, fundadorDesde = null }) => ({
-  id, nome, nomeExibicao, fotoPerfil, bannerUrl, bio, fundadorDesde,
-});
+const publicUser = ({
+  id, nome, nomeExibicao = null, fotoPerfil, bannerUrl = null, bio, fundadorDesde = null, mostrarSeloFundador = true,
+}) => ({ id, nome, nomeExibicao, fotoPerfil, bannerUrl, bio, fundadorDesde, mostrarSeloFundador });
 
 export function createMemoryRepositories(state, onChange) {
   const nextId = (table) => {
@@ -17,8 +17,8 @@ export function createMemoryRepositories(state, onChange) {
   };
   const userById = (id) => state.usuarios.find((u) => u.id === id);
   const author = (id) => {
-    const { nome, fotoPerfil, fundadorDesde } = userById(id);
-    return { id, nome, fotoPerfil, fundadorDesde };
+    const { nome, fotoPerfil, fundadorDesde, mostrarSeloFundador = true } = userById(id);
+    return { id, nome, fotoPerfil, fundadorDesde, mostrarSeloFundador };
   };
 
   const postRow = (post) => toPost({

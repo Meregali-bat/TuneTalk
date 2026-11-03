@@ -13,27 +13,31 @@ enum TipoNotificacao {
   like
   comment
   new_follower
+  selo_fundador
+  mention
 }
 
 model Usuario {
-  id            Int       @id @default(autoincrement())
+  id                  Int       @id @default(autoincrement())
   // Nome de usuário: escolhido depois do cadastro, por isso pode ficar vazio até lá.
-  nome          String?   @unique @db.VarChar(45)
-  email         String    @unique @db.VarChar(100)
-  senha         String    @db.VarChar(65)
-  fotoPerfil    String?   @map("foto_perfil") @db.VarChar(255)
-  bio           String?   @db.VarChar(255)
+  nome                String?   @unique @db.VarChar(45)
+  email               String    @unique @db.VarChar(100)
+  senha               String    @db.VarChar(65)
+  fotoPerfil          String?   @map("foto_perfil") @db.VarChar(255)
+  bio                 String?   @db.VarChar(255)
   // Nome de exibição (livre, como no Twitter); sem ele, o perfil mostra o nome de usuário.
-  nomeExibicao  String?   @map("nome_exibicao") @db.VarChar(50)
+  nomeExibicao        String?   @map("nome_exibicao") @db.VarChar(50)
   // Capa do perfil, enviada direto ao Cloudinary (pasta tunetalk/banners).
-  bannerUrl     String?   @map("banner_url") @db.VarChar(500)
+  bannerUrl           String?   @map("banner_url") @db.VarChar(500)
   // Conta que veio do TuneTalk antigo (ids preservados na migração). Ganha o selo de fundador
   // no próximo login, quando fundadorDesde é preenchido.
-  veterano      Boolean   @default(false)
-  fundadorDesde DateTime? @map("fundador_desde")
-  admin         Boolean   @default(false)
+  veterano            Boolean   @default(false)
+  fundadorDesde       DateTime? @map("fundador_desde")
+  // A pessoa escolhe no Editar perfil se a medalha de fundador aparece.
+  mostrarSeloFundador Boolean   @default(true) @map("mostrar_selo_fundador")
+  admin               Boolean   @default(false)
   // Post que aparece primeiro no perfil. Se o post for apagado, volta a ficar vazio.
-  postFixadoId  Int?      @unique @map("post_fixado_id")
+  postFixadoId        Int?      @unique @map("post_fixado_id")
 
   posts                 Post[]
   curtidas              Curtida[]

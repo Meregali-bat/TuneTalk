@@ -2146,3 +2146,37 @@ button.track-row:hover {
 .profile-header__name .founder-badge {
   font-size: 1.3rem;
 }
+
+/* Opção de mostrar a medalha de fundador (Editar perfil) */
+.edit-profile__toggle {
+  display: flex;
+  align-items: center;
+  gap: .65rem;
+  padding: .75rem 1rem;
+  border: 1px solid var(--linhas);
+  border-radius: 14px;
+  font-size: .92rem;
+  cursor: pointer;
+
+  input {
+    width: 1.15rem;
+    height: 1.15rem;
+    accent-color: var(--destaque);
+  }
+}
+
+/* Notificações: logo do TuneTalk nos avisos do sistema e cores dos tipos novos */
+.notif__logo {
+  padding: .45rem;
+  background: var(--superficie-2);
+  object-fit: contain !important;
+}
+
+.notif__icon--selo_fundador {
+  background: linear-gradient(160deg, #ffe08a, #c98a1e);
+  color: #3a2600;
+}
+
+.notif__icon--mention {
+  background: var(--azul);
+}

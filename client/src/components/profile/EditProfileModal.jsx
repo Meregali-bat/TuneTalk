@@ -46,6 +46,7 @@ export function EditProfileModal({ open, usuario, onClose, onSaved }) {
   const [nome, setNome] = useState(usuario.nome ?? '');
   const [nomeExibicao, setNomeExibicao] = useState(usuario.nomeExibicao ?? '');
   const [bio, setBio] = useState(usuario.bio ?? '');
+  const [mostrarSelo, setMostrarSelo] = useState(usuario.mostrarSeloFundador !== false);
   const [error, setError] = useState('');
   const [saving, setSaving] = useState(null); // null, 'foto', 'capa' ou 'dados'
   const foto = useImagePick('A foto', setError);
@@ -62,6 +63,7 @@ export function EditProfileModal({ open, usuario, onClose, onSaved }) {
     setError('');
     try {
       const changes = { nome: nome.trim(), nomeExibicao: nomeExibicao.trim(), bio };
+      if (usuario.fundadorDesde) changes.mostrarSeloFundador = mostrarSelo;
       if (foto.file) {
         setSaving('foto');
         changes.fotoPerfil = await usersApi.uploadPhoto(foto.file);
@@ -159,6 +161,15 @@ export function EditProfileModal({ open, usuario, onClose, onSaved }) {
           />
           <span className="composer-counter">{bio.length}/{BIO_MAX}</span>
         </div>
+
+        {usuario.fundadorDesde && (
+          <label className="edit-profile__toggle">
+            <input type="checkbox" checked={mostrarSelo} onChange={(event) => setMostrarSelo(event.target.checked)} />
+            <span>
+              <i className="bi bi-award-fill founder-badge" aria-hidden="true" /> Mostrar selo de fundador no meu perfil
+            </span>
+          </label>
+        )}
 
         {error && <p role="alert" className="composer-error">{error}</p>}
 

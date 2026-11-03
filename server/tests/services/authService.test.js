@@ -7,6 +7,7 @@ const passwords = createPasswords({ rounds: 4 });
 
 describe('authService', () => {
   let users;
+  let notifications;
   let auth;
   let ana;
 
@@ -18,7 +19,8 @@ describe('authService', () => {
       existsByEmail: vi.fn().mockResolvedValue(false),
       create: vi.fn().mockResolvedValue(1),
     };
-    auth = createAuthService({ users, passwords });
+    notifications = { create: vi.fn() };
+    auth = createAuthService({ users, passwords, notifications });
   });
 
   describe('login', () => {
@@ -49,6 +51,12 @@ describe('authService', () => {
         users.findAuthByEmail.mockResolvedValue({ ...ana, veterano: true, fundadorDesde: null });
         await auth.login('ana@x.com', 'Senha!1');
         expect(users.activateFounder).toHaveBeenCalledWith(1);
+        expect(notifications.create).toHaveBeenCalledWith({
+          destinatarioId: 1,
+          autorId: 1,
+          tipo: 'selo_fundador',
+          conteudo: 'Você ganhou o selo de fundador por estar no TuneTalk desde o início! Dá para escondê-lo em Editar perfil.',
+        });
       });
 
       it('não reativa quem já tem, nem dá para contas novas', async () => {
@@ -58,6 +66,7 @@ describe('authService', () => {
         users.findAuthByEmail.mockResolvedValue({ ...ana, veterano: false, fundadorDesde: null });
         await auth.login('ana@x.com', 'Senha!1');
         expect(users.activateFounder).not.toHaveBeenCalled();
+        expect(notifications.create).not.toHaveBeenCalled();
       });
 
       it('senha errada não ativa nada', async () => {

@@ -142,6 +142,10 @@ describe('postRepository (Postgres)', () => {
 
     await db.prisma.usuario.update({ where: { id: ana.id }, data: { fundadorDesde: new Date() } });
     expect((await repo.findById(p1.id)).autor.fundador).toBe(true);
+
+    // Quem escolheu esconder a medalha não aparece como fundador nos posts.
+    await db.prisma.usuario.update({ where: { id: ana.id }, data: { mostrarSeloFundador: false } });
+    expect((await repo.findById(p1.id)).autor.fundador).toBe(false);
   });
 
   it('apagar o post fixado deixa o perfil sem post fixado', async () => {

@@ -91,8 +91,14 @@ describe('rotas /api/users', () => {
 
       expect(deps.uploader.isOwnUrl).toHaveBeenCalledWith(banner, 'banner');
       expect(deps.userService.updateProfile).toHaveBeenCalledWith(1, {
-        nome: 'ana', bio: undefined, nomeExibicao: 'Ana Souza', fotoPerfil: undefined, bannerUrl: banner,
+        nome: 'ana', bio: undefined, nomeExibicao: 'Ana Souza', fotoPerfil: undefined, bannerUrl: banner, mostrarSeloFundador: undefined,
       });
+    });
+
+    it('repassa a escolha de mostrar a medalha de fundador', async () => {
+      deps.userService.updateProfile.mockResolvedValue({ id: 1 });
+      await agent.put('/api/users/me').send({ nome: 'ana', mostrarSeloFundador: false }).expect(200);
+      expect(deps.userService.updateProfile.mock.calls[0][1].mostrarSeloFundador).toBe(false);
     });
 
     it('recusa capa que não veio do nosso Cloudinary', async () => {

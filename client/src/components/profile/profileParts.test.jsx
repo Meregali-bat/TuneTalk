@@ -106,6 +106,20 @@ describe('EditProfileModal', () => {
     });
   });
 
+  it('fundador escolhe se a medalha aparece; quem não é fundador não vê a opção', async () => {
+    usersApi.updateMe.mockResolvedValue(ana);
+    const { unmount } = renderModal({ usuario: { ...ana, fundadorDesde: '2026-11-03T12:00:00.000Z', mostrarSeloFundador: true } });
+    const opcao = screen.getByRole('checkbox', { name: 'Mostrar selo de fundador no meu perfil' });
+    expect(opcao).toBeChecked();
+    await userEvent.click(opcao);
+    await userEvent.click(screen.getByRole('button', { name: 'Salvar' }));
+    expect(usersApi.updateMe.mock.calls[0][0]).toMatchObject({ mostrarSeloFundador: false });
+    unmount();
+
+    renderModal();
+    expect(screen.queryByRole('checkbox', { name: /selo de fundador/ })).toBeNull();
+  });
+
   it('limita a bio a 255 caracteres', () => {
     renderModal();
     expect(screen.getByLabelText('Bio')).toHaveAttribute('maxLength', '255');
