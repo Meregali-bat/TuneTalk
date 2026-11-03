@@ -2511,7 +2511,8 @@ button.lyrics-picker__verso {
 .profile-favorites {
   display: grid;
   gap: 1rem;
-  padding: 0 1.25rem 1.25rem;
+  /* Respiro entre o cartão do perfil e "Editar favoritos". */
+  padding: 1.25rem 1.25rem 1.25rem;
   border-bottom: 1px solid var(--linhas);
 
   h2 {
