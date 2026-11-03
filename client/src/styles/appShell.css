@@ -2080,3 +2080,52 @@ button.track-row:hover {
 .search-page__results {
   margin: 0 -.5rem;
 }
+
+/* --- Arrastar para atualizar (celular) --- */
+/* Desliga o "puxar para atualizar" do navegador para não brigar com o do app. */
+:root:has(.layout-app) {
+  overscroll-behavior-y: contain;
+}
+
+.pull-refresh {
+  position: fixed;
+  top: calc(env(safe-area-inset-top, 0px) + var(--app-header-h) + .25rem);
+  left: 50%;
+  z-index: 1015;
+  display: grid;
+  place-items: center;
+  width: 2.5rem;
+  height: 2.5rem;
+  border: 1px solid var(--linhas);
+  border-radius: 50%;
+  background: var(--superficie-2);
+  color: var(--destaque-claro);
+  font-size: 1.15rem;
+  pointer-events: none;
+  transform: translate(-50%, calc(var(--puxado) - 3rem));
+  transition: transform .3s cubic-bezier(0.23, 1, 0.32, 1), opacity .2s ease;
+
+  /* Enquanto o dedo está na tela, o indicador acompanha sem atraso. */
+  &.is-puxando {
+    transition: none;
+  }
+
+  i {
+    display: block;
+    transition: transform .15s ease;
+  }
+
+  &.is-atualizando i {
+    animation: pull-refresh-giro .8s linear infinite;
+  }
+}
+
+@keyframes pull-refresh-giro {
+  to { transform: rotate(360deg); }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .pull-refresh.is-atualizando i {
+    animation: none;
+  }
+}

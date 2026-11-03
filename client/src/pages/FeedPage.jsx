@@ -4,6 +4,7 @@ import { postsApi } from '../api/index.js';
 import { useAsync } from '../hooks/useAsync.js';
 import { PostCard } from '../components/post/PostCard.jsx';
 import { CreatePost } from '../components/post/CreatePost.jsx';
+import { PullToRefresh } from '../components/common/PullToRefresh.jsx';
 
 const TABS = [
   { feed: 'foryou', label: 'Para você', to: '/foryou' },
@@ -73,6 +74,7 @@ export function FeedPage({ feed }) {
 
   return (
     <div className="feed">
+      <PullToRefresh onRefresh={reload} />
       <FeedTabs active={feed} />
 
       {loading && !posts && <FeedSkeleton />}

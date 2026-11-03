@@ -13,6 +13,7 @@ import { ChangePasswordModal } from '../components/profile/ChangePasswordModal.j
 import { PetalRain } from '../components/effects/PetalRain.jsx';
 import { profileEffectFor } from '../components/effects/profileEffects.js';
 import { VerifiedBadge } from '../components/effects/VerifiedBadge.jsx';
+import { PullToRefresh } from '../components/common/PullToRefresh.jsx';
 
 // Só posts com música têm nota. A média sai na escala guardada (0 a 10) e é mostrada em estrelas.
 function notaMedia(posts) {
@@ -174,6 +175,7 @@ export function ProfilePage() {
 
   return (
     <div className="feed profile">
+      <PullToRefresh onRefresh={reload} />
       {/* key: só cai de novo ao abrir outro perfil, não quando os dados deste recarregam (ex.: seguir). */}
       {profileEffectFor(profile.usuario.nome) === 'petalas' && <PetalRain key={profile.usuario.id} />}
       <ProfileHeader

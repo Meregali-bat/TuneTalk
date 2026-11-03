@@ -1,5 +1,5 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest';
-import { screen, waitFor } from '@testing-library/react';
+import { fireEvent, screen, waitFor } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { FeedPage } from './FeedPage.jsx';
 import { musicApi, postsApi } from '../api/index.js';
@@ -102,6 +102,18 @@ describe('FeedPage', () => {
 
     await waitFor(() => expect(screen.queryByText('post 2')).toBeNull());
     expect(screen.getByText('post 1')).toBeInTheDocument();
+  });
+
+  it('no celular, arrastar para baixo no topo recarrega o feed', async () => {
+    window.scrollY = 0;
+    renderWithProviders(<FeedPage feed="foryou" />);
+    await screen.findByText('post 1');
+
+    fireEvent.touchStart(window, { touches: [{ clientY: 100 }] });
+    fireEvent.touchMove(window, { touches: [{ clientY: 320 }] });
+    fireEvent.touchEnd(window, { touches: [] });
+
+    await waitFor(() => expect(postsApi.feed).toHaveBeenCalledTimes(2));
   });
 
   it('recarrega o feed depois de criar um post', async () => {

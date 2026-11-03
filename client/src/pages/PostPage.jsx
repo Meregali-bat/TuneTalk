@@ -5,6 +5,7 @@ import { useAsync } from '../hooks/useAsync.js';
 import { Modal } from '../components/common/Modal.jsx';
 import { PostCard } from '../components/post/PostCard.jsx';
 import { Composer } from '../components/post/Composer.jsx';
+import { PullToRefresh } from '../components/common/PullToRefresh.jsx';
 
 function ThreadBar() {
   const navigate = useNavigate();
@@ -134,6 +135,7 @@ export function PostPage() {
 
   return (
     <div className="feed thread">
+      <PullToRefresh onRefresh={reload} />
       <ThreadBar />
 
       {pai && <ParentLink pai={pai} />}
