@@ -124,6 +124,10 @@ describe('PostPage', () => {
       const conversa = await screen.findByRole('group', { name: 'Conversa do comentário de Caio' });
       expect(within(conversa).getByText('concordo')).toBeInTheDocument();
       expect(within(conversa).getByText('boa pergunta')).toBeInTheDocument();
+      // Mesma coluna, como no Twitter: o comentário se liga à resposta pela linha; a última não tem linha.
+      const [comentario, resposta] = within(conversa).getAllByRole('article');
+      expect(comentario).toHaveClass('post-card--continua');
+      expect(resposta).not.toHaveClass('post-card--continua');
       expect(within(conversa).queryByRole('button', { name: /Mostrar respostas/ })).toBeNull();
     });
 
@@ -144,6 +148,8 @@ describe('PostPage', () => {
       expect(await within(conversa).findByText('e eu')).toBeInTheDocument();
       expect(within(conversa).getByText('eu também')).toBeInTheDocument();
       expect(within(conversa).getAllByText('boa pergunta')).toHaveLength(1);
+      expect(within(conversa).getAllByRole('article').map((a) => a.classList.contains('post-card--continua')))
+        .toEqual([true, true, true, false]);
       expect(within(conversa).queryByRole('button', { name: /Mostrar respostas/ })).toBeNull();
     });
   });

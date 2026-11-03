@@ -1620,28 +1620,13 @@ button.track-row:hover {
   text-align: center;
 }
 
-/* Comentários: mesmos cards, numa linha de conversa à esquerda. */
+/* Comentários no estilo do Twitter: linhas planas, sem caixa; cada conversa separada por um traço. */
 .reply-list {
   display: grid;
   grid-template-columns: minmax(0, 1fr);
-  gap: .75rem;
-  padding-left: .9rem;
-  border-left: 2px solid var(--linhas);
+  border-top: 1px solid var(--linhas);
 }
 
-.post-card--reply {
-  padding: .85rem 1rem .35rem;
-  border-radius: 16px;
-
-  .post-card__avatar img {
-    width: 2.25rem;
-    height: 2.25rem;
-  }
-
-  .post-card__text p {
-    font-size: .98rem;
-  }
-}
 
 .profile-header__actions {
   gap: .6rem;
@@ -1974,25 +1959,90 @@ button.track-row:hover {
   min-width: 0;
 }
 
-/* Conversa dentro de um comentário: as respostas ficam recuadas, ligadas por uma linha. */
+/* Conversa dentro de um comentário: comentário e respostas na mesma coluna, fotos ligadas por uma linha. */
 .reply-thread {
   display: grid;
-  gap: .5rem;
+  grid-template-columns: minmax(0, 1fr);
+  padding-bottom: .35rem;
+  border-bottom: 1px solid var(--linhas);
 }
 
-.reply-thread__replies {
+/* Foto numa coluna à esquerda (ocupando a altura toda), conteúdo na coluna da direita. */
+.post-card--reply {
+  --foto: 2.5rem;
+  --respiro: .85rem;
   display: grid;
-  grid-template-columns: minmax(0, 1fr);
-  gap: .5rem;
-  margin-left: 1.4rem;
-  padding-left: .9rem;
-  border-left: 2px solid var(--linhas);
+  grid-template-columns: var(--foto) minmax(0, 1fr) auto;
+  column-gap: .75rem;
+  padding: var(--respiro) 0 .1rem;
+  border: 0;
+  border-radius: 0;
+  background: none;
+
+  .post-card__header {
+    display: contents;
+  }
+
+  .post-card__avatar {
+    position: relative;
+    grid-column: 1;
+    grid-row: 1 / span 20;
+    align-self: stretch;
+
+    img {
+      width: var(--foto);
+      height: var(--foto);
+    }
+  }
+
+  .post-card__who {
+    grid-column: 2;
+    grid-row: 1;
+    flex-direction: row;
+    flex-wrap: wrap;
+    align-items: baseline;
+    gap: 0 .4rem;
+    min-width: 0;
+  }
+
+  .post-menu {
+    grid-column: 3;
+    grid-row: 1;
+    margin-top: -.4rem;
+  }
+
+  > :not(.post-card__header) {
+    grid-column: 2 / -1;
+  }
+
+  .post-card__text p {
+    margin: .15rem 0 .35rem;
+    font-size: .98rem;
+  }
+
+  .post-card__actions {
+    margin-left: -.6rem;
+  }
 }
+
+/* A linha desce da foto até a foto da próxima linha da conversa. */
+.post-card--continua .post-card__avatar::after {
+  content: '';
+  position: absolute;
+  top: calc(var(--foto) + 4px);
+  bottom: calc(-1 * var(--respiro) + 4px);
+  left: calc(50% - 1px);
+  width: 2px;
+  border-radius: 2px;
+  background: var(--linhas);
+}
+
 
 .reply-thread__more {
+  position: relative;
   justify-self: start;
-  margin-left: 2.3rem;
-  padding: .2rem 0;
+  margin: 0 0 .35rem calc(2.5rem + .75rem);
+  padding: .35rem 0;
   border: none;
   background: none;
   color: var(--destaque-claro);
@@ -2002,4 +2052,14 @@ button.track-row:hover {
   &:hover:not(:disabled) {
     text-decoration: underline;
   }
+}
+
+/* Pontilhado na coluna das fotos, ligando a última resposta ao "Mostrar respostas" (como no Twitter). */
+.reply-thread__more::before {
+  content: '';
+  position: absolute;
+  top: -.3rem;
+  bottom: .3rem;
+  left: calc(-.75rem - 1.25rem - 1px);
+  border-left: 2px dotted var(--linhas);
 }

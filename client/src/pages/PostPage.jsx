@@ -58,12 +58,11 @@ function ReplyThread({ resposta, onDeleted }) {
 
   return (
     <div role="group" aria-label={`Conversa do comentário de ${resposta.autor.nome}`} className="reply-thread">
-      <PostCard post={resposta} variant="reply" onDeleted={onDeleted} />
-      {respostas.length > 0 && (
-        <div className="reply-thread__replies">
-          {respostas.map((r) => <PostCard key={r.id} post={r} variant="reply" onDeleted={tirar} />)}
-        </div>
-      )}
+      {/* Todos na mesma coluna; a linha entre as fotos mostra quem responde a quem. */}
+      <PostCard post={resposta} variant="reply" onDeleted={onDeleted} threadLine={respostas.length > 0} />
+      {respostas.map((r, i) => (
+        <PostCard key={r.id} post={r} variant="reply" onDeleted={tirar} threadLine={i < respostas.length - 1} />
+      ))}
       {todas === null && faltam > 0 && respostas.length > 0 && (
         <button type="button" className="reply-thread__more" onClick={mostrarTodas} disabled={carregando}>
           {carregando ? 'Carregando…' : `Mostrar respostas (mais ${faltam})`}

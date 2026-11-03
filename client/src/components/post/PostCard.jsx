@@ -45,6 +45,7 @@ function MusicBlock({ post, postUrl }) {
 // showPinned: mostra a etiqueta "Fixado" (só faz sentido no perfil do autor).
 export function PostCard({
   post, onDeleted, onPinChange, commentCount = post.quantidadeComentarios, showMenu = true, showPinned = false, variant = 'feed',
+  threadLine = false,
 }) {
   const { user } = useAuth();
   const [fixado, setFixado] = useState(Boolean(post.fixado));
@@ -68,7 +69,8 @@ export function PostCard({
 
   return (
     <article
-      className={`post-card post-card--${variant}`}
+      // threadLine: numa conversa, a linha sai da foto e liga este post ao de baixo (como no Twitter).
+      className={`post-card post-card--${variant}${threadLine ? ' post-card--continua' : ''}`}
       aria-label={post.titulo ? `Post de ${post.autor.nome} sobre ${post.titulo}` : `Post de ${post.autor.nome}`}
     >
       {showPinned && fixado && (

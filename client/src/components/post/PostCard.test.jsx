@@ -101,6 +101,14 @@ describe('PostCard', () => {
     expect(screen.getByRole('img', { name: 'Verificado' })).toHaveClass('verified-badge--olivia');
   });
 
+  it('numa conversa, threadLine liga este post ao de baixo (linha entre as fotos)', () => {
+    const { unmount } = renderWithProviders(<PostCard post={musicPost} variant="reply" threadLine />);
+    expect(screen.getByRole('article')).toHaveClass('post-card--continua');
+    unmount();
+    renderWithProviders(<PostCard post={musicPost} variant="reply" />);
+    expect(screen.getByRole('article')).not.toHaveClass('post-card--continua');
+  });
+
   it('mostra a imagem (ou GIF) do post', () => {
     renderWithProviders(<PostCard post={{ ...musicPost, imagem: 'https://res.cloudinary.com/t/gato.gif' }} />);
     expect(screen.getByAltText('Imagem do post de Bia')).toHaveAttribute('src', 'https://res.cloudinary.com/t/gato.gif');
