@@ -5,7 +5,7 @@ const TEXTO_MAX = 500;
 
 const CREATE_FIELDS = [
   'texto', 'musicName', 'artistName', 'posterMusica', 'albumName',
-  'posterAlbum', 'postType', 'releaseDate', 'nota', 'musicPreview',
+  'posterAlbum', 'postType', 'releaseDate', 'nota', 'musicPreview', 'imagemUrl',
 ];
 
 export function fisherYatesShuffle(list) {
@@ -77,7 +77,7 @@ export function createPostService({
       return { post: { ...post, curtido }, pai: paiMarcado, respostas: await markLiked(respostas, viewerId) };
     },
 
-    // Serve para posts e respostas (com parentId). A música é opcional; com ela, a nota é obrigatória.
+    // Serve para posts e respostas (com parentId). Música e imagem são opcionais; com música, a nota é obrigatória.
     async create(autorId, body) {
       const data = pick(body, CREATE_FIELDS);
       if (data.texto !== undefined) data.texto = String(data.texto).trim();
@@ -90,7 +90,7 @@ export function createPostService({
         if (!isValidNota(nota)) throw badRequest('A nota vai de 0 a 5 estrelas, de meia em meia.');
         data.nota = nota;
       } else {
-        if (!data.texto) throw badRequest('Escreva algo ou escolha uma música.');
+        if (!data.texto && !data.imagemUrl) throw badRequest('Escreva algo, escolha uma música ou adicione uma imagem.');
         data.nota = null;
       }
       if ((data.texto ?? '').length > TEXTO_MAX) throw badRequest(`O texto pode ter no máximo ${TEXTO_MAX} caracteres.`);

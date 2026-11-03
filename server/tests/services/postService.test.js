@@ -154,10 +154,15 @@ describe('postService', () => {
       expect(posts.create).toHaveBeenCalledWith({ texto: 'bom dia', nota: null, autorId: 7, data: now });
     });
 
-    it('sem música, exige texto', async () => {
+    it('pode ser só uma imagem (sem texto nem música)', async () => {
+      await service.create(7, { imagemUrl: 'https://res.cloudinary.com/x.gif' });
+      expect(posts.create).toHaveBeenCalledWith({ imagemUrl: 'https://res.cloudinary.com/x.gif', nota: null, autorId: 7, data: now });
+    });
+
+    it('sem música nem imagem, exige texto', async () => {
       await expect(service.create(7, { texto: '   ' })).rejects.toMatchObject({
         status: 400,
-        message: 'Escreva algo ou escolha uma música.',
+        message: 'Escreva algo, escolha uma música ou adicione uma imagem.',
       });
       expect(posts.create).not.toHaveBeenCalled();
     });

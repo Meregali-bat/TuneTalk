@@ -2,7 +2,7 @@ import { useEffect, useId, useRef, useState } from 'react';
 import { usersApi } from '../../api/index.js';
 import { Modal } from '../common/Modal.jsx';
 import { USERNAME_MESSAGES, checkUsername } from '../../../../shared/usernameRules.js';
-import { FOTO_MAX_MB } from '../../api/limits.js';
+import { IMAGEM_MAX_MB } from '../../api/limits.js';
 
 const BIO_MAX = 255;
 
@@ -35,8 +35,8 @@ export function EditProfileModal({ open, usuario, onClose, onSaved }) {
 
   const chooseFoto = (file) => {
     if (!file) return;
-    if (file.size > FOTO_MAX_MB * 1024 * 1024) {
-      setError(`A foto pode ter no máximo ${FOTO_MAX_MB} MB.`);
+    if (file.size > IMAGEM_MAX_MB * 1024 * 1024) {
+      setError(`A foto pode ter no máximo ${IMAGEM_MAX_MB} MB.`);
       return;
     }
     setError('');

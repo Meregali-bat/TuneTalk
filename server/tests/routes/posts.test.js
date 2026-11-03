@@ -95,6 +95,26 @@ describe('rotas /api/posts', () => {
     expect(deps.postService.unpin).toHaveBeenCalledWith(3, 1);
   });
 
+  it('POST /api/posts/image-upload assina o envio da imagem direto ao Cloudinary', async () => {
+    deps.uploader.signUpload.mockReturnValue({ uploadUrl: 'u', fields: {} });
+    const res = await agent.post('/api/posts/image-upload');
+    expect(res.body).toEqual({ uploadUrl: 'u', fields: {} });
+    expect(deps.uploader.signUpload).toHaveBeenCalledWith('post');
+  });
+
+  it('POST /api/posts aceita imagem só se o link vier da nossa pasta de posts', async () => {
+    deps.postService.create.mockResolvedValue(5);
+    deps.uploader.isOwnUrl.mockReturnValueOnce(true).mockReturnValueOnce(false);
+
+    await agent.post('/api/posts').send({ imagemUrl: 'https://res.cloudinary.com/ok.gif' }).expect(201);
+    expect(deps.uploader.isOwnUrl).toHaveBeenCalledWith('https://res.cloudinary.com/ok.gif', 'post');
+
+    const res = await agent.post('/api/posts').send({ imagemUrl: 'https://site.com/x.gif' });
+    expect(res.status).toBe(400);
+    expect(res.body).toEqual({ error: 'Imagem inválida. Envie de novo.' });
+    expect(deps.postService.create).toHaveBeenCalledTimes(1);
+  });
+
   it('POST /api/posts com parentId cria uma resposta (comentário)', async () => {
     deps.postService.create.mockResolvedValue(9);
     const res = await agent.post('/api/posts').send({ texto: 'massa', parentId: 3 });

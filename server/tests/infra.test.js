@@ -22,6 +22,14 @@ describe('cloudinaryUploader (envio direto do navegador)', () => {
     expect(JSON.stringify(signed)).not.toContain('segredo');
   });
 
+  it('imagens de post vão para outra pasta, e cada tipo só aceita links da própria pasta', () => {
+    const cloudinary = fakeCloudinary();
+    const uploader = createCloudinaryUploader(cloudinary, { now: () => 1_700_000_000_000 });
+    expect(uploader.signUpload('post').fields.folder).toBe('tunetalk/posts');
+    expect(uploader.isOwnUrl('https://res.cloudinary.com/tunetalk/image/upload/v1/tunetalk/posts/a.gif', 'post')).toBe(true);
+    expect(uploader.isOwnUrl('https://res.cloudinary.com/tunetalk/image/upload/v1/tunetalk/perfis/a.gif', 'post')).toBe(false);
+  });
+
   it('só aceita como foto de perfil links da nossa pasta no Cloudinary', () => {
     const uploader = createCloudinaryUploader(fakeCloudinary());
     expect(uploader.isOwnUrl('https://res.cloudinary.com/tunetalk/image/upload/v1/tunetalk/perfis/abc.gif')).toBe(true);

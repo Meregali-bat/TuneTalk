@@ -7,7 +7,7 @@ import { musicApi, postsApi } from '../../api/index.js';
 
 vi.mock('../../api/index.js', () => ({
   musicApi: { search: vi.fn() },
-  postsApi: { create: vi.fn() },
+  postsApi: { create: vi.fn(), uploadImage: vi.fn() },
 }));
 
 const help = { id: 1, titulo: 'Help!', artista: 'The Beatles', capa: 'help.jpg', duracao: 138, preview: 'help.mp3' };
@@ -58,6 +58,8 @@ describe('StarRatingInput (nota de 0 a 10)', () => {
 describe('CreatePost', () => {
   beforeEach(() => {
     vi.clearAllMocks();
+    URL.createObjectURL = vi.fn(() => 'blob:previa');
+    URL.revokeObjectURL = vi.fn();
     musicApi.search.mockResolvedValue([help, yesterday]);
     postsApi.create.mockResolvedValue({ id: 42 });
   });
@@ -230,6 +232,56 @@ describe('CreatePost', () => {
     expect(await screen.findByRole('alert')).toHaveTextContent('Dê uma nota de 0 a 5 estrelas.');
     expect(texto()).toHaveValue('ótima');
     expect(screen.getByRole('button', { name: 'Publicar' })).toBeEnabled();
+  });
+
+  describe('imagem ou GIF', () => {
+    const gif = () => new File(['GIF89a'], 'gato.gif', { type: 'image/gif' });
+    const escolher = (file) => userEvent.upload(screen.getByLabelText('Escolher imagem'), file);
+
+    it('mostra a prévia e publica só com a imagem: envia ao Cloudinary e salva o link', async () => {
+      postsApi.uploadImage.mockResolvedValue('https://res.cloudinary.com/t/gato.gif');
+      const onCreated = vi.fn();
+      render(<CreatePost onCreated={onCreated} />);
+      await open();
+
+      expect(screen.getByRole('button', { name: 'Adicionar imagem' })).toBeInTheDocument();
+      const file = gif();
+      await escolher(file);
+      expect(screen.getByAltText('Imagem escolhida')).toHaveAttribute('src', 'blob:previa');
+
+      await userEvent.click(screen.getByRole('button', { name: 'Publicar' }));
+      expect(postsApi.uploadImage).toHaveBeenCalledWith(file);
+      expect(postsApi.create).toHaveBeenCalledWith({ texto: '', imagemUrl: 'https://res.cloudinary.com/t/gato.gif' });
+      await waitFor(() => expect(onCreated).toHaveBeenCalled());
+    });
+
+    it('mostra "Enviando imagem…" enquanto sobe', async () => {
+      postsApi.uploadImage.mockReturnValue(new Promise(() => {}));
+      render(<CreatePost onCreated={vi.fn()} />);
+      await open();
+      await escolher(gif());
+      await userEvent.click(screen.getByRole('button', { name: 'Publicar' }));
+      expect(screen.getByRole('button', { name: 'Enviando imagem…' })).toBeDisabled();
+    });
+
+    it('"Remover imagem" tira a prévia', async () => {
+      render(<CreatePost onCreated={vi.fn()} />);
+      await open();
+      await escolher(gif());
+      await userEvent.click(screen.getByRole('button', { name: 'Remover imagem' }));
+      expect(screen.queryByAltText('Imagem escolhida')).toBeNull();
+      expect(screen.getByRole('button', { name: 'Publicar' })).toBeDisabled();
+    });
+
+    it('recusa na hora imagem acima de 10 MB', async () => {
+      render(<CreatePost onCreated={vi.fn()} />);
+      await open();
+      const enorme = gif();
+      Object.defineProperty(enorme, 'size', { value: 10 * 1024 * 1024 + 1 });
+      await escolher(enorme);
+      expect(screen.getByRole('alert')).toHaveTextContent('A imagem pode ter no máximo 10 MB.');
+      expect(screen.queryByAltText('Imagem escolhida')).toBeNull();
+    });
   });
 
   it('fechar descarta o rascunho', async () => {

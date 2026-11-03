@@ -32,6 +32,7 @@ export function toPost(row) {
     capa: isAlbum ? row.posterAlbum : row.posterMusica,
     releaseDate: row.releaseDate,
     preview: row.musicPreview ?? null,
+    imagem: row.imagemUrl ?? null,
     fixado: row.autor.postFixadoId === row.id,
     autor: { id: row.autor.id, nome: row.autor.nome, fotoPerfil: row.autor.fotoPerfil },
   };
@@ -81,6 +82,7 @@ export function createPostRepository(prisma) {
           releaseDate: post.releaseDate == null ? null : String(post.releaseDate),
           nota: toNota(post.nota),
           musicPreview: post.musicPreview ?? null,
+          imagemUrl: post.imagemUrl ?? null,
           createdAt: post.data,
         },
         select: { id: true },

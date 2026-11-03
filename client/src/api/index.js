@@ -1,10 +1,10 @@
 import { ApiError, request } from './http.js';
-import { FOTO_MAX_MB } from './limits.js';
+import { IMAGEM_MAX_MB } from './limits.js';
 
-// A foto vai direto do navegador para o Cloudinary, com uma assinatura feita pelo servidor:
-// a Vercel recusa requisições acima de 4,5 MB, e GIF animado de perfil passa disso fácil.
-async function uploadPhoto(file) {
-  const { uploadUrl, fields } = await request('/users/me/photo-upload', { method: 'POST' });
+// Imagens vão direto do navegador para o Cloudinary, com uma assinatura feita pelo servidor:
+// a Vercel recusa requisições acima de 4,5 MB, e GIF animado passa disso fácil.
+async function uploadImage(signaturePath, file) {
+  const { uploadUrl, fields } = await request(signaturePath, { method: 'POST' });
   const form = new FormData();
   Object.entries(fields).forEach(([key, value]) => form.append(key, value));
   form.append('file', file);
@@ -14,7 +14,7 @@ async function uploadPhoto(file) {
   if (!response.ok) {
     const tooLarge = /file size too large/i.test(data?.error?.message ?? '');
     throw new ApiError(response.status, tooLarge
-      ? `A foto pode ter no máximo ${FOTO_MAX_MB} MB.`
+      ? `A imagem pode ter no máximo ${IMAGEM_MAX_MB} MB.`
       : 'Não foi possível enviar essa imagem. Tente outra.');
   }
   return data.secure_url;
@@ -35,6 +35,7 @@ export const postsApi = {
   // Comentários também são criados aqui, com parentId.
   create: (post) => request('/posts', { method: 'POST', body: post }),
   remove: (id) => request(`/posts/${id}`, { method: 'DELETE' }),
+  uploadImage: (file) => uploadImage('/posts/image-upload', file),
   pin: (id) => request(`/posts/${id}/pin`, { method: 'POST' }),
   unpin: (id) => request(`/posts/${id}/pin`, { method: 'DELETE' }),
   like: async (id) => (await request(`/posts/${id}/like`, { method: 'POST' })).likes,
@@ -44,7 +45,7 @@ export const postsApi = {
 export const usersApi = {
   profile: (id) => request(`/users/${id}`),
   updateMe: (changes) => request('/users/me', { method: 'PUT', body: changes }),
-  uploadPhoto,
+  uploadPhoto: (file) => uploadImage('/users/me/photo-upload', file),
   setUsername: (nome) => request('/users/me/username', { method: 'PUT', body: { nome } }),
   changePassword: (senhaAtual, novaSenha) =>
     request('/users/me/password', { method: 'PUT', body: { senhaAtual, novaSenha } }),

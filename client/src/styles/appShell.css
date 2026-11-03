@@ -1683,3 +1683,42 @@ button.track-row:hover {
   font-size: .8rem;
   font-weight: 600;
 }
+
+/* --- Imagem/GIF no post --- */
+.composer-image {
+  position: relative;
+  margin: 0;
+
+  img {
+    display: block;
+    width: 100%;
+    max-height: 22rem;
+    border: 1px solid var(--linhas);
+    border-radius: 14px;
+    object-fit: contain;
+    background: var(--background);
+  }
+}
+
+.composer-image__remove {
+  position: absolute;
+  top: .5rem;
+  right: .5rem;
+  background: rgba(0, 5, 5, .75);
+  color: var(--texto);
+}
+
+.post-card__image {
+  display: block;
+  margin-top: .75rem;
+
+  img {
+    display: block;
+    width: 100%;
+    max-height: 32rem;
+    border: 1px solid var(--linhas);
+    border-radius: 14px;
+    object-fit: cover;
+    background: var(--background);
+  }
+}

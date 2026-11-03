@@ -1,8 +1,9 @@
-import { useEffect, useId, useState } from 'react';
+import { useEffect, useId, useRef, useState } from 'react';
 import { musicApi, postsApi } from '../../api/index.js';
 import { useDebouncedValue } from '../../hooks/useDebouncedValue.js';
 import { formatDuration } from '../../utils/postFormat.js';
 import { StarRatingInput } from './StarRatingInput.jsx';
+import { IMAGEM_MAX_MB } from '../../api/limits.js';
 
 const TEXTO_MAX = 500;
 
@@ -110,11 +111,36 @@ export function Composer({
   const [searching, setSearching] = useState(false);
   const [query, setQuery] = useState('');
   const search = useMusicSearch(query);
+  const [imagem, setImagem] = useState(null);
+  const [previa, setPrevia] = useState(null);
+  const imagemInput = useRef(null);
   const [error, setError] = useState('');
-  const [sending, setSending] = useState(false);
+  const [sending, setSending] = useState(null); // null, 'imagem' ou 'post'
+
+  useEffect(() => {
+    if (!imagem) return undefined;
+    const url = URL.createObjectURL(imagem);
+    setPrevia(url);
+    return () => URL.revokeObjectURL(url);
+  }, [imagem]);
 
   const clean = texto.trim();
-  const canPublish = !sending && (track ? nota !== null : clean.length > 0);
+  const canPublish = !sending && (track ? nota !== null : clean.length > 0 || imagem !== null);
+
+  const chooseImagem = (file) => {
+    if (!file) return;
+    if (file.size > IMAGEM_MAX_MB * 1024 * 1024) {
+      setError(`A imagem pode ter no máximo ${IMAGEM_MAX_MB} MB.`);
+      return;
+    }
+    setError('');
+    setImagem(file);
+  };
+
+  const removeImagem = () => {
+    setImagem(null);
+    setPrevia(null);
+  };
 
   const chooseTrack = (chosen) => {
     if (chosen.id !== track?.id) setNota(null);
@@ -130,18 +156,24 @@ export function Composer({
   const submit = async (event) => {
     event.preventDefault();
     if (!canPublish) return;
-    setSending(true);
     setError('');
     try {
+      let imagemUrl;
+      if (imagem) {
+        setSending('imagem');
+        imagemUrl = await postsApi.uploadImage(imagem);
+      }
+      setSending('post');
       await postsApi.create({
         texto: clean,
         ...(parentId !== undefined && { parentId }),
         ...(track && { ...musicFields(track), nota }),
+        ...(imagemUrl && { imagemUrl }),
       });
       onPublished();
     } catch (err) {
       setError(err.message);
-      setSending(false);
+      setSending(null);
     }
   };
 
@@ -173,6 +205,15 @@ export function Composer({
         <span className="composer-counter">{texto.length}/{TEXTO_MAX}</span>
       </div>
 
+      {previa && (
+        <figure className="composer-image">
+          <img src={previa} alt="Imagem escolhida" />
+          <button type="button" className="icon-button composer-image__remove" aria-label="Remover imagem" onClick={removeImagem}>
+            <i className="bi bi-x-lg" aria-hidden="true" />
+          </button>
+        </figure>
+      )}
+
       {track ? (
         <div className="composer-music">
           <div role="group" aria-label="Música escolhida" className="track-row track-row--selected">
@@ -192,10 +233,27 @@ export function Composer({
         </button>
       )}
 
+      {!imagem && (
+        <button type="button" className="composer-attach" onClick={() => imagemInput.current?.click()}>
+          <i className="bi bi-image" aria-hidden="true" />
+          Adicionar imagem
+          <span className="composer-attach__hint" aria-hidden="true">GIF também</span>
+        </button>
+      )}
+      <input
+        ref={imagemInput}
+        type="file"
+        accept="image/*"
+        aria-label="Escolher imagem"
+        className="visually-hidden"
+        tabIndex={-1}
+        onChange={(event) => { chooseImagem(event.target.files[0]); event.target.value = ''; }}
+      />
+
       {error && <p role="alert" className="composer-error">{error}</p>}
 
       <button type="submit" className="composer-submit" disabled={!canPublish}>
-        {sending ? 'Publicando…' : submitLabel}
+        {{ imagem: 'Enviando imagem…', post: 'Publicando…' }[sending] ?? submitLabel}
       </button>
     </form>
   );

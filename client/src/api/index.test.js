@@ -52,6 +52,13 @@ describe('endpoints da API', () => {
     });
   });
 
+  it('postsApi.uploadImage usa a assinatura de imagem de post', async () => {
+    request.mockResolvedValueOnce({ uploadUrl: 'https://api.cloudinary.com/x', fields: {} });
+    vi.stubGlobal('fetch', vi.fn().mockResolvedValue({ ok: true, json: async () => ({ secure_url: 'https://res.cloudinary.com/p.gif' }) }));
+    expect(await postsApi.uploadImage(new File(['g'], 'p.gif'))).toBe('https://res.cloudinary.com/p.gif');
+    expect(request).toHaveBeenCalledWith('/posts/image-upload', { method: 'POST' });
+  });
+
   describe('usersApi.uploadPhoto (direto para o Cloudinary)', () => {
     const file = new File(['gif'], 'eu.gif', { type: 'image/gif' });
     let fetchMock;
@@ -77,7 +84,7 @@ describe('endpoints da API', () => {
 
     it('explica quando o Cloudinary recusa por tamanho', async () => {
       fetchMock.mockResolvedValue({ ok: false, status: 400, json: async () => ({ error: { message: 'File size too large. Got 12000000. Maximum is 10485760.' } }) });
-      await expect(usersApi.uploadPhoto(file)).rejects.toThrow('A foto pode ter no máximo 10 MB.');
+      await expect(usersApi.uploadPhoto(file)).rejects.toThrow('A imagem pode ter no máximo 10 MB.');
     });
 
     it('outros erros do Cloudinary viram uma mensagem simples', async () => {

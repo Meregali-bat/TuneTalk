@@ -122,6 +122,17 @@ describe('API fake da demo (serviços reais + banco em memória)', () => {
     expect((await call('PUT', '/users/me', JSON.stringify({ nome: 'ana.souza', fotoPerfil: 'https://x.com/a.gif' }))).status).toBe(400);
   });
 
+  it('post só com imagem (GIF)', async () => {
+    await login();
+    expect((await call('POST', '/posts/image-upload')).body.uploadUrl).toBe('/api/demo-upload');
+    const form = new FormData();
+    form.append('file', new File(['GIF89a'], 'gato.gif', { type: 'image/gif' }));
+    const { secure_url: url } = (await call('POST', '/demo-upload', form)).body;
+
+    const criado = await call('POST', '/posts', JSON.stringify({ texto: '', imagemUrl: url }));
+    expect((await call('GET', `/posts/${criado.body.id}`)).body.post).toMatchObject({ imagem: url, titulo: null });
+  });
+
   it('não deixa apagar post de outra pessoa', async () => {
     await login();
     const [post] = (await call('GET', '/posts?feed=seguindo')).body;

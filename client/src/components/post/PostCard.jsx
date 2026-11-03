@@ -100,6 +100,12 @@ export function PostCard({
         </Link>
       )}
 
+      {post.imagem && (
+        <Link to={postUrl} className="post-card__image" tabIndex={-1}>
+          <img src={post.imagem} alt={`Imagem do post de ${post.autor.nome}`} loading="lazy" />
+        </Link>
+      )}
+
       {post.titulo && <MusicBlock post={post} postUrl={postUrl} />}
 
       <footer className="post-card__actions">

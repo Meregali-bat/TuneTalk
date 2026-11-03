@@ -53,6 +53,7 @@ describe('postRepository (Postgres)', () => {
         capa: 'help.jpg',
         releaseDate: '138',
         preview: 'help.mp3',
+        imagem: null,
         fixado: false,
         autor: { id: ana.id, nome: 'Ana', fotoPerfil: 'ana.png' },
       });
@@ -84,6 +85,12 @@ describe('postRepository (Postgres)', () => {
       expect(await repo.findById(id)).toMatchObject({
         parentId: pai.id, texto: 'concordo', tipo: null, titulo: null, artista: null, capa: null, nota: null,
       });
+    });
+
+    it('grava e devolve a imagem do post', async () => {
+      const url = 'https://res.cloudinary.com/t/image/upload/v1/tunetalk/posts/a.gif';
+      const id = await repo.create({ autorId: ana.id, texto: 'olha', imagemUrl: url, data: new Date() });
+      expect(await repo.findById(id)).toMatchObject({ imagem: url, titulo: null, nota: null });
     });
 
     it('findById devolve null para post inexistente', async () => {

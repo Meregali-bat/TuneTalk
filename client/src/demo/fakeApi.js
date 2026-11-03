@@ -136,6 +136,7 @@ export function createFakeApi({ storage = globalThis.localStorage } = {}) {
       return noContent();
     }],
     // Na demo o "Cloudinary" é este endereço: a foto vira data URL e fica no próprio navegador.
+    ['POST', /^\/posts\/image-upload$/, () => { me(); return ok({ uploadUrl: '/api/demo-upload', fields: {} }); }],
     ['POST', /^\/users\/me\/photo-upload$/, () => { me(); return ok({ uploadUrl: '/api/demo-upload', fields: {} }); }],
     ['POST', /^\/demo-upload$/, async ({ form }) => ok({ secure_url: await fileToDataUrl(form.get('file')) })],
     ['PUT', /^\/users\/me$/, async ({ body }) => {

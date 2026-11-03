@@ -83,6 +83,11 @@ describe('PostCard', () => {
     expect(screen.queryByTestId('post-text')).toBeNull();
   });
 
+  it('mostra a imagem (ou GIF) do post', () => {
+    renderWithProviders(<PostCard post={{ ...musicPost, imagem: 'https://res.cloudinary.com/t/gato.gif' }} />);
+    expect(screen.getByAltText('Imagem do post de Bia')).toHaveAttribute('src', 'https://res.cloudinary.com/t/gato.gif');
+  });
+
   describe('sem música', () => {
     const textPost = { ...musicPost, tipo: null, titulo: null, artista: null, capa: null, nota: null, preview: null };
 

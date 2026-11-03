@@ -138,6 +138,7 @@ export function createMemoryRepositories(state, onChange) {
         releaseDate: post.releaseDate == null ? null : String(post.releaseDate),
         nota: Number.isFinite(nota) ? nota : null,
         musicPreview: post.musicPreview ?? null,
+        imagemUrl: post.imagemUrl ?? null,
         createdAt: post.data.toISOString(),
       });
       return changed(id);

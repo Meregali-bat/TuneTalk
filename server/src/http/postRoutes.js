@@ -2,7 +2,7 @@ import { Router } from 'express';
 import { badRequest } from '../errors.js';
 import { asyncRoute, currentUserId, parseIdParam, requireAuth, requireUsername } from './middlewares.js';
 
-export function createPostRoutes({ postService }) {
+export function createPostRoutes({ postService, uploader }) {
   const router = Router();
   router.use(requireAuth, requireUsername);
   router.param('id', parseIdParam);
@@ -18,8 +18,15 @@ export function createPostRoutes({ postService }) {
     res.json(await loadFeed(currentUserId(req)));
   }));
 
+  // A imagem vai direto do navegador ao Cloudinary; aqui só assinamos e depois conferimos o link.
+  router.post('/image-upload', (req, res) => {
+    res.json(uploader.signUpload('post'));
+  });
+
   // Comentários são posts com parentId no corpo.
   router.post('/', asyncRoute(async (req, res) => {
+    const { imagemUrl } = req.body;
+    if (imagemUrl !== undefined && !uploader.isOwnUrl(imagemUrl, 'post')) throw badRequest('Imagem inválida. Envie de novo.');
     const id = await postService.create(currentUserId(req), req.body);
     res.status(201).json({ id });
   }));
