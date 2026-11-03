@@ -292,9 +292,23 @@ describe('ProfilePage', () => {
   });
 
   it('mostra erro para perfil inexistente', async () => {
-    usersApi.profile.mockRejectedValue(new Error('Usuário não encontrado.'));
+    usersApi.profile.mockRejectedValue(Object.assign(new Error('Usuário não encontrado.'), { status: 404 }));
     renderProfile(99);
-    expect(await screen.findByRole('alert')).toHaveTextContent('Usuário não encontrado.');
+    expect(await screen.findByRole('alert')).toHaveTextContent('Esse perfil não existe ou mudou de @.');
+  });
+
+  it('falha de conexão explica e deixa tentar de novo', async () => {
+    usersApi.profile.mockRejectedValueOnce(new Error('Failed to fetch'));
+    renderProfile();
+    expect(await screen.findByRole('alert')).toHaveTextContent('Não deu para carregar o perfil.');
+    await userEvent.click(screen.getByRole('button', { name: 'Tentar de novo' }));
+    expect(await screen.findByRole('heading', { level: 1, name: 'bia' })).toBeInTheDocument();
+  });
+
+  it('números grandes aparecem compactos', async () => {
+    usersApi.profile.mockResolvedValue(profile({ quantidadeSeguidores: 12345 }));
+    renderProfile();
+    expect(await screen.findByRole('button', { name: /^Seguidores: 12,3\smil$/ })).toBeInTheDocument();
   });
 
   describe('favoritos (como no Letterboxd)', () => {
@@ -316,6 +330,24 @@ describe('ProfilePage', () => {
       expect(within(secao).getByRole('list', { name: 'Artistas favoritos' })).toHaveTextContent('Olivia Rodrigo');
       expect(within(secao).queryByRole('list', { name: 'Álbuns favoritos' })).toBeNull();
       expect(within(secao).queryByRole('button', { name: 'Editar favoritos' })).toBeNull();
+      const link = within(musicas).getByRole('link', { name: 'Help! · The Beatles (abre no Deezer)' });
+      expect(link).toHaveAttribute('href', 'https://www.deezer.com/track/1');
+      expect(within(secao).getByRole('link', { name: /Olivia Rodrigo/ })).toHaveAttribute('href', 'https://www.deezer.com/artist/5');
+    });
+
+    it('fechar com mudanças não salvas pergunta antes', async () => {
+      usersApi.profile.mockResolvedValue(profile({ usuario: ana, favoritos: { ...vazios, musicas: [help] } }));
+      const confirmar = vi.spyOn(window, 'confirm').mockReturnValueOnce(false).mockReturnValueOnce(true);
+      renderProfile(1);
+      await userEvent.click(await screen.findByRole('button', { name: 'Editar favoritos' }));
+      await userEvent.click(screen.getByRole('button', { name: 'Tirar Help!' }));
+
+      await userEvent.click(screen.getByRole('button', { name: 'Cancelar' }));
+      expect(confirmar).toHaveBeenCalledWith('Descartar as mudanças nos favoritos?');
+      expect(screen.getByRole('dialog', { name: 'Favoritos' })).toBeInTheDocument();
+      await userEvent.click(screen.getByRole('button', { name: 'Cancelar' }));
+      expect(screen.queryByRole('dialog')).toBeNull();
+      confirmar.mockRestore();
     });
 
     it('perfil de outra pessoa sem favoritos não mostra a seção; dado estranho não quebra', async () => {
@@ -328,7 +360,8 @@ describe('ProfilePage', () => {
     it('no próprio perfil vazio, convida a escolher', async () => {
       usersApi.profile.mockResolvedValue(profile({ usuario: ana, favoritos: vazios }));
       renderProfile(1);
-      await userEvent.click(await screen.findByRole('button', { name: /Escolha suas 5 músicas, álbuns e artistas/ }));
+      expect(await screen.findByText(/Mostre seu gosto/)).toBeInTheDocument();
+      await userEvent.click(screen.getByRole('button', { name: 'Escolher favoritos' }));
       expect(screen.getByRole('dialog', { name: 'Favoritos' })).toBeInTheDocument();
     });
 
@@ -367,6 +400,7 @@ describe('ProfilePage', () => {
         artistas: [],
       });
       await waitFor(() => expect(screen.queryByRole('dialog')).toBeNull());
+      expect(screen.getByRole('status')).toHaveTextContent('Favoritos salvos.');
       const secao = screen.getByRole('region', { name: 'Favoritos' });
       expect(within(secao).getByRole('list', { name: 'Músicas favoritas' })).toHaveTextContent('Yesterday');
       expect(within(secao).getByRole('list', { name: 'Álbuns favoritos' })).toHaveTextContent('Abbey Road');

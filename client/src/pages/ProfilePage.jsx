@@ -41,17 +41,22 @@ function ProfileSkeleton() {
   );
 }
 
+// 12345 vira "12,3 mil": cabe na coluna do número em qualquer tela.
+const compacto = (valor) => (typeof valor === 'number'
+  ? new Intl.NumberFormat('pt-BR', { notation: 'compact', maximumFractionDigits: 1 }).format(valor)
+  : valor);
+
 function Stat({ value, label, onClick }) {
   const content = (
     <>
-      <strong>{value}</strong>
+      <strong>{compacto(value)}</strong>
       <span>{label}</span>
     </>
   );
   return (
     <li className="profile-stat">
       {onClick ? (
-        <button type="button" className="profile-stat__inner" aria-label={`${label}: ${value}`} onClick={onClick}>
+        <button type="button" className="profile-stat__inner" aria-label={`${label}: ${compacto(value)}`} onClick={onClick}>
           {content}
         </button>
       ) : (
@@ -130,10 +135,10 @@ function ProfileHeader({ profile, isOwnProfile, onEdit, onChangePassword, onOpen
 
 // Aba "Comentários": só busca quando aberta pela primeira vez.
 function ProfileComments({ usuarioId, nome }) {
-  const { data: comentarios, error, setData } = useAsync(() => usersApi.comments(usuarioId), [usuarioId]);
+  const { data: comentarios, error, setData, reload } = useAsync(() => usersApi.comments(usuarioId), [usuarioId]);
   const remover = (id) => setData((lista) => lista.filter((c) => c.id !== id));
 
-  if (error) return <div role="alert" className="feed-error"><p>{error.message}</p></div>;
+  if (error) return <LoadError mensagem="Não deu para carregar os comentários." onRetry={reload} />;
   if (!comentarios) return <p role="status" className="composer-hint">Carregando comentários…</p>;
   if (comentarios.length === 0) {
     return (
@@ -146,6 +151,18 @@ function ProfileComments({ usuarioId, nome }) {
   return (
     <div className="feed-list">
       {comentarios.map((c) => <PostCard key={c.id} post={c} onDeleted={remover} />)}
+    </div>
+  );
+}
+
+// Erro de carregamento com saída: explica e deixa tentar de novo sem recarregar a página.
+function LoadError({ mensagem, onRetry }) {
+  return (
+    <div role="alert" className="feed-error">
+      <p>{mensagem}</p>
+      <button type="button" className="follow-button follow-button--md is-following" onClick={onRetry}>
+        <i className="bi bi-arrow-clockwise" aria-hidden="true" /> Tentar de novo
+      </button>
     </div>
   );
 }
@@ -185,7 +202,12 @@ export function ProfilePage() {
   if (error) {
     return (
       <div className="feed">
-        <div role="alert" className="feed-error"><p>{error.message}</p></div>
+        <LoadError
+          mensagem={error.status === 404
+            ? 'Esse perfil não existe ou mudou de @.'
+            : 'Não deu para carregar o perfil. Confira sua conexão.'}
+          onRetry={reload}
+        />
       </div>
     );
   }
@@ -227,6 +249,8 @@ export function ProfilePage() {
         onEditar={() => setEditingFavorites(true)}
       />
 
+      {/* Fica presa no topo ao rolar, como as abas do feed. */}
+      <div className="feed-tabs-bar profile-tabs-bar">
       <div role="tablist" aria-label="Conteúdo do perfil" className="feed-tabs profile-tabs">
         {[['posts', 'Posts'], ['comentarios', 'Comentários']].map(([chave, rotulo]) => (
           <button
@@ -242,6 +266,7 @@ export function ProfilePage() {
             {rotulo}
           </button>
         ))}
+      </div>
       </div>
 
       <div role="tabpanel" id="painel-posts" aria-labelledby="aba-posts" hidden={aba !== 'posts'}>
@@ -294,6 +319,7 @@ export function ProfilePage() {
           onSaved={(favoritos) => {
             setData((p) => ({ ...p, favoritos }));
             setEditingFavorites(false);
+            setNotice('Favoritos salvos.');
           }}
         />
       )}

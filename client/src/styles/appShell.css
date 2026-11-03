@@ -10,6 +10,8 @@
   --destaque: #2ba84a;
   --destaque-claro: #3fc463;
   --erro: #f55b64;
+  /* Fundo do contador de notificações: vermelho mais fechado, para o número branco ler bem (5:1). */
+  --erro-forte: #cf2f3c;
   --azul: #3d7cf5;
   --app-header-h: 3.5rem;
   --gutter-left: max(16px, env(safe-area-inset-left, 0px));
@@ -98,7 +100,7 @@
   padding: 0 .3rem;
   border: 2px solid var(--background);
   border-radius: 999px;
-  background: var(--erro);
+  background: var(--erro-forte);
   color: #fff;
   font-size: .62rem;
   font-weight: 700;
@@ -1112,6 +1114,13 @@ button.track-row:hover {
   aspect-ratio: 3 / 1;
   object-fit: cover;
   background: var(--superficie-2);
+}
+
+@media (max-width: 575.98px) {
+  /* Sem capa escolhida, o degradê não precisa empurrar o conteúdo tão para baixo. */
+  .profile-banner--padrao {
+    aspect-ratio: 5 / 1;
+  }
 }
 
 .profile-banner--padrao {
@@ -2300,8 +2309,12 @@ button.track-row:hover {
 }
 
 /* Abas Posts | Comentários do perfil (mesmo visual das abas do feed) */
+.profile-tabs-bar {
+  margin-top: .5rem;
+}
+
 .profile-tabs {
-  margin: 1.5rem 0 1rem;
+  margin: 0;
 }
 
 /* "Respondendo a @fulano" nos comentários listados fora da conversa */
@@ -2517,7 +2530,8 @@ button.lyrics-picker__verso {
 
   h2 {
     margin: 0;
-    font-size: 1rem;
+    font-size: 1.05rem;
+    font-weight: 600;
   }
 
   h3 {
@@ -2538,27 +2552,46 @@ button.lyrics-picker__verso {
   min-height: 2.25rem;
 }
 
-button.profile-favorites__vazio {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  gap: .5rem;
-  min-height: 4.5rem;
-  padding: .75rem 1rem;
+.profile-favorites__vazio {
+  display: grid;
+  justify-items: center;
+  gap: .75rem;
+  padding: 1.25rem 1rem;
   border: 1px dashed var(--linhas);
-  border-radius: 14px;
-  background: none;
-  color: var(--texto-suave);
-  font-size: .9rem;
+  border-radius: 18px;
   text-align: center;
 
-  i {
-    color: var(--destaque);
+  p {
+    max-width: 30ch;
+    margin: 0;
+    color: var(--texto-suave);
+    font-size: .92rem;
+    line-height: 1.45;
   }
 
-  &:hover {
-    border-color: var(--destaque);
-    color: var(--texto);
+  .feed-empty__action {
+    margin-top: 0;
+  }
+}
+
+/* Três capas vazias sugerem o que vai aparecer ali. */
+.profile-favorites__capas {
+  display: flex;
+
+  span {
+    width: 2.75rem;
+    aspect-ratio: 1;
+    border: 1px solid var(--linhas);
+    border-radius: 8px;
+    background: linear-gradient(135deg, rgba(43, 168, 74, .28), rgba(43, 168, 74, .06));
+  }
+
+  span + span {
+    margin-left: -.6rem;
+  }
+
+  span:nth-child(2) {
+    transform: translateY(-.3rem);
   }
 }
 
@@ -2591,22 +2624,47 @@ button.profile-favorites__vazio {
   border-radius: 50%;
 }
 
-.favorites-grid__titulo,
+.favorites-grid__link {
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+  border-radius: 10px;
+  color: inherit;
+  text-decoration: none;
+
+  &:hover {
+    color: inherit;
+  }
+
+  &:hover .favorite-cover {
+    box-shadow: 0 0 0 2px var(--destaque);
+  }
+
+  &:focus-visible {
+    outline: 2px solid var(--destaque);
+    outline-offset: 3px;
+  }
+}
+
+/* Título em até duas linhas: no celular cada capa tem uns 60px, e uma linha só cortava quase tudo. */
+.favorites-grid__titulo {
+  display: -webkit-box;
+  margin-top: .4rem;
+  overflow: hidden;
+  font-size: .78rem;
+  font-weight: 600;
+  line-height: 1.25;
+  overflow-wrap: anywhere;
+  -webkit-box-orient: vertical;
+  -webkit-line-clamp: 2;
+}
+
 .favorites-grid__artista {
   overflow: hidden;
+  color: var(--texto-suave);
+  font-size: .75rem;
   white-space: nowrap;
   text-overflow: ellipsis;
-}
-
-.favorites-grid__titulo {
-  margin-top: .35rem;
-  font-size: .74rem;
-  font-weight: 600;
-}
-
-.favorites-grid__artista {
-  color: var(--texto-suave);
-  font-size: .68rem;
 }
 
 .favorites-editor {
@@ -2646,15 +2704,23 @@ button.profile-favorites__vazio {
   gap: .15rem;
 
   button {
+    position: relative;
     display: grid;
     place-items: center;
-    width: 1.45rem;
-    height: 1.45rem;
+    width: 1.6rem;
+    height: 1.6rem;
     padding: 0;
     border: 0;
     border-radius: 50%;
-    background: rgba(0, 5, 5, .78);
+    background: rgba(0, 5, 5, .82);
     color: var(--texto);
-    font-size: .7rem;
+    font-size: .75rem;
+
+    /* Área de toque de 44px sem aumentar o botão desenhado. */
+    &::after {
+      content: '';
+      position: absolute;
+      inset: -.5rem;
+    }
   }
 }

@@ -57,10 +57,20 @@ export function EditFavoritesModal({ favoritos, onClose, onSaved }) {
     }
   };
 
+  // Fechar com escolhas não salvas pergunta antes (evita perder a lista por um toque no X ou no Esc).
+  const alterado = SECOES_FAVORITOS.some(({ chave }) => {
+    const antes = listaDeFavoritos(favoritos, chave).map((f) => f.id).join();
+    return antes !== rascunho[chave].map((f) => f.id).join();
+  });
+  const fechar = () => {
+    if (alterado && !window.confirm('Descartar as mudanças nos favoritos?')) return;
+    onClose();
+  };
+
   const resultados = search.results.filter((r) => r && r.titulo && r.capa);
 
   return (
-    <Modal open title="Favoritos" onClose={onClose} variant="sheet">
+    <Modal open title="Favoritos" onClose={fechar} variant="sheet">
       <div className="composer-step favorites-editor">
         <div role="tablist" aria-label="Tipo de favorito" className="composer-tabs">
           {SECOES_FAVORITOS.map(({ chave, aba: rotulo }) => (
@@ -146,7 +156,7 @@ export function EditFavoritesModal({ favoritos, onClose, onSaved }) {
 
         {erro && <p role="alert" className="composer-error">{erro}</p>}
         <div className="lyrics-picker__acoes">
-          <button type="button" className="composer-link" onClick={onClose}>Cancelar</button>
+          <button type="button" className="composer-link" onClick={fechar}>Cancelar</button>
           <button type="button" className="composer-submit" disabled={salvando} onClick={salvar}>
             {salvando ? 'Salvando…' : 'Salvar'}
           </button>

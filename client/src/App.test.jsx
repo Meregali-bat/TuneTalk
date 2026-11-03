@@ -80,9 +80,9 @@ describe('rotas da aplicação', () => {
   });
 
   it('/perfil/:id e /post/:id carregam as páginas certas', async () => {
-    usersApi.profile.mockRejectedValue(new Error('Usuário não encontrado.'));
+    usersApi.profile.mockRejectedValue(Object.assign(new Error('Usuário não encontrado.'), { status: 404 }));
     renderAt('/perfil/5');
-    expect(await screen.findByText('Usuário não encontrado.')).toBeInTheDocument();
+    expect(await screen.findByText('Esse perfil não existe ou mudou de @.')).toBeInTheDocument();
     expect(usersApi.profile).toHaveBeenCalledWith('5');
   });
 
