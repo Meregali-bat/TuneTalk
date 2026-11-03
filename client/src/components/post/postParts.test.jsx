@@ -116,6 +116,22 @@ describe('PlayButton', () => {
     expect(screen.getByRole('button', { name: 'Tocar prévia' })).toBeInTheDocument();
   });
 
+  it('só uma prévia toca por vez: começar outra pausa a que estava tocando', async () => {
+    const pausados = [];
+    pause.mockImplementation(function pausar() { pausados.push(this); });
+    vi.spyOn(window.HTMLMediaElement.prototype, 'paused', 'get').mockReturnValue(false);
+    const { container } = render(
+      <>
+        <PlayButton src="a.mp3" rotulo="A" />
+        <PlayButton src="b.mp3" rotulo="B" />
+      </>,
+    );
+    const [audioA] = container.querySelectorAll('audio');
+    await userEvent.click(screen.getByRole('button', { name: 'Tocar prévia de A' }));
+    await userEvent.click(screen.getByRole('button', { name: 'Tocar prévia de B' }));
+    expect(pausados).toContain(audioA);
+  });
+
   it('volta ao ícone de play quando o áudio termina', async () => {
     const { container } = render(<PlayButton src="x.mp3" />);
     await userEvent.click(screen.getByRole('button', { name: 'Tocar prévia' }));

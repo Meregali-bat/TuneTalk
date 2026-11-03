@@ -87,7 +87,7 @@ describe('CreatePost', () => {
     await open();
     await addMusic();
     await search('help');
-    await userEvent.click(await screen.findByRole('button', { name: /Help!/ }));
+    await userEvent.click(await screen.findByRole('button', { name: /^Help!/ }));
   };
 
   it('fica fechado até clicar no botão', () => {
@@ -145,8 +145,11 @@ describe('CreatePost', () => {
     await search('help');
 
     const results = await screen.findByRole('list', { name: 'Resultados' });
-    const items = within(results).getAllByRole('button');
+    const items = within(results).getAllByRole('button', { name: /^(?!Tocar)/ });
     expect(items.map((item) => item.textContent)).toEqual(['Help!The Beatles · 2:18', 'YesterdayThe Beatles · 2:05']);
+    // Ouvir antes de escolher: só quem tem prévia ganha o botão.
+    expect(within(results).getByRole('button', { name: 'Tocar prévia de Help!' })).toBeInTheDocument();
+    expect(within(results).queryByRole('button', { name: 'Tocar prévia de Yesterday' })).toBeNull();
     expect(musicApi.search).toHaveBeenCalledTimes(1);
     expect(musicApi.search).toHaveBeenCalledWith('help');
   });
@@ -246,7 +249,14 @@ describe('CreatePost', () => {
     await userEvent.click(screen.getByRole('button', { name: 'Trocar música' }));
 
     expect(screen.getByLabelText('Buscar música')).toHaveValue('help');
-    expect(screen.getByRole('button', { name: /Yesterday/ })).toBeInTheDocument();
+    expect(screen.getByRole('button', { name: /^Yesterday/ })).toBeInTheDocument();
+  });
+
+  it('a música escolhida também tem o botão de ouvir a prévia', async () => {
+    render(<CreatePost onCreated={vi.fn()} />);
+    await chooseHelp();
+    const escolhida = screen.getByRole('group', { name: 'Música escolhida' });
+    expect(within(escolhida).getByRole('button', { name: 'Tocar prévia de Help!' })).toBeInTheDocument();
   });
 
   it('"Remover música" tira a música e a nota', async () => {
@@ -306,7 +316,7 @@ describe('CreatePost', () => {
       expect(screen.queryByRole('button', { name: 'Adicionar trecho da letra' })).toBeNull();
       await addMusic();
       await search('help');
-      await userEvent.click(await screen.findByRole('button', { name: /Help!/ }));
+      await userEvent.click(await screen.findByRole('button', { name: /^Help!/ }));
       expect(screen.getByRole('button', { name: 'Adicionar trecho da letra' })).toBeInTheDocument();
     });
 
@@ -370,7 +380,7 @@ describe('CreatePost', () => {
       await userEvent.click(screen.getByRole('button', { name: 'Usar trecho' }));
 
       await userEvent.click(screen.getByRole('button', { name: 'Trocar música' }));
-      await userEvent.click(screen.getByRole('button', { name: /Yesterday/ }));
+      await userEvent.click(screen.getByRole('button', { name: /^Yesterday/ }));
       expect(screen.queryByLabelText(/Trecho da letra/)).toBeNull();
     });
 

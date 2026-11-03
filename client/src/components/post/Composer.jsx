@@ -9,6 +9,7 @@ import { ImageCropper } from './ImageCropper.jsx';
 import { useMentions } from './useMentions.js';
 import { LyricsPicker } from './LyricsPicker.jsx';
 import { LyricQuote } from './LyricQuote.jsx';
+import { PlayButton } from './PlayButton.jsx';
 
 const TEXTO_MAX = 500;
 
@@ -113,11 +114,15 @@ function SearchStep({ query, onQueryChange, tipo, onTipoChange, search, onSelect
       {search.status === 'done' && search.results.length > 0 && (
         <ul className="composer-results" aria-label="Resultados">
           {search.results.map((track) => (
-            <li key={track.id}>
+            <li key={track.id} className="composer-results__item">
               <button type="button" className="track-row" onClick={() => onSelect(track)}>
                 <TrackInfo track={track} />
                 <i className="bi bi-chevron-right track-row__chevron" aria-hidden="true" />
               </button>
+              {/* Ouvir antes de escolher (faixas têm prévia de 30 s; álbuns não). */}
+              {track.tipo !== 'album' && track.preview && (
+                <PlayButton src={track.preview} titulo={track.titulo} artista={track.artista} rotulo={track.titulo} size="sm" />
+              )}
             </li>
           ))}
         </ul>
@@ -380,8 +385,17 @@ export function Composer({
             className="track-row track-row--selected"
           >
             <TrackInfo track={track} />
-            <button type="button" className="composer-link" onClick={() => setSearching(true)}>
-              {track.tipo === 'album' ? 'Trocar álbum' : 'Trocar música'}
+            {track.tipo !== 'album' && track.preview && (
+              <PlayButton src={track.preview} titulo={track.titulo} artista={track.artista} rotulo={track.titulo} size="sm" />
+            )}
+            {/* "Trocar" curto para sobrar espaço ao título (o nome completo fica para o leitor de tela). */}
+            <button
+              type="button"
+              className="composer-link"
+              aria-label={track.tipo === 'album' ? 'Trocar álbum' : 'Trocar música'}
+              onClick={() => setSearching(true)}
+            >
+              Trocar
             </button>
             <button type="button" className="icon-button" aria-label="Remover música" onClick={removeTrack}>
               <i className="bi bi-x-lg" aria-hidden="true" />

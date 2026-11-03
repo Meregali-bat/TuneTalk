@@ -885,6 +885,23 @@
   list-style: none;
 }
 
+.composer-results__item {
+  display: flex;
+  align-items: center;
+  gap: .25rem;
+  padding-right: .5rem;
+
+  .track-row {
+    flex: 1;
+  }
+}
+
+.play-button--sm {
+  width: 2.5rem;
+  height: 2.5rem;
+  font-size: 1.15rem;
+}
+
 .track-row {
   display: flex;
   align-items: center;
