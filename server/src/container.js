@@ -37,7 +37,7 @@ export function buildContainer(config) {
   const mailer = config.resendApiKey
     ? createResendMailer({ apiKey: config.resendApiKey, from: config.emailFrom })
     : createConsoleMailer();
-  const postService = createPostService({ posts, likes, notifications });
+  const postService = createPostService({ posts, likes, notifications, users });
 
   return {
     authService: createAuthService({ users, passwords }),

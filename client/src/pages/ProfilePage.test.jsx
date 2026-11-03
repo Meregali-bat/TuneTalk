@@ -1,13 +1,13 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest';
-import { screen, within } from '@testing-library/react';
+import { screen, waitFor, within } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { ProfilePage } from './ProfilePage.jsx';
-import { musicApi, usersApi } from '../api/index.js';
+import { musicApi, postsApi, usersApi } from '../api/index.js';
 import { makeAuth, renderWithProviders } from '../test/render.jsx';
 
 vi.mock('../api/index.js', () => ({
   usersApi: { profile: vi.fn(), follow: vi.fn(), unfollow: vi.fn(), updateMe: vi.fn(), changePassword: vi.fn() },
-  postsApi: { like: vi.fn(), unlike: vi.fn(), remove: vi.fn(), create: vi.fn() },
+  postsApi: { like: vi.fn(), unlike: vi.fn(), remove: vi.fn(), create: vi.fn(), pin: vi.fn(), unpin: vi.fn() },
   musicApi: { search: vi.fn() },
 }));
 
@@ -121,6 +121,25 @@ describe('ProfilePage', () => {
       renderProfile(1);
       expect(await screen.findByRole('button', { name: 'Editar perfil' })).toBeInTheDocument();
       expect(screen.queryByRole('button', { name: 'Seguir' })).toBeNull();
+    });
+
+    it('fixar um post recarrega o perfil (ele vai para o topo, com a etiqueta)', async () => {
+      const meuPost = (id, extra) => ({ ...post(id, 8), autor: { id: 1, nome: 'ana', fotoPerfil: 'a.png' }, fixado: false, ...extra });
+      usersApi.profile.mockResolvedValue(profile({ usuario: ana, posts: [meuPost(10), meuPost(11)] }));
+      postsApi.pin.mockResolvedValue(null);
+      renderProfile(1);
+
+      await screen.findByText('post 11');
+      usersApi.profile.mockResolvedValue(profile({ usuario: ana, posts: [meuPost(11, { fixado: true }), meuPost(10)] }));
+      const cards = screen.getAllByRole('article');
+      await userEvent.click(within(cards[1]).getByRole('button', { name: 'Opções do post' }));
+      await userEvent.click(within(cards[1]).getByRole('menuitem', { name: 'Fixar no perfil' }));
+
+      expect(postsApi.pin).toHaveBeenCalledWith(11);
+      await waitFor(() => expect(usersApi.profile).toHaveBeenCalledTimes(2));
+      const primeiro = (await screen.findAllByRole('article'))[0];
+      expect(within(primeiro).getByText('Fixado')).toBeInTheDocument();
+      expect(within(primeiro).getByText('post 11')).toBeInTheDocument();
     });
 
     it('troca a senha e confirma na tela', async () => {

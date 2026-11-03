@@ -94,6 +94,18 @@ describe('API fake da demo (serviços reais + banco em memória)', () => {
     expect((await call('POST', '/auth/login', JSON.stringify({ email: DEMO_LOGIN.email, senha: 'Outra!123' }))).status).toBe(200);
   });
 
+  it('fixar um post leva ele para o topo do perfil', async () => {
+    await login();
+    const perfil = () => call('GET', `/users/${api.currentUserId()}`).then((r) => r.body.posts);
+    const ultimo = (await perfil()).at(-1);
+
+    expect((await call('POST', `/posts/${ultimo.id}/pin`)).status).toBe(204);
+    expect((await perfil())[0]).toMatchObject({ id: ultimo.id, fixado: true });
+
+    await call('DELETE', `/posts/${ultimo.id}/pin`);
+    expect((await perfil()).at(-1)).toMatchObject({ id: ultimo.id, fixado: false });
+  });
+
   it('não deixa apagar post de outra pessoa', async () => {
     await login();
     const [post] = (await call('GET', '/posts?feed=seguindo')).body;

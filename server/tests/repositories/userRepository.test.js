@@ -42,6 +42,16 @@ describe('userRepository (Postgres)', () => {
     });
   });
 
+  it('setPinnedPost fixa e desafixa o post do perfil', async () => {
+    const ana = await factory.user();
+    const post = await db.prisma.post.create({ data: { autorId: ana.id, texto: 'oi' } });
+
+    await repo.setPinnedPost(ana.id, post.id);
+    expect((await db.prisma.usuario.findUnique({ where: { id: ana.id } })).postFixadoId).toBe(post.id);
+    await repo.setPinnedPost(ana.id, null);
+    expect((await db.prisma.usuario.findUnique({ where: { id: ana.id } })).postFixadoId).toBeNull();
+  });
+
   it('findAuthById e updatePassword trocam o hash da senha', async () => {
     const ana = await factory.user({ senha: md5('velha') });
     expect(await repo.findAuthById(ana.id)).toEqual({ id: ana.id, senha: md5('velha') });

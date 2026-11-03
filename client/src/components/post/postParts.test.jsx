@@ -123,6 +123,25 @@ describe('PostMenu', () => {
     expect(screen.queryByRole('menuitem', { name: 'Deletar' })).toBeNull();
   });
 
+  it('com fixar disponível, o autor vê "Fixar no perfil" ou "Desafixar do perfil" antes de deletar', async () => {
+    const onTogglePin = vi.fn();
+    const { rerender } = render(<PostMenu isOwner pinned={false} onTogglePin={onTogglePin} onDelete={vi.fn()} />);
+    await userEvent.click(screen.getByRole('button', { name: 'Opções do post' }));
+    expect(screen.getAllByRole('menuitem').map((i) => i.textContent.trim())).toEqual(['Fixar no perfil', 'Deletar']);
+    await userEvent.click(screen.getByRole('menuitem', { name: 'Fixar no perfil' }));
+    expect(onTogglePin).toHaveBeenCalled();
+
+    rerender(<PostMenu isOwner pinned onTogglePin={onTogglePin} onDelete={vi.fn()} />);
+    await userEvent.click(screen.getByRole('button', { name: 'Opções do post' }));
+    expect(screen.getByRole('menuitem', { name: 'Desafixar do perfil' })).toBeInTheDocument();
+  });
+
+  it('sem fixar disponível (ex.: comentário), não mostra a opção', async () => {
+    render(<PostMenu isOwner onDelete={vi.fn()} />);
+    await userEvent.click(screen.getByRole('button', { name: 'Opções do post' }));
+    expect(screen.queryByRole('menuitem', { name: /fixar/i })).toBeNull();
+  });
+
   it('fica fechado até ser aberto', () => {
     render(<PostMenu isOwner onDelete={vi.fn()} />);
     expect(screen.queryByRole('menu')).toBeNull();

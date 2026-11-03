@@ -17,6 +17,10 @@ export function createUserRepository(prisma) {
       return prisma.usuario.findUnique({ where: { id }, select: { id: true, senha: true } });
     },
 
+    async setPinnedPost(id, postId) {
+      await prisma.usuario.update({ where: { id }, data: { postFixadoId: postId } });
+    },
+
     async updatePassword(id, senhaHash) {
       await prisma.usuario.update({ where: { id }, data: { senha: senhaHash } });
     },

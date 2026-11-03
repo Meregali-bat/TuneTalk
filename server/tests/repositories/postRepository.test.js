@@ -53,6 +53,7 @@ describe('postRepository (Postgres)', () => {
         capa: 'help.jpg',
         releaseDate: '138',
         preview: 'help.mp3',
+        fixado: false,
         autor: { id: ana.id, nome: 'Ana', fotoPerfil: 'ana.png' },
       });
     });
@@ -123,6 +124,22 @@ describe('postRepository (Postgres)', () => {
       [primeira.id, pai.id, 1],
       [segunda.id, pai.id, 0],
     ]);
+  });
+
+  it('marca como fixado só o post que o autor fixou no perfil', async () => {
+    const p1 = await factory.post(ana.id);
+    const p2 = await factory.post(ana.id);
+    await db.prisma.usuario.update({ where: { id: ana.id }, data: { postFixadoId: p1.id } });
+
+    expect((await repo.listByAuthor(ana.id)).map((p) => [p.id, p.fixado])).toEqual([[p2.id, false], [p1.id, true]]);
+    expect((await repo.findById(p1.id)).autor).toEqual({ id: ana.id, nome: 'Ana', fotoPerfil: 'ana.png' });
+  });
+
+  it('apagar o post fixado deixa o perfil sem post fixado', async () => {
+    const post = await factory.post(ana.id);
+    await db.prisma.usuario.update({ where: { id: ana.id }, data: { postFixadoId: post.id } });
+    await repo.remove(post.id);
+    expect((await db.prisma.usuario.findUnique({ where: { id: ana.id } })).postFixadoId).toBeNull();
   });
 
   it('listByAuthor devolve só os posts do autor, mais novos primeiro', async () => {

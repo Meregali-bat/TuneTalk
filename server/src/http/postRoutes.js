@@ -33,6 +33,16 @@ export function createPostRoutes({ postService }) {
     res.status(204).end();
   }));
 
+  router.post('/:id/pin', asyncRoute(async (req, res) => {
+    await postService.pin(req.params.id, currentUserId(req));
+    res.status(204).end();
+  }));
+
+  router.delete('/:id/pin', asyncRoute(async (req, res) => {
+    await postService.unpin(req.params.id, currentUserId(req));
+    res.status(204).end();
+  }));
+
   router.post('/:id/like', asyncRoute(async (req, res) => {
     res.json({ likes: await postService.like(req.params.id, currentUserId(req)) });
   }));

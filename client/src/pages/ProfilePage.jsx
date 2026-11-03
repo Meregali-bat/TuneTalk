@@ -172,7 +172,9 @@ export function ProfilePage() {
         <EmptyPosts nome={profile.usuario.nome} isOwnProfile={isOwnProfile} onCompose={() => setComposerOpen(true)} />
       ) : (
         <div className="feed-list">
-          {profile.posts.map((post) => <PostCard key={post.id} post={post} onDeleted={removePost} />)}
+          {profile.posts.map((post) => (
+            <PostCard key={post.id} post={post} onDeleted={removePost} onPinChange={reload} showPinned />
+          ))}
         </div>
       )}
 

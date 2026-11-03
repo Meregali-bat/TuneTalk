@@ -5,7 +5,9 @@ import { PostCard } from './PostCard.jsx';
 import { postsApi } from '../../api/index.js';
 import { renderWithProviders } from '../../test/render.jsx';
 
-vi.mock('../../api/index.js', () => ({ postsApi: { like: vi.fn(), unlike: vi.fn(), remove: vi.fn() } }));
+vi.mock('../../api/index.js', () => ({
+  postsApi: { like: vi.fn(), unlike: vi.fn(), remove: vi.fn(), pin: vi.fn(), unpin: vi.fn() },
+}));
 
 const musicPost = {
   id: 10,
@@ -97,6 +99,47 @@ describe('PostCard', () => {
     renderWithProviders(<PostCard post={musicPost} variant="detail" />);
     expect(screen.getByText('que som').closest('a')).toBeNull();
     expect(screen.getByRole('article')).toHaveClass('post-card--detail');
+  });
+
+  describe('fixar no perfil', () => {
+    const meu = { ...musicPost, autor: { id: 1, nome: 'Ana', fotoPerfil: 'a.png' }, fixado: false };
+    const abrirMenu = () => userEvent.click(screen.getByRole('button', { name: 'Opções do post' }));
+
+    it('o autor fixa pelo menu e avisa quem mostra o card', async () => {
+      postsApi.pin.mockResolvedValue(null);
+      const onPinChange = vi.fn();
+      renderWithProviders(<PostCard post={meu} onPinChange={onPinChange} />);
+
+      await abrirMenu();
+      await userEvent.click(screen.getByRole('menuitem', { name: 'Fixar no perfil' }));
+
+      expect(postsApi.pin).toHaveBeenCalledWith(10);
+      expect(onPinChange).toHaveBeenCalledWith(10, true);
+      await abrirMenu();
+      expect(screen.getByRole('menuitem', { name: 'Desafixar do perfil' })).toBeInTheDocument();
+    });
+
+    it('desafixa o post fixado', async () => {
+      postsApi.unpin.mockResolvedValue(null);
+      renderWithProviders(<PostCard post={{ ...meu, fixado: true }} />);
+      await abrirMenu();
+      await userEvent.click(screen.getByRole('menuitem', { name: 'Desafixar do perfil' }));
+      expect(postsApi.unpin).toHaveBeenCalledWith(10);
+    });
+
+    it('comentário não pode ser fixado', async () => {
+      renderWithProviders(<PostCard post={{ ...meu, parentId: 3 }} />);
+      await abrirMenu();
+      expect(screen.queryByRole('menuitem', { name: /fixar/i })).toBeNull();
+    });
+
+    it('no perfil (showPinned), o post fixado tem a etiqueta "Fixado"; no feed, não', () => {
+      const { unmount } = renderWithProviders(<PostCard post={{ ...meu, fixado: true }} showPinned />);
+      expect(screen.getByText('Fixado')).toBeInTheDocument();
+      unmount();
+      renderWithProviders(<PostCard post={{ ...meu, fixado: true }} />);
+      expect(screen.queryByText('Fixado')).toBeNull();
+    });
   });
 
   it('usa a contagem de comentários informada quando fornecida', () => {

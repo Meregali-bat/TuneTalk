@@ -1,4 +1,4 @@
-import { useId } from 'react';
+import { useEffect, useId, useState } from 'react';
 import { Link } from 'react-router-dom';
 import { useAuth } from '../../auth/AuthContext.jsx';
 import { postsApi } from '../../api/index.js';
@@ -40,11 +40,24 @@ function MusicBlock({ post, postUrl }) {
 }
 
 // variant: "feed" (padrão), "detail" (post aberto na página dele) ou "reply" (resposta dentro de um post).
-export function PostCard({ post, onDeleted, commentCount = post.quantidadeComentarios, showMenu = true, variant = 'feed' }) {
+// showPinned: mostra a etiqueta "Fixado" (só faz sentido no perfil do autor).
+export function PostCard({
+  post, onDeleted, onPinChange, commentCount = post.quantidadeComentarios, showMenu = true, showPinned = false, variant = 'feed',
+}) {
   const { user } = useAuth();
+  const [fixado, setFixado] = useState(Boolean(post.fixado));
+  useEffect(() => setFixado(Boolean(post.fixado)), [post.fixado]);
+  const isOwner = user?.id === post.autor.id;
   const authorId = useId();
   const postUrl = `/post/${post.id}`;
   const profileUrl = `/perfil/${post.autor.id}`;
+
+  const togglePin = async () => {
+    const novo = !fixado;
+    await (novo ? postsApi.pin(post.id) : postsApi.unpin(post.id));
+    setFixado(novo);
+    onPinChange?.(post.id, novo);
+  };
 
   const handleDelete = async () => {
     await postsApi.remove(post.id);
@@ -56,6 +69,9 @@ export function PostCard({ post, onDeleted, commentCount = post.quantidadeComent
       className={`post-card post-card--${variant}`}
       aria-label={post.titulo ? `Post de ${post.autor.nome} sobre ${post.titulo}` : `Post de ${post.autor.nome}`}
     >
+      {showPinned && fixado && (
+        <p className="post-card__pinned"><i className="bi bi-pin-angle-fill" aria-hidden="true" /> Fixado</p>
+      )}
       <header className="post-card__header">
         <Link to={profileUrl} className="post-card__avatar" tabIndex={-1} aria-hidden="true">
           <img src={post.autor.fotoPerfil} alt="" />
@@ -64,7 +80,14 @@ export function PostCard({ post, onDeleted, commentCount = post.quantidadeComent
           <Link to={profileUrl} className="post-card__author" id={authorId}>{post.autor.nome}</Link>
           <time className="post-card__time" dateTime={post.data}>{relativeTime(post.data)}</time>
         </div>
-        {showMenu && <PostMenu isOwner={user?.id === post.autor.id} onDelete={handleDelete} />}
+        {showMenu && (
+          <PostMenu
+            isOwner={isOwner}
+            onDelete={handleDelete}
+            pinned={isOwner && !post.parentId ? fixado : undefined}
+            onTogglePin={togglePin}
+          />
+        )}
       </header>
 
       {post.texto && variant === 'detail' && (

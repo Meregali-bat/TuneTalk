@@ -22,7 +22,7 @@ export function createMemoryRepositories(state, onChange) {
   const postRow = (post) => toPost({
     ...post,
     createdAt: new Date(post.createdAt),
-    autor: author(post.autorId),
+    autor: { ...author(post.autorId), postFixadoId: userById(post.autorId).postFixadoId ?? null },
     _count: {
       curtidas: state.curtidas.filter((c) => c.postId === post.id).length,
       respostas: state.posts.filter((p) => p.parentId === post.id).length,
@@ -41,6 +41,10 @@ export function createMemoryRepositories(state, onChange) {
     async findAuthById(id) {
       const user = userById(id);
       return user ? { id: user.id, senha: user.senha } : null;
+    },
+    async setPinnedPost(id, postId) {
+      userById(id).postFixadoId = postId;
+      changed();
     },
     async updatePassword(id, senhaHash) {
       userById(id).senha = senhaHash;
@@ -152,6 +156,7 @@ export function createMemoryRepositories(state, onChange) {
         }
       }
       state.posts = state.posts.filter((p) => !removed.has(p.id));
+      state.usuarios.forEach((u) => { if (removed.has(u.postFixadoId)) u.postFixadoId = null; });
       state.curtidas = state.curtidas.filter((c) => !removed.has(c.postId));
       state.notificacoes = state.notificacoes.filter((n) => !removed.has(n.postId));
       changed();

@@ -93,6 +93,7 @@ para testar rotas sem banco e serviços sem HTTP.
 | POST | `/api/posts` | cria post; com `parentId` vira comentário. Música opcional (com música, `nota` de 0 a 10 é obrigatória) |
 | GET / DELETE | `/api/posts/:id` | `{ post, pai, respostas }` / apagar com as respostas (só o autor) |
 | POST / DELETE | `/api/posts/:id/like` | curtir / descurtir → `{ likes }` |
+| POST / DELETE | `/api/posts/:id/pin` | fixar / desafixar no perfil (só o autor, só posts principais; um por perfil) |
 | GET | `/api/users/:id` | perfil, posts, seguidores e seguindo |
 | PUT | `/api/users/me` | multipart: `nome`, `bio`, `foto?` |
 | PUT | `/api/users/me/password` | `{ senhaAtual, novaSenha }` → troca a senha e desconecta os outros aparelhos |

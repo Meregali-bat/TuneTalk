@@ -31,6 +31,7 @@ export function createPostService({
   posts,
   likes,
   notifications,
+  users,
   shuffle = fisherYatesShuffle,
   now = () => new Date(),
 }) {
@@ -59,8 +60,10 @@ export function createPostService({
       return markLiked(await posts.listFromFollowed(viewerId), viewerId);
     },
 
+    // O post fixado vem primeiro; os outros seguem do mais novo para o mais antigo.
     async byAuthor(autorId, viewerId) {
-      return markLiked(await posts.listByAuthor(autorId), viewerId);
+      const list = await posts.listByAuthor(autorId);
+      return markLiked([...list.filter((p) => p.fixado), ...list.filter((p) => !p.fixado)], viewerId);
     },
 
     async get(postId, viewerId) {
@@ -102,6 +105,19 @@ export function createPostService({
       const post = await findOrFail(postId);
       if (post.autor.id !== usuarioId) throw forbidden('Você só pode apagar seus próprios posts.');
       await posts.remove(postId);
+    },
+
+    async pin(postId, usuarioId) {
+      const post = await findOrFail(postId);
+      if (post.autor.id !== usuarioId) throw forbidden('Você só pode fixar seus próprios posts.');
+      if (post.parentId) throw badRequest('Só dá para fixar posts, não comentários.');
+      await users.setPinnedPost(usuarioId, postId);
+    },
+
+    async unpin(postId, usuarioId) {
+      const post = await findOrFail(postId);
+      if (post.autor.id !== usuarioId) throw forbidden('Você só pode desafixar seus próprios posts.');
+      if (post.fixado) await users.setPinnedPost(usuarioId, null);
     },
 
     async like(postId, usuarioId) {

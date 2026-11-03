@@ -16,22 +16,25 @@ enum TipoNotificacao {
 }
 
 model Usuario {
-  id         Int     @id @default(autoincrement())
+  id           Int     @id @default(autoincrement())
   // Nome de usuário: escolhido depois do cadastro, por isso pode ficar vazio até lá.
-  nome       String? @unique @db.VarChar(45)
-  email      String  @unique @db.VarChar(100)
-  senha      String  @db.VarChar(65)
-  fotoPerfil String? @map("foto_perfil") @db.VarChar(255)
-  bio        String? @db.VarChar(255)
-  admin      Boolean @default(false)
+  nome         String? @unique @db.VarChar(45)
+  email        String  @unique @db.VarChar(100)
+  senha        String  @db.VarChar(65)
+  fotoPerfil   String? @map("foto_perfil") @db.VarChar(255)
+  bio          String? @db.VarChar(255)
+  admin        Boolean @default(false)
+  // Post que aparece primeiro no perfil. Se o post for apagado, volta a ficar vazio.
+  postFixadoId Int?    @unique @map("post_fixado_id")
 
   posts                 Post[]
   curtidas              Curtida[]
-  seguindo              Seguimento[]  @relation("seguidor")
-  seguidores            Seguimento[]  @relation("seguido")
-  notificacoesRecebidas Notificacao[] @relation("destinatario")
-  notificacoesEnviadas  Notificacao[] @relation("autor")
+  seguindo              Seguimento[]       @relation("seguidor")
+  seguidores            Seguimento[]       @relation("seguido")
+  notificacoesRecebidas Notificacao[]      @relation("destinatario")
+  notificacoesEnviadas  Notificacao[]      @relation("autor")
   redefinicoesSenha     RedefinicaoSenha[]
+  postFixado            Post?              @relation("fixado", fields: [postFixadoId], references: [id], onDelete: SetNull)
 
   @@map("usuarios")
 }
@@ -58,6 +61,7 @@ model Post {
   autor        Usuario       @relation(fields: [autorId], references: [id], onDelete: Cascade)
   pai          Post?         @relation("respostas", fields: [parentId], references: [id], onDelete: Cascade)
   respostas    Post[]        @relation("respostas")
+  fixadoPor    Usuario?      @relation("fixado")
   curtidas     Curtida[]
   notificacoes Notificacao[]
 

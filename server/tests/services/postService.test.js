@@ -7,6 +7,7 @@ describe('postService', () => {
   let posts;
   let likes;
   let notifications;
+  let users;
   let service;
   const now = new Date('2024-05-05T12:00:00Z');
 
@@ -28,10 +29,12 @@ describe('postService', () => {
       countByPost: vi.fn().mockResolvedValue(6),
     };
     notifications = { create: vi.fn(), removeLike: vi.fn() };
+    users = { setPinnedPost: vi.fn() };
     service = createPostService({
       posts,
       likes,
       notifications,
+      users,
       shuffle: (list) => [...list].reverse(),
       now: () => now,
     });
@@ -48,6 +51,11 @@ describe('postService', () => {
       const feed = await service.following(7);
       expect(posts.listFromFollowed).toHaveBeenCalledWith(7);
       expect(feed).toEqual([{ ...post(3), curtido: true }]);
+    });
+
+    it('byAuthor põe o post fixado primeiro, mantendo a ordem dos outros', async () => {
+      posts.listByAuthor.mockResolvedValue([post(9), post(8), post(7, 2, { fixado: true }), post(6)]);
+      expect((await service.byAuthor(2, 7)).map((p) => p.id)).toEqual([7, 9, 8, 6]);
     });
 
     it('byAuthor lista os posts de um autor marcados para quem vê', async () => {
@@ -205,6 +213,44 @@ describe('postService', () => {
     it('lança 404 quando o post não existe', async () => {
       posts.findById.mockResolvedValue(null);
       await expect(service.remove(1, 2)).rejects.toMatchObject({ status: 404 });
+    });
+  });
+
+  describe('fixar no perfil', () => {
+    it('o autor fixa o próprio post', async () => {
+      await service.pin(1, 2);
+      expect(users.setPinnedPost).toHaveBeenCalledWith(2, 1);
+    });
+
+    it('não fixa post de outra pessoa', async () => {
+      await expect(service.pin(1, 7)).rejects.toMatchObject({ status: 403, message: 'Você só pode fixar seus próprios posts.' });
+      expect(users.setPinnedPost).not.toHaveBeenCalled();
+    });
+
+    it('não fixa comentário', async () => {
+      posts.findById.mockResolvedValue(post(1, 2, { parentId: 5 }));
+      await expect(service.pin(1, 2)).rejects.toMatchObject({ status: 400, message: 'Só dá para fixar posts, não comentários.' });
+    });
+
+    it('lança 404 para post inexistente', async () => {
+      posts.findById.mockResolvedValue(null);
+      await expect(service.pin(1, 2)).rejects.toMatchObject({ status: 404 });
+    });
+
+    it('desafixa só se aquele post estiver fixado', async () => {
+      posts.findById.mockResolvedValue(post(1, 2, { fixado: true }));
+      await service.unpin(1, 2);
+      expect(users.setPinnedPost).toHaveBeenCalledWith(2, null);
+
+      users.setPinnedPost.mockClear();
+      posts.findById.mockResolvedValue(post(1, 2, { fixado: false }));
+      await service.unpin(1, 2);
+      expect(users.setPinnedPost).not.toHaveBeenCalled();
+    });
+
+    it('não desafixa post de outra pessoa', async () => {
+      posts.findById.mockResolvedValue(post(1, 2, { fixado: true }));
+      await expect(service.unpin(1, 7)).rejects.toMatchObject({ status: 403 });
     });
   });
 

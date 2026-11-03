@@ -55,7 +55,7 @@ export function createFakeApi({ storage = globalThis.localStorage } = {}) {
   const build = () => {
     const repos = createMemoryRepositories(state, () => writeState(storage, state));
     const postService = createPostService({
-      posts: repos.posts, likes: repos.likes, notifications: repos.notifications,
+      posts: repos.posts, likes: repos.likes, notifications: repos.notifications, users: repos.users,
     });
     services = {
       auth: createAuthService({ users: repos.users, passwords }),
@@ -122,6 +122,8 @@ export function createFakeApi({ storage = globalThis.localStorage } = {}) {
     ['POST', /^\/posts$/, async ({ body }) => ok({ id: await services.posts.create(me(), body) }, 201)],
     ['GET', /^\/posts\/(\d+)$/, async ({ id }) => ok(await services.posts.get(id, me()))],
     ['DELETE', /^\/posts\/(\d+)$/, async ({ id }) => { await services.posts.remove(id, me()); return noContent(); }],
+    ['POST', /^\/posts\/(\d+)\/pin$/, async ({ id }) => { await services.posts.pin(id, me()); return noContent(); }],
+    ['DELETE', /^\/posts\/(\d+)\/pin$/, async ({ id }) => { await services.posts.unpin(id, me()); return noContent(); }],
     ['POST', /^\/posts\/(\d+)\/like$/, async ({ id }) => ok({ likes: await services.posts.like(id, me()) })],
     ['DELETE', /^\/posts\/(\d+)\/like$/, async ({ id }) => ok({ likes: await services.posts.unlike(id, me()) })],
 

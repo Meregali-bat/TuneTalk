@@ -88,6 +88,13 @@ describe('rotas /api/posts', () => {
     expect(deps.postService.unlike).toHaveBeenCalledWith(3, 1);
   });
 
+  it('POST e DELETE /api/posts/:id/pin fixam e desafixam no perfil', async () => {
+    await agent.post('/api/posts/3/pin').expect(204);
+    expect(deps.postService.pin).toHaveBeenCalledWith(3, 1);
+    await agent.delete('/api/posts/3/pin').expect(204);
+    expect(deps.postService.unpin).toHaveBeenCalledWith(3, 1);
+  });
+
   it('POST /api/posts com parentId cria uma resposta (comentário)', async () => {
     deps.postService.create.mockResolvedValue(9);
     const res = await agent.post('/api/posts').send({ texto: 'massa', parentId: 3 });

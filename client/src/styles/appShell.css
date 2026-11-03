@@ -1673,3 +1673,13 @@ button.track-row:hover {
   30% { opacity: .85; }
   100% { opacity: 0; }
 }
+
+.post-card__pinned {
+  display: flex;
+  align-items: center;
+  gap: .4rem;
+  margin: 0 0 .6rem;
+  color: var(--destaque-claro);
+  font-size: .8rem;
+  font-weight: 600;
+}

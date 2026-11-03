@@ -233,6 +233,9 @@
 }
 
 .auth-forgot {
+  /* Escondido até o envio de email (Resend com domínio verificado) estar configurado em produção.
+     Para mostrar de novo, é só apagar esta linha. */
+  display: none;
   align-self: flex-end;
   margin-top: -.35rem;
   color: var(--destaque-claro);

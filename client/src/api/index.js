@@ -15,6 +15,8 @@ export const postsApi = {
   // Comentários também são criados aqui, com parentId.
   create: (post) => request('/posts', { method: 'POST', body: post }),
   remove: (id) => request(`/posts/${id}`, { method: 'DELETE' }),
+  pin: (id) => request(`/posts/${id}/pin`, { method: 'POST' }),
+  unpin: (id) => request(`/posts/${id}/pin`, { method: 'DELETE' }),
   like: async (id) => (await request(`/posts/${id}/like`, { method: 'POST' })).likes,
   unlike: async (id) => (await request(`/posts/${id}/like`, { method: 'DELETE' })).likes,
 };

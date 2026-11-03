@@ -1,5 +1,5 @@
 const POST_INCLUDE = {
-  autor: { select: { id: true, nome: true, fotoPerfil: true } },
+  autor: { select: { id: true, nome: true, fotoPerfil: true, postFixadoId: true } },
   _count: { select: { respostas: true, curtidas: true } },
 };
 
@@ -32,7 +32,8 @@ export function toPost(row) {
     capa: isAlbum ? row.posterAlbum : row.posterMusica,
     releaseDate: row.releaseDate,
     preview: row.musicPreview ?? null,
-    autor: row.autor,
+    fixado: row.autor.postFixadoId === row.id,
+    autor: { id: row.autor.id, nome: row.autor.nome, fotoPerfil: row.autor.fotoPerfil },
   };
 }
 
