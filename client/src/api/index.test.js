@@ -22,6 +22,7 @@ describe('endpoints da API', () => {
     ['postsApi.like', () => postsApi.like(3), ['/posts/3/like', { method: 'POST' }]],
     ['postsApi.unlike', () => postsApi.unlike(3), ['/posts/3/like', { method: 'DELETE' }]],
     ['usersApi.profile', () => usersApi.profile(2), ['/users/2']],
+    ['usersApi.profile (pelo @)', () => usersApi.profile('@bia.souza'), ['/users/by-name/bia.souza']],
     ['usersApi.search', () => usersApi.search('@bi a'), ['/users?q=%40bi%20a']],
     ['authApi.forgotPassword', () => authApi.forgotPassword('a@x.com'), ['/auth/forgot-password', { method: 'POST', body: { email: 'a@x.com' } }]],
     ['authApi.resetPassword', () => authApi.resetPassword('tk', 'Nova!123'), ['/auth/reset-password', { method: 'POST', body: { token: 'tk', novaSenha: 'Nova!123' } }]],

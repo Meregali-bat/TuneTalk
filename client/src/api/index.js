@@ -43,7 +43,10 @@ export const postsApi = {
 };
 
 export const usersApi = {
-  profile: (id) => request(`/users/${id}`),
+  // id numérico ou "@nome" (link das marcações).
+  profile: (id) => (String(id).startsWith('@')
+    ? request(`/users/by-name/${encodeURIComponent(String(id).slice(1))}`)
+    : request(`/users/${id}`)),
   search: (q) => request(`/users?q=${encodeURIComponent(q)}`),
   updateMe: (changes) => request('/users/me', { method: 'PUT', body: changes }),
   uploadPhoto: (file) => uploadImage('/users/me/photo-upload', file),

@@ -1,4 +1,4 @@
-import { useEffect, useId, useRef, useState } from 'react';
+import { useEffect, useId, useLayoutEffect, useRef, useState } from 'react';
 import { musicApi, postsApi } from '../../api/index.js';
 import { useDebouncedValue } from '../../hooks/useDebouncedValue.js';
 import { formatDuration } from '../../utils/postFormat.js';
@@ -6,6 +6,7 @@ import { StarRatingInput } from './StarRatingInput.jsx';
 import { IMAGEM_MAX_MB } from '../../api/limits.js';
 import { croppedImageUrl } from '../../utils/cloudinaryCrop.js';
 import { ImageCropper } from './ImageCropper.jsx';
+import { useMentions } from './useMentions.js';
 
 const TEXTO_MAX = 500;
 
@@ -170,6 +171,19 @@ export function Composer({
   submitLabel = 'Publicar',
 }) {
   const textoId = useId();
+  const sugestoesId = useId();
+  const textoRef = useRef(null);
+  const [cursor, setCursor] = useState(0);
+  const [cursorPendente, setCursorPendente] = useState(null);
+
+  // Põe o cursor depois do @nome completado logo após o texto mudar, antes da próxima tecla
+  // (com requestAnimationFrame, quem digita rápido via o cursor pular no meio da palavra).
+  useLayoutEffect(() => {
+    if (cursorPendente === null) return;
+    textoRef.current?.focus();
+    textoRef.current?.setSelectionRange(cursorPendente, cursorPendente);
+    setCursorPendente(null);
+  }, [cursorPendente]);
   const [texto, setTexto] = useState('');
   const [track, setTrack] = useState(null);
   const [nota, setNota] = useState(null);
@@ -185,6 +199,32 @@ export function Composer({
   const imagemInput = useRef(null);
   const [error, setError] = useState('');
   const [sending, setSending] = useState(null); // null, 'imagem' ou 'post'
+
+  const marcacao = useMentions(texto, cursor);
+
+  const marcar = (usuario) => {
+    const completo = marcacao.completar(usuario);
+    setTexto(completo.texto);
+    setCursor(completo.cursor);
+    setCursorPendente(completo.cursor);
+  };
+
+  // Com as sugestões abertas: setas escolhem, Enter/Tab completam, Esc fecha.
+  const teclaNoTexto = (event) => {
+    if (!marcacao.aberta) return;
+    const total = marcacao.sugestoes.length;
+    if (event.key === 'ArrowDown' || event.key === 'ArrowUp') {
+      event.preventDefault();
+      marcacao.setAtiva((marcacao.ativa + (event.key === 'ArrowDown' ? 1 : total - 1)) % total);
+    } else if (event.key === 'Enter' || event.key === 'Tab') {
+      event.preventDefault();
+      marcar(marcacao.sugestoes[marcacao.ativa]);
+    } else if (event.key === 'Escape') {
+      event.preventDefault();
+      event.stopPropagation();
+      marcacao.fechar();
+    }
+  };
 
   const clean = texto.trim();
   const canPublish = !sending && (track ? nota !== null : clean.length > 0 || imagem !== null);
@@ -282,16 +322,41 @@ export function Composer({
       <div className="composer-field">
         <label htmlFor={textoId}>{textLabel}</label>
         <textarea
+          ref={textoRef}
           id={textoId}
           rows={4}
           maxLength={TEXTO_MAX}
           autoFocus
           placeholder={placeholder}
           value={texto}
-          onChange={(event) => setTexto(event.target.value)}
+          aria-autocomplete="list"
+          aria-expanded={marcacao.aberta}
+          aria-controls={marcacao.aberta ? sugestoesId : undefined}
+          onChange={(event) => { setTexto(event.target.value); setCursor(event.target.selectionStart); }}
+          onSelect={(event) => setCursor(event.target.selectionStart)}
+          onKeyDown={teclaNoTexto}
           onPaste={colar}
         />
         <span className="composer-counter">{texto.length}/{TEXTO_MAX}</span>
+        {marcacao.aberta && (
+          <ul id={sugestoesId} role="listbox" aria-label="Sugestões de marcação" className="mention-list">
+            {marcacao.sugestoes.map((usuario, i) => (
+              <li
+                key={usuario.id}
+                role="option"
+                aria-selected={i === marcacao.ativa}
+                className={`mention-list__item${i === marcacao.ativa ? ' is-active' : ''}`}
+                // mousedown mantém o foco no texto (senão o teclado do celular fecha antes do clique)
+                onMouseDown={(event) => event.preventDefault()}
+                onClick={() => marcar(usuario)}
+              >
+                <img src={usuario.fotoPerfil} alt="" />
+                <span className="mention-list__nome">{usuario.nomeExibicao || usuario.nome}</span>
+                <span className="mention-list__handle">@{usuario.nome}</span>
+              </li>
+            ))}
+          </ul>
+        )}
       </div>
 
       {previa && recorte && (

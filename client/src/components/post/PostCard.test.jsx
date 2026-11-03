@@ -56,6 +56,14 @@ describe('PostCard', () => {
     expect(screen.getByRole('link', { name: /Comentários: 2/ })).toHaveAttribute('href', '/post/10');
   });
 
+  it('marcações viram link para o perfil; tocar no resto do texto abre o post', async () => {
+    renderWithProviders(<PostCard post={{ ...musicPost, texto: 'olha @bia.souza, que som' }} />);
+    expect(screen.getByRole('link', { name: '@bia.souza' })).toHaveAttribute('href', '/perfil/@bia.souza');
+
+    await userEvent.click(screen.getByText(/que som/));
+    expect(screen.getByTestId('location')).toHaveTextContent('/post/10');
+  });
+
   it('mostra álbum com ano e sem botão de play', () => {
     renderWithProviders(
       <PostCard post={{ ...musicPost, tipo: 'album', titulo: 'Abbey Road', capa: 'abbey.jpg', releaseDate: '1969-09-', preview: null }} />,

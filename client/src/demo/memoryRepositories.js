@@ -54,6 +54,10 @@ export function createMemoryRepositories(state, onChange) {
       const user = userById(id);
       return user ? { id: user.id, senha: user.senha } : null;
     },
+    async findByNames(nomes) {
+      const procurados = new Set(nomes.map((n) => n.toLowerCase()));
+      return state.usuarios.filter((u) => u.nome && procurados.has(u.nome.toLowerCase())).map(({ id, nome }) => ({ id, nome }));
+    },
     async activateFounder(id) {
       userById(id).fundadorDesde = new Date().toISOString();
       changed();

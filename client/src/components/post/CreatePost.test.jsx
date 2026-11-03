@@ -3,7 +3,7 @@ import { fireEvent, render, screen, waitFor, within } from '@testing-library/rea
 import userEvent from '@testing-library/user-event';
 import { CreatePost } from './CreatePost.jsx';
 import { StarRatingInput } from './StarRatingInput.jsx';
-import { musicApi, postsApi } from '../../api/index.js';
+import { musicApi, postsApi, usersApi } from '../../api/index.js';
 
 // A biblioteca de corte mede a imagem no navegador; aqui ela devolve um corte fixo na hora.
 vi.mock('react-easy-crop', async () => {
@@ -22,6 +22,7 @@ vi.mock('react-easy-crop', async () => {
 vi.mock('../../api/index.js', () => ({
   musicApi: { search: vi.fn() },
   postsApi: { create: vi.fn(), uploadImage: vi.fn() },
+  usersApi: { search: vi.fn() },
 }));
 
 const help = { id: 1, titulo: 'Help!', artista: 'The Beatles', capa: 'help.jpg', duracao: 138, preview: 'help.mp3' };
@@ -417,6 +418,50 @@ describe('CreatePost', () => {
       await escolher(enorme);
       expect(screen.getByRole('alert')).toHaveTextContent('A imagem pode ter no máximo 10 MB.');
       expect(screen.queryByRole('group', { name: 'Formato da imagem' })).toBeNull();
+    });
+  });
+
+  describe('marcar pessoas (@)', () => {
+    const bia = { id: 2, nome: 'bia.souza', nomeExibicao: 'Bia Souza', fotoPerfil: 'b.png' };
+
+    it('digitando @ aparecem sugestões; tocar completa o @usuario', async () => {
+      usersApi.search.mockResolvedValue([bia]);
+      render(<CreatePost onCreated={vi.fn()} />);
+      await open();
+      await userEvent.type(texto(), 'ouve isso @bi');
+
+      const sugestoes = await screen.findByRole('listbox', { name: 'Sugestões de marcação' });
+      expect(usersApi.search).toHaveBeenLastCalledWith('bi');
+      await userEvent.click(within(sugestoes).getByRole('option', { name: /Bia Souza/ }));
+
+      expect(texto()).toHaveValue('ouve isso @bia.souza ');
+      expect(screen.queryByRole('listbox')).toBeNull();
+      await userEvent.type(texto(), 'demais');
+      await userEvent.click(screen.getByRole('button', { name: 'Publicar' }));
+      expect(postsApi.create).toHaveBeenCalledWith({ texto: 'ouve isso @bia.souza demais' });
+    });
+
+    it('teclado: setas escolhem, Enter completa, Esc fecha', async () => {
+      usersApi.search.mockResolvedValue([bia, { id: 3, nome: 'bianca', fotoPerfil: 'c.png' }]);
+      render(<CreatePost onCreated={vi.fn()} />);
+      await open();
+      await userEvent.type(texto(), '@bi');
+      await screen.findByRole('listbox', { name: 'Sugestões de marcação' });
+
+      await userEvent.keyboard('{ArrowDown}{Enter}');
+      expect(texto()).toHaveValue('@bianca ');
+
+      await userEvent.type(texto(), '@bi');
+      await screen.findByRole('listbox');
+      await userEvent.keyboard('{Escape}');
+      expect(screen.queryByRole('listbox')).toBeNull();
+    });
+
+    it('sem @ no fim do que está sendo digitado, não busca', async () => {
+      render(<CreatePost onCreated={vi.fn()} />);
+      await open();
+      await userEvent.type(texto(), 'email ana@x.com ');
+      expect(usersApi.search).not.toHaveBeenCalled();
     });
   });
 

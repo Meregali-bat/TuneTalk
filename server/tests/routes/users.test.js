@@ -17,6 +17,13 @@ describe('rotas /api/users', () => {
     await request(app).get('/api/users/2').expect(401);
   });
 
+  it('GET /api/users/by-name/:nome abre o perfil pelo @', async () => {
+    deps.userService.getProfileByName.mockResolvedValue({ usuario: { id: 2 } });
+    const res = await agent.get('/api/users/by-name/bia.souza');
+    expect(res.body).toEqual({ usuario: { id: 2 } });
+    expect(deps.userService.getProfileByName).toHaveBeenCalledWith('bia.souza', 1);
+  });
+
   it('GET /api/users?q= busca pessoas', async () => {
     deps.userService.search.mockResolvedValue([{ id: 2, nome: 'bia', seguindo: true }]);
     const res = await agent.get('/api/users?q=bi');

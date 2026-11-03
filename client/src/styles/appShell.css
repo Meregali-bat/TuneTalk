@@ -2180,3 +2180,75 @@ button.track-row:hover {
 .notif__icon--mention {
   background: var(--azul);
 }
+
+/* --- Marcações (@usuario) --- */
+.mention {
+  color: var(--destaque-claro);
+  font-weight: 600;
+
+  &:hover {
+    color: var(--destaque-claro);
+    text-decoration: underline;
+  }
+}
+
+.post-card__text.is-clicavel {
+  cursor: pointer;
+}
+
+.mention-list {
+  position: absolute;
+  top: calc(100% + .25rem);
+  left: 0;
+  right: 0;
+  z-index: 5;
+  display: grid;
+  margin: 0;
+  padding: .3rem;
+  overflow: hidden;
+  border: 1px solid var(--linhas);
+  border-radius: 14px;
+  background: var(--superficie-2);
+  box-shadow: 0 16px 40px -16px rgba(0, 0, 0, .9);
+  list-style: none;
+}
+
+.mention-list__item {
+  display: grid;
+  grid-template-columns: 2rem minmax(0, 1fr);
+  grid-template-rows: auto auto;
+  column-gap: .6rem;
+  align-items: center;
+  padding: .45rem .55rem;
+  border-radius: 10px;
+  cursor: pointer;
+
+  img {
+    grid-row: 1 / 3;
+    width: 2rem;
+    height: 2rem;
+    border-radius: 50%;
+    object-fit: cover;
+  }
+
+  &.is-active,
+  &:hover {
+    background: var(--superficie);
+  }
+}
+
+.mention-list__nome {
+  overflow: hidden;
+  font-weight: 600;
+  font-size: .92rem;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.mention-list__handle {
+  overflow: hidden;
+  color: var(--texto-suave);
+  font-size: .8rem;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}

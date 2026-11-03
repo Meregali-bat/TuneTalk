@@ -1,17 +1,25 @@
 import { useEffect, useId, useState } from 'react';
-import { Link } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
 import { useAuth } from '../../auth/AuthContext.jsx';
 import { postsApi } from '../../api/index.js';
 import { releaseInfo } from '../../utils/postFormat.js';
 import { relativeTime } from '../../utils/relativeTime.js';
 import { StarRating } from './StarRating.jsx';
 import { formatEstrelas } from '../../../../shared/rating.js';
+import { splitMentions } from '../../../../shared/mentions.js';
 import { VerifiedBadge } from '../effects/VerifiedBadge.jsx';
 import { FounderBadge } from '../effects/FounderBadge.jsx';
 import { LikeButton } from './LikeButton.jsx';
 import { PlayButton } from './PlayButton.jsx';
 import { ShareButton } from './ShareButton.jsx';
 import { PostMenu } from './PostMenu.jsx';
+
+// Texto com as marcações (@usuario) como link para o perfil.
+function TextoComMarcacoes({ texto }) {
+  return splitMentions(texto).map((parte, i) => (parte.tipo === 'mencao'
+    ? <Link key={i} to={`/perfil/@${parte.valor}`} className="mention">@{parte.valor}</Link>
+    : <span key={i}>{parte.valor}</span>));
+}
 
 const TIPO_LABEL = { album: 'álbum', 'música': 'música' };
 
@@ -52,6 +60,8 @@ export function PostCard({
   const [fixado, setFixado] = useState(Boolean(post.fixado));
   useEffect(() => setFixado(Boolean(post.fixado)), [post.fixado]);
   const isOwner = user?.id === post.autor.id;
+  const navigate = useNavigate();
+  const temMarcacao = splitMentions(post.texto ?? '').some((p) => p.tipo === 'mencao');
   const authorId = useId();
   const postUrl = `/post/${post.id}`;
   const profileUrl = `/perfil/${post.autor.id}`;
@@ -99,10 +109,18 @@ export function PostCard({
         )}
       </header>
 
-      {post.texto && variant === 'detail' && (
-        <div className="post-card__text" data-testid="post-text"><p>{post.texto}</p></div>
+      {post.texto && (variant === 'detail' || temMarcacao) && (
+        // Com marcação não dá para envolver o texto num link (link dentro de link): tocar fora
+        // dos @ abre o post do mesmo jeito.
+        <div
+          className={`post-card__text${variant === 'detail' ? '' : ' is-clicavel'}`}
+          data-testid="post-text"
+          onClick={variant === 'detail' ? undefined : (event) => !event.target.closest('a') && navigate(postUrl)}
+        >
+          <p><TextoComMarcacoes texto={post.texto} /></p>
+        </div>
       )}
-      {post.texto && variant !== 'detail' && (
+      {post.texto && variant !== 'detail' && !temMarcacao && (
         <Link to={postUrl} className="post-card__text" data-testid="post-text">
           <p>{post.texto}</p>
         </Link>

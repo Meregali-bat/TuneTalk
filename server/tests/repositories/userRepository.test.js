@@ -79,6 +79,15 @@ describe('userRepository (Postgres)', () => {
     expect(Date.now() - fundadorDesde.getTime()).toBeLessThan(60_000);
   });
 
+  it('findByNames acha as contas pelos nomes de usuário, sem diferenciar maiúsculas', async () => {
+    const bia = await factory.user({ nome: 'Bia.Souza' });
+    const caio = await factory.user({ nome: 'caio' });
+    await factory.user({ nome: 'outra' });
+    const achados = await repo.findByNames(['bia.souza', 'CAIO', 'ninguem']);
+    expect(achados.map((u) => u.id).sort()).toEqual([bia.id, caio.id].sort());
+    expect(await repo.findByNames([])).toEqual([]);
+  });
+
   it('setPinnedPost fixa e desafixa o post do perfil', async () => {
     const ana = await factory.user();
     const post = await db.prisma.post.create({ data: { autorId: ana.id, texto: 'oi' } });

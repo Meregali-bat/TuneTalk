@@ -73,6 +73,12 @@ export function createUserService({ users, follows, postService, notifications, 
       return { ...atual, ...changes };
     },
 
+    async getProfileByName(nome, viewerId) {
+      const [usuario] = await users.findByNames([nome]);
+      if (!usuario) throw notFound('Usuário não encontrado.');
+      return this.getProfile(usuario.id, viewerId);
+    },
+
     async search(texto, viewerId) {
       const limpo = (texto ?? '').trim().replace(/^@/, '').trim();
       if (!limpo) return [];

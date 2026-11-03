@@ -1,7 +1,9 @@
 import { badRequest, forbidden, notFound } from '../errors.js';
 import { isValidNota, parseNota } from '../../../shared/rating.js';
+import { extractMentions } from '../../../shared/mentions.js';
 
 const TEXTO_MAX = 500;
+const MAX_MARCACOES = 10;
 
 const CREATE_FIELDS = [
   'texto', 'musicName', 'artistName', 'posterMusica', 'albumName',
@@ -49,6 +51,23 @@ export function createPostService({
   const notifyAuthor = async (post, autorId, tipo, conteudo) => {
     if (post.autor.id === autorId) return;
     await notifications.create({ destinatarioId: post.autor.id, autorId, tipo, conteudo, postId: post.id });
+  };
+
+  // Quem foi marcado com @ recebe aviso; o autor do post respondido já recebe o de comentário.
+  const notifyMentions = async (texto, { id, autorId, pai }) => {
+    const nomes = extractMentions(texto ?? '').slice(0, MAX_MARCACOES);
+    if (nomes.length === 0) return;
+    const marcados = (await users.findByNames(nomes))
+      .filter((u) => u.id !== autorId && u.id !== pai?.autor.id);
+    for (const marcado of marcados) {
+      await notifications.create({
+        destinatarioId: marcado.id,
+        autorId,
+        tipo: 'mention',
+        conteudo: pai ? 'marcou você em um comentário' : 'marcou você em um post',
+        postId: id,
+      });
+    }
   };
 
   return {
@@ -112,6 +131,7 @@ export function createPostService({
       const pai = parentId === undefined ? null : await findOrFail(parentId);
       const id = await posts.create({ ...data, ...(pai && { parentId }), autorId, data: now() });
       if (pai) await notifyAuthor(pai, autorId, 'comment', 'comentou no seu post');
+      await notifyMentions(data.texto, { id, autorId, pai });
       return id;
     },
 

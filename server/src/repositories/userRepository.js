@@ -38,6 +38,15 @@ export function createUserRepository(prisma) {
       return [...comeco, ...resto];
     },
 
+    // Para as marcações (@usuario): acha as contas pelos nomes, sem diferenciar maiúsculas.
+    findByNames(nomes) {
+      if (nomes.length === 0) return Promise.resolve([]);
+      return prisma.usuario.findMany({
+        where: { OR: nomes.map((nome) => ({ nome: sameText(nome) })) },
+        select: { id: true, nome: true },
+      });
+    },
+
     async activateFounder(id) {
       await prisma.usuario.update({ where: { id }, data: { fundadorDesde: new Date() } });
     },

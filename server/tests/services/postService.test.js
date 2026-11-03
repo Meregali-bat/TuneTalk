@@ -30,7 +30,7 @@ describe('postService', () => {
       countByPost: vi.fn().mockResolvedValue(6),
     };
     notifications = { create: vi.fn(), removeLike: vi.fn() };
-    users = { setPinnedPost: vi.fn() };
+    users = { setPinnedPost: vi.fn(), findByNames: vi.fn().mockResolvedValue([]) };
     service = createPostService({
       posts,
       likes,
@@ -190,6 +190,39 @@ describe('postService', () => {
         message: 'Escreva algo, escolha uma música ou adicione uma imagem.',
       });
       expect(posts.create).not.toHaveBeenCalled();
+    });
+
+    describe('marcações (@usuario)', () => {
+      it('notifica quem foi marcado no post', async () => {
+        users.findByNames.mockResolvedValue([{ id: 5, nome: 'bia' }, { id: 6, nome: 'caio' }]);
+        await service.create(7, { texto: 'olha isso @bia e @caio' });
+
+        expect(users.findByNames).toHaveBeenCalledWith(['bia', 'caio']);
+        expect(notifications.create).toHaveBeenCalledWith({
+          destinatarioId: 5, autorId: 7, tipo: 'mention', conteudo: 'marcou você em um post', postId: 42,
+        });
+        expect(notifications.create).toHaveBeenCalledWith(expect.objectContaining({ destinatarioId: 6 }));
+      });
+
+      it('em comentário diz "em um comentário" e não notifica de novo o autor do post respondido', async () => {
+        users.findByNames.mockResolvedValue([{ id: 2, nome: 'x' }, { id: 5, nome: 'bia' }]);
+        await service.create(7, { texto: '@x @bia', parentId: 1 });
+
+        const mencoes = notifications.create.mock.calls.map(([n]) => n).filter((n) => n.tipo === 'mention');
+        expect(mencoes).toEqual([
+          { destinatarioId: 5, autorId: 7, tipo: 'mention', conteudo: 'marcou você em um comentário', postId: 42 },
+        ]);
+      });
+
+      it('quem se marca não recebe notificação; sem @ não consulta nada', async () => {
+        users.findByNames.mockResolvedValue([{ id: 7, nome: 'eu' }]);
+        await service.create(7, { texto: 'eu sou @eu' });
+        expect(notifications.create).not.toHaveBeenCalled();
+
+        users.findByNames.mockClear();
+        await service.create(7, { texto: 'sem marcação' });
+        expect(users.findByNames).not.toHaveBeenCalled();
+      });
     });
 
     describe('respostas (comentários)', () => {

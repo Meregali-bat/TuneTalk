@@ -150,6 +150,7 @@ export function createFakeApi({ storage = globalThis.localStorage } = {}) {
       startSession({ ...state.session, nome: usuario.nome });
       return ok(usuario);
     }],
+    ['GET', /^\/users\/by-name\/([^/]+)$/, async ({ match }) => ok(await services.users.getProfileByName(decodeURIComponent(match[1]), me()))],
     ['GET', /^\/users$/, async ({ query }) => ok(await services.users.search(query.get('q'), me()))],
     ['GET', /^\/users\/(\d+)$/, async ({ id }) => ok(await services.users.getProfile(id, me()))],
     ['POST', /^\/users\/(\d+)\/follow$/, async ({ id }) => { await services.users.follow(me(), id); return noContent(); }],
@@ -179,7 +180,7 @@ export function createFakeApi({ storage = globalThis.localStorage } = {}) {
         const match = pathname.match(route[1]);
         const form = rawBody instanceof FormData ? rawBody : null;
         const body = !form && typeof rawBody === 'string' ? JSON.parse(rawBody) : {};
-        return await route[2]({ id: match[1] && Number(match[1]), body, form, query: new URLSearchParams(search) });
+        return await route[2]({ id: match[1] && Number(match[1]), match, body, form, query: new URLSearchParams(search) });
       } catch (error) {
         if (error instanceof HttpError) return { status: error.status, body: { error: error.message } };
         console.error(error);

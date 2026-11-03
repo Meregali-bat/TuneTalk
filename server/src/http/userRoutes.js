@@ -39,6 +39,11 @@ export function createUserRoutes({ userService, uploader, sessions }) {
     res.json(usuario);
   }));
 
+  // Link das marcações (@usuario) abre o perfil pelo nome.
+  router.get('/by-name/:nome', asyncRoute(async (req, res) => {
+    res.json(await userService.getProfileByName(req.params.nome, currentUserId(req)));
+  }));
+
   router.get('/', asyncRoute(async (req, res) => {
     res.json(await userService.search(req.query.q, currentUserId(req)));
   }));

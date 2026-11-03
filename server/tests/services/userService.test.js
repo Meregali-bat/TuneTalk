@@ -190,6 +190,20 @@ describe('userService', () => {
     });
   });
 
+  describe('getProfileByName (link do @)', () => {
+    it('acha a conta pelo nome e devolve o perfil', async () => {
+      users.findByNames = vi.fn().mockResolvedValue([{ id: 2, nome: 'Bia' }]);
+      const perfil = await service.getProfileByName('bia', 1);
+      expect(users.findByNames).toHaveBeenCalledWith(['bia']);
+      expect(perfil.usuario).toEqual(bia);
+    });
+
+    it('404 quando não existe', async () => {
+      users.findByNames = vi.fn().mockResolvedValue([]);
+      await expect(service.getProfileByName('ninguem', 1)).rejects.toMatchObject({ status: 404 });
+    });
+  });
+
   describe('search', () => {
     it('busca pessoas (tirando o @ do começo) e diz quem quem busca já segue', async () => {
       users.search = vi.fn().mockResolvedValue([ana, bia]);

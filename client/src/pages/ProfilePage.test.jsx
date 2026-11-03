@@ -252,6 +252,12 @@ describe('ProfilePage', () => {
     expect(screen.queryByRole('img', { name: 'No TuneTalk desde o início' })).toBeNull();
   });
 
+  it('abre pelo @ (link de marcação)', async () => {
+    renderProfile('@bia');
+    expect(await screen.findByRole('heading', { level: 1, name: 'bia' })).toBeInTheDocument();
+    expect(usersApi.profile).toHaveBeenCalledWith('@bia');
+  });
+
   it('mostra erro para perfil inexistente', async () => {
     usersApi.profile.mockRejectedValue(new Error('Usuário não encontrado.'));
     renderProfile(99);
