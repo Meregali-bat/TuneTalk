@@ -26,10 +26,15 @@ export function createUserRoutes({ userService, uploader, sessions }) {
     res.json(uploader.signUpload());
   });
 
+  router.post('/me/banner-upload', (req, res) => {
+    res.json(uploader.signUpload('banner'));
+  });
+
   router.put('/me', asyncRoute(async (req, res) => {
-    const { nome, bio, fotoPerfil } = req.body;
+    const { nome, nomeExibicao, bio, fotoPerfil, bannerUrl } = req.body;
     if (fotoPerfil !== undefined && !uploader.isOwnUrl(fotoPerfil)) throw badRequest('Foto inválida. Envie a imagem de novo.');
-    const usuario = await userService.updateProfile(currentUserId(req), { nome, bio, fotoPerfil });
+    if (bannerUrl !== undefined && !uploader.isOwnUrl(bannerUrl, 'banner')) throw badRequest('Capa inválida. Envie a imagem de novo.');
+    const usuario = await userService.updateProfile(currentUserId(req), { nome, bio, nomeExibicao, fotoPerfil, bannerUrl });
     if (usuario.nome) req.session.user = { ...req.session.user, nome: usuario.nome };
     res.json(usuario);
   }));

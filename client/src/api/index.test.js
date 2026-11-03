@@ -52,6 +52,13 @@ describe('endpoints da API', () => {
     });
   });
 
+  it('usersApi.uploadBanner usa a assinatura de capa', async () => {
+    request.mockResolvedValueOnce({ uploadUrl: 'https://api.cloudinary.com/x', fields: {} });
+    vi.stubGlobal('fetch', vi.fn().mockResolvedValue({ ok: true, json: async () => ({ secure_url: 'https://res.cloudinary.com/c.jpg' }) }));
+    expect(await usersApi.uploadBanner(new File(['c'], 'c.jpg'))).toBe('https://res.cloudinary.com/c.jpg');
+    expect(request).toHaveBeenCalledWith('/users/me/banner-upload', { method: 'POST' });
+  });
+
   it('postsApi.uploadImage usa a assinatura de imagem de post', async () => {
     request.mockResolvedValueOnce({ uploadUrl: 'https://api.cloudinary.com/x', fields: {} });
     vi.stubGlobal('fetch', vi.fn().mockResolvedValue({ ok: true, json: async () => ({ secure_url: 'https://res.cloudinary.com/p.gif' }) }));

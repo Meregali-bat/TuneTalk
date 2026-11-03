@@ -115,6 +115,27 @@ describe('userService', () => {
       expect(users.update).toHaveBeenCalledWith(1, { nome: 'Ana Souza', bio: 'x', fotoPerfil: 'ana.png' });
     });
 
+    it('nome de exibição: livre (com espaço e acento), até 50 caracteres; vazio volta a mostrar o @', async () => {
+      await service.updateProfile(1, { nomeExibicao: '  Ana Souza ✨ ' });
+      expect(users.update.mock.calls[0][1].nomeExibicao).toBe('Ana Souza ✨');
+
+      await service.updateProfile(1, { nomeExibicao: '   ' });
+      expect(users.update.mock.calls[1][1].nomeExibicao).toBeNull();
+
+      await expect(service.updateProfile(1, { nomeExibicao: 'a'.repeat(51) })).rejects.toMatchObject({
+        status: 400, message: 'O nome pode ter no máximo 50 caracteres.',
+      });
+    });
+
+    it('salva a capa nova e mantém a atual (e o nome de exibição) quando não enviados', async () => {
+      users.findById.mockResolvedValue({ ...ana, nomeExibicao: 'Ana', bannerUrl: 'velha.png' });
+      await service.updateProfile(1, { bio: 'x' });
+      expect(users.update.mock.calls[0][1]).toMatchObject({ nomeExibicao: 'Ana', bannerUrl: 'velha.png' });
+
+      await service.updateProfile(1, { bannerUrl: 'nova.png' });
+      expect(users.update.mock.calls[1][1].bannerUrl).toBe('nova.png');
+    });
+
     it('mantém a foto e o nome atuais quando não enviados', async () => {
       await service.updateProfile(1, { nome: '', bio: 'nova' });
       expect(users.update).toHaveBeenCalledWith(1, { nome: 'Ana', bio: 'nova', fotoPerfil: 'ana.png' });

@@ -45,6 +45,12 @@ describe('rotas /api/users', () => {
     });
   });
 
+  it('POST /api/users/me/banner-upload assina o envio da capa', async () => {
+    deps.uploader.signUpload.mockReturnValue({ uploadUrl: 'u', fields: {} });
+    await agent.post('/api/users/me/banner-upload').expect(200);
+    expect(deps.uploader.signUpload).toHaveBeenCalledWith('banner');
+  });
+
   it('POST /api/users/me/photo-upload devolve a assinatura para enviar a foto direto ao Cloudinary', async () => {
     deps.uploader.signUpload.mockReturnValue({ uploadUrl: 'https://api.cloudinary.com/x', fields: { signature: 's' } });
     const res = await agent.post('/api/users/me/photo-upload');
@@ -68,6 +74,25 @@ describe('rotas /api/users', () => {
       await agent.put('/api/users/me').send({ nome: 'N', fotoPerfil: url }).expect(200);
       expect(deps.uploader.isOwnUrl).toHaveBeenCalledWith(url);
       expect(deps.userService.updateProfile.mock.calls[0][1].fotoPerfil).toBe(url);
+    });
+
+    it('repassa nome de exibição e capa (conferindo que a capa é da pasta de banners)', async () => {
+      deps.uploader.isOwnUrl.mockReturnValue(true);
+      deps.userService.updateProfile.mockResolvedValue({ id: 1 });
+      const banner = 'https://res.cloudinary.com/t/image/upload/v1/tunetalk/banners/b.jpg';
+      await agent.put('/api/users/me').send({ nome: 'ana', nomeExibicao: 'Ana Souza', bannerUrl: banner }).expect(200);
+
+      expect(deps.uploader.isOwnUrl).toHaveBeenCalledWith(banner, 'banner');
+      expect(deps.userService.updateProfile).toHaveBeenCalledWith(1, {
+        nome: 'ana', bio: undefined, nomeExibicao: 'Ana Souza', fotoPerfil: undefined, bannerUrl: banner,
+      });
+    });
+
+    it('recusa capa que não veio do nosso Cloudinary', async () => {
+      deps.uploader.isOwnUrl.mockReturnValue(false);
+      const res = await agent.put('/api/users/me').send({ nome: 'N', bannerUrl: 'https://site.com/b.jpg' });
+      expect(res.status).toBe(400);
+      expect(res.body).toEqual({ error: 'Capa inválida. Envie a imagem de novo.' });
     });
 
     it('recusa link de foto que não veio do nosso Cloudinary', async () => {

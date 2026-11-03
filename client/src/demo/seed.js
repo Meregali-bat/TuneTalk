@@ -14,7 +14,9 @@ export const CATALOG = [
 
 const minutesAgo = (n) => new Date(Date.now() - n * 60 * 1000).toISOString();
 
-const user = (id, nome, email, bio) => ({ id, nome, email, senha: md5('Demo!123'), fotoPerfil: avatar(nome), bio });
+const user = (id, nome, email, bio, nomeExibicao = null) => ({
+  id, nome, nomeExibicao, email, senha: md5('Demo!123'), fotoPerfil: avatar(nome), bannerUrl: null, bio,
+});
 
 const track = (titulo) => CATALOG.find((t) => t.titulo === titulo);
 
@@ -43,8 +45,8 @@ export function createSeed() {
     seq: { usuarios: 4, posts: 14, notificacoes: 3 },
     session: null,
     usuarios: [
-      user(1, 'ana.souza', DEMO_LOGIN.email, 'MPB de manhã, rock à noite'),
-      user(2, 'bruno.lima', 'bruno@demo.com', 'Colecionador de vinil'),
+      user(1, 'ana.souza', DEMO_LOGIN.email, 'MPB de manhã, rock à noite', 'Ana Souza'),
+      user(2, 'bruno.lima', 'bruno@demo.com', 'Colecionador de vinil', 'Bruno Lima 💿'),
       user(3, 'carla.mendes', 'carla@demo.com', 'Toco baixo numa banda de garagem'),
       user(4, 'diego.rocha', 'diego@demo.com', null),
     ],

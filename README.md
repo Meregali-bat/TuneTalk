@@ -95,7 +95,9 @@ para testar rotas sem banco e serviços sem HTTP.
 | POST / DELETE | `/api/posts/:id/like` | curtir / descurtir → `{ likes }` |
 | POST / DELETE | `/api/posts/:id/pin` | fixar / desafixar no perfil (só o autor, só posts principais; um por perfil) |
 | GET | `/api/users/:id` | perfil, posts, seguidores e seguindo |
-| PUT | `/api/users/me` | multipart: `nome`, `bio`, `foto?` |
+| PUT | `/api/users/me` | `{ nome, nomeExibicao?, bio?, fotoPerfil?, bannerUrl? }` (foto e capa já enviadas ao Cloudinary) |
+| POST | `/api/users/me/photo-upload` / `banner-upload` | assinatura para enviar foto/capa direto ao Cloudinary |
+| POST | `/api/posts/image-upload` | assinatura para enviar a imagem do post direto ao Cloudinary |
 | PUT | `/api/users/me/password` | `{ senhaAtual, novaSenha }` → troca a senha e desconecta os outros aparelhos |
 | POST / DELETE | `/api/users/:id/follow` | seguir / deixar de seguir |
 | GET | `/api/notifications` | lista |

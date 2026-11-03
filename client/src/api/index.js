@@ -46,6 +46,7 @@ export const usersApi = {
   profile: (id) => request(`/users/${id}`),
   updateMe: (changes) => request('/users/me', { method: 'PUT', body: changes }),
   uploadPhoto: (file) => uploadImage('/users/me/photo-upload', file),
+  uploadBanner: (file) => uploadImage('/users/me/banner-upload', file),
   setUsername: (nome) => request('/users/me/username', { method: 'PUT', body: { nome } }),
   changePassword: (senhaAtual, novaSenha) =>
     request('/users/me/password', { method: 'PUT', body: { senhaAtual, novaSenha } }),

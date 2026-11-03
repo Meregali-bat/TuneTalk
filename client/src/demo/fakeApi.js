@@ -12,7 +12,7 @@ import { avatar } from './art.js';
 
 export { DEMO_LOGIN };
 
-const STORAGE_KEY = 'tunetalk-demo-v5';
+const STORAGE_KEY = 'tunetalk-demo-v6';
 
 const readState = (storage) => {
   try {
@@ -137,13 +137,15 @@ export function createFakeApi({ storage = globalThis.localStorage } = {}) {
     }],
     // Na demo o "Cloudinary" é este endereço: a foto vira data URL e fica no próprio navegador.
     ['POST', /^\/posts\/image-upload$/, () => { me(); return ok({ uploadUrl: '/api/demo-upload', fields: {} }); }],
+    ['POST', /^\/users\/me\/banner-upload$/, () => { me(); return ok({ uploadUrl: '/api/demo-upload', fields: {} }); }],
     ['POST', /^\/users\/me\/photo-upload$/, () => { me(); return ok({ uploadUrl: '/api/demo-upload', fields: {} }); }],
     ['POST', /^\/demo-upload$/, async ({ form }) => ok({ secure_url: await fileToDataUrl(form.get('file')) })],
     ['PUT', /^\/users\/me$/, async ({ body }) => {
-      if (body.fotoPerfil !== undefined && !String(body.fotoPerfil).startsWith('data:image/')) {
-        throw badRequest('Foto inválida. Envie a imagem de novo.');
-      }
-      const usuario = await services.users.updateProfile(me(), { nome: body.nome, bio: body.bio, fotoPerfil: body.fotoPerfil });
+      const isDemoImage = (url) => url === undefined || String(url).startsWith('data:image/');
+      if (!isDemoImage(body.fotoPerfil)) throw badRequest('Foto inválida. Envie a imagem de novo.');
+      if (!isDemoImage(body.bannerUrl)) throw badRequest('Capa inválida. Envie a imagem de novo.');
+      const { nome, nomeExibicao, bio, fotoPerfil, bannerUrl } = body;
+      const usuario = await services.users.updateProfile(me(), { nome, nomeExibicao, bio, fotoPerfil, bannerUrl });
       startSession({ ...state.session, nome: usuario.nome });
       return ok(usuario);
     }],

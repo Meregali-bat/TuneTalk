@@ -2,7 +2,9 @@
 // para que os serviços reais (server/src/services) rodem no navegador.
 import { toPost } from '../../../server/src/repositories/postRepository.js';
 
-const publicUser = ({ id, nome, fotoPerfil, bio }) => ({ id, nome, fotoPerfil, bio });
+const publicUser = ({ id, nome, nomeExibicao = null, fotoPerfil, bannerUrl = null, bio }) => ({
+  id, nome, nomeExibicao, fotoPerfil, bannerUrl, bio,
+});
 
 export function createMemoryRepositories(state, onChange) {
   const nextId = (table) => {

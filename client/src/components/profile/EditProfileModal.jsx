@@ -5,6 +5,32 @@ import { USERNAME_MESSAGES, checkUsername } from '../../../../shared/usernameRul
 import { IMAGEM_MAX_MB } from '../../api/limits.js';
 
 const BIO_MAX = 255;
+const NOME_EXIBICAO_MAX = 50;
+
+// Escolha de imagem com prévia; recusa na hora o que passa do limite do Cloudinary.
+function useImagePick(rotulo, setError) {
+  const [file, setFile] = useState(null);
+  const [preview, setPreview] = useState(null);
+
+  useEffect(() => {
+    if (!file) return undefined;
+    const url = URL.createObjectURL(file);
+    setPreview(url);
+    return () => URL.revokeObjectURL(url);
+  }, [file]);
+
+  const choose = (chosen) => {
+    if (!chosen) return;
+    if (chosen.size > IMAGEM_MAX_MB * 1024 * 1024) {
+      setError(`${rotulo} pode ter no máximo ${IMAGEM_MAX_MB} MB.`);
+      return;
+    }
+    setError('');
+    setFile(chosen);
+  };
+
+  return { file, preview, choose };
+}
 
 // Nomes antigos fora das regras atuais continuam valendo enquanto não forem trocados.
 function usernameProblem(nome, original) {
@@ -15,43 +41,34 @@ function usernameProblem(nome, original) {
 
 export function EditProfileModal({ open, usuario, onClose, onSaved }) {
   const nomeId = useId();
+  const exibicaoId = useId();
   const bioId = useId();
   const [nome, setNome] = useState(usuario.nome ?? '');
+  const [nomeExibicao, setNomeExibicao] = useState(usuario.nomeExibicao ?? '');
   const [bio, setBio] = useState(usuario.bio ?? '');
-  const [foto, setFoto] = useState(null);
-  const [preview, setPreview] = useState(null);
   const [error, setError] = useState('');
-  const [saving, setSaving] = useState(null); // null, 'foto' ou 'dados'
+  const [saving, setSaving] = useState(null); // null, 'foto', 'capa' ou 'dados'
+  const foto = useImagePick('A foto', setError);
+  const capa = useImagePick('A capa', setError);
   const fileInput = useRef(null);
-
-  useEffect(() => {
-    if (!foto) return undefined;
-    const url = URL.createObjectURL(foto);
-    setPreview(url);
-    return () => URL.revokeObjectURL(url);
-  }, [foto]);
+  const capaInput = useRef(null);
 
   const problem = usernameProblem(nome.trim(), usuario.nome);
-
-  const chooseFoto = (file) => {
-    if (!file) return;
-    if (file.size > IMAGEM_MAX_MB * 1024 * 1024) {
-      setError(`A foto pode ter no máximo ${IMAGEM_MAX_MB} MB.`);
-      return;
-    }
-    setError('');
-    setFoto(file);
-  };
+  const capaAtual = capa.preview ?? usuario.bannerUrl;
 
   const submit = async (event) => {
     event.preventDefault();
     if (problem) return;
     setError('');
     try {
-      const changes = { nome: nome.trim(), bio };
-      if (foto) {
+      const changes = { nome: nome.trim(), nomeExibicao: nomeExibicao.trim(), bio };
+      if (foto.file) {
         setSaving('foto');
-        changes.fotoPerfil = await usersApi.uploadPhoto(foto);
+        changes.fotoPerfil = await usersApi.uploadPhoto(foto.file);
+      }
+      if (capa.file) {
+        setSaving('capa');
+        changes.bannerUrl = await usersApi.uploadBanner(capa.file);
       }
       setSaving('dados');
       onSaved(await usersApi.updateMe(changes));
@@ -64,8 +81,26 @@ export function EditProfileModal({ open, usuario, onClose, onSaved }) {
   return (
     <Modal open={open} title="Editar perfil" onClose={onClose} variant="sheet">
       <form className="edit-profile" onSubmit={submit}>
+        <div className="edit-profile__banner">
+          {capaAtual
+            ? <img src={capaAtual} alt="Capa do perfil" className="profile-banner" />
+            : <div className="profile-banner profile-banner--padrao" aria-hidden="true" />}
+          <button type="button" className="composer-link edit-profile__banner-button" onClick={() => capaInput.current?.click()}>
+            <i className="bi bi-image" aria-hidden="true" /> Trocar capa
+          </button>
+          <input
+            ref={capaInput}
+            type="file"
+            accept="image/*"
+            aria-label="Escolher capa"
+            className="visually-hidden"
+            tabIndex={-1}
+            onChange={(event) => capa.choose(event.target.files[0])}
+          />
+        </div>
+
         <div className="edit-profile__photo">
-          <img src={preview ?? usuario.fotoPerfil} alt="Foto de perfil" className="edit-profile__avatar" />
+          <img src={foto.preview ?? usuario.fotoPerfil} alt="Foto de perfil" className="edit-profile__avatar" />
           <button type="button" className="composer-link" onClick={() => fileInput.current?.click()}>
             <i className="bi bi-camera" aria-hidden="true" /> Trocar foto
           </button>
@@ -76,7 +111,20 @@ export function EditProfileModal({ open, usuario, onClose, onSaved }) {
             aria-label="Trocar foto"
             className="visually-hidden"
             tabIndex={-1}
-            onChange={(event) => chooseFoto(event.target.files[0])}
+            onChange={(event) => foto.choose(event.target.files[0])}
+          />
+        </div>
+
+        <div className="composer-field">
+          <label htmlFor={exibicaoId}>Nome</label>
+          <input
+            id={exibicaoId}
+            type="text"
+            className="edit-profile__input"
+            maxLength={NOME_EXIBICAO_MAX}
+            placeholder="Como você quer aparecer (ex.: Ana Souza)"
+            value={nomeExibicao}
+            onChange={(event) => setNomeExibicao(event.target.value)}
           />
         </div>
 
@@ -117,7 +165,7 @@ export function EditProfileModal({ open, usuario, onClose, onSaved }) {
         <div className="edit-profile__actions">
           <button type="button" className="composer-link" onClick={onClose}>Cancelar</button>
           <button type="submit" className="composer-submit" disabled={Boolean(saving) || Boolean(problem)}>
-            {{ foto: 'Enviando foto…', dados: 'Salvando…' }[saving] ?? 'Salvar'}
+            {{ foto: 'Enviando foto…', capa: 'Enviando capa…', dados: 'Salvando…' }[saving] ?? 'Salvar'}
           </button>
         </div>
       </form>

@@ -78,6 +78,28 @@ describe('ProfilePage', () => {
     expect(screen.queryByText('Nota média')).toBeNull();
   });
 
+  describe('cabeçalho no estilo do Twitter', () => {
+    it('mostra o nome de exibição, o @ do nome de usuário e a capa', async () => {
+      usersApi.profile.mockResolvedValue(profile({
+        usuario: { ...bia, nomeExibicao: 'Bia Souza', bannerUrl: 'capa.jpg' },
+      }));
+      renderProfile();
+
+      expect(await screen.findByRole('heading', { level: 1, name: 'Bia Souza' })).toBeInTheDocument();
+      expect(screen.getByText('@bia')).toBeInTheDocument();
+      expect(screen.getByAltText('Capa do perfil de Bia Souza')).toHaveAttribute('src', 'capa.jpg');
+      expect(screen.getByAltText('Foto de perfil de Bia Souza')).toBeInTheDocument();
+    });
+
+    it('sem nome de exibição nem capa: mostra o nome de usuário e uma capa padrão', async () => {
+      renderProfile();
+      expect(await screen.findByRole('heading', { level: 1, name: 'bia' })).toBeInTheDocument();
+      expect(screen.getByText('@bia')).toBeInTheDocument();
+      expect(screen.queryByAltText(/Capa do perfil/)).toBeNull();
+      expect(screen.getByTestId('capa-padrao')).toBeInTheDocument();
+    });
+  });
+
   it('sem posts não mostra nota média', async () => {
     usersApi.profile.mockResolvedValue(profile({ posts: [], quantidadePosts: 0 }));
     renderProfile();

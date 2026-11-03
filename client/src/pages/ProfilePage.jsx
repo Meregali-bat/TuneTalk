@@ -24,7 +24,8 @@ function ProfileSkeleton() {
   return (
     <div role="status" className="profile-header" aria-live="polite">
       <span className="visually-hidden">Carregando perfil</span>
-      <div className="profile-header__top" aria-hidden="true">
+      <div className="profile-banner skeleton" aria-hidden="true" />
+      <div className="profile-header__body" aria-hidden="true">
         <span className="skeleton profile-header__avatar" />
         <div className="profile-header__identity">
           <span className="skeleton skeleton--line" />
@@ -55,44 +56,64 @@ function Stat({ value, label, onClick }) {
   );
 }
 
+// Nome de exibição (livre) quando existe; senão, o nome de usuário. O @ é sempre o nome de usuário.
+export const displayName = (usuario) => usuario.nomeExibicao || usuario.nome;
+
 function ProfileHeader({ profile, isOwnProfile, onEdit, onChangePassword, onOpenList, onFollowChange }) {
   const { usuario } = profile;
+  const nome = displayName(usuario);
   const media = notaMedia(profile.posts);
 
   return (
     <header className="profile-header">
-      <div className="profile-header__top">
-        <img src={usuario.fotoPerfil} alt={`Foto de perfil de ${usuario.nome}`} className="profile-header__avatar" />
+      {usuario.bannerUrl ? (
+        <img src={usuario.bannerUrl} alt={`Capa do perfil de ${nome}`} className="profile-banner" />
+      ) : (
+        <div className="profile-banner profile-banner--padrao" data-testid="capa-padrao" aria-hidden="true" />
+      )}
+
+      <div className="profile-header__body">
+        <div className="profile-header__row">
+          <img src={usuario.fotoPerfil} alt={`Foto de perfil de ${nome}`} className="profile-header__avatar" />
+          <div className="profile-header__actions">
+            {isOwnProfile ? (
+              <>
+                <button type="button" className="follow-button follow-button--md is-following" onClick={onEdit}>
+                  Editar perfil
+                </button>
+                {/* No celular vira só o ícone de chave; o nome continua para leitores de tela. */}
+                <button
+                  type="button"
+                  className="follow-button follow-button--md is-following profile-action--senha"
+                  aria-label="Trocar senha"
+                  onClick={onChangePassword}
+                >
+                  <i className="bi bi-key" aria-hidden="true" />
+                  <span className="profile-action__label">Trocar senha</span>
+                </button>
+              </>
+            ) : (
+              <FollowButton
+                userId={usuario.id}
+                following={profile.seguindoIds.includes(usuario.id)}
+                onChange={onFollowChange}
+              />
+            )}
+          </div>
+        </div>
+
         <div className="profile-header__identity">
-          <h1>{usuario.nome}</h1>
+          <h1>{nome}</h1>
+          <p className="profile-header__handle">@{usuario.nome}</p>
           {usuario.bio && <p className="profile-header__bio">{usuario.bio}</p>}
         </div>
-      </div>
 
-      <ul className="profile-stats" aria-label="Números do perfil">
-        <Stat value={profile.quantidadePosts} label="Posts" />
-        <Stat value={profile.quantidadeSeguidores} label="Seguidores" onClick={() => onOpenList('seguidores')} />
-        <Stat value={profile.quantidadeSeguindo} label="Seguindo" onClick={() => onOpenList('seguindo')} />
-        {media !== null && <Stat value={`${formatMediaEstrelas(media)}/5`} label="Nota média" />}
-      </ul>
-
-      <div className="profile-header__actions">
-        {isOwnProfile ? (
-          <>
-            <button type="button" className="follow-button follow-button--md is-following" onClick={onEdit}>
-              Editar perfil
-            </button>
-            <button type="button" className="follow-button follow-button--md is-following" onClick={onChangePassword}>
-              Trocar senha
-            </button>
-          </>
-        ) : (
-          <FollowButton
-            userId={usuario.id}
-            following={profile.seguindoIds.includes(usuario.id)}
-            onChange={onFollowChange}
-          />
-        )}
+        <ul className="profile-stats" aria-label="Números do perfil">
+          <Stat value={profile.quantidadePosts} label="Posts" />
+          <Stat value={profile.quantidadeSeguidores} label="Seguidores" onClick={() => onOpenList('seguidores')} />
+          <Stat value={profile.quantidadeSeguindo} label="Seguindo" onClick={() => onOpenList('seguindo')} />
+          {media !== null && <Stat value={`${formatMediaEstrelas(media)}/5`} label="Nota média" />}
+        </ul>
       </div>
     </header>
   );
@@ -167,7 +188,7 @@ export function ProfilePage() {
 
       <h2 className="profile-section-title">Posts</h2>
       {profile.posts.length === 0 ? (
-        <EmptyPosts nome={profile.usuario.nome} isOwnProfile={isOwnProfile} onCompose={() => setComposerOpen(true)} />
+        <EmptyPosts nome={displayName(profile.usuario)} isOwnProfile={isOwnProfile} onCompose={() => setComposerOpen(true)} />
       ) : (
         <div className="feed-list">
           {profile.posts.map((post) => (

@@ -7,7 +7,7 @@ import { usersApi } from '../../api/index.js';
 import { renderWithProviders } from '../../test/render.jsx';
 
 vi.mock('../../api/index.js', () => ({
-  usersApi: { updateMe: vi.fn(), uploadPhoto: vi.fn(), follow: vi.fn(), unfollow: vi.fn() },
+  usersApi: { updateMe: vi.fn(), uploadPhoto: vi.fn(), uploadBanner: vi.fn(), follow: vi.fn(), unfollow: vi.fn() },
 }));
 
 const ana = { id: 1, nome: 'Ana', fotoPerfil: 'ana.png', bio: 'oi' };
@@ -46,7 +46,7 @@ describe('EditProfileModal', () => {
     await userEvent.click(screen.getByRole('button', { name: 'Salvar' }));
 
     expect(usersApi.uploadPhoto).toHaveBeenCalledWith(gif);
-    expect(usersApi.updateMe).toHaveBeenCalledWith({ nome: 'ana_b', bio: 'oi', fotoPerfil: 'https://res.cloudinary.com/t/eu.gif' });
+    expect(usersApi.updateMe).toHaveBeenCalledWith({ nome: 'ana_b', nomeExibicao: '', bio: 'oi', fotoPerfil: 'https://res.cloudinary.com/t/eu.gif' });
     expect(onSaved).toHaveBeenCalledWith({ ...ana, nome: 'ana_b' });
   });
 
@@ -75,7 +75,7 @@ describe('EditProfileModal', () => {
     renderModal();
     await userEvent.click(screen.getByRole('button', { name: 'Salvar' }));
     expect(usersApi.uploadPhoto).not.toHaveBeenCalled();
-    expect(usersApi.updateMe).toHaveBeenCalledWith({ nome: 'Ana', bio: 'oi' });
+    expect(usersApi.updateMe).toHaveBeenCalledWith({ nome: 'Ana', nomeExibicao: '', bio: 'oi' });
   });
 
   it('avisa as regras quando o nome novo não serve e não deixa salvar', async () => {
@@ -85,6 +85,25 @@ describe('EditProfileModal', () => {
 
     expect(screen.getByText('Use só letras sem acento, números, ponto e underline.')).toBeInTheDocument();
     expect(screen.getByRole('button', { name: 'Salvar' })).toBeDisabled();
+  });
+
+  it('edita o nome de exibição (até 50) e troca a capa', async () => {
+    usersApi.uploadBanner.mockResolvedValue('https://res.cloudinary.com/t/capa.jpg');
+    usersApi.updateMe.mockResolvedValue(ana);
+    renderModal({ usuario: { ...ana, nomeExibicao: 'Ana', bannerUrl: 'velha.jpg' } });
+
+    expect(screen.getByAltText('Capa do perfil')).toHaveAttribute('src', 'velha.jpg');
+    expect(screen.getByLabelText('Nome')).toHaveAttribute('maxLength', '50');
+    await userEvent.clear(screen.getByLabelText('Nome'));
+    await userEvent.type(screen.getByLabelText('Nome'), 'Ana Souza ✨');
+    const capa = new File(['img'], 'capa.jpg', { type: 'image/jpeg' });
+    await userEvent.upload(screen.getByLabelText('Escolher capa'), capa);
+    await userEvent.click(screen.getByRole('button', { name: 'Salvar' }));
+
+    expect(usersApi.uploadBanner).toHaveBeenCalledWith(capa);
+    expect(usersApi.updateMe).toHaveBeenCalledWith({
+      nome: 'Ana', nomeExibicao: 'Ana Souza ✨', bio: 'oi', bannerUrl: 'https://res.cloudinary.com/t/capa.jpg',
+    });
   });
 
   it('limita a bio a 255 caracteres', () => {
@@ -114,6 +133,14 @@ describe('UserListModal', () => {
     { id: 2, nome: 'Bia', fotoPerfil: 'bia.png' },
     { id: 3, nome: 'Caio', fotoPerfil: 'caio.png' },
   ];
+
+  it('mostra o nome de exibição e o @ de cada pessoa', () => {
+    renderWithProviders(
+      <UserListModal open title="Seguidores" users={[{ id: 2, nome: 'bia', nomeExibicao: 'Bia Souza', fotoPerfil: 'b.png' }]} seguindoIds={[]} onClose={vi.fn()} />,
+    );
+    expect(screen.getByText('Bia Souza')).toBeInTheDocument();
+    expect(screen.getByText('@bia')).toBeInTheDocument();
+  });
 
   it('lista usuários com link e botão de seguir conforme quem eu sigo (exceto eu mesmo)', () => {
     renderWithProviders(

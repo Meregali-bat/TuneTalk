@@ -122,6 +122,16 @@ describe('API fake da demo (serviços reais + banco em memória)', () => {
     expect((await call('PUT', '/users/me', JSON.stringify({ nome: 'ana.souza', fotoPerfil: 'https://x.com/a.gif' }))).status).toBe(400);
   });
 
+  it('perfil com nome de exibição e capa', async () => {
+    await login();
+    const { uploadUrl } = (await call('POST', '/users/me/banner-upload')).body;
+    expect(uploadUrl).toBe('/api/demo-upload');
+    const capa = 'data:image/jpeg;base64,AAAA';
+    const salvo = await call('PUT', '/users/me', JSON.stringify({ nome: 'ana.souza', nomeExibicao: 'Ana S.', bannerUrl: capa }));
+    expect(salvo.body).toMatchObject({ nome: 'ana.souza', nomeExibicao: 'Ana S.', bannerUrl: capa });
+    expect((await call('GET', `/users/${api.currentUserId()}`)).body.usuario).toMatchObject({ nomeExibicao: 'Ana S.', bannerUrl: capa });
+  });
+
   it('post só com imagem (GIF)', async () => {
     await login();
     expect((await call('POST', '/posts/image-upload')).body.uploadUrl).toBe('/api/demo-upload');

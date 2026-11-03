@@ -1077,36 +1077,63 @@ button.track-row:hover {
 }
 
 .profile-header {
-  display: grid;
-  gap: 1.25rem;
-  padding: 1.5rem;
+  overflow: hidden;
   border: 1px solid var(--linhas);
   border-radius: 22px;
-  background:
-    radial-gradient(120% 90% at 0% 0%, rgba(43, 168, 74, .16), transparent 60%),
-    var(--superficie);
+  background: var(--superficie);
 }
 
-.profile-header__top {
+/* Capa no estilo do Twitter: faixa 3:1 no topo, com a foto sobreposta na borda de baixo. */
+.profile-banner {
+  display: block;
+  width: 100%;
+  aspect-ratio: 3 / 1;
+  object-fit: cover;
+  background: var(--superficie-2);
+}
+
+.profile-banner--padrao {
+  background:
+    radial-gradient(90% 140% at 15% 0%, rgba(63, 196, 99, .55), transparent 60%),
+    linear-gradient(120deg, #0b2a18, #1c6b35 55%, #2ba84a);
+}
+
+.profile-header__body {
+  display: grid;
+  gap: 1rem;
+  padding: 0 1.25rem 1.25rem;
+}
+
+.profile-header__row {
   display: flex;
-  align-items: center;
-  gap: 1.1rem;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: .75rem;
   min-width: 0;
 }
 
 .profile-header__avatar {
   flex: none;
-  width: 6rem;
-  height: 6rem;
-  border: 3px solid var(--destaque);
+  width: 6.5rem;
+  height: 6.5rem;
+  margin-top: -3.25rem;
+  border: 4px solid var(--superficie);
   border-radius: 50%;
   object-fit: cover;
   background: var(--superficie-2);
 
   @media (max-width: 575px) {
-    width: 4.75rem;
-    height: 4.75rem;
+    width: 5.25rem;
+    height: 5.25rem;
+    margin-top: -2.6rem;
   }
+}
+
+.profile-header__handle {
+  margin: -.2rem 0 0;
+  color: var(--texto-suave);
+  font-size: .95rem;
+  overflow-wrap: anywhere;
 }
 
 .profile-header__identity {
@@ -1177,9 +1204,31 @@ button.track-row:hover {
 
 .profile-header__actions {
   display: flex;
+  justify-content: flex-end;
+  padding-top: .75rem;
 
-  > * {
-    flex: 1;
+  .follow-button--md {
+    min-height: 2.4rem;
+    padding: 0 1.1rem;
+    font-size: .9rem;
+  }
+}
+
+.profile-action--senha {
+  display: inline-flex;
+  align-items: center;
+  gap: .45rem;
+
+  @media (max-width: 575px) {
+    .profile-header__actions & {
+      width: 2.4rem;
+      padding: 0;
+      justify-content: center;
+    }
+
+    .profile-action__label {
+      display: none;
+    }
   }
 }
 
@@ -1720,5 +1769,51 @@ button.track-row:hover {
     border-radius: 14px;
     object-fit: cover;
     background: var(--background);
+  }
+}
+
+/* Nome de exibição e @ nas listas de seguidores */
+.user-row__handle {
+  color: var(--texto-suave);
+  font-size: .82rem;
+}
+
+/* Capa na janela de editar perfil */
+.edit-profile__banner {
+  position: relative;
+  margin: -.25rem 0 -2.5rem;
+
+  .profile-banner {
+    border-radius: 14px;
+  }
+}
+
+.edit-profile__banner-button {
+  position: absolute;
+  right: .6rem;
+  bottom: .6rem;
+  background: rgba(0, 5, 5, .7);
+}
+
+.edit-profile__photo .edit-profile__avatar {
+  position: relative;
+  border-color: var(--superficie);
+  border-width: 4px;
+}
+
+.edit-profile__input {
+  width: 100%;
+  min-height: 3rem;
+  padding: 0 1rem;
+  border: 1px solid var(--linhas);
+  border-radius: 14px;
+  background: var(--background);
+  color: var(--texto);
+  font-size: 1rem;
+
+  &:focus {
+    outline: none;
+    border-color: var(--destaque);
+    box-shadow: 0 0 0 3px rgba(43, 168, 74, .25);
   }
 }

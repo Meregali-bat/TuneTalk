@@ -23,6 +23,10 @@ model Usuario {
   senha        String  @db.VarChar(65)
   fotoPerfil   String? @map("foto_perfil") @db.VarChar(255)
   bio          String? @db.VarChar(255)
+  // Nome de exibição (livre, como no Twitter); sem ele, o perfil mostra o nome de usuário.
+  nomeExibicao String? @map("nome_exibicao") @db.VarChar(50)
+  // Capa do perfil, enviada direto ao Cloudinary (pasta tunetalk/banners).
+  bannerUrl    String? @map("banner_url") @db.VarChar(500)
   admin        Boolean @default(false)
   // Post que aparece primeiro no perfil. Se o post for apagado, volta a ficar vazio.
   postFixadoId Int?    @unique @map("post_fixado_id")

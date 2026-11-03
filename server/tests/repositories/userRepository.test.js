@@ -82,13 +82,17 @@ describe('userRepository (Postgres)', () => {
 
   it('findById devolve o usuário público ou null', async () => {
     const ana = await factory.user({ nome: 'Ana', bio: 'oi' });
-    expect(await repo.findById(ana.id)).toEqual({ id: ana.id, nome: 'Ana', fotoPerfil: ana.fotoPerfil, bio: 'oi' });
+    expect(await repo.findById(ana.id)).toEqual({
+      id: ana.id, nome: 'Ana', nomeExibicao: null, fotoPerfil: ana.fotoPerfil, bannerUrl: null, bio: 'oi',
+    });
     expect(await repo.findById(9999)).toBeNull();
   });
 
-  it('update altera nome, foto e bio', async () => {
+  it('update altera nome, nome de exibição, foto, capa e bio', async () => {
     const ana = await factory.user();
-    await repo.update(ana.id, { nome: 'Novo', fotoPerfil: 'n.png', bio: 'bio' });
-    expect(await repo.findById(ana.id)).toEqual({ id: ana.id, nome: 'Novo', fotoPerfil: 'n.png', bio: 'bio' });
+    await repo.update(ana.id, { nome: 'Novo', nomeExibicao: 'Ana Souza', fotoPerfil: 'n.png', bannerUrl: 'b.png', bio: 'bio' });
+    expect(await repo.findById(ana.id)).toEqual({
+      id: ana.id, nome: 'Novo', nomeExibicao: 'Ana Souza', fotoPerfil: 'n.png', bannerUrl: 'b.png', bio: 'bio',
+    });
   });
 });

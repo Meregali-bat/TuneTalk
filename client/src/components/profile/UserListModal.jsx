@@ -16,7 +16,8 @@ export function UserListModal({ open, title, users, seguindoIds, onClose, onFoll
               <Link to={`/perfil/${usuario.id}`} className="user-row__link" onClick={onClose}>
                 <img src={usuario.fotoPerfil} alt="" className="user-row__avatar" />
                 <span className="user-row__info">
-                  <span className="user-row__name">{usuario.nome}</span>
+                  <span className="user-row__name">{usuario.nomeExibicao || usuario.nome}</span>
+                  <span className="user-row__handle">@{usuario.nome}</span>
                   {usuario.bio && <span className="user-row__bio">{usuario.bio}</span>}
                 </span>
               </Link>
