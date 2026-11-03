@@ -39,7 +39,12 @@ export function EditFavoritesModal({ favoritos, onClose, onSaved }) {
     mudarLista([...lista, paraFavorito(resultado, aba)]);
   };
   const remover = (i) => mudarLista(lista.filter((_, j) => j !== i));
-  const moverParaAntes = (i) => mudarLista(lista.map((f, j) => (j === i - 1 ? lista[i] : j === i ? lista[i - 1] : f)));
+  // Troca o item de lugar com o vizinho (para a esquerda: -1; para a direita: +1).
+  const mover = (i, passo) => {
+    const k = i + passo;
+    if (k < 0 || k >= lista.length) return;
+    mudarLista(lista.map((f, j) => (j === i ? lista[k] : j === k ? lista[i] : f)));
+  };
 
   const trocarAba = (chave) => {
     setAba(chave);
@@ -89,23 +94,36 @@ export function EditFavoritesModal({ favoritos, onClose, onSaved }) {
         </div>
 
         <p className="composer-hint favorites-editor__contador">
-          {secao.titulo} · <strong>{lista.length} de {FAVORITOS_MAX}</strong>
+          {secao.titulo}: toque numa capa da busca para adicionar.
         </p>
         <ol className="favorites-grid favorites-editor__slots" aria-label={`${secao.titulo} escolhidos`}>
           {Array.from({ length: FAVORITOS_MAX }, (_, i) => lista[i]).map((item, i) => (item ? (
             <li key={item.id} className="favorites-grid__item">
               <FavoriteCover item={item} redondo={redondo} />
               <span className="favorites-grid__titulo">{item.titulo}</span>
-              <span className="favorites-editor__tools">
-                {i > 0 && (
-                  <button type="button" aria-label={`Mover ${item.titulo} para antes`} onClick={() => moverParaAntes(i)}>
+              <button
+                type="button"
+                className="favorites-editor__tirar"
+                aria-label={`Tirar ${item.titulo}`}
+                onClick={() => remover(i)}
+              >
+                <i className="bi bi-x-lg" aria-hidden="true" />
+              </button>
+              {lista.length > 1 && (
+                <span className="favorites-editor__ordem">
+                  <button type="button" aria-label={`Mover ${item.titulo} para antes`} disabled={i === 0} onClick={() => mover(i, -1)}>
                     <i className="bi bi-chevron-left" aria-hidden="true" />
                   </button>
-                )}
-                <button type="button" aria-label={`Tirar ${item.titulo}`} onClick={() => remover(i)}>
-                  <i className="bi bi-x-lg" aria-hidden="true" />
-                </button>
-              </span>
+                  <button
+                    type="button"
+                    aria-label={`Mover ${item.titulo} para depois`}
+                    disabled={i === lista.length - 1}
+                    onClick={() => mover(i, 1)}
+                  >
+                    <i className="bi bi-chevron-right" aria-hidden="true" />
+                  </button>
+                </span>
+              )}
             </li>
           ) : (
             <li key={`vazio-${i}`} className={`favorites-editor__vazio${redondo ? ' favorite-cover--redondo' : ''}`} aria-hidden="true">

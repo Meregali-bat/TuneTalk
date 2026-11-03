@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { formatMediaEstrelas } from '../../../shared/rating.js';
 import { useParams } from 'react-router-dom';
 import { usersApi } from '../api/index.js';
@@ -69,7 +69,7 @@ function Stat({ value, label, onClick }) {
 // Nome de exibição (livre) quando existe; senão, o nome de usuário. O @ é sempre o nome de usuário.
 export const displayName = (usuario) => usuario.nomeExibicao || usuario.nome;
 
-function ProfileHeader({ profile, isOwnProfile, onEdit, onOpenList, onFollowChange }) {
+function ProfileHeader({ profile, isOwnProfile, onEdit, onOpenList, onOpenPosts, onFollowChange }) {
   const { usuario } = profile;
   const nome = displayName(usuario);
   const media = notaMedia(profile.posts);
@@ -113,7 +113,7 @@ function ProfileHeader({ profile, isOwnProfile, onEdit, onOpenList, onFollowChan
         </div>
 
         <ul className="profile-stats" aria-label="Números do perfil">
-          <Stat value={profile.quantidadePosts} label="Posts" />
+          <Stat value={profile.quantidadePosts} label="Posts" onClick={onOpenPosts} />
           <Stat value={profile.quantidadeSeguidores} label="Seguidores" onClick={() => onOpenList('seguidores')} />
           <Stat value={profile.quantidadeSeguindo} label="Seguindo" onClick={() => onOpenList('seguindo')} />
           {media !== null && <Stat value={`${formatMediaEstrelas(media)}/5`} label="Nota média" />}
@@ -185,6 +185,12 @@ export function ProfilePage() {
   const [changingPassword, setChangingPassword] = useState(false);
   const [editingFavorites, setEditingFavorites] = useState(false);
   const [notice, setNotice] = useState('');
+  // O aviso ("Favoritos salvos.", "Senha alterada…") some sozinho depois de alguns segundos.
+  useEffect(() => {
+    if (!notice) return undefined;
+    const sumir = setTimeout(() => setNotice(''), 6000);
+    return () => clearTimeout(sumir);
+  }, [notice]);
   const [composerOpen, setComposerOpen] = useState(false);
   const [aba, setAba] = useState('posts');
   const [abriuComentarios, setAbriuComentarios] = useState(false);
@@ -237,6 +243,10 @@ export function ProfilePage() {
         isOwnProfile={isOwnProfile}
         onEdit={() => setEditing(true)}
         onOpenList={setOpenList}
+        onOpenPosts={() => {
+          abrirAba('posts');
+          document.querySelector('.profile-tabs-bar')?.scrollIntoView?.({ behavior: 'smooth', block: 'start' });
+        }}
         onFollowChange={reload}
       />
       {notice && (

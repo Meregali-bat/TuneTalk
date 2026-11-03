@@ -1,5 +1,5 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest';
-import { render, screen } from '@testing-library/react';
+import { act, render, screen } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { Modal } from './Modal.jsx';
 import { PasswordInput } from './PasswordInput.jsx';
@@ -81,15 +81,24 @@ describe('FollowButton', () => {
     const onChange = vi.fn();
     render(<FollowButton userId={2} following onChange={onChange} />);
 
+    // Primeiro toque só pede confirmação; o segundo deixa de seguir.
     await userEvent.click(screen.getByRole('button', { name: 'Seguindo' }));
+    expect(usersApi.unfollow).not.toHaveBeenCalled();
+    await userEvent.click(screen.getByRole('button', { name: 'Deixar de seguir?' }));
 
     expect(usersApi.unfollow).toHaveBeenCalledWith(2);
     expect(onChange).toHaveBeenCalledWith(false);
   });
 
-  it('"Seguindo" avisa que o toque deixa de seguir', () => {
+  it('a confirmação de deixar de seguir some se a pessoa não tocar de novo', async () => {
     render(<FollowButton userId={2} following />);
-    expect(screen.getByRole('button', { name: 'Seguindo' })).toHaveAttribute('data-acao', 'Deixar de seguir');
+    const botao = screen.getByRole('button', { name: 'Seguindo' });
+    expect(botao).toHaveAttribute('aria-pressed', 'true');
+    await userEvent.click(botao);
+    expect(botao).toHaveTextContent('Deixar de seguir?');
+    await act(() => { botao.blur(); });
+    expect(botao).toHaveTextContent('Seguindo');
+    expect(usersApi.unfollow).not.toHaveBeenCalled();
   });
 
   it('se falhar, avisa e deixa tentar de novo', async () => {

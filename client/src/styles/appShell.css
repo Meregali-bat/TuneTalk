@@ -1249,6 +1249,12 @@ button.track-row:hover {
   button& {
     transition: background-color .15s ease;
 
+    /* Pontilhado sob o rótulo: mostra, sem depender de passar o mouse, que o número abre algo. */
+    span {
+      text-decoration: underline dotted;
+      text-underline-offset: .2em;
+    }
+
     &:hover {
       background: var(--superficie-2);
     }
@@ -1320,42 +1326,13 @@ button.track-row:hover {
     opacity: .6;
   }
 
-  &.is-error {
-    border-color: var(--erro);
-  }
-}
-
-/* "Seguindo" vira "Deixar de seguir" ao apontar ou focar, como no Twitter (só onde há mouse:
-   no toque o :hover gruda depois do toque e mostraria o aviso logo após seguir). */
-@media (hover: hover) {
-  .follow-button[data-acao]:hover:not(:disabled) {
+  /* Pedindo confirmação para deixar de seguir, ou depois de uma falha. */
+  &.is-error,
+  &.is-error:hover:not(:disabled) {
     border-color: rgba(245, 91, 100, .6);
     background: rgba(245, 91, 100, .08);
     color: var(--erro);
   }
-}
-
-.follow-button[data-acao]:focus-visible:not(:disabled) {
-  border-color: rgba(245, 91, 100, .6);
-  color: var(--erro);
-}
-
-@media (hover: hover) {
-  .follow-button[data-acao]:hover:not(:disabled) .follow-button__texto {
-    display: none;
-  }
-
-  .follow-button[data-acao]:hover:not(:disabled)::after {
-    content: attr(data-acao);
-  }
-}
-
-.follow-button[data-acao]:focus-visible:not(:disabled) .follow-button__texto {
-  display: none;
-}
-
-.follow-button[data-acao]:focus-visible:not(:disabled)::after {
-  content: attr(data-acao);
 }
 
 .follow-button--md {
@@ -2374,6 +2351,14 @@ button.track-row:hover {
 
 .profile-tabs {
   margin: 0;
+
+  /* Aba ativa em tom neutro com risco verde: o verde cheio fica para as ações principais. */
+  .feed-tabs__tab.is-active,
+  button.feed-tabs__tab.is-active {
+    background: var(--superficie-2);
+    box-shadow: inset 0 -2px 0 var(--destaque);
+    color: var(--texto);
+  }
 }
 
 /* "Respondendo a @fulano" nos comentários listados fora da conversa */
@@ -2631,8 +2616,12 @@ button.lyrics-picker__verso {
     line-height: 1.45;
   }
 
+  /* Ação secundária (contorno): no perfil vazio, o botão verde cheio é "Fazer o primeiro post". */
   .feed-empty__action {
     margin-top: 0;
+    border: 1px solid var(--destaque);
+    background: none;
+    color: var(--texto);
   }
 }
 
@@ -2717,7 +2706,6 @@ button.lyrics-picker__verso {
   font-weight: 600;
   line-height: 1.25;
   overflow-wrap: break-word;
-  hyphens: auto;
   -webkit-box-orient: vertical;
   -webkit-line-clamp: 2;
 }
@@ -2760,6 +2748,8 @@ button.lyrics-picker__verso {
   padding: .75rem .35rem;
   border-top: 1px solid var(--linhas);
   background: var(--superficie);
+  /* Cobre a sobra de padding embaixo, para os resultados não aparecerem por baixo do Salvar. */
+  box-shadow: 0 .35rem 0 var(--superficie);
 }
 
 .lyrics-picker__acoes .composer-link,
@@ -2810,31 +2800,53 @@ button.lyrics-picker__verso {
   font-size: .85rem;
 }
 
-.favorites-editor__tools {
+.favorites-editor__tirar {
   position: absolute;
   top: .2rem;
   right: .2rem;
+  display: grid;
+  place-items: center;
+  width: 1.6rem;
+  height: 1.6rem;
+  padding: 0;
+  border: 0;
+  border-radius: 50%;
+  background: rgba(0, 5, 5, .82);
+  color: var(--texto);
+  font-size: .75rem;
+
+  /* Área de toque maior que o desenho. */
+  &::after {
+    content: '';
+    position: absolute;
+    inset: -.5rem;
+  }
+}
+
+/* Mudar a ordem fica embaixo da capa, longe do X. */
+.favorites-editor__ordem {
   display: flex;
-  gap: .15rem;
+  justify-content: space-between;
+  margin-top: .2rem;
 
   button {
-    position: relative;
     display: grid;
     place-items: center;
-    width: 1.6rem;
-    height: 1.6rem;
+    width: 1.75rem;
+    height: 2.75rem;
     padding: 0;
     border: 0;
-    border-radius: 50%;
-    background: rgba(0, 5, 5, .82);
-    color: var(--texto);
-    font-size: .75rem;
+    border-radius: 8px;
+    background: none;
+    color: var(--texto-suave);
 
-    /* Área de toque de 44px sem aumentar o botão desenhado. */
-    &::after {
-      content: '';
-      position: absolute;
-      inset: -.5rem;
+    &:hover:not(:disabled) {
+      color: var(--texto);
+      background: var(--superficie-2);
+    }
+
+    &:disabled {
+      opacity: .25;
     }
   }
 }

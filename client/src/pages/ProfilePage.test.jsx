@@ -164,6 +164,23 @@ describe('ProfilePage', () => {
       expect(within(primeiro).getByText('post 11')).toBeInTheDocument();
     });
 
+    it('"Editar perfil" com mudanças pergunta antes de fechar ou ir trocar a senha', async () => {
+      usersApi.profile.mockResolvedValue(profile({ usuario: ana }));
+      const confirmar = vi.spyOn(window, 'confirm').mockReturnValue(false);
+      renderProfile(1);
+      await userEvent.click(await screen.findByRole('button', { name: 'Editar perfil' }));
+      const dialog = screen.getByRole('dialog', { name: 'Editar perfil' });
+      await userEvent.type(within(dialog).getByLabelText('Bio'), 'nova bio');
+
+      await userEvent.click(within(dialog).getByRole('button', { name: 'Trocar senha' }));
+      await userEvent.click(within(dialog).getByRole('button', { name: 'Cancelar' }));
+      expect(confirmar).toHaveBeenCalledTimes(2);
+      expect(confirmar).toHaveBeenCalledWith('Descartar as mudanças no perfil?');
+      expect(screen.getByRole('dialog', { name: 'Editar perfil' })).toBeInTheDocument();
+      expect(screen.queryByRole('dialog', { name: 'Trocar senha' })).toBeNull();
+      confirmar.mockRestore();
+    });
+
     it('troca a senha pela seção Conta de "Editar perfil" e confirma na tela', async () => {
       usersApi.profile.mockResolvedValue(profile({ usuario: ana }));
       usersApi.changePassword.mockResolvedValue(null);
@@ -301,6 +318,14 @@ describe('ProfilePage', () => {
     expect(await screen.findByRole('alert')).toHaveTextContent('Esse perfil não existe ou mudou de @.');
   });
 
+  it('tocar em "Posts" nos números abre a aba de posts', async () => {
+    usersApi.comments.mockResolvedValue([]);
+    renderProfile();
+    await userEvent.click(await screen.findByRole('tab', { name: 'Comentários' }));
+    await userEvent.click(screen.getByRole('button', { name: 'Posts: 2' }));
+    expect(screen.getByRole('tab', { name: 'Posts' })).toHaveAttribute('aria-selected', 'true');
+  });
+
   it('setas do teclado trocam entre Posts e Comentários', async () => {
     usersApi.comments.mockResolvedValue([]);
     renderProfile();
@@ -392,14 +417,16 @@ describe('ProfilePage', () => {
 
       await userEvent.click(await screen.findByRole('button', { name: 'Editar favoritos' }));
       const dialog = screen.getByRole('dialog', { name: 'Favoritos' });
-      expect(within(dialog).getByText('1 de 5')).toBeInTheDocument();
+      expect(within(dialog).getByRole('tab', { name: 'Músicas: 1 de 5' })).toBeInTheDocument();
 
       await userEvent.type(within(dialog).getByLabelText('Buscar músicas'), 'beatles');
       // Quem já está na lista aparece desligado.
       expect(await within(dialog).findByRole('button', { name: /Help!The Beatles/ })).toBeDisabled();
       await userEvent.click(within(dialog).getByRole('button', { name: /Yesterday/ }));
-      expect(within(dialog).getByText('2 de 5')).toBeInTheDocument();
-      await userEvent.click(within(dialog).getByRole('button', { name: 'Mover Yesterday para antes' }));
+      expect(within(dialog).getByRole('tab', { name: 'Músicas: 2 de 5' })).toBeInTheDocument();
+      expect(within(dialog).getByRole('button', { name: 'Mover Help! para antes' })).toBeDisabled();
+      await userEvent.click(within(dialog).getByRole('button', { name: 'Mover Help! para depois' }));
+      expect(within(dialog).getByRole('button', { name: 'Mover Help! para depois' })).toBeDisabled();
 
       await userEvent.click(within(dialog).getByRole('tab', { name: /^Álbuns/ }));
       await userEvent.type(within(dialog).getByLabelText('Buscar álbuns'), 'abbey');
