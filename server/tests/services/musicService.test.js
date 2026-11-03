@@ -21,8 +21,20 @@ describe('musicService', () => {
 
     expect(fetch).toHaveBeenCalledWith('https://api.deezer.com/search?q=help%20me');
     expect(result).toEqual([
-      { id: 1, titulo: 'Help!', artista: 'The Beatles', capa: 'help.jpg', duracao: 138, preview: 'help.mp3' },
+      { id: 1, tipo: 'musica', titulo: 'Help!', artista: 'The Beatles', capa: 'help.jpg', duracao: 138, preview: 'help.mp3' },
     ]);
+  });
+
+  it('busca álbuns na busca de álbuns do Deezer', async () => {
+    const fetch = vi.fn().mockResolvedValue(okResponse({
+      data: [{ id: 9, title: 'Abbey Road', nb_tracks: 17, cover_medium: 'abbey.jpg', artist: { name: 'The Beatles' } }],
+    }));
+    const music = createMusicService({ fetch });
+
+    const result = await music.search('abbey road', 'album');
+
+    expect(fetch).toHaveBeenCalledWith('https://api.deezer.com/search/album?q=abbey%20road');
+    expect(result).toEqual([{ id: 9, tipo: 'album', titulo: 'Abbey Road', artista: 'The Beatles', capa: 'abbey.jpg', faixas: 17 }]);
   });
 
   it('devolve lista vazia sem chamar a API para busca em branco', async () => {

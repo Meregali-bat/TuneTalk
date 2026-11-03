@@ -80,7 +80,7 @@ describe('CreatePost', () => {
 
   const open = () => userEvent.click(screen.getByRole('button', { name: 'Criar post' }));
   const texto = () => screen.getByLabelText('O que você quer dizer?');
-  const addMusic = () => userEvent.click(screen.getByRole('button', { name: 'Adicionar música' }));
+  const addMusic = () => userEvent.click(screen.getByRole('button', { name: 'Adicionar música ou álbum' }));
   const search = (term) => userEvent.type(screen.getByLabelText('Buscar música'), term);
   const chooseHelp = async () => {
     await open();
@@ -192,6 +192,52 @@ describe('CreatePost', () => {
     expect(publicar).toBeEnabled();
   });
 
+  describe('álbum', () => {
+    const abbey = { id: 9, tipo: 'album', titulo: 'Abbey Road', artista: 'The Beatles', capa: 'abbey.jpg', faixas: 17 };
+
+    const chooseAbbey = async () => {
+      musicApi.search.mockResolvedValue([abbey]);
+      await open();
+      await addMusic();
+      await userEvent.click(screen.getByRole('tab', { name: 'Álbuns' }));
+      await userEvent.type(screen.getByLabelText('Buscar álbum'), 'abbey');
+      await userEvent.click(await screen.findByRole('button', { name: /Abbey Road/ }));
+    };
+
+    it('a busca tem abas Músicas e Álbuns; em Álbuns procura álbuns', async () => {
+      musicApi.search.mockResolvedValue([abbey]);
+      render(<CreatePost onCreated={vi.fn()} />);
+      await open();
+      await addMusic();
+
+      expect(screen.getByRole('tab', { name: 'Músicas' })).toHaveAttribute('aria-selected', 'true');
+      await userEvent.click(screen.getByRole('tab', { name: 'Álbuns' }));
+      await userEvent.type(screen.getByLabelText('Buscar álbum'), 'abbey');
+
+      const item = await screen.findByRole('button', { name: /Abbey Road/ });
+      expect(item).toHaveTextContent('The Beatles · 17 faixas');
+      expect(musicApi.search).toHaveBeenLastCalledWith('abbey', 'album');
+    });
+
+    it('publica o álbum com a nota', async () => {
+      render(<CreatePost onCreated={vi.fn()} />);
+      await chooseAbbey();
+
+      expect(screen.getByRole('group', { name: 'Álbum escolhido' })).toHaveTextContent('Abbey Road');
+      await userEvent.click(screen.getByRole('button', { name: 'Estrela 5' }));
+      await userEvent.click(screen.getByRole('button', { name: 'Publicar' }));
+
+      expect(postsApi.create).toHaveBeenCalledWith({
+        texto: '',
+        albumName: 'Abbey Road',
+        artistName: 'The Beatles',
+        posterAlbum: 'abbey.jpg',
+        postType: 'album',
+        nota: 9,
+      });
+    });
+  });
+
   it('"Trocar música" volta para a busca com os resultados de antes', async () => {
     render(<CreatePost onCreated={vi.fn()} />);
     await chooseHelp();
@@ -211,7 +257,7 @@ describe('CreatePost', () => {
 
     expect(screen.queryByRole('group', { name: 'Música escolhida' })).toBeNull();
     expect(screen.queryByRole('group', { name: 'Nota de 0 a 5 estrelas' })).toBeNull();
-    expect(screen.getByRole('button', { name: 'Adicionar música' })).toBeInTheDocument();
+    expect(screen.getByRole('button', { name: 'Adicionar música ou álbum' })).toBeInTheDocument();
   });
 
   it('publica com a música e a nota de 0 a 10', async () => {

@@ -80,7 +80,7 @@ describe('PostPage', () => {
 
     const dialog = screen.getByRole('dialog', { name: 'Comentar' });
     expect(dialog).toHaveTextContent('Respondendo a Ana');
-    expect(within(dialog).getByRole('button', { name: 'Adicionar música' })).toBeInTheDocument();
+    expect(within(dialog).getByRole('button', { name: 'Adicionar música ou álbum' })).toBeInTheDocument();
 
     postsApi.get.mockResolvedValue(detail({ respostas: [reply(5, 'concordo'), reply(6, 'demais', ana)] }));
     await userEvent.type(within(dialog).getByLabelText('Seu comentário'), 'demais');

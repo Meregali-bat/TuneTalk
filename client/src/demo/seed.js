@@ -10,7 +10,12 @@ export const CATALOG = [
   ['Bohemian Rhapsody', 'Queen', 354], ['Garota de Ipanema', 'João Gilberto', 315], ['Construção', 'Chico Buarque', 384],
   ['Velha Infância', 'Tribalistas', 250], ['Blinding Lights', 'The Weeknd', 200], ['Águas de Março', 'Elis Regina', 213],
   ['Clube da Esquina nº 2', 'Milton Nascimento', 222], ['Smells Like Teen Spirit', 'Nirvana', 301], ['Tempo Perdido', 'Legião Urbana', 301],
-].map(([titulo, artista, duracao], i) => ({ id: i + 1, titulo, artista, capa: coverArt(titulo, artista), duracao, preview: null }));
+].map(([titulo, artista, duracao], i) => ({ id: i + 1, tipo: 'musica', titulo, artista, capa: coverArt(titulo, artista), duracao, preview: null }));
+
+export const ALBUM_CATALOG = [
+  ['Abbey Road', 'The Beatles', 17], ['Clube da Esquina', 'Milton Nascimento & Lô Borges', 21], ['GUTS', 'Olivia Rodrigo', 12],
+  ['SOUR', 'Olivia Rodrigo', 11], ['Elis & Tom', 'Elis Regina & Tom Jobim', 14], ['A Night at the Opera', 'Queen', 12],
+].map(([titulo, artista, faixas], i) => ({ id: 100 + i, tipo: 'album', titulo, artista, capa: coverArt(titulo, artista), faixas }));
 
 const minutesAgo = (n) => new Date(Date.now() - n * 60 * 1000).toISOString();
 

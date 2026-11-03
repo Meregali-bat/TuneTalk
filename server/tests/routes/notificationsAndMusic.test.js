@@ -39,7 +39,10 @@ describe('rotas /api/notifications e /api/music', () => {
     deps.musicService.search.mockResolvedValue([{ id: 1, titulo: 'Help!' }]);
     const res = await agent.get('/api/music/search?q=help');
     expect(res.body).toEqual([{ id: 1, titulo: 'Help!' }]);
-    expect(deps.musicService.search).toHaveBeenCalledWith('help');
+    expect(deps.musicService.search).toHaveBeenCalledWith('help', 'musica');
+
+    await agent.get('/api/music/search?q=abbey&tipo=album');
+    expect(deps.musicService.search).toHaveBeenLastCalledWith('abbey', 'album');
   });
 
   it('rotas /api desconhecidas respondem 404 em JSON', async () => {

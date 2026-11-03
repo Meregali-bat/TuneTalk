@@ -7,7 +7,7 @@ import { createUserService } from '../../../server/src/services/userService.js';
 import { createPasswords } from '../../../server/src/security/passwords.js';
 import { createPasswordResetService } from '../../../server/src/services/passwordResetService.js';
 import { createMemoryRepositories } from './memoryRepositories.js';
-import { CATALOG, DEMO_LOGIN, createSeed } from './seed.js';
+import { ALBUM_CATALOG, CATALOG, DEMO_LOGIN, createSeed } from './seed.js';
 import { avatar } from './art.js';
 
 export { DEMO_LOGIN };
@@ -39,10 +39,11 @@ const fileToDataUrl = (file) =>
     reader.readAsDataURL(file);
   });
 
-const searchCatalog = (q) => {
+const searchCatalog = (q, tipo) => {
   const term = (q ?? '').trim().toLowerCase();
   if (!term) return [];
-  return CATALOG.filter((t) => `${t.titulo} ${t.artista}`.toLowerCase().includes(term));
+  const catalogo = tipo === 'album' ? ALBUM_CATALOG : CATALOG;
+  return catalogo.filter((t) => `${t.titulo} ${t.artista}`.toLowerCase().includes(term));
 };
 
 // Custo menor que o do servidor: no navegador, cada hash bcrypt trava a tela enquanto calcula.
@@ -157,7 +158,7 @@ export function createFakeApi({ storage = globalThis.localStorage } = {}) {
     ['GET', /^\/notifications\/unread-count$/, async () => ok({ count: await services.notifications.countUnread(me()) })],
     ['POST', /^\/notifications\/read-all$/, async () => { await services.notifications.markAllRead(me()); return noContent(); }],
 
-    ['GET', /^\/music\/search$/, ({ query }) => { me(); return ok(searchCatalog(query.get('q'))); }],
+    ['GET', /^\/music\/search$/, ({ query }) => { me(); return ok(searchCatalog(query.get('q'), query.get('tipo'))); }],
   ];
 
   return {

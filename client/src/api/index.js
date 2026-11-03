@@ -61,5 +61,6 @@ export const notificationsApi = {
 };
 
 export const musicApi = {
-  search: (q) => request(`/music/search?q=${encodeURIComponent(q)}`),
+  // tipo 'album' busca álbuns; sem tipo, faixas.
+  search: (q, tipo) => request(`/music/search?q=${encodeURIComponent(q)}${tipo === 'album' ? '&tipo=album' : ''}`),
 };

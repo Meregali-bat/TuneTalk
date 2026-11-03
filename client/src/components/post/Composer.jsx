@@ -15,7 +15,9 @@ function TrackInfo({ track }) {
       <img src={track.capa} alt="" className="track-row__cover" />
       <span className="track-row__info">
         <span className="track-row__title">{track.titulo}</span>
-        <span className="track-row__meta">{track.artista} · {formatDuration(track.duracao)}</span>
+        <span className="track-row__meta">
+          {track.artista} · {track.tipo === 'album' ? `${track.faixas} faixas` : formatDuration(track.duracao)}
+        </span>
       </span>
     </>
   );
@@ -55,7 +57,8 @@ function CropPreview({ src, recorte }) {
   );
 }
 
-function useMusicSearch(query) {
+// tipo: 'musica' (faixas) ou 'album'.
+function useMusicSearch(query, tipo) {
   const [search, setSearch] = useState({ status: 'idle', results: [] });
   const term = useDebouncedValue(query.trim(), 300);
 
@@ -66,18 +69,38 @@ function useMusicSearch(query) {
     }
     let active = true;
     setSearch((current) => ({ ...current, status: 'loading' }));
-    musicApi.search(term)
+    (tipo === 'album' ? musicApi.search(term, 'album') : musicApi.search(term))
       .then((results) => active && setSearch({ status: 'done', results, term }))
       .catch(() => active && setSearch({ status: 'error', results: [] }));
     return () => { active = false; };
-  }, [term]);
+  }, [term, tipo]);
 
   return search;
 }
 
-function SearchStep({ query, onQueryChange, search, onSelect, onBack }) {
+const BUSCAS = {
+  musica: { aba: 'Músicas', rotulo: 'Buscar música', placeholder: 'Música ou artista', dica: 'Digite o nome de uma música ou artista.' },
+  album: { aba: 'Álbuns', rotulo: 'Buscar álbum', placeholder: 'Álbum ou artista', dica: 'Digite o nome de um álbum ou artista.' },
+};
+
+function SearchStep({ query, onQueryChange, tipo, onTipoChange, search, onSelect, onBack }) {
+  const busca = BUSCAS[tipo];
   return (
     <div className="composer-step">
+      <div role="tablist" aria-label="O que buscar" className="composer-tabs">
+        {Object.entries(BUSCAS).map(([chave, { aba }]) => (
+          <button
+            key={chave}
+            type="button"
+            role="tab"
+            aria-selected={chave === tipo}
+            className={`composer-tabs__tab${chave === tipo ? ' is-active' : ''}`}
+            onClick={() => onTipoChange(chave)}
+          >
+            {aba}
+          </button>
+        ))}
+      </div>
       <div className="composer-search-bar">
         <button type="button" className="icon-button" aria-label="Voltar" onClick={onBack}>
           <i className="bi bi-arrow-left" aria-hidden="true" />
@@ -86,8 +109,9 @@ function SearchStep({ query, onQueryChange, search, onSelect, onBack }) {
           <i className="bi bi-search" aria-hidden="true" />
           <input
             type="search"
-            aria-label="Buscar música"
-            placeholder="Música ou artista"
+            key={tipo}
+            aria-label={busca.rotulo}
+            placeholder={busca.placeholder}
             autoComplete="off"
             autoFocus
             value={query}
@@ -96,7 +120,7 @@ function SearchStep({ query, onQueryChange, search, onSelect, onBack }) {
         </div>
       </div>
 
-      {search.status === 'idle' && <p className="composer-hint">Digite o nome de uma música ou artista.</p>}
+      {search.status === 'idle' && <p className="composer-hint">{busca.dica}</p>}
       {search.status === 'loading' && <p role="status" className="composer-hint">Buscando…</p>}
       {search.status === 'error' && (
         <p role="alert" className="composer-error">Não foi possível buscar agora. Tente de novo.</p>
@@ -120,7 +144,12 @@ function SearchStep({ query, onQueryChange, search, onSelect, onBack }) {
   );
 }
 
-const musicFields = (track) => ({
+const musicFields = (track) => (track.tipo === 'album' ? {
+  albumName: track.titulo,
+  artistName: track.artista,
+  posterAlbum: track.capa,
+  postType: 'album',
+} : {
   musicName: track.titulo,
   artistName: track.artista,
   posterMusica: track.capa,
@@ -146,7 +175,8 @@ export function Composer({
   const [nota, setNota] = useState(null);
   const [searching, setSearching] = useState(false);
   const [query, setQuery] = useState('');
-  const search = useMusicSearch(query);
+  const [tipoBusca, setTipoBusca] = useState('musica');
+  const search = useMusicSearch(query, tipoBusca);
   const [imagem, setImagem] = useState(null);
   const [recorte, setRecorte] = useState(null);
   const [pendente, setPendente] = useState(null); // imagem aberta no ajuste
@@ -230,6 +260,8 @@ export function Composer({
       <SearchStep
         query={query}
         onQueryChange={setQuery}
+        tipo={tipoBusca}
+        onTipoChange={setTipoBusca}
         search={search}
         onSelect={chooseTrack}
         onBack={() => setSearching(false)}
@@ -269,9 +301,15 @@ export function Composer({
 
       {track ? (
         <div className="composer-music">
-          <div role="group" aria-label="Música escolhida" className="track-row track-row--selected">
+          <div
+            role="group"
+            aria-label={track.tipo === 'album' ? 'Álbum escolhido' : 'Música escolhida'}
+            className="track-row track-row--selected"
+          >
             <TrackInfo track={track} />
-            <button type="button" className="composer-link" onClick={() => setSearching(true)}>Trocar música</button>
+            <button type="button" className="composer-link" onClick={() => setSearching(true)}>
+              {track.tipo === 'album' ? 'Trocar álbum' : 'Trocar música'}
+            </button>
             <button type="button" className="icon-button" aria-label="Remover música" onClick={removeTrack}>
               <i className="bi bi-x-lg" aria-hidden="true" />
             </button>
@@ -281,7 +319,7 @@ export function Composer({
       ) : (
         <button type="button" className="composer-attach" onClick={() => setSearching(true)}>
           <i className="bi bi-music-note-beamed" aria-hidden="true" />
-          Adicionar música
+          Adicionar música ou álbum
           <span className="composer-attach__hint" aria-hidden="true">opcional</span>
         </button>
       )}

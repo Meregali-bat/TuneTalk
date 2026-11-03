@@ -30,6 +30,7 @@ describe('endpoints da API', () => {
     ['notificationsApi.list', () => notificationsApi.list(), ['/notifications']],
     ['notificationsApi.readAll', () => notificationsApi.readAll(), ['/notifications/read-all', { method: 'POST' }]],
     ['musicApi.search', () => musicApi.search('a b'), ['/music/search?q=a%20b']],
+    ['musicApi.search (álbuns)', () => musicApi.search('abbey', 'album'), ['/music/search?q=abbey&tipo=album']],
   ])('%s chama o endpoint certo', async (_, call, args) => {
     await call();
     expect(request).toHaveBeenCalledWith(...args);

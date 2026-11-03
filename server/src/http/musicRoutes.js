@@ -6,7 +6,7 @@ export function createMusicRoutes({ musicService }) {
   router.use(requireAuth, requireUsername);
 
   router.get('/search', asyncRoute(async (req, res) => {
-    res.json(await musicService.search(req.query.q));
+    res.json(await musicService.search(req.query.q, req.query.tipo === 'album' ? 'album' : 'musica'));
   }));
 
   return router;

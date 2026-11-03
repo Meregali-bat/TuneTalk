@@ -1909,3 +1909,28 @@ button.track-row:hover {
   width: fit-content;
   max-width: 100%;
 }
+
+/* Abas Músicas | Álbuns na busca do compositor (mesmo visual das abas do feed). */
+.composer-tabs {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  padding: .25rem;
+  border: 1px solid var(--linhas);
+  border-radius: 999px;
+  background: var(--background);
+}
+
+.composer-tabs__tab {
+  padding: .5rem 1rem;
+  border: none;
+  border-radius: 999px;
+  background: none;
+  color: var(--texto-suave);
+  font-weight: 600;
+  transition: background-color .15s ease, color .15s ease;
+
+  &.is-active {
+    background: var(--destaque);
+    color: var(--background);
+  }
+}
