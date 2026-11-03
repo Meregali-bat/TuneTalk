@@ -247,8 +247,25 @@
 .post-card__who {
   display: flex;
   flex: 1;
-  flex-direction: column;
+  align-items: baseline;
+  gap: .3rem;
   min-width: 0;
+  white-space: nowrap;
+}
+
+/* Sem espaço: o @ encolhe primeiro (com "…"), depois o nome; o tempo fica sempre inteiro. */
+.post-card__handle {
+  flex: 0 1 auto;
+  min-width: 0;
+  overflow: hidden;
+  color: var(--texto-suave);
+  font-size: .9rem;
+  text-overflow: ellipsis;
+}
+
+.post-card__dot {
+  flex: none;
+  color: var(--texto-suave);
 }
 
 .post-card__author {
@@ -264,8 +281,9 @@
 }
 
 .post-card__time {
+  flex: none;
   color: var(--texto-suave);
-  font-size: .8rem;
+  font-size: .9rem;
 }
 
 .post-card__text {
@@ -1954,6 +1972,10 @@ button.track-row:hover {
 
 .post-card__author-line {
   display: inline-flex;
+  /* O nome não encolhe junto com o @ (meio pixel a menos já cortaria letras com "…"); só
+     um nome que sozinho não cabe é cortado, sempre deixando lugar para o tempo. */
+  flex: none;
+  max-width: calc(100% - 3.5rem);
   align-items: center;
   gap: .3rem;
   min-width: 0;

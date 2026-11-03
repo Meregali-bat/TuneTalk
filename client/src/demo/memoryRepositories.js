@@ -18,8 +18,8 @@ export function createMemoryRepositories(state, onChange) {
   };
   const userById = (id) => state.usuarios.find((u) => u.id === id);
   const author = (id) => {
-    const { nome, fotoPerfil, fundadorDesde, mostrarSeloFundador = true } = userById(id);
-    return { id, nome, fotoPerfil, fundadorDesde, mostrarSeloFundador };
+    const { nome, nomeExibicao = null, fotoPerfil, fundadorDesde, mostrarSeloFundador = true } = userById(id);
+    return { id, nome, nomeExibicao, fotoPerfil, fundadorDesde, mostrarSeloFundador };
   };
 
   const postRow = (post) => toPost({

@@ -86,7 +86,7 @@ describe('ProfilePage', () => {
       renderProfile();
 
       expect(await screen.findByRole('heading', { level: 1, name: 'Bia Souza' })).toBeInTheDocument();
-      expect(screen.getByText('@bia')).toBeInTheDocument();
+      expect(document.querySelector('.profile-header__handle')).toHaveTextContent('@bia');
       expect(screen.getByAltText('Capa do perfil de Bia Souza')).toHaveAttribute('src', 'capa.jpg');
       expect(screen.getByAltText('Foto de perfil de Bia Souza')).toBeInTheDocument();
     });
@@ -94,7 +94,7 @@ describe('ProfilePage', () => {
     it('sem nome de exibição nem capa: mostra o nome de usuário e uma capa padrão', async () => {
       renderProfile();
       expect(await screen.findByRole('heading', { level: 1, name: 'bia' })).toBeInTheDocument();
-      expect(screen.getByText('@bia')).toBeInTheDocument();
+      expect(document.querySelector('.profile-header__handle')).toHaveTextContent('@bia');
       expect(screen.queryByAltText(/Capa do perfil/)).toBeNull();
       expect(screen.getByTestId('capa-padrao')).toBeInTheDocument();
     });

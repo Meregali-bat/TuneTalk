@@ -3,7 +3,7 @@ import { Link, useNavigate } from 'react-router-dom';
 import { useAuth } from '../../auth/AuthContext.jsx';
 import { postsApi } from '../../api/index.js';
 import { releaseInfo } from '../../utils/postFormat.js';
-import { relativeTime } from '../../utils/relativeTime.js';
+import { relativeTime, shortTime } from '../../utils/relativeTime.js';
 import { StarRating } from './StarRating.jsx';
 import { formatEstrelas } from '../../../../shared/rating.js';
 import { splitMentions } from '../../../../shared/mentions.js';
@@ -62,6 +62,7 @@ export function PostCard({
   const [fixado, setFixado] = useState(Boolean(post.fixado));
   useEffect(() => setFixado(Boolean(post.fixado)), [post.fixado]);
   const isOwner = user?.id === post.autor.id;
+  const nomeAutor = post.autor.nomeExibicao || post.autor.nome;
   const navigate = useNavigate();
   const temMarcacao = splitMentions(post.texto ?? '').some((p) => p.tipo !== 'texto');
   const authorId = useId();
@@ -84,7 +85,7 @@ export function PostCard({
     <article
       // threadLine: numa conversa, a linha sai da foto e liga este post ao de baixo (como no Twitter).
       className={`post-card post-card--${variant}${threadLine ? ' post-card--continua' : ''}`}
-      aria-label={post.titulo ? `Post de ${post.autor.nome} sobre ${post.titulo}` : `Post de ${post.autor.nome}`}
+      aria-label={post.titulo ? `Post de ${nomeAutor} sobre ${post.titulo}` : `Post de ${nomeAutor}`}
     >
       {post.respondendoA && (
         <Link to={`/post/${post.respondendoA.postId}`} className="post-card__context">
@@ -98,13 +99,16 @@ export function PostCard({
         <Link to={profileUrl} className="post-card__avatar" tabIndex={-1} aria-hidden="true">
           <img src={post.autor.fotoPerfil} alt="" />
         </Link>
+        {/* Como no Twitter: nome de exibição, selos, @usuario e o tempo curto, numa linha só. */}
         <div className="post-card__who">
           <span className="post-card__author-line">
-            <Link to={profileUrl} className="post-card__author" id={authorId}>{post.autor.nome}</Link>
+            <Link to={profileUrl} className="post-card__author" id={authorId}>{nomeAutor}</Link>
             <VerifiedBadge nome={post.autor.nome} />
             <FounderBadge ativo={Boolean(post.autor.fundador)} />
           </span>
-          <time className="post-card__time" dateTime={post.data}>{relativeTime(post.data)}</time>
+          <span className="post-card__handle">@{post.autor.nome}</span>
+          <span className="post-card__dot" aria-hidden="true">·</span>
+          <time className="post-card__time" dateTime={post.data} title={relativeTime(post.data)}>{shortTime(post.data)}</time>
         </div>
         {showMenu && (
           <PostMenu

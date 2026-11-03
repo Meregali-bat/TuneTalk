@@ -56,7 +56,7 @@ describe('postRepository (Postgres)', () => {
         imagem: null,
         imagemProporcao: null,
         fixado: false,
-        autor: { id: ana.id, nome: 'Ana', fotoPerfil: 'ana.png', fundador: false },
+        autor: { id: ana.id, nome: 'Ana', nomeExibicao: null, fotoPerfil: 'ana.png', fundador: false },
       });
     });
 
@@ -138,7 +138,7 @@ describe('postRepository (Postgres)', () => {
     await db.prisma.usuario.update({ where: { id: ana.id }, data: { postFixadoId: p1.id } });
 
     expect((await repo.listByAuthor(ana.id)).map((p) => [p.id, p.fixado])).toEqual([[p2.id, false], [p1.id, true]]);
-    expect((await repo.findById(p1.id)).autor).toEqual({ id: ana.id, nome: 'Ana', fotoPerfil: 'ana.png', fundador: false });
+    expect((await repo.findById(p1.id)).autor).toEqual({ id: ana.id, nome: 'Ana', nomeExibicao: null, fotoPerfil: 'ana.png', fundador: false });
 
     await db.prisma.usuario.update({ where: { id: ana.id }, data: { fundadorDesde: new Date() } });
     expect((await repo.findById(p1.id)).autor.fundador).toBe(true);

@@ -20,3 +20,17 @@ export function relativeTime(date, now = new Date()) {
   const [name, size] = unit;
   return format.format(-Math.max(1, Math.round(seconds / size)), name);
 }
+
+// Versão curta, como no Twitter: "agora", "5 min", "5 h", "3 d" e, depois de uma semana, a data.
+const data = new Intl.DateTimeFormat('pt-BR', { day: 'numeric', month: 'short', timeZone: 'UTC' });
+const dataComAno = new Intl.DateTimeFormat('pt-BR', { day: 'numeric', month: 'short', year: 'numeric', timeZone: 'UTC' });
+
+export function shortTime(date, now = new Date()) {
+  const quando = new Date(date);
+  const segundos = (now.getTime() - quando.getTime()) / 1000;
+  if (segundos < 60) return 'agora';
+  if (segundos < 3600) return `${Math.floor(segundos / 60)} min`;
+  if (segundos < 24 * 3600) return `${Math.floor(segundos / 3600)} h`;
+  if (segundos < 7 * 24 * 3600) return `${Math.floor(segundos / (24 * 3600))} d`;
+  return (quando.getUTCFullYear() === now.getUTCFullYear() ? data : dataComAno).format(quando);
+}

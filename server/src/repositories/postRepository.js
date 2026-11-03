@@ -1,7 +1,7 @@
 import { hasHashtag } from '../../../shared/mentions.js';
 
 const POST_INCLUDE = {
-  autor: { select: { id: true, nome: true, fotoPerfil: true, postFixadoId: true, fundadorDesde: true, mostrarSeloFundador: true } },
+  autor: { select: { id: true, nome: true, nomeExibicao: true, fotoPerfil: true, postFixadoId: true, fundadorDesde: true, mostrarSeloFundador: true } },
   _count: { select: { respostas: true, curtidas: true } },
 };
 
@@ -37,7 +37,13 @@ export function toPost(row) {
     imagem: row.imagemUrl ?? null,
     imagemProporcao: row.imagemProporcao ?? null,
     fixado: row.autor.postFixadoId === row.id,
-    autor: { id: row.autor.id, nome: row.autor.nome, fotoPerfil: row.autor.fotoPerfil, fundador: Boolean(row.autor.fundadorDesde) && row.autor.mostrarSeloFundador !== false },
+    autor: {
+      id: row.autor.id,
+      nome: row.autor.nome,
+      nomeExibicao: row.autor.nomeExibicao ?? null,
+      fotoPerfil: row.autor.fotoPerfil,
+      fundador: Boolean(row.autor.fundadorDesde) && row.autor.mostrarSeloFundador !== false,
+    },
   };
 }
 

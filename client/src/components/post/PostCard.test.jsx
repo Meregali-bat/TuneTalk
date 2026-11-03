@@ -38,9 +38,10 @@ describe('PostCard', () => {
     renderWithProviders(<PostCard post={musicPost} />);
 
     expect(screen.getByText('Bia')).toBeInTheDocument();
-    const time = screen.getByText('há 2 horas');
+    const time = screen.getByText('2 h');
     expect(time.tagName).toBe('TIME');
     expect(time).toHaveAttribute('dateTime', musicPost.data);
+    expect(time).toHaveAttribute('title', 'há 2 horas');
     expect(screen.getByText('que som')).toBeInTheDocument();
     expect(screen.getByRole('heading', { name: 'Help!' })).toBeInTheDocument();
     expect(screen.getByText('The Beatles • música • 2 min')).toBeInTheDocument();
@@ -48,6 +49,14 @@ describe('PostCard', () => {
     expect(screen.getByText('3,5/5')).toBeInTheDocument();
     expect(screen.getByAltText('Poster da música')).toHaveAttribute('src', 'help.jpg');
     expect(screen.getByRole('button', { name: 'Tocar prévia' })).toBeInTheDocument();
+  });
+
+  it('topo como no Twitter: nome de exibição, @usuario e o tempo na mesma linha', () => {
+    renderWithProviders(<PostCard post={{ ...musicPost, autor: { ...musicPost.autor, nome: 'carol', nomeExibicao: 'Twit da Carol' } }} />);
+    const linha = screen.getByRole('link', { name: 'Twit da Carol' }).closest('.post-card__who');
+    expect(linha).toHaveTextContent('Twit da Carol@carol·2 h');
+    expect(screen.getByRole('link', { name: 'Twit da Carol' })).toHaveAttribute('href', '/perfil/2');
+    expect(screen.getByRole('article')).toHaveAccessibleName('Post de Twit da Carol sobre Help!');
   });
 
   it('linka para o perfil do autor e para o post', () => {
