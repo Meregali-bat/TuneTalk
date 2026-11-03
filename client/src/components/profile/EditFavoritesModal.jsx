@@ -1,4 +1,4 @@
-import { useId, useState } from 'react';
+import { useEffect, useId, useRef, useState } from 'react';
 import { usersApi } from '../../api/index.js';
 import { Modal } from '../common/Modal.jsx';
 import { useMusicSearch } from '../../hooks/useMusicSearch.js';
@@ -34,6 +34,12 @@ export function EditFavoritesModal({ favoritos, onClose, onSaved }) {
   const lista = rascunho[aba];
   const cheia = lista.length >= FAVORITOS_MAX;
   const redondo = aba === 'artistas';
+  const buscaRef = useRef(null);
+
+  // Lista cheia: limpa a busca (os resultados somem com motivo, não do nada).
+  useEffect(() => {
+    if (cheia) setQuery('');
+  }, [cheia]);
 
   const mudarLista = (nova) => setRascunho((atual) => ({ ...atual, [aba]: nova }));
   const adicionar = (resultado) => {
@@ -41,8 +47,17 @@ export function EditFavoritesModal({ favoritos, onClose, onSaved }) {
     mudarLista([...lista, paraFavorito(resultado, aba)]);
   };
   const remover = (i) => {
-    mudarLista(lista.filter((_, j) => j !== i));
+    const restante = lista.filter((_, j) => j !== i);
+    mudarLista(restante);
     setSelecionado(null);
+    // O foco vai para a capa vizinha (ou para a busca, se a lista esvaziou), em vez de cair no nada.
+    const vizinho = restante[Math.min(i, restante.length - 1)];
+    requestAnimationFrame(() => {
+      const alvo = vizinho
+        ? document.querySelector(`[data-favorito="${vizinho.id.replace(/"/g, '\\"')}"]`)
+        : buscaRef.current;
+      alvo?.focus();
+    });
   };
   // Troca o item de lugar com o vizinho (para a esquerda: -1; para a direita: +1).
   const mover = (i, passo) => {
@@ -114,16 +129,17 @@ export function EditFavoritesModal({ favoritos, onClose, onSaved }) {
         </div>
 
         <div role="tabpanel" id={painelId} aria-labelledby={`${painelId}-aba-${aba}`} className="favorites-editor__painel">
-        <p className="composer-hint favorites-editor__contador">
-          {lista.length === 0
-            ? 'Busque abaixo e toque num resultado para adicionar.'
-            : 'Toque numa capa para mudar a ordem ou tirar.'}
+        <p role="status" className="composer-hint favorites-editor__contador">
+          {lista.length === 0 && 'Busque abaixo e toque num resultado para adicionar.'}
+          {lista.length > 0 && !cheia && 'Toque numa capa para mudar a ordem ou tirar.'}
+          {cheia && 'Lista cheia. Toque numa capa para trocar de lugar ou tirar.'}
         </p>
         <ol className="favorites-grid favorites-editor__slots" aria-label={`${secao.titulo} escolhidos`}>
           {Array.from({ length: FAVORITOS_MAX }, (_, i) => lista[i]).map((item, i) => (item ? (
             <li key={item.id} className="favorites-grid__item">
               <button
                 type="button"
+                data-favorito={item.id}
                 className={`favorites-editor__capa${selecionado === item.id ? ' is-selected' : ''}`}
                 aria-pressed={selecionado === item.id}
                 aria-label={`${i + 1}º: ${item.titulo}`}
@@ -167,6 +183,7 @@ export function EditFavoritesModal({ favoritos, onClose, onSaved }) {
         <div className="composer-search">
           <i className="bi bi-search" aria-hidden="true" />
           <input
+            ref={buscaRef}
             type="search"
             key={aba}
             aria-label={`Buscar ${secao.aba.toLowerCase()}`}

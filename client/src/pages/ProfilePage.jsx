@@ -116,7 +116,12 @@ function ProfileHeader({ profile, isOwnProfile, onEdit, onOpenList, onOpenPosts,
           <Stat value={profile.quantidadePosts} label="Posts" onClick={onOpenPosts} />
           <Stat value={profile.quantidadeSeguidores} label="Seguidores" onClick={() => onOpenList('seguidores')} />
           <Stat value={profile.quantidadeSeguindo} label="Seguindo" onClick={() => onOpenList('seguindo')} />
-          {media !== null && <Stat value={`${formatMediaEstrelas(media)}/5`} label="Nota média" />}
+          {media !== null && (
+            <Stat
+              value={<><i className="bi bi-star-fill profile-stat__estrela" aria-hidden="true" /> {formatMediaEstrelas(media)}/5</>}
+              label="Nota média"
+            />
+          )}
         </ul>
       </div>
     </header>
@@ -249,11 +254,10 @@ export function ProfilePage() {
         }}
         onFollowChange={reload}
       />
-      {notice && (
-        <p role="status" className="profile-notice">
-          <i className="bi bi-check-circle-fill" aria-hidden="true" /> {notice}
-        </p>
-      )}
+      {/* Aviso flutuante (não empurra a página). A região fica sempre montada para o leitor de tela anunciar. */}
+      <p role="status" className={`profile-notice${notice ? ' is-visible' : ''}`}>
+        {notice && <><i className="bi bi-check-circle-fill" aria-hidden="true" /> {notice}</>}
+      </p>
 
       <ProfileFavorites
         favoritos={profile.favoritos}
@@ -284,6 +288,7 @@ export function ProfilePage() {
       </div>
 
       <div role="tabpanel" id="painel-posts" aria-labelledby="aba-posts" hidden={aba !== 'posts'}>
+        <h2 className="visually-hidden">Posts de {displayName(profile.usuario)}</h2>
         {profile.posts.length === 0 ? (
           <EmptyPosts nome={displayName(profile.usuario)} isOwnProfile={isOwnProfile} onCompose={() => setComposerOpen(true)} />
         ) : (
@@ -297,6 +302,7 @@ export function ProfilePage() {
 
       {/* Fica montada depois de aberta, para não buscar de novo a cada troca de aba. */}
       <div role="tabpanel" id="painel-comentarios" aria-labelledby="aba-comentarios" hidden={aba !== 'comentarios'}>
+        <h2 className="visually-hidden">Comentários de {displayName(profile.usuario)}</h2>
         {abriuComentarios && <ProfileComments usuarioId={profile.usuario.id} nome={displayName(profile.usuario)} />}
       </div>
 

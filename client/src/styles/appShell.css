@@ -1220,8 +1220,15 @@ button.track-row:hover {
   grid-template-columns: repeat(auto-fit, minmax(0, 1fr));
   margin: 0;
   padding: 0;
-  border-block: 1px solid var(--linhas);
+  border-top: 1px solid var(--linhas);
   list-style: none;
+}
+
+.profile-stat__estrela {
+  margin-right: .1em;
+  color: var(--destaque-claro);
+  font-size: .75em;
+  vertical-align: .1em;
 }
 
 .profile-stat__inner {
@@ -1239,6 +1246,7 @@ button.track-row:hover {
     font-size: 1.2rem;
     font-weight: 700;
     font-variant-numeric: tabular-nums;
+    white-space: nowrap;
   }
 
   span {
@@ -1308,9 +1316,12 @@ button.track-row:hover {
   white-space: nowrap;
   transition: background-color .15s ease, color .15s ease, border-color .15s ease;
 
-  &:hover:not(:disabled) {
-    background: var(--destaque-claro);
-    border-color: var(--destaque-claro);
+  /* Só onde há mouse: no toque o :hover gruda depois do toque. */
+  @media (hover: hover) {
+    &:hover:not(:disabled) {
+      background: var(--destaque-claro);
+      border-color: var(--destaque-claro);
+    }
   }
 
   &.is-following {
@@ -1703,15 +1714,32 @@ button.track-row:hover {
   gap: .6rem;
 }
 
+/* Aviso do perfil: flutua acima do botão de postar, sem empurrar a página. */
 .profile-notice {
+  position: fixed;
+  left: 50%;
+  bottom: calc(env(safe-area-inset-bottom, 0px) + 6rem);
+  z-index: 1030;
   display: flex;
   align-items: center;
   gap: .5rem;
-  margin: 1rem 0 0;
+  width: max-content;
+  max-width: calc(100vw - 2rem);
+  margin: 0;
   padding: .75rem 1rem;
+  box-shadow: 0 10px 30px -10px rgba(0, 0, 0, .8);
+  opacity: 0;
+  pointer-events: none;
+  transform: translate(-50%, .5rem);
+  transition: opacity .2s ease-out, transform .2s ease-out;
+
+  &.is-visible {
+    opacity: 1;
+    transform: translate(-50%, 0);
+  }
   border: 1px solid rgba(43, 168, 74, .45);
   border-radius: 12px;
-  background: rgba(43, 168, 74, .1);
+  background: #0d2416;
   color: var(--texto);
   font-size: .9rem;
 
@@ -2717,6 +2745,13 @@ button.lyrics-picker__verso {
   -webkit-line-clamp: 2;
 }
 
+/* No perfil, uma linha só: as três fileiras ocupam menos altura antes dos posts. */
+.profile-favorites .favorites-grid__titulo {
+  display: block;
+  white-space: nowrap;
+  text-overflow: ellipsis;
+}
+
 .favorites-grid__artista {
   overflow: hidden;
   color: var(--texto-suave);
@@ -2731,7 +2766,7 @@ button.lyrics-picker__verso {
   .profile-favorites .favorites-grid {
     grid-template-columns: none;
     grid-auto-flow: column;
-    grid-auto-columns: 28%;
+    grid-auto-columns: 23%;
     margin-inline: -1.25rem;
     padding-inline: 1.25rem;
     overflow-x: auto;
@@ -2822,7 +2857,9 @@ button.lyrics-picker__verso {
 
 .favorites-editor__contador {
   margin: 0;
+  padding: 0;
   text-align: left;
+  text-wrap: pretty;
 
   strong {
     color: var(--destaque);

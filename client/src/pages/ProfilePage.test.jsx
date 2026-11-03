@@ -62,7 +62,7 @@ describe('ProfilePage', () => {
 
     const stats = screen.getByRole('list', { name: 'Números do perfil' });
     expect(within(stats).getAllByRole('listitem').map((item) => item.textContent)).toEqual([
-      '2Posts', '1Seguidores', '0Seguindo', '3,8/5Nota média',
+      '2Posts', '1Seguidores', '0Seguindo', ' 3,8/5Nota média',
     ]);
     expect(screen.getByRole('tab', { name: 'Posts' })).toHaveAttribute('aria-selected', 'true');
     expect(screen.getByText('post 10')).toBeInTheDocument();
@@ -342,6 +342,20 @@ describe('ProfilePage', () => {
     expect(comentarios).toHaveAttribute('aria-selected', 'true');
     expect(comentarios).toHaveFocus();
     expect(posts).toHaveAttribute('tabindex', '-1');
+  });
+
+  it('tirar um favorito leva o foco para a capa vizinha; lista cheia avisa', async () => {
+    const ana = { id: 1, nome: 'ana', fotoPerfil: 'a.png', bio: '' };
+    const capa = (n) => `https://cdn-images.dzcdn.net/${n}.jpg`;
+    const cinco = [1, 2, 3, 4, 5].map((i) => ({ id: String(i), titulo: `Música ${i}`, artista: 'X', capa: capa(i) }));
+    usersApi.profile.mockResolvedValue(profile({ usuario: ana, favoritos: { musicas: cinco, albuns: [], artistas: [] } }));
+    renderProfile(1);
+    await userEvent.click(await screen.findByRole('button', { name: 'Editar favoritos' }));
+    expect(screen.getByText('Lista cheia. Toque numa capa para trocar de lugar ou tirar.')).toBeInTheDocument();
+
+    await tirarFavorito('Música 3');
+    await waitFor(() => expect(screen.getByRole('button', { name: '3º: Música 4' })).toHaveFocus());
+    expect(screen.getByText('Toque numa capa para mudar a ordem ou tirar.')).toBeInTheDocument();
   });
 
   it('falha de conexão explica e deixa tentar de novo', async () => {
