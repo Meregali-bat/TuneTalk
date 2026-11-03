@@ -35,20 +35,35 @@ function ThreadSkeleton() {
   );
 }
 
+// Respostas de um post e, embaixo de cada uma, as respostas dela (até 3 níveis), numa lista só,
+// na ordem da conversa — como o Twitter mostra ao abrir "Mostrar respostas".
+async function carregarConversa(postId, nivel = 1) {
+  const { respostas } = await postsApi.get(postId);
+  const linhas = [];
+  for (const resposta of respostas) {
+    linhas.push(resposta);
+    if (resposta.quantidadeComentarios > 0 && nivel < 3) linhas.push(...await carregarConversa(resposta.id, nivel + 1));
+  }
+  return linhas;
+}
+
 /**
  * Um comentário com a conversa embaixo, como no Twitter: a primeira resposta aparece direto;
- * se houver mais, "Mostrar respostas" busca as outras e mostra ali mesmo.
+ * se ainda houver resposta escondida (do comentário ou das respostas), "Mostrar respostas"
+ * lista o resto ali mesmo, na mesma coluna.
  */
 function ReplyThread({ resposta, onDeleted }) {
   const [todas, setTodas] = useState(null);
   const [carregando, setCarregando] = useState(false);
   const respostas = todas ?? (resposta.primeiraResposta ? [resposta.primeiraResposta] : []);
-  const faltam = resposta.quantidadeComentarios - respostas.length;
+  const temMais = todas === null && respostas.length > 0 && (
+    resposta.quantidadeComentarios > respostas.length || respostas.some((r) => r.quantidadeComentarios > 0)
+  );
 
   const mostrarTodas = async () => {
     setCarregando(true);
     try {
-      setTodas((await postsApi.get(resposta.id)).respostas);
+      setTodas(await carregarConversa(resposta.id));
     } finally {
       setCarregando(false);
     }
@@ -63,9 +78,9 @@ function ReplyThread({ resposta, onDeleted }) {
       {respostas.map((r, i) => (
         <PostCard key={r.id} post={r} variant="reply" onDeleted={tirar} threadLine={i < respostas.length - 1} />
       ))}
-      {todas === null && faltam > 0 && respostas.length > 0 && (
+      {temMais && (
         <button type="button" className="reply-thread__more" onClick={mostrarTodas} disabled={carregando}>
-          {carregando ? 'Carregando…' : `Mostrar respostas (mais ${faltam})`}
+          {carregando ? 'Carregando…' : 'Mostrar respostas'}
         </button>
       )}
     </div>

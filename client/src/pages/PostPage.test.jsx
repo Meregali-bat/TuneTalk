@@ -142,7 +142,7 @@ describe('PostPage', () => {
         post: reply(5, 'concordo', caio),
         respostas: [respostaDaResposta, reply(21, 'eu também', caio, { parentId: 5 }), reply(22, 'e eu', ana, { parentId: 5 })],
       }));
-      await userEvent.click(within(conversa).getByRole('button', { name: 'Mostrar respostas (mais 2)' }));
+      await userEvent.click(within(conversa).getByRole('button', { name: 'Mostrar respostas' }));
 
       expect(postsApi.get).toHaveBeenLastCalledWith(5);
       expect(await within(conversa).findByText('e eu')).toBeInTheDocument();
@@ -152,6 +152,25 @@ describe('PostPage', () => {
         .toEqual([true, true, true, false]);
       expect(within(conversa).queryByRole('button', { name: /Mostrar respostas/ })).toBeNull();
     });
+  });
+
+  it('a resposta tem respostas próprias: "Mostrar respostas" aparece e continua a conversa na mesma coluna', async () => {
+    const resposta = reply(20, 'nem fudendo q da pra postar foto', ana, { parentId: 5, quantidadeComentarios: 1 });
+    postsApi.get.mockResolvedValueOnce(detail({
+      respostas: [{ ...reply(5, 'olha isso', caio, { quantidadeComentarios: 1 }), primeiraResposta: resposta }],
+    }));
+    renderPost();
+    const conversa = await screen.findByRole('group', { name: 'Conversa do comentário de Caio' });
+
+    postsApi.get
+      .mockResolvedValueOnce(detail({ post: reply(5, 'olha isso', caio), respostas: [resposta] }))
+      .mockResolvedValueOnce(detail({ post: resposta, respostas: [reply(30, 'dá sim kkk', caio, { parentId: 20 })] }));
+    await userEvent.click(within(conversa).getByRole('button', { name: 'Mostrar respostas' }));
+
+    expect(await within(conversa).findByText('dá sim kkk')).toBeInTheDocument();
+    expect(postsApi.get).toHaveBeenCalledWith(20);
+    expect(within(conversa).getAllByRole('article').map((a) => a.textContent.includes('dá sim kkk'))).toEqual([false, false, true]);
+    expect(within(conversa).queryByRole('button', { name: 'Mostrar respostas' })).toBeNull();
   });
 
   it('apagar um comentário tira ele da lista', async () => {
