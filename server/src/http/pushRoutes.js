@@ -16,6 +16,11 @@ export function createPushRoutes({ pushService }) {
     res.status(204).end();
   }));
 
+  // Manda um aviso só para os aparelhos de quem pediu (para conferir se está chegando).
+  router.post('/teste', asyncRoute(async (req, res) => {
+    res.json(await pushService.testar(currentUserId(req)));
+  }));
+
   router.delete('/inscricoes', asyncRoute(async (req, res) => {
     await pushService.cancelar(currentUserId(req), req.body?.endpoint);
     res.status(204).end();
