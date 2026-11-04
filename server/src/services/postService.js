@@ -309,7 +309,7 @@ export function createPostService({
       if (pai) await notifyAuthor(pai, autorId, 'comment', 'comentou no seu post');
       // O aviso aponta para a citação (é lá que está a opinião sobre o post).
       if (citado && citado.autor.id !== autorId) {
-        await notifications.create({ destinatarioId: citado.autor.id, autorId, tipo: 'citacao', conteudo: 'citou seu post', postId: id });
+        await notifications.create({ destinatarioId: citado.autor.id, autorId, tipo: 'citacao', conteudo: 'remixou seu post', postId: id });
       }
       await notifyMentions(data.texto, { id, autorId, pai, jaAvisado: citado?.autor.id });
       if (!pai) await celebrarMarco(autorId, id);

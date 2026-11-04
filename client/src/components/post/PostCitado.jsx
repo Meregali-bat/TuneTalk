@@ -35,7 +35,7 @@ export function PostCitado({ post, comLink = true }) {
       )}
     </>
   );
-  const rotulo = `Post citado de ${nome}`;
+  const rotulo = `Post original de ${nome}`;
   return comLink
     ? <Link to={`/post/${post.id}`} className="post-citado" aria-label={rotulo}>{conteudo}</Link>
     : <div className="post-citado" role="group" aria-label={rotulo}>{conteudo}</div>;

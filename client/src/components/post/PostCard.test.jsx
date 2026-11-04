@@ -272,7 +272,7 @@ describe('PostCard', () => {
 
     it('mostra o post citado dentro do post, com link para ele', () => {
       renderWithProviders(<PostCard post={citacao} />);
-      const citado = screen.getByRole('link', { name: 'Post citado de Bia' });
+      const citado = screen.getByRole('link', { name: 'Post original de Bia' });
       expect(citado).toHaveAttribute('href', '/post/10');
       expect(citado).toHaveTextContent('que som');
       expect(citado).toHaveTextContent('Help!');
@@ -283,13 +283,13 @@ describe('PostCard', () => {
       expect(screen.getByText('Este post não está disponível.')).toBeInTheDocument();
     });
 
-    it('"Citar post" abre o compositor com o post e, ao publicar, vai para a citação', async () => {
+    it('"Remixar post" abre o compositor com o post e, ao publicar, vai para a citação', async () => {
       postsApi.create.mockResolvedValue({ id: 77 });
       renderWithProviders(<PostCard post={musicPost} />);
-      await userEvent.click(screen.getByRole('button', { name: 'Citar post' }));
+      await userEvent.click(screen.getByRole('button', { name: 'Remixar post' }));
 
-      const dialogo = screen.getByRole('dialog', { name: 'Citar post' });
-      expect(dialogo).toContainElement(screen.getByRole('group', { name: 'Post citado de Bia' }));
+      const dialogo = screen.getByRole('dialog', { name: 'Remixar post' });
+      expect(dialogo).toContainElement(screen.getByRole('group', { name: 'Post original de Bia' }));
       await userEvent.type(screen.getByLabelText('O que você acha desse post?'), 'discordo');
       await userEvent.click(screen.getByRole('button', { name: 'Publicar' }));
 
@@ -299,7 +299,7 @@ describe('PostCard', () => {
 
     it('comentário não tem o botão de citar', () => {
       renderWithProviders(<PostCard post={{ ...musicPost, parentId: 5 }} />);
-      expect(screen.queryByRole('button', { name: 'Citar post' })).toBeNull();
+      expect(screen.queryByRole('button', { name: 'Remixar post' })).toBeNull();
     });
   });
 });
