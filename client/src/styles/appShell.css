@@ -691,7 +691,8 @@
     background: var(--azul);
   }
 
-  &.notif__icon--new_follower {
+  &.notif__icon--new_follower,
+  &.notif__icon--voto_enquete {
     background: var(--destaque);
     color: var(--background);
   }

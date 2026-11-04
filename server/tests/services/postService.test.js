@@ -177,6 +177,25 @@ describe('postService', () => {
       expect(posts.votar).toHaveBeenCalledWith(5, 9, 12);
     });
 
+    it('votar avisa quem postou; votar na própria enquete não avisa', async () => {
+      posts.findById.mockResolvedValue(post(5, 3, { enquete: enqueteDoPost('2099-01-01T00:00:00.000Z') }));
+      await service.votar(5, 9, 12);
+      expect(notifications.create).toHaveBeenCalledWith({
+        destinatarioId: 3, autorId: 9, tipo: 'voto_enquete', conteudo: 'votou na sua enquete', postId: 5,
+      });
+
+      notifications.create.mockClear();
+      await service.votar(5, 3, 12);
+      expect(notifications.create).not.toHaveBeenCalled();
+    });
+
+    it('voto repetido não gera notificação', async () => {
+      posts.findById.mockResolvedValue(post(5, 3, { enquete: enqueteDoPost('2099-01-01T00:00:00.000Z') }));
+      posts.votar.mockResolvedValueOnce(false);
+      await expect(service.votar(5, 9, 11)).rejects.toMatchObject({ status: 409 });
+      expect(notifications.create).not.toHaveBeenCalled();
+    });
+
     it('votar: recusa post sem enquete, enquete encerrada, opção de outra enquete e voto repetido', async () => {
       posts.findById.mockResolvedValueOnce(post(5));
       await expect(service.votar(5, 9, 11)).rejects.toMatchObject({ status: 400, message: 'Esse post não tem enquete.' });

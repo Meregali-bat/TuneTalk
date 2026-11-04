@@ -28,4 +28,14 @@ describe('NotificationList: selo de fundador e marcações', () => {
     expect(within(item).getByText('bia')).toBeInTheDocument();
     expect(item.querySelector('.bi-at')).not.toBeNull();
   });
+
+  it('voto na enquete: quem votou, com ícone de enquete, levando ao post', () => {
+    renderWithProviders(<NotificationList notifications={[{
+      id: 3, tipo: 'voto_enquete', conteudo: 'votou na sua enquete', lida: false, postId: 40, autor: bia,
+    }]} />);
+    const item = screen.getByRole('link');
+    expect(item).toHaveAttribute('href', '/post/40');
+    expect(item).toHaveTextContent('bia votou na sua enquete');
+    expect(item.querySelector('.notif__icon--voto_enquete .bi-bar-chart-fill')).not.toBeNull();
+  });
 });

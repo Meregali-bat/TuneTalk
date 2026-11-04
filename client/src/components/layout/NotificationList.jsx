@@ -8,6 +8,7 @@ const ICONS = {
   new_follower: 'bi-person-plus-fill',
   selo_fundador: 'bi-award-fill',
   mention: 'bi-at',
+  voto_enquete: 'bi-bar-chart-fill',
 };
 
 // Avisos do próprio TuneTalk (ex.: selo de fundador) aparecem com o logo, não com o nome de alguém.
@@ -28,7 +29,7 @@ export function NotificationList({ notifications, onNavigate }) {
       <div className="notif-empty">
         <i className="bi bi-bell" aria-hidden="true" />
         <p className="notif-empty__title">Nada por aqui ainda</p>
-        <p>Curtidas, comentários e novos seguidores aparecem aqui.</p>
+        <p>Curtidas, comentários, votos nas suas enquetes e novos seguidores aparecem aqui.</p>
       </div>
     );
   }

@@ -15,6 +15,7 @@ enum TipoNotificacao {
   new_follower
   selo_fundador
   mention
+  voto_enquete
 }
 
 model Usuario {

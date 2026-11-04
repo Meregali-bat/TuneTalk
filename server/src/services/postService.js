@@ -184,6 +184,8 @@ export function createPostService({
       const opcao = Number(opcaoId);
       if (!post.enquete.opcoes.some((o) => o.id === opcao)) throw badRequest('Opção inválida.');
       if (!(await posts.votar(postId, usuarioId, opcao))) throw conflict('Você já votou nessa enquete.');
+      // Quem postou fica sabendo do voto (votar na própria enquete não avisa).
+      await notifyAuthor(post, usuarioId, 'voto_enquete', 'votou na sua enquete');
       const atualizado = await posts.findById(postId);
       return { ...atualizado.enquete, meuVoto: opcao };
     },
