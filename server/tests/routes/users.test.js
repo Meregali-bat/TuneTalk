@@ -211,6 +211,15 @@ describe('rotas /api/users', () => {
     expect(deps.sugestaoService.listar).toHaveBeenCalledWith(1);
   });
 
+  it('PUT /me/email troca o email e atualiza a sessão', async () => {
+    deps.userService.changeEmail.mockResolvedValue({ email: 'novo@x.com' });
+    const agent = await loggedAgent(app);
+    const res = await agent.put('/api/users/me/email').send({ senhaAtual: 'Senha!1', novoEmail: 'novo@x.com' }).expect(200);
+    expect(res.body).toMatchObject({ id: 1, email: 'novo@x.com' });
+    expect(deps.userService.changeEmail).toHaveBeenCalledWith(1, 'Senha!1', 'novo@x.com');
+    expect((await agent.get('/api/auth/me').expect(200)).body.email).toBe('novo@x.com');
+  });
+
   describe('bloquear e silenciar', () => {
     it('POST faz e DELETE desfaz, sempre para quem está logado', async () => {
       const agent = await loggedAgent(app);

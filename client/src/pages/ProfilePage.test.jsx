@@ -7,7 +7,7 @@ import { makeAuth, renderWithProviders } from '../test/render.jsx';
 
 vi.mock('../api/index.js', () => ({
   usersApi: {
-    profile: vi.fn(), comments: vi.fn(), updateFavorites: vi.fn(), follow: vi.fn(), unfollow: vi.fn(), updateMe: vi.fn(), changePassword: vi.fn(),
+    profile: vi.fn(), comments: vi.fn(), updateFavorites: vi.fn(), follow: vi.fn(), unfollow: vi.fn(), updateMe: vi.fn(), changePassword: vi.fn(), changeEmail: vi.fn(),
     bloquear: vi.fn(), desbloquear: vi.fn(), silenciar: vi.fn(), dessilenciar: vi.fn(),
   },
   postsApi: { like: vi.fn(), unlike: vi.fn(), remove: vi.fn(), create: vi.fn(), pin: vi.fn(), unpin: vi.fn() },
@@ -244,10 +244,63 @@ describe('ProfilePage', () => {
       expect(screen.queryByRole('dialog')).toBeNull();
     });
 
-    it('perfil de outra pessoa não tem "Trocar senha"', async () => {
+    it('perfil de outra pessoa não tem "Trocar senha" nem "Trocar email"', async () => {
       renderProfile();
       await screen.findByRole('heading', { level: 1, name: 'bia' });
       expect(screen.queryByRole('button', { name: 'Trocar senha' })).toBeNull();
+      expect(screen.queryByRole('button', { name: 'Trocar email' })).toBeNull();
+    });
+
+    describe('trocar email', () => {
+      const abrir = async (auth) => {
+        usersApi.profile.mockResolvedValue(profile({ usuario: ana }));
+        renderProfile(1, auth);
+        await userEvent.click(await screen.findByRole('button', { name: 'Trocar email' }));
+        return screen.getByRole('dialog', { name: 'Trocar email' });
+      };
+
+      it('mostra o email atual, troca com a senha e confirma na tela', async () => {
+        const updateUser = vi.fn();
+        usersApi.changeEmail.mockResolvedValue({ id: 1, nome: 'Ana', email: 'ana.nova@x.com' });
+        const dialog = await abrir(makeAuth({ updateUser }));
+
+        expect(within(dialog).getByText('ana@x.com')).toBeInTheDocument();
+        await userEvent.type(within(dialog).getByLabelText('Novo email'), ' Ana.Nova@X.com ');
+        await userEvent.type(within(dialog).getByLabelText('Senha atual'), 'Atual!1');
+        await userEvent.click(within(dialog).getByRole('button', { name: 'Salvar novo email' }));
+
+        expect(usersApi.changeEmail).toHaveBeenCalledWith('Atual!1', 'ana.nova@x.com');
+        expect(await screen.findByRole('status')).toHaveTextContent('Email trocado. Agora você entra com ana.nova@x.com.');
+        expect(updateUser).toHaveBeenCalledWith({ email: 'ana.nova@x.com' });
+        expect(screen.queryByRole('dialog')).toBeNull();
+      });
+
+      it('só deixa salvar com email válido, diferente do atual e com a senha', async () => {
+        const dialog = await abrir();
+        const salvar = within(dialog).getByRole('button', { name: 'Salvar novo email' });
+        const campo = within(dialog).getByLabelText('Novo email');
+
+        await userEvent.type(campo, 'sem-arroba');
+        expect(within(dialog).getByText('Informe um email válido.')).toBeInTheDocument();
+        await userEvent.clear(campo);
+        await userEvent.type(campo, 'ANA@x.com');
+        expect(within(dialog).getByText('Esse já é o seu email.')).toBeInTheDocument();
+        await userEvent.clear(campo);
+        await userEvent.type(campo, 'nova@x.com');
+        expect(salvar).toBeDisabled();
+        await userEvent.type(within(dialog).getByLabelText('Senha atual'), 'Atual!1');
+        expect(salvar).toBeEnabled();
+      });
+
+      it('mostra o erro do servidor (ex.: email de outra conta) e deixa tentar de novo', async () => {
+        usersApi.changeEmail.mockRejectedValue(new Error('Já existe uma conta com esse email.'));
+        const dialog = await abrir();
+        await userEvent.type(within(dialog).getByLabelText('Novo email'), 'bia@x.com');
+        await userEvent.type(within(dialog).getByLabelText('Senha atual'), 'Atual!1');
+        await userEvent.click(within(dialog).getByRole('button', { name: 'Salvar novo email' }));
+        expect(await within(dialog).findByRole('alert')).toHaveTextContent('Já existe uma conta com esse email.');
+        expect(within(dialog).getByRole('button', { name: 'Salvar novo email' })).toBeEnabled();
+      });
     });
 
     it('sem posts convida a fazer o primeiro', async () => {

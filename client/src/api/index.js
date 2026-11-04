@@ -77,6 +77,9 @@ export const usersApi = {
   // { musicas, albuns, artistas }, até 5 de cada.
   updateFavorites: (favoritos) => request('/users/me/favoritos', { method: 'PUT', body: favoritos }),
   setUsername: (nome) => request('/users/me/username', { method: 'PUT', body: { nome } }),
+  // Devolve o usuário da sessão já com o email novo.
+  changeEmail: (senhaAtual, novoEmail) =>
+    request('/users/me/email', { method: 'PUT', body: { senhaAtual, novoEmail } }),
   changePassword: (senhaAtual, novaSenha) =>
     request('/users/me/password', { method: 'PUT', body: { senhaAtual, novaSenha } }),
   follow: (id) => request(`/users/${id}/follow`, { method: 'POST' }),

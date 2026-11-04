@@ -22,6 +22,12 @@ export function createUserRoutes({ userService, postService, restricaoService, s
     res.status(204).end();
   }));
 
+  router.put('/me/email', asyncRoute(async (req, res) => {
+    const { email } = await userService.changeEmail(currentUserId(req), req.body.senhaAtual, req.body.novoEmail);
+    req.session.user = { ...req.session.user, email };
+    res.json(req.session.user);
+  }));
+
   router.put('/me/favoritos', asyncRoute(async (req, res) => {
     res.json(await userService.updateFavorites(currentUserId(req), req.body));
   }));

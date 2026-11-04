@@ -2,9 +2,23 @@ import { badRequest, conflict, forbidden, notFound } from '../errors.js';
 import { SEM_RESTRICOES, haBloqueio } from './restricaoService.js';
 import { USERNAME_MESSAGES, checkUsername } from '../../../shared/usernameRules.js';
 import { PASSWORD_RULES_MESSAGE, isPasswordValid } from '../../../shared/passwordRules.js';
+import { emailValido, limparEmail } from '../../../shared/emailRules.js';
 import { capaDoDeezer, favoritosVazios, lerFavoritos, validarFavoritos } from '../../../shared/favorites.js';
 
 export const BIO_MAX = 255;
+
+// Aviso mandado para o email antigo quando a pessoa troca o email da conta.
+export function avisoTrocaDeEmail({ nome, novoEmail }) {
+  const ola = nome ? `Olá, ${nome}!` : 'Olá!';
+  const texto = `O email da sua conta no TuneTalk foi trocado para ${novoEmail}. `
+    + 'Se foi você, está tudo certo. Se não foi, entre no TuneTalk, troque o email de volta e troque também a sua senha.';
+  const escapar = (t) => t.replace(/[&<>"]/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c]));
+  return {
+    subject: 'O email da sua conta no TuneTalk mudou',
+    text: `${ola}\n\n${texto}`,
+    html: `<p>${escapar(ola)}</p><p>${escapar(texto)}</p>`,
+  };
+}
 export const NOME_EXIBICAO_MAX = 50;
 
 // undefined mantém o atual; texto vazio apaga (o perfil volta a mostrar só o nome de usuário).
@@ -13,6 +27,8 @@ const cleanNomeExibicao = (valor, atual) => (valor === undefined ? atual : Strin
 // capaFavoritoValida: no app real, só imagens do Deezer; a demo troca pelas capas desenhadas dela.
 export function createUserService({
   users, follows, postService, notifications, passwords, capaFavoritoValida = capaDoDeezer, restricoes = SEM_RESTRICOES,
+  // Para avisar o endereço antigo quando o email muda (opcional).
+  mailer = null,
 }) {
   const findOrFail = async (id) => {
     const user = await users.findById(id);
@@ -133,6 +149,32 @@ export function createUserService({
       if (!ok) throw badRequest('A senha atual está incorreta.');
 
       await users.updatePassword(usuarioId, await passwords.hash(novaSenha));
+    },
+
+    // Trocar o email de login: pede a senha atual (uma sessão aberta esquecida não basta para
+    // tomar a conta) e avisa o endereço antigo, para a pessoa perceber se não foi ela.
+    async changeEmail(usuarioId, senhaAtual, novoEmail) {
+      const email = limparEmail(novoEmail);
+      if (!senhaAtual || !email) throw badRequest('Preencha a senha atual e o novo email.');
+      if (!emailValido(email)) throw badRequest('Informe um email válido.');
+
+      const auth = await users.findAuthById(usuarioId);
+      if (!auth) throw notFound('Usuário não encontrado.');
+      if (limparEmail(auth.email) === email) throw badRequest('Esse já é o seu email.');
+      // 400 e não 401: errar a senha não deve derrubar a sessão no navegador.
+      const { ok } = await passwords.verify(senhaAtual, auth.senha);
+      if (!ok) throw badRequest('A senha atual está incorreta.');
+      if (await users.existsByEmail(email)) throw conflict('Já existe uma conta com esse email.');
+
+      await users.updateEmail(usuarioId, email);
+      if (mailer && auth.email) {
+        try {
+          await mailer.send({ to: auth.email, ...avisoTrocaDeEmail({ nome: auth.nome, novoEmail: email }) });
+        } catch {
+          // O aviso é um extra: o email já foi trocado.
+        }
+      }
+      return { email };
     },
 
     async follow(seguidorId, seguidoId) {

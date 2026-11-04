@@ -1,9 +1,8 @@
 import { badRequest, conflict, unauthorized } from '../errors.js';
 import { PASSWORD_RULES_MESSAGE, isPasswordValid } from '../../../shared/passwordRules.js';
+import { EMAIL_PATTERN } from '../../../shared/emailRules.js';
 
 const toSessionUser = ({ id, nome, email }) => ({ id, nome, email });
-
-const EMAIL_PATTERN = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 
 export function createAuthService({ users, passwords, notifications }) {
   return {

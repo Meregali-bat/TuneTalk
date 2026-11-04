@@ -276,6 +276,44 @@ describe('userService', () => {
     });
   });
 
+  describe('changeEmail', () => {
+    let mailer;
+    beforeEach(async () => {
+      users.findAuthById.mockResolvedValue({ id: 1, nome: 'ana', email: 'ana@x.com', senha: await passwords.hash('Atual!1') });
+      users.existsByEmail = vi.fn().mockResolvedValue(false);
+      users.updateEmail = vi.fn();
+      mailer = { send: vi.fn() };
+      service = createUserService({ users, follows, postService, notifications, passwords, mailer });
+    });
+
+    it('confere a senha, grava o novo email (minúsculo, sem espaços) e avisa o endereço antigo', async () => {
+      expect(await service.changeEmail(1, 'Atual!1', '  Ana.Nova@X.com ')).toEqual({ email: 'ana.nova@x.com' });
+      expect(users.existsByEmail).toHaveBeenCalledWith('ana.nova@x.com');
+      expect(users.updateEmail).toHaveBeenCalledWith(1, 'ana.nova@x.com');
+      expect(mailer.send).toHaveBeenCalledWith(expect.objectContaining({
+        to: 'ana@x.com', subject: 'O email da sua conta no TuneTalk mudou',
+      }));
+      expect(mailer.send.mock.calls[0][0].text).toContain('ana.nova@x.com');
+    });
+
+    it('recusa senha errada, email inválido, o mesmo email e email de outra conta', async () => {
+      await expect(service.changeEmail(1, 'errada', 'novo@x.com')).rejects.toMatchObject({ status: 400, message: 'A senha atual está incorreta.' });
+      await expect(service.changeEmail(1, 'Atual!1', 'sem-arroba')).rejects.toMatchObject({ status: 400, message: 'Informe um email válido.' });
+      await expect(service.changeEmail(1, 'Atual!1', 'ANA@x.com')).rejects.toMatchObject({ status: 400, message: 'Esse já é o seu email.' });
+      await expect(service.changeEmail(1, '', 'novo@x.com')).rejects.toMatchObject({ status: 400 });
+      users.existsByEmail.mockResolvedValue(true);
+      await expect(service.changeEmail(1, 'Atual!1', 'bia@x.com')).rejects.toMatchObject({ status: 409, message: 'Já existe uma conta com esse email.' });
+      expect(users.updateEmail).not.toHaveBeenCalled();
+      expect(mailer.send).not.toHaveBeenCalled();
+    });
+
+    it('se o aviso por email falhar, a troca vale do mesmo jeito', async () => {
+      mailer.send.mockRejectedValue(new Error('Resend fora'));
+      expect(await service.changeEmail(1, 'Atual!1', 'novo@x.com')).toEqual({ email: 'novo@x.com' });
+      expect(users.updateEmail).toHaveBeenCalled();
+    });
+  });
+
   describe('changePassword', () => {
     it('confere a senha atual e grava a nova em bcrypt', async () => {
       await service.changePassword(1, 'Atual!1', 'Nova!123');

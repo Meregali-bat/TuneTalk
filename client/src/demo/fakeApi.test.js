@@ -96,6 +96,19 @@ describe('API fake da demo (serviços reais + banco em memória)', () => {
     }
   });
 
+  it('troca o email: o novo entra, o antigo não, e a sessão já mostra o novo', async () => {
+    await login();
+    expect((await call('PUT', '/users/me/email', JSON.stringify({ senhaAtual: 'errada', novoEmail: 'ana.nova@demo.com' }))).status).toBe(400);
+    const res = await call('PUT', '/users/me/email', JSON.stringify({ senhaAtual: DEMO_LOGIN.senha, novoEmail: 'Ana.Nova@demo.com' }));
+    expect(res.status).toBe(200);
+    expect(res.body.email).toBe('ana.nova@demo.com');
+    expect((await call('GET', '/auth/me')).body.email).toBe('ana.nova@demo.com');
+
+    await call('POST', '/auth/logout');
+    expect((await call('POST', '/auth/login', JSON.stringify({ email: DEMO_LOGIN.email, senha: DEMO_LOGIN.senha }))).status).toBe(401);
+    expect((await call('POST', '/auth/login', JSON.stringify({ email: 'ana.nova@demo.com', senha: DEMO_LOGIN.senha }))).status).toBe(200);
+  });
+
   it('troca a senha: a antiga para de valer e a nova entra', async () => {
     await login();
     const trocar = (senhaAtual, novaSenha) => call('PUT', '/users/me/password', JSON.stringify({ senhaAtual, novaSenha }));

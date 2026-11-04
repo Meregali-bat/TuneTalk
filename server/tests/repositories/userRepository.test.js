@@ -109,12 +109,19 @@ describe('userRepository (Postgres)', () => {
 
   it('findAuthById e updatePassword trocam o hash da senha', async () => {
     const ana = await factory.user({ senha: md5('velha') });
-    expect(await repo.findAuthById(ana.id)).toEqual({ id: ana.id, senha: md5('velha') });
+    expect(await repo.findAuthById(ana.id)).toEqual({ id: ana.id, senha: md5('velha'), email: ana.email, nome: ana.nome });
 
     await repo.updatePassword(ana.id, '$2b$nova');
 
-    expect(await repo.findAuthById(ana.id)).toEqual({ id: ana.id, senha: '$2b$nova' });
+    expect(await repo.findAuthById(ana.id)).toMatchObject({ id: ana.id, senha: '$2b$nova' });
     expect(await repo.findAuthById(9999)).toBeNull();
+  });
+
+  it('updateEmail troca o email de login', async () => {
+    const ana = await factory.user();
+    await repo.updateEmail(ana.id, 'nova@x.com');
+    expect((await repo.findAuthById(ana.id)).email).toBe('nova@x.com');
+    expect((await repo.findAuthByEmail('NOVA@x.com')).id).toBe(ana.id);
   });
 
   it('existsByEmail detecta email já cadastrado, ignorando maiúsculas', async () => {

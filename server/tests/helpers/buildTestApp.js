@@ -21,7 +21,7 @@ export function buildTestApp(overrides = {}) {
       unpin: vi.fn(),
     },
     userService: {
-      getProfile: vi.fn(), getProfileByName: vi.fn(), search: vi.fn(), updateProfile: vi.fn(), setUsername: vi.fn(), changePassword: vi.fn(), follow: vi.fn(), unfollow: vi.fn(),
+      getProfile: vi.fn(), getProfileByName: vi.fn(), search: vi.fn(), updateProfile: vi.fn(), setUsername: vi.fn(), changePassword: vi.fn(), changeEmail: vi.fn(), follow: vi.fn(), unfollow: vi.fn(),
     },
     sessions: { destroyOthers: vi.fn() },
     notifications: { listForUser: vi.fn(), countUnread: vi.fn(), markAllRead: vi.fn() },

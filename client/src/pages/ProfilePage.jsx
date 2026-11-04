@@ -10,6 +10,7 @@ import { FollowButton } from '../components/common/FollowButton.jsx';
 import { UserListModal } from '../components/profile/UserListModal.jsx';
 import { EditProfileModal } from '../components/profile/EditProfileModal.jsx';
 import { ChangePasswordModal } from '../components/profile/ChangePasswordModal.jsx';
+import { ChangeEmailModal } from '../components/profile/ChangeEmailModal.jsx';
 import { PetalRain } from '../components/effects/PetalRain.jsx';
 import { profileEffectFor } from '../components/effects/profileEffects.js';
 import { VerifiedBadge } from '../components/effects/VerifiedBadge.jsx';
@@ -67,7 +68,9 @@ export const displayName = (usuario) => usuario.nomeExibicao || usuario.nome;
 
 const SEM_RELACAO = { bloqueado: false, meBloqueou: false, silenciado: false };
 
-function ProfileHeader({ profile, isOwnProfile, onEdit, onChangePassword, onOpenList, onFollowChange, onRelacaoChange }) {
+function ProfileHeader({
+  profile, isOwnProfile, onEdit, onChangeEmail, onChangePassword, onOpenList, onFollowChange, onRelacaoChange,
+}) {
   const { usuario } = profile;
   const relacao = profile.relacao ?? SEM_RELACAO;
   const comBloqueio = relacao.bloqueado || relacao.meBloqueou;
@@ -91,7 +94,16 @@ function ProfileHeader({ profile, isOwnProfile, onEdit, onChangePassword, onOpen
                 <button type="button" className="follow-button follow-button--md is-following" onClick={onEdit}>
                   Editar perfil
                 </button>
-                {/* No celular vira só o ícone de chave; o nome continua para leitores de tela. */}
+                {/* No celular viram só os ícones; o nome continua para leitores de tela. */}
+                <button
+                  type="button"
+                  className="follow-button follow-button--md is-following profile-action--senha"
+                  aria-label="Trocar email"
+                  onClick={onChangeEmail}
+                >
+                  <i className="bi bi-envelope" aria-hidden="true" />
+                  <span className="profile-action__label">Trocar email</span>
+                </button>
                 <button
                   type="button"
                   className="follow-button follow-button--md is-following profile-action--senha"
@@ -188,6 +200,7 @@ export function ProfilePage() {
   const [openList, setOpenList] = useState(null);
   const [editing, setEditing] = useState(false);
   const [changingPassword, setChangingPassword] = useState(false);
+  const [changingEmail, setChangingEmail] = useState(false);
   const [editingFavorites, setEditingFavorites] = useState(false);
   const [notice, setNotice] = useState('');
   const [composerOpen, setComposerOpen] = useState(false);
@@ -225,6 +238,7 @@ export function ProfilePage() {
         profile={profile}
         isOwnProfile={isOwnProfile}
         onEdit={() => setEditing(true)}
+        onChangeEmail={() => { setNotice(''); setChangingEmail(true); }}
         onChangePassword={() => { setNotice(''); setChangingPassword(true); }}
         onOpenList={setOpenList}
         onFollowChange={reload}
@@ -321,6 +335,18 @@ export function ProfilePage() {
         onClose={() => setOpenList(null)}
         onFollowChange={reload}
       />
+      {isOwnProfile && changingEmail && (
+        <ChangeEmailModal
+          open
+          emailAtual={user.email}
+          onClose={() => setChangingEmail(false)}
+          onChanged={(email) => {
+            updateUser({ email });
+            setChangingEmail(false);
+            setNotice(`Email trocado. Agora você entra com ${email}.`);
+          }}
+        />
+      )}
       {isOwnProfile && changingPassword && (
         <ChangePasswordModal
           open

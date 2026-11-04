@@ -77,7 +77,7 @@ export function createMemoryRepositories(state, onChange) {
     },
     async findAuthById(id) {
       const user = userById(id);
-      return user ? { id: user.id, senha: user.senha } : null;
+      return user ? { id: user.id, senha: user.senha, email: user.email, nome: user.nome } : null;
     },
     async findByNames(nomes) {
       const procurados = new Set(nomes.map((n) => n.toLowerCase()));
@@ -89,6 +89,10 @@ export function createMemoryRepositories(state, onChange) {
     },
     async setPinnedPost(id, postId) {
       userById(id).postFixadoId = postId;
+      changed();
+    },
+    async updateEmail(id, email) {
+      userById(id).email = email;
       changed();
     },
     async updatePassword(id, senhaHash) {

@@ -85,7 +85,7 @@ export function buildContainer(config) {
       users, resets: createPasswordResetRepository(prisma), passwords, mailer, sessions, appUrl: config.appUrl,
     }),
     postService,
-    userService: createUserService({ users, follows, postService, notifications, passwords, restricoes }),
+    userService: createUserService({ users, follows, postService, notifications, passwords, restricoes, mailer }),
     restricaoService: createRestricaoService({ restricoes, users }),
     queroOuvirService: createQueroOuvirService({ queroOuvir }),
     sugestaoService: createSugestaoService({ sugestoes: createSugestaoRepository(prisma), follows, restricoes }),

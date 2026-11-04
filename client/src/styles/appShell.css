@@ -1968,6 +1968,16 @@ button.track-row:hover {
   white-space: nowrap;
 }
 
+/* Trocar email: o atual em destaque, quebrando se for comprido. */
+.change-email__atual {
+  margin: 0;
+  overflow-wrap: anywhere;
+
+  strong {
+    color: var(--texto);
+  }
+}
+
 .edit-profile {
   display: flex;
   flex-direction: column;

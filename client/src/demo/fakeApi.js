@@ -90,6 +90,8 @@ export function createFakeApi({ storage = globalThis.localStorage } = {}) {
       posts: postService,
       users: createUserService({
         users: repos.users, follows: repos.follows, postService, notifications, passwords, restricoes: repos.restricoes,
+        // Sem email na demo: o aviso da troca de email aparece no console do navegador.
+        mailer: { send: async ({ to, text }) => console.info(`[email para ${to}]`, text) },
         // As capas da demo são desenhadas (data:), não vêm do Deezer.
         capaFavoritoValida: (url) => url.startsWith('data:image/svg+xml'),
       }),
@@ -162,6 +164,10 @@ export function createFakeApi({ storage = globalThis.localStorage } = {}) {
     ['PUT', /^\/users\/me\/username$/, async ({ body }) => {
       const { nome } = await services.users.setUsername(signedIn(), body.nome);
       return ok(startSession({ ...state.session, nome }));
+    }],
+    ['PUT', /^\/users\/me\/email$/, async ({ body }) => {
+      const { email } = await services.users.changeEmail(me(), body.senhaAtual, body.novoEmail);
+      return ok(startSession({ ...state.session, email }));
     }],
     ['PUT', /^\/users\/me\/password$/, async ({ body }) => {
       await services.users.changePassword(me(), body.senhaAtual, body.novaSenha);

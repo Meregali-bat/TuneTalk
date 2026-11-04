@@ -16,7 +16,7 @@ export function createUserRepository(prisma) {
     },
 
     findAuthById(id) {
-      return prisma.usuario.findUnique({ where: { id }, select: { id: true, senha: true } });
+      return prisma.usuario.findUnique({ where: { id }, select: { id: true, senha: true, email: true, nome: true } });
     },
 
     // Quem começa com o texto vem primeiro; depois quem só contém. Contas sem nome ficam de fora.
@@ -53,6 +53,10 @@ export function createUserRepository(prisma) {
 
     async setPinnedPost(id, postId) {
       await prisma.usuario.update({ where: { id }, data: { postFixadoId: postId } });
+    },
+
+    async updateEmail(id, email) {
+      await prisma.usuario.update({ where: { id }, data: { email } });
     },
 
     async updatePassword(id, senhaHash) {
