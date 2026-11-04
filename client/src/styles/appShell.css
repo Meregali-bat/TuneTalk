@@ -772,6 +772,31 @@
   }
 }
 
+/* Ícones dentro de botões redondos ou em pílula: o Bootstrap Icons desce o desenho
+   (vertical-align: -.125em) para alinhar com texto corrido, e com a altura de linha herdada ele
+   fica fora do centro. Aqui o ícone ocupa só o próprio tamanho e o botão centraliza. */
+.play-button i,
+.post-action i,
+.quero-ouvir-button i {
+  display: block;
+  line-height: 1;
+
+  &::before {
+    display: block;
+    vertical-align: 0;
+  }
+}
+
+/* O desenho do coração fica alto dentro do próprio quadrado: desce um pouco para ficar no centro. */
+.like-button i {
+  transform: translateY(.08em);
+}
+
+/* O triângulo do play tem mais peso à esquerda: um empurrão para a direita o faz parecer no centro. */
+.play-button .bi-play-fill {
+  transform: translateX(.07em);
+}
+
 .post-card__actions {
   display: flex;
   align-items: center;
