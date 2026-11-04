@@ -221,6 +221,9 @@ export function createMemoryRepositories(state, onChange) {
       const post = state.posts.find((p) => p.id === id);
       return post ? postRow(post) : null;
     },
+    async findByIds(ids) {
+      return new Map(state.posts.filter((p) => ids.includes(p.id)).map((p) => [p.id, postRow(p)]));
+    },
     async create(post) {
       const id = nextId('posts');
       const nota = post.nota == null ? null : Number(post.nota);
@@ -228,6 +231,7 @@ export function createMemoryRepositories(state, onChange) {
         id,
         autorId: post.autorId,
         parentId: post.parentId ?? null,
+        citadoId: post.citadoId ?? null,
         texto: post.texto ?? '',
         musicName: post.musicName ?? null,
         artistName: post.artistName ?? null,

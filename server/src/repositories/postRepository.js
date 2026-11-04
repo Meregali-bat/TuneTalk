@@ -62,6 +62,7 @@ export function toPost(row) {
   return {
     id: row.id,
     parentId: row.parentId ?? null,
+    citadoId: row.citadoId ?? null,
     texto: row.texto,
     likes: row._count.curtidas,
     nota: row.nota ?? null,
@@ -183,11 +184,18 @@ export function createPostRepository(prisma) {
       return row ? toPost(row) : null;
     },
 
+    // Posts citados de uma lista: Map id → post (os apagados não vêm).
+    async findByIds(ids) {
+      if (ids.length === 0) return new Map();
+      return new Map((await findPosts({ where: { id: { in: ids } } })).map((post) => [post.id, post]));
+    },
+
     async create(post) {
       const created = await prisma.post.create({
         data: {
           autorId: post.autorId,
           parentId: post.parentId ?? null,
+          citadoId: post.citadoId ?? null,
           texto: post.texto ?? '',
           musicName: post.musicName ?? null,
           artistName: post.artistName ?? null,
