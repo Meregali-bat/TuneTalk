@@ -6,7 +6,7 @@ import { pushApi } from '../../api/index.js';
 import { chaveParaBytes } from '../../utils/avisos.js';
 
 vi.mock('../../api/index.js', () => ({
-  pushApi: { chave: vi.fn(), inscrever: vi.fn().mockResolvedValue(null), cancelar: vi.fn().mockResolvedValue(null), testar: vi.fn().mockResolvedValue({ aparelhos: 1 }) },
+  pushApi: { chave: vi.fn(), inscrever: vi.fn().mockResolvedValue(null), cancelar: vi.fn().mockResolvedValue(null) },
 }));
 
 // Navegador com push: service worker, PushManager e Notification simulados.
@@ -55,14 +55,6 @@ describe('AvisosNoCelular', () => {
     expect(pushManager.subscribe).toHaveBeenCalledWith({ userVisibleOnly: true, applicationServerKey: chaveParaBytes('BAAA') });
     expect(pushApi.inscrever).toHaveBeenCalledWith({ endpoint: 'https://push.example/1', keys: { p256dh: 'p', auth: 'a' } });
     expect(await screen.findByText('Avisos no celular ativados.')).toBeInTheDocument();
-  });
-
-  it('ativado: "Enviar aviso de teste" pede o aviso ao servidor e avisa que foi', async () => {
-    simularNavegador({ permissao: 'granted', inscrito: true });
-    render(<AvisosNoCelular />);
-    await userEvent.click(await screen.findByRole('button', { name: 'Enviar aviso de teste' }));
-    expect(pushApi.testar).toHaveBeenCalled();
-    expect(await screen.findByText(/Aviso enviado/)).toBeInTheDocument();
   });
 
   it('já ativado: mostra e deixa desativar', async () => {

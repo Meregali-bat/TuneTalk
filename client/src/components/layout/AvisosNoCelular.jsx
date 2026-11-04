@@ -1,5 +1,4 @@
 import { useEffect, useState } from 'react';
-import { pushApi } from '../../api/index.js';
 import { ativarAvisos, desativarAvisos, situacaoDosAvisos } from '../../utils/avisos.js';
 
 const TEXTOS = {
@@ -13,7 +12,6 @@ export function AvisosNoCelular() {
   const [estado, setEstado] = useState('carregando');
   const [ocupado, setOcupado] = useState(false);
   const [erro, setErro] = useState('');
-  const [teste, setTeste] = useState('');
 
   useEffect(() => {
     let ativo = true;
@@ -35,29 +33,13 @@ export function AvisosNoCelular() {
     }
   };
 
-  const testar = async () => {
-    setTeste('Enviando…');
-    try {
-      await pushApi.testar();
-      setTeste('Aviso enviado. Pode levar alguns segundos para aparecer.');
-    } catch (err) {
-      setTeste(err.message || 'Não deu para enviar agora.');
-    }
-  };
-
   if (estado === 'carregando' || estado === 'desligado') return null;
 
   return (
     <div className="avisos-celular">
       <i className={`bi ${estado === 'ativado' ? 'bi-bell-fill' : 'bi-phone'}`} aria-hidden="true" />
       <div className="avisos-celular__texto">
-        {estado === 'ativado' && (
-          <>
-            <p>Avisos no celular ativados.</p>
-            <button type="button" className="avisos-celular__teste" onClick={testar}>Enviar aviso de teste</button>
-            {teste && <p role="status">{teste}</p>}
-          </>
-        )}
+        {estado === 'ativado' && <p>Avisos no celular ativados.</p>}
         {estado === 'desativado' && <p>Receba um aviso no celular quando curtirem, comentarem ou te seguirem.</p>}
         {TEXTOS[estado] && <p>{TEXTOS[estado]}</p>}
         {erro && <p role="alert" className="avisos-celular__erro">{erro}</p>}

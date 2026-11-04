@@ -67,7 +67,6 @@ export const pushApi = {
   chave: async () => (await request('/push/chave')).chave ?? null,
   inscrever: (inscricao) => request('/push/inscricoes', { method: 'POST', body: inscricao }),
   cancelar: (endpoint) => request('/push/inscricoes', { method: 'DELETE', body: { endpoint } }),
-  testar: () => request('/push/teste', { method: 'POST' }),
 };
 
 export const notificationsApi = {

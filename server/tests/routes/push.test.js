@@ -26,11 +26,4 @@ describe('rotas /api/push', () => {
     await agent.delete('/api/push/inscricoes').send({ endpoint: 'https://push.example/a' }).expect(204);
     expect(deps.pushService.cancelar).toHaveBeenCalledWith(1, 'https://push.example/a');
   });
-
-  it('POST /teste manda o aviso de teste para quem está logado', async () => {
-    await request(app).post('/api/push/teste').expect(401);
-    deps.pushService.testar.mockResolvedValue({ aparelhos: 2 });
-    expect((await agent.post('/api/push/teste').expect(200)).body).toEqual({ aparelhos: 2 });
-    expect(deps.pushService.testar).toHaveBeenCalledWith(1);
-  });
 });

@@ -49,17 +49,6 @@ describe('pushService', () => {
     expect(subscriptions.removeEndpoint).toHaveBeenCalledWith('https://push.example/velho');
   });
 
-  it('aviso de teste vai só para os aparelhos da própria pessoa', async () => {
-    const push = createPushService({ subscriptions, webpush, vapid, logger });
-    expect(await push.testar(7)).toEqual({ aparelhos: 1 });
-    expect(subscriptions.listByUser).toHaveBeenCalledWith(7);
-    expect(JSON.parse(webpush.sendNotification.mock.calls[0][1]).texto).toMatch(/Aviso de teste/);
-
-    subscriptions.listByUser.mockResolvedValue([]);
-    await expect(push.testar(7)).rejects.toMatchObject({ status: 400, message: 'Ative os avisos neste aparelho primeiro.' });
-    await expect(createPushService({ subscriptions, webpush, vapid: {}, logger }).testar(7)).rejects.toMatchObject({ status: 400 });
-  });
-
   it('falha no envio não quebra nada', async () => {
     webpush.sendNotification.mockRejectedValue(Object.assign(new Error('timeout'), { statusCode: 500 }));
     subscriptions.listByUser.mockRejectedValueOnce(new Error('db'));

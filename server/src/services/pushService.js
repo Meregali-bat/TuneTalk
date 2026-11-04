@@ -32,15 +32,6 @@ export function createPushService({ subscriptions, webpush, vapid, logger = cons
       await subscriptions.remove(usuarioId, endpoint);
     },
 
-    // Aviso de teste para a própria pessoa (botão "Enviar aviso de teste"). Diz quantos aparelhos receberam.
-    async testar(usuarioId) {
-      if (!ligado) throw badRequest('Os avisos estão desligados no servidor.');
-      const aparelhos = await subscriptions.listByUser(usuarioId);
-      if (aparelhos.length === 0) throw badRequest('Ative os avisos neste aparelho primeiro.');
-      await this.enviar(usuarioId, { titulo: 'TuneTalk', texto: 'Aviso de teste: está funcionando! 🎵', url: '/foryou' });
-      return { aparelhos: aparelhos.length };
-    },
-
     // aviso: { titulo, texto, url, naoLidas }
     async enviar(usuarioId, aviso) {
       if (!ligado) return;

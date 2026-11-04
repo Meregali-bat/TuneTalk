@@ -2882,18 +2882,6 @@ button.favorites-editor__capa {
   min-width: 0;
 }
 
-.avisos-celular__teste {
-  margin: .35rem 0 .2rem;
-  padding: 0;
-  border: 0;
-  background: none;
-  color: var(--destaque-claro);
-  font-size: .85rem;
-  font-weight: 600;
-  text-decoration: underline;
-  text-underline-offset: .2em;
-}
-
 .avisos-celular__erro {
   margin-top: .3rem !important;
   color: var(--erro) !important;
