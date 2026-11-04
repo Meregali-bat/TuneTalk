@@ -146,11 +146,15 @@ describe('postService', () => {
       expect(posts.create).toHaveBeenCalled();
     });
 
-    it('combina com música avaliada e imagem', async () => {
-      await service.create(7, { musicName: 'X', artistName: 'Y', postType: 'música', nota: 8, imagemUrl: 'https://res.cloudinary.com/x.gif', enquete: { opcoes } });
-      const criado = posts.create.mock.calls[0][0];
-      expect(criado).toMatchObject({ musicName: 'X', nota: 8, imagemUrl: 'https://res.cloudinary.com/x.gif' });
-      expect(criado.enquete.opcoes).toHaveLength(2);
+    it('combina com imagem, mas não com música avaliada', async () => {
+      await service.create(7, { imagemUrl: 'https://res.cloudinary.com/x.gif', enquete: { opcoes } });
+      expect(posts.create.mock.calls[0][0]).toMatchObject({ imagemUrl: 'https://res.cloudinary.com/x.gif' });
+
+      await expect(service.create(7, { musicName: 'X', artistName: 'Y', postType: 'música', nota: 8, enquete: { opcoes } }))
+        .rejects.toMatchObject({ status: 400, message: 'Post com enquete não pode ter música avaliada.' });
+      await expect(service.create(7, { albumName: 'X', postType: 'album', nota: 8, enquete: { opcoes } }))
+        .rejects.toMatchObject({ status: 400 });
+      expect(posts.create).toHaveBeenCalledTimes(1);
     });
 
     it('recusa enquete em comentário ou inválida', async () => {

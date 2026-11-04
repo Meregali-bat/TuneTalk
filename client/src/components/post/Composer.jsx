@@ -514,7 +514,8 @@ export function Composer({
         </div>
       )}
 
-      {!track && (
+      {/* Música avaliada e enquete não vão juntas no mesmo post. */}
+      {!track && !enquete && (
         <button type="button" className="composer-attach" onClick={() => abrirBusca('post')}>
           <i className="bi bi-music-note-beamed" aria-hidden="true" />
           Adicionar música ou álbum
@@ -530,8 +531,8 @@ export function Composer({
         </button>
       )}
 
-      {/* Enquete combina com texto, imagem e música avaliada; só não aparece em comentário. */}
-      {podeEnquete && !enquete && (
+      {/* Enquete combina com texto e imagem; não aparece com música avaliada nem em comentário. */}
+      {podeEnquete && !enquete && !track && (
         <button
           type="button"
           className="composer-attach"
