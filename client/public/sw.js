@@ -1,7 +1,40 @@
-/* Service worker do TuneTalk: recebe os avisos (push) mesmo com o app fechado. */
+/* Service worker do TuneTalk: recebe os avisos (push) mesmo com o app fechado e mostra a página
+   "Sem internet" quando o site é aberto sem conexão. */
 
-self.addEventListener('install', () => self.skipWaiting());
-self.addEventListener('activate', (event) => event.waitUntil(self.clients.claim()));
+// Troque a versão quando mudar offline.html, para o aparelho guardar a nova.
+const CACHE_OFFLINE = 'tunetalk-offline-v1';
+const PAGINA_OFFLINE = '/offline.html';
+
+self.addEventListener('install', (event) => {
+  event.waitUntil((async () => {
+    const cache = await caches.open(CACHE_OFFLINE);
+    await cache.add(new Request(PAGINA_OFFLINE, { cache: 'reload' }));
+    await self.skipWaiting();
+  })());
+});
+
+self.addEventListener('activate', (event) => {
+  event.waitUntil((async () => {
+    // Apaga as versões antigas da página offline.
+    const nomes = await caches.keys();
+    await Promise.all(nomes.filter((n) => n.startsWith('tunetalk-offline-') && n !== CACHE_OFFLINE).map((n) => caches.delete(n)));
+    await self.clients.claim();
+  })());
+});
+
+// Só a abertura de páginas passa por aqui: tenta a rede normalmente e, se ela falhar (sem
+// internet), responde com a página guardada. O resto (API, imagens, scripts) segue direto.
+self.addEventListener('fetch', (event) => {
+  if (event.request.mode !== 'navigate') return;
+  event.respondWith((async () => {
+    try {
+      return await fetch(event.request);
+    } catch {
+      const guardada = await caches.match(PAGINA_OFFLINE, { cacheName: CACHE_OFFLINE });
+      return guardada || new Response('Sem internet.', { status: 503, headers: { 'Content-Type': 'text/plain; charset=utf-8' } });
+    }
+  })());
+});
 
 self.addEventListener('push', (event) => {
   let aviso = {};

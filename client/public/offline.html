@@ -1,0 +1,103 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
+  <meta name="theme-color" content="#000505" />
+  <meta name="robots" content="noindex" />
+  <title>Sem internet · TuneTalk</title>
+  <!-- Página guardada no aparelho pelo service worker (sw.js): aparece quando o site é aberto sem
+       internet. Tudo fica aqui dentro (estilo e desenho), porque sem rede nada mais carrega. -->
+  <style>
+    :root {
+      --background: #000505;
+      --superficie: #08120e;
+      --linhas: #1d2a24;
+      --texto: #fcfffc;
+      --texto-suave: #a6b5ae;
+      --destaque: #2ba84a;
+    }
+    * { box-sizing: border-box; }
+    html, body { height: 100%; margin: 0; }
+    body {
+      display: grid;
+      place-items: center;
+      padding: max(24px, env(safe-area-inset-top)) max(16px, env(safe-area-inset-right))
+        max(24px, env(safe-area-inset-bottom)) max(16px, env(safe-area-inset-left));
+      background: var(--background);
+      color: var(--texto);
+      font-family: Geologica, system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+      -webkit-tap-highlight-color: transparent;
+    }
+    main {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 1.25rem;
+      max-width: 22rem;
+      text-align: center;
+    }
+    .disco {
+      position: relative;
+      width: 7.5rem;
+      height: 7.5rem;
+      border-radius: 50%;
+      background:
+        radial-gradient(circle, var(--background) 0 9%, var(--destaque) 9.5% 30%, transparent 30.5%),
+        repeating-radial-gradient(circle, #101c17 0 2px, #0a1410 2px 5px);
+      box-shadow: 0 0 0 1px var(--linhas), 0 20px 50px -20px rgba(43, 168, 74, .45);
+      animation: girar 6s linear infinite;
+      animation-play-state: paused;
+    }
+    .disco::after {
+      content: '';
+      position: absolute;
+      inset: 0;
+      border-radius: 50%;
+      background: linear-gradient(135deg, rgba(255, 255, 255, .12), transparent 45%);
+    }
+    .tentando .disco { animation-play-state: running; }
+    @keyframes girar { to { transform: rotate(360deg); } }
+    @media (prefers-reduced-motion: reduce) { .disco { animation: none; } }
+    h1 { margin: .25rem 0 0; font-size: 1.5rem; font-weight: 700; line-height: 1.2; }
+    p { margin: 0; color: var(--texto-suave); line-height: 1.5; }
+    button {
+      min-height: 3rem;
+      margin-top: .5rem;
+      padding: 0 1.75rem;
+      border: 0;
+      border-radius: 999px;
+      background: var(--destaque);
+      color: var(--background);
+      font: inherit;
+      font-weight: 600;
+      cursor: pointer;
+      transition: transform .15s ease, opacity .15s ease;
+    }
+    button:active { transform: scale(.97); }
+    button:disabled { opacity: .6; cursor: default; }
+    .marca { margin-top: 1rem; color: var(--texto-suave); font-size: .85rem; letter-spacing: .02em; }
+  </style>
+</head>
+<body>
+  <main>
+    <div class="disco" aria-hidden="true"></div>
+    <h1>Sem internet por aqui</h1>
+    <p>O som parou porque a conexão caiu. Assim que a internet voltar, o TuneTalk abre sozinho.</p>
+    <button type="button" id="tentar">Tentar de novo</button>
+    <span class="marca">TuneTalk</span>
+  </main>
+  <script>
+    // Volta para a página que a pessoa tentou abrir (o service worker responde com esta página no lugar dela).
+    const tentar = document.getElementById('tentar');
+    const recarregar = () => {
+      document.body.classList.add('tentando');
+      tentar.disabled = true;
+      tentar.textContent = 'Conectando…';
+      window.location.reload();
+    };
+    tentar.addEventListener('click', recarregar);
+    window.addEventListener('online', recarregar);
+  </script>
+</body>
+</html>

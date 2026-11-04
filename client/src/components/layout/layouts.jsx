@@ -3,6 +3,7 @@ import { Link, Outlet, useLocation, useNavigationType } from 'react-router-dom';
 import { Header } from './Header.jsx';
 import { asset } from '../../utils/asset.js';
 import { AvisoNovaVersao } from './AvisoNovaVersao.jsx';
+import { AvisoSemInternet } from './AvisoSemInternet.jsx';
 
 export function PublicLayout({ authForm = false, showLinks = true }) {
   return (
@@ -25,6 +26,7 @@ export function PublicLayout({ authForm = false, showLinks = true }) {
         <Outlet />
       </main>
       <AvisoNovaVersao />
+      <AvisoSemInternet />
     </div>
   );
 }
@@ -46,6 +48,7 @@ export function AppLayout() {
         <Outlet />
       </main>
       <AvisoNovaVersao />
+      <AvisoSemInternet />
     </div>
   );
 }

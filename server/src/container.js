@@ -100,6 +100,7 @@ export function buildContainer(config) {
     sessionStore: createSessionStore(pool),
     sessions,
     sessionSecret: config.sessionSecret,
+    appUrl: config.appUrl,
     secureCookies: config.secureCookies,
     defaultProfilePhoto: config.defaultProfilePhoto,
     sharePreview: {
