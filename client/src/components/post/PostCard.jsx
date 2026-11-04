@@ -18,6 +18,8 @@ import { LyricQuote } from './LyricQuote.jsx';
 import { PollBlock } from './PollBlock.jsx';
 import { QueroOuvirButton } from './QueroOuvirButton.jsx';
 import { ImagemDoPost } from './ImagemDoPost.jsx';
+import { CitarButton } from './CitarButton.jsx';
+import { PostCitado } from './PostCitado.jsx';
 
 // Texto com as marcações (@usuario, link para o perfil) e hashtags (link para a página da tag).
 function TextoComMarcacoes({ texto }) {
@@ -154,6 +156,8 @@ export function PostCard({
         </Link>
       )}
 
+      {post.citado && <PostCitado post={post.citado} />}
+
       {post.imagem && (
         // Posts novos guardam a proporção do corte: a caixa segue essa proporção, com altura limitada.
         // Posts antigos (sem proporção) continuam como eram.
@@ -177,6 +181,8 @@ export function PostCard({
           <span>{commentCount}</span>
         </Link>
         <LikeButton postId={post.id} likes={post.likes} curtido={post.curtido} />
+        {/* Comentários não são citados: o botão fica nos posts. */}
+        {!post.parentId && <CitarButton post={post} />}
         <ShareButton postId={post.id} />
       </footer>
     </article>

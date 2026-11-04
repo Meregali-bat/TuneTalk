@@ -10,6 +10,7 @@ const ICONS = {
   mention: 'bi-at',
   voto_enquete: 'bi-bar-chart-fill',
   marco_posts: 'bi-trophy-fill',
+  citacao: 'bi-quote',
 };
 
 // Avisos do próprio TuneTalk (ex.: selo de fundador) aparecem com o logo, não com o nome de alguém.

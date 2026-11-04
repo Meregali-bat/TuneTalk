@@ -6,7 +6,10 @@ import { postsApi, queroOuvirApi } from '../../api/index.js';
 import { renderWithProviders } from '../../test/render.jsx';
 
 vi.mock('../../api/index.js', () => ({
-  postsApi: { like: vi.fn(), unlike: vi.fn(), remove: vi.fn(), pin: vi.fn(), unpin: vi.fn() },
+  postsApi: { like: vi.fn(), unlike: vi.fn(), remove: vi.fn(), pin: vi.fn(), unpin: vi.fn(), create: vi.fn() },
+  usersApi: { search: vi.fn() },
+  musicApi: { search: vi.fn() },
+  gifsApi: { search: vi.fn() },
   queroOuvirApi: { add: vi.fn(), remove: vi.fn() },
 }));
 
@@ -274,6 +277,42 @@ describe('PostCard', () => {
     // Se o original também falhar, não fica tentando para sempre.
     fireEvent.error(img);
     expect(img).toHaveAttribute('src', 'https://res.cloudinary.com/t/image/upload/v1700/tunetalk/posts/longo.gif');
+  });
+
+  describe('citar (repostar com comentário)', () => {
+    const citacao = { ...musicPost, id: 20, texto: 'discordo dessa nota', titulo: null, tipo: null, autor: { id: 3, nome: 'Caio', fotoPerfil: 'c.png' }, citado: musicPost };
+
+    it('mostra o post citado dentro do post, com link para ele', () => {
+      renderWithProviders(<PostCard post={citacao} />);
+      const citado = screen.getByRole('link', { name: 'Post citado de Bia' });
+      expect(citado).toHaveAttribute('href', '/post/10');
+      expect(citado).toHaveTextContent('que som');
+      expect(citado).toHaveTextContent('Help!');
+    });
+
+    it('citado apagado ou oculto aparece como indisponível', () => {
+      renderWithProviders(<PostCard post={{ ...citacao, citado: { indisponivel: true } }} />);
+      expect(screen.getByText('Este post não está disponível.')).toBeInTheDocument();
+    });
+
+    it('"Citar post" abre o compositor com o post e, ao publicar, vai para a citação', async () => {
+      postsApi.create.mockResolvedValue({ id: 77 });
+      renderWithProviders(<PostCard post={musicPost} />);
+      await userEvent.click(screen.getByRole('button', { name: 'Citar post' }));
+
+      const dialogo = screen.getByRole('dialog', { name: 'Citar post' });
+      expect(dialogo).toContainElement(screen.getByRole('group', { name: 'Post citado de Bia' }));
+      await userEvent.type(screen.getByLabelText('O que você acha desse post?'), 'discordo');
+      await userEvent.click(screen.getByRole('button', { name: 'Publicar' }));
+
+      expect(postsApi.create).toHaveBeenCalledWith({ texto: 'discordo', citadoId: 10 });
+      expect(await screen.findByTestId('location')).toHaveTextContent('/post/77');
+    });
+
+    it('comentário não tem o botão de citar', () => {
+      renderWithProviders(<PostCard post={{ ...musicPost, parentId: 5 }} />);
+      expect(screen.queryByRole('button', { name: 'Citar post' })).toBeNull();
+    });
   });
 });
 
