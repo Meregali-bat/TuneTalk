@@ -7,6 +7,7 @@ import { createPostRoutes } from './http/postRoutes.js';
 import { createUserRoutes } from './http/userRoutes.js';
 import { createNotificationRoutes } from './http/notificationRoutes.js';
 import { createMusicRoutes } from './http/musicRoutes.js';
+import { createGifRoutes } from './http/gifRoutes.js';
 import { createHashtagRoutes } from './http/hashtagRoutes.js';
 import { createPushRoutes } from './http/pushRoutes.js';
 import { createObraRoutes } from './http/obraRoutes.js';
@@ -42,6 +43,7 @@ export function createApp(deps) {
   api.use('/users', createUserRoutes(deps));
   api.use('/notifications', createNotificationRoutes(deps));
   api.use('/music', createMusicRoutes(deps));
+  api.use('/gifs', createGifRoutes(deps));
   api.use('/hashtags', createHashtagRoutes(deps));
   api.use('/push', createPushRoutes(deps));
   api.use('/obras', createObraRoutes(deps));

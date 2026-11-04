@@ -3,7 +3,7 @@ import { fireEvent, render, screen, waitFor, within } from '@testing-library/rea
 import userEvent from '@testing-library/user-event';
 import { CreatePost } from './CreatePost.jsx';
 import { StarRatingInput } from './StarRatingInput.jsx';
-import { musicApi, postsApi, usersApi } from '../../api/index.js';
+import { gifsApi, musicApi, postsApi, usersApi } from '../../api/index.js';
 
 // A biblioteca de corte mede a imagem no navegador; aqui ela devolve um corte fixo na hora.
 vi.mock('react-easy-crop', async () => {
@@ -22,6 +22,7 @@ vi.mock('react-easy-crop', async () => {
 vi.mock('../../api/index.js', () => ({
   musicApi: { search: vi.fn(), lyrics: vi.fn() },
   postsApi: { create: vi.fn(), uploadImage: vi.fn() },
+  gifsApi: { search: vi.fn() },
   usersApi: { search: vi.fn() },
 }));
 
@@ -639,6 +640,67 @@ describe('CreatePost', () => {
       await escolher(enorme);
       expect(screen.getByRole('alert')).toHaveTextContent('A imagem pode ter no máximo 10 MB.');
       expect(screen.queryByRole('group', { name: 'Formato da imagem' })).toBeNull();
+    });
+  });
+
+  describe('busca de GIF', () => {
+    const danca = {
+      id: 'abc', titulo: 'Dançando', previa: 'https://media.giphy.com/abc/200w_d.gif',
+      url: 'https://media.giphy.com/abc/giphy.gif', largura: 480, altura: 360,
+    };
+    const abrirGifs = async () => {
+      await open();
+      await userEvent.click(screen.getByRole('button', { name: 'Adicionar GIF' }));
+    };
+
+    beforeEach(() => {
+      gifsApi.search.mockResolvedValue([danca]);
+    });
+
+    it('abre com os GIFs em alta e busca enquanto digita', async () => {
+      render(<CreatePost onCreated={vi.fn()} />);
+      await abrirGifs();
+      expect(await screen.findByRole('button', { name: 'Dançando' })).toBeInTheDocument();
+      expect(gifsApi.search).toHaveBeenCalledWith('');
+
+      await userEvent.type(screen.getByLabelText('Buscar GIF'), 'dança');
+      await waitFor(() => expect(gifsApi.search).toHaveBeenLastCalledWith('dança'));
+    });
+
+    it('o GIF escolhido sobe para o Cloudinary pelo link e vai no post com a proporção dele', async () => {
+      postsApi.uploadImage.mockResolvedValue('https://res.cloudinary.com/t/image/upload/v1/tunetalk/posts/abc.gif');
+      const onCreated = vi.fn();
+      render(<CreatePost onCreated={onCreated} />);
+      await abrirGifs();
+      await userEvent.click(await screen.findByRole('button', { name: 'Dançando' }));
+
+      expect(screen.getByAltText('Dançando')).toBeInTheDocument();
+      expect(screen.queryByRole('button', { name: 'Adicionar GIF' })).toBeNull();
+      await userEvent.click(screen.getByRole('button', { name: 'Publicar' }));
+
+      expect(postsApi.uploadImage).toHaveBeenCalledWith('https://media.giphy.com/abc/giphy.gif');
+      expect(postsApi.create).toHaveBeenCalledWith({
+        texto: '',
+        imagemUrl: 'https://res.cloudinary.com/t/image/upload/c_limit,w_1600/v1/tunetalk/posts/abc.gif',
+        imagemProporcao: 480 / 360,
+      });
+      await waitFor(() => expect(onCreated).toHaveBeenCalled());
+    });
+
+    it('"Remover GIF" volta aos botões de imagem e GIF', async () => {
+      render(<CreatePost onCreated={vi.fn()} />);
+      await abrirGifs();
+      await userEvent.click(await screen.findByRole('button', { name: 'Dançando' }));
+      await userEvent.click(screen.getByRole('button', { name: 'Remover GIF' }));
+      expect(screen.queryByAltText('Dançando')).toBeNull();
+      expect(screen.getByRole('button', { name: 'Adicionar GIF' })).toBeInTheDocument();
+    });
+
+    it('sem a chave do GIPHY avisa que a busca está indisponível', async () => {
+      gifsApi.search.mockRejectedValue(Object.assign(new Error('x'), { status: 503 }));
+      render(<CreatePost onCreated={vi.fn()} />);
+      await abrirGifs();
+      expect(await screen.findByRole('alert')).toHaveTextContent('A busca de GIFs não está disponível agora.');
     });
   });
 

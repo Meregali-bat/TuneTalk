@@ -26,6 +26,7 @@ export function buildTestApp(overrides = {}) {
     sessions: { destroyOthers: vi.fn() },
     notifications: { listForUser: vi.fn(), countUnread: vi.fn(), markAllRead: vi.fn() },
     musicService: { search: vi.fn() },
+    gifService: { search: vi.fn() },
     lyricsService: { letra: vi.fn() },
     pushService: { chavePublica: vi.fn(() => 'chave-publica'), inscrever: vi.fn(), cancelar: vi.fn() },
     hashtagService: { trending: vi.fn(), search: vi.fn() },

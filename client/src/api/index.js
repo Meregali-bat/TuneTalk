@@ -3,6 +3,7 @@ import { IMAGEM_MAX_MB } from './limits.js';
 
 // Imagens vão direto do navegador para o Cloudinary, com uma assinatura feita pelo servidor:
 // a Vercel recusa requisições acima de 4,5 MB, e GIF animado passa disso fácil.
+// file: o arquivo, ou o link de uma imagem na internet (o Cloudinary baixa de lá; usado nos GIFs do GIPHY).
 async function uploadImage(signaturePath, file) {
   const { uploadUrl, fields } = await request(signaturePath, { method: 'POST' });
   const form = new FormData();
@@ -110,6 +111,11 @@ export const notificationsApi = {
 export const hashtagsApi = {
   trending: () => request('/hashtags/em-alta'),
   search: (q) => request(`/hashtags?q=${encodeURIComponent(q)}`),
+};
+
+// GIFs do GIPHY (sem termo, os em alta): [{ id, titulo, previa, url, largura, altura }].
+export const gifsApi = {
+  search: (q) => request(`/gifs?q=${encodeURIComponent(q ?? '')}`),
 };
 
 export const musicApi = {

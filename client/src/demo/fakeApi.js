@@ -12,7 +12,7 @@ import { createQueroOuvirService } from '../../../server/src/services/queroOuvir
 import { createSugestaoService } from '../../../server/src/services/sugestaoService.js';
 import { createMemoryRepositories } from './memoryRepositories.js';
 import { ALBUM_CATALOG, ARTIST_CATALOG, CATALOG, DEMO_LOGIN, createSeed } from './seed.js';
-import { avatar } from './art.js';
+import { avatar, coverArt } from './art.js';
 
 const LETRA_DEMO = [
   'A cidade acorda devagar', 'E eu ainda penso no que você disse', 'Toda vez que esse som começa a tocar',
@@ -53,6 +53,20 @@ const fileToDataUrl = (file) =>
     reader.onerror = () => reject(badRequest('Não foi possível ler a imagem.'));
     reader.readAsDataURL(file);
   });
+
+// GIFs de mentira (a página publicada não carrega imagens de fora): capas geradas, em formatos variados.
+const GIFS_DEMO = [
+  ['Dançando', 'na sala'], ['Aplausos', 'da plateia'], ['Fone no talo', 'volume máximo'], ['Show lotado', 'pista'],
+  ['Arrepiou', 'refrão'], ['Repeat', 'de novo'], ['Sem palavras', 'só sentindo'], ['Air guitar', 'solo'],
+].map(([titulo, legenda], i) => {
+  const url = coverArt(titulo, legenda);
+  return { id: `demo-${i}`, titulo, previa: url, url, largura: 200, altura: 200 };
+});
+
+const searchGifs = (q) => {
+  const termo = (q ?? '').trim().toLowerCase();
+  return termo ? GIFS_DEMO.filter((gif) => gif.titulo.toLowerCase().includes(termo)) : GIFS_DEMO;
+};
 
 const searchCatalog = (q, tipo) => {
   const term = (q ?? '').trim().toLowerCase();
@@ -177,7 +191,11 @@ export function createFakeApi({ storage = globalThis.localStorage } = {}) {
     ['POST', /^\/posts\/image-upload$/, () => { me(); return ok({ uploadUrl: '/api/demo-upload', fields: {} }); }],
     ['POST', /^\/users\/me\/banner-upload$/, () => { me(); return ok({ uploadUrl: '/api/demo-upload', fields: {} }); }],
     ['POST', /^\/users\/me\/photo-upload$/, () => { me(); return ok({ uploadUrl: '/api/demo-upload', fields: {} }); }],
-    ['POST', /^\/demo-upload$/, async ({ form }) => ok({ secure_url: await fileToDataUrl(form.get('file')) })],
+    // GIF escolhido na busca chega como link (já é um data: URL na demo).
+    ['POST', /^\/demo-upload$/, async ({ form }) => {
+      const file = form.get('file');
+      return ok({ secure_url: typeof file === 'string' && file.startsWith('data:image/') ? file : await fileToDataUrl(file) });
+    }],
     ['PUT', /^\/users\/me\/favoritos$/, async ({ body }) => ok(await services.users.updateFavorites(me(), body))],
     ['PUT', /^\/users\/me$/, async ({ body }) => {
       const isDemoImage = (url) => url === undefined || String(url).startsWith('data:image/');
@@ -215,6 +233,7 @@ export function createFakeApi({ storage = globalThis.localStorage } = {}) {
     ['GET', /^\/hashtags$/, async ({ query }) => { me(); return ok(await services.hashtags.search(query.get('q'))); }],
     // Letra de mentira (versos inventados): o demo não acessa a LRCLIB.
     ['GET', /^\/music\/lyrics$/, () => { me(); return ok({ versos: LETRA_DEMO }); }],
+    ['GET', /^\/gifs$/, ({ query }) => { me(); return ok(searchGifs(query.get('q'))); }],
     ['GET', /^\/music\/search$/, ({ query }) => { me(); return ok(searchCatalog(query.get('q'), query.get('tipo'))); }],
   ];
 

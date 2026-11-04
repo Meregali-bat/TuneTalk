@@ -39,6 +39,8 @@ export function loadConfig(env = process.env) {
       privateKey: env.VAPID_PRIVATE_KEY,
       subject: env.VAPID_SUBJECT || 'mailto:avisos@tunetalk.app',
     },
+    // Busca de GIFs no post (developers.giphy.com). Sem a chave, a busca responde 503.
+    giphyApiKey: env.GIPHY_API_KEY,
     cloudinary: {
       cloud_name: env.CLOUDINARY_CLOUD_NAME,
       api_key: env.CLOUDINARY_API_KEY,

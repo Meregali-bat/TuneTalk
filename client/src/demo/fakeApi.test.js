@@ -214,6 +214,19 @@ describe('API fake da demo (serviços reais + banco em memória)', () => {
     expect(achados).toEqual([expect.objectContaining({ nome: 'bruno.lima', seguindo: true })]);
   });
 
+  it('busca de GIF: GIFs de mentira, e o escolhido vira a imagem do post', async () => {
+    await login();
+    const todos = (await call('GET', '/gifs?q=')).body;
+    expect(todos.length).toBeGreaterThan(0);
+    expect((await call('GET', '/gifs?q=aplau')).body.map((g) => g.titulo)).toEqual(['Aplausos']);
+
+    const form = new FormData();
+    form.append('file', todos[0].url);
+    const { secure_url: url } = (await call('POST', '/demo-upload', form)).body;
+    expect(url).toBe(todos[0].url);
+    expect((await call('POST', '/posts', JSON.stringify({ texto: '', imagemUrl: url, imagemProporcao: 1 }))).status).toBe(201);
+  });
+
   it('post só com imagem (GIF)', async () => {
     await login();
     expect((await call('POST', '/posts/image-upload')).body.uploadUrl).toBe('/api/demo-upload');

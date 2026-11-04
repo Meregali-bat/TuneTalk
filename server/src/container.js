@@ -18,6 +18,7 @@ import { createAuthService } from './services/authService.js';
 import { createPostService } from './services/postService.js';
 import { createUserService } from './services/userService.js';
 import { createMusicService } from './services/musicService.js';
+import { createGifService } from './services/gifService.js';
 import { createLyricsService } from './services/lyricsService.js';
 import { createHashtagService } from './services/hashtagService.js';
 import webpush from 'web-push';
@@ -90,6 +91,7 @@ export function buildContainer(config) {
     queroOuvirService: createQueroOuvirService({ queroOuvir }),
     sugestaoService: createSugestaoService({ sugestoes: createSugestaoRepository(prisma), follows, restricoes }),
     musicService: createMusicService(),
+    gifService: createGifService({ apiKey: config.giphyApiKey }),
     lyricsService: createLyricsService(),
     hashtagService: createHashtagService({ posts }),
     pushService,

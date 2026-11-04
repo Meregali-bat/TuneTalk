@@ -8,6 +8,7 @@ import { StarRatingInput } from './StarRatingInput.jsx';
 import { IMAGEM_MAX_MB } from '../../api/limits.js';
 import { croppedImageUrl } from '../../utils/cloudinaryCrop.js';
 import { ImageCropper } from './ImageCropper.jsx';
+import { GifPicker } from './GifPicker.jsx';
 import { useMentions } from './useMentions.js';
 import { LyricsPicker } from './LyricsPicker.jsx';
 import { LyricQuote } from './LyricQuote.jsx';
@@ -15,6 +16,9 @@ import { PlayButton } from './PlayButton.jsx';
 import { DURACOES_DIAS, ENQUETE_MAX, ENQUETE_MIN } from '../../../../shared/poll.js';
 
 const TEXTO_MAX = 500;
+
+// Proporção do GIF dentro do que o servidor aceita (de 1:5 a 5:1).
+const proporcaoDoGif = (gif) => Math.min(5, Math.max(0.2, gif.largura / gif.altura));
 
 function TrackInfo({ track }) {
   const artista = track.tipo === 'artista';
@@ -207,6 +211,8 @@ export function Composer({
   const [imagem, setImagem] = useState(null);
   const [recorte, setRecorte] = useState(null);
   const [pendente, setPendente] = useState(null); // imagem aberta no ajuste
+  const [gif, setGif] = useState(null); // GIF do GIPHY: { url, largura, altura, titulo, ... }
+  const [escolhendoGif, setEscolhendoGif] = useState(false);
   const previa = useObjectUrl(imagem);
   const previaPendente = useObjectUrl(pendente);
   const imagemInput = useRef(null);
@@ -260,7 +266,7 @@ export function Composer({
   const clean = texto.trim();
   const podeEnquete = parentId === undefined;
   // Música escolhida precisa de nota; enquete precisa de pelo menos 2 opções; e o post precisa de algo.
-  const temConteudo = clean.length > 0 || imagem !== null || track !== null || enquete !== null;
+  const temConteudo = clean.length > 0 || imagem !== null || gif !== null || track !== null || enquete !== null;
   const canPublish = !sending && temConteudo
     && (!track || nota !== null)
     && (!enquete || enquete.opcoes.length >= ENQUETE_MIN);
@@ -272,6 +278,7 @@ export function Composer({
       return;
     }
     setError('');
+    setGif(null);
     setPendente(file);
   };
 
@@ -329,9 +336,16 @@ export function Composer({
     setError('');
     try {
       let imagemUrl;
+      let imagemProporcao;
       if (imagem) {
         setSending('imagem');
         imagemUrl = croppedImageUrl(await postsApi.uploadImage(imagem), recorte.pixels);
+        imagemProporcao = recorte.proporcao;
+      } else if (gif) {
+        // O Cloudinary baixa o GIF pelo link: o post fica com uma cópia nossa, como uma imagem enviada.
+        setSending('imagem');
+        imagemUrl = croppedImageUrl(await postsApi.uploadImage(gif.url), null);
+        imagemProporcao = proporcaoDoGif(gif);
       }
       setSending('post');
       await postsApi.create({
@@ -339,7 +353,7 @@ export function Composer({
         ...(parentId !== undefined && { parentId }),
         ...(track && { ...musicFields(track), nota }),
         ...(track && track.tipo !== 'album' && trecho?.length && { trechoLetra: trecho }),
-        ...(imagemUrl && { imagemUrl, imagemProporcao: recorte.proporcao }),
+        ...(imagemUrl && { imagemUrl, imagemProporcao }),
         ...(enquete && {
           enquete: {
             duracaoDias: enquete.duracaoDias,
@@ -368,6 +382,15 @@ export function Composer({
         src={previaPendente}
         onConfirm={confirmarRecorte}
         onCancel={() => setPendente(null)}
+      />
+    );
+  }
+
+  if (escolhendoGif) {
+    return (
+      <GifPicker
+        onSelect={(escolhido) => { setGif(escolhido); setImagem(null); setRecorte(null); setError(''); setEscolhendoGif(false); }}
+        onBack={() => setEscolhendoGif(false)}
       />
     );
   }
@@ -454,6 +477,17 @@ export function Composer({
               <i className="bi bi-crop" aria-hidden="true" />
             </button>
             <button type="button" className="icon-button" aria-label="Remover imagem" onClick={removeImagem}>
+              <i className="bi bi-x-lg" aria-hidden="true" />
+            </button>
+          </div>
+        </figure>
+      )}
+
+      {gif && (
+        <figure className="composer-image">
+          <img src={gif.url} alt={gif.titulo} />
+          <div className="composer-image__tools">
+            <button type="button" className="icon-button" aria-label="Remover GIF" onClick={() => setGif(null)}>
               <i className="bi bi-x-lg" aria-hidden="true" />
             </button>
           </div>
@@ -563,12 +597,17 @@ export function Composer({
         </button>
       )}
 
-      {!imagem && (
-        <button type="button" className="composer-attach" onClick={() => imagemInput.current?.click()}>
-          <i className="bi bi-image" aria-hidden="true" />
-          Adicionar imagem
-          <span className="composer-attach__hint" aria-hidden="true">ou cole um GIF</span>
-        </button>
+      {!imagem && !gif && (
+        <div className="composer-attach-row">
+          <button type="button" className="composer-attach" aria-label="Adicionar imagem" onClick={() => imagemInput.current?.click()}>
+            <i className="bi bi-image" aria-hidden="true" />
+            Imagem
+          </button>
+          <button type="button" className="composer-attach" aria-label="Adicionar GIF" onClick={() => setEscolhendoGif(true)}>
+            <i className="bi bi-filetype-gif" aria-hidden="true" />
+            GIF
+          </button>
+        </div>
       )}
 
       {/* Enquete combina com texto e imagem; não aparece com música avaliada nem em comentário. */}
@@ -597,7 +636,7 @@ export function Composer({
       {error && <p role="alert" className="composer-error">{error}</p>}
 
       <button type="submit" className="composer-submit" disabled={!canPublish}>
-        {{ imagem: 'Enviando imagem…', post: 'Publicando…' }[sending] ?? submitLabel}
+        {{ imagem: gif ? 'Enviando GIF…' : 'Enviando imagem…', post: 'Publicando…' }[sending] ?? submitLabel}
       </button>
     </form>
   );
