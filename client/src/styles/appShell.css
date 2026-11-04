@@ -2282,7 +2282,8 @@ button.track-row:hover {
   object-fit: contain !important;
 }
 
-.notif__icon--selo_fundador {
+.notif__icon--selo_fundador,
+.notif__icon--marco_posts {
   background: linear-gradient(160deg, #ffe08a, #c98a1e);
   color: #3a2600;
 }

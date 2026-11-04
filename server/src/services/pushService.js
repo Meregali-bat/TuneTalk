@@ -58,6 +58,9 @@ export function createPushService({ subscriptions, webpush, vapid, logger = cons
  * Embrulha o repositório de notificações: ao criar uma notificação, manda também o aviso
  * para os aparelhos da pessoa. O resto (listar, contar, marcar como lida) passa direto.
  */
+// Avisos do próprio TuneTalk: o texto já é a frase inteira, sem o nome de alguém na frente.
+const AVISOS_DO_TUNETALK = new Set(['selo_fundador', 'marco_posts']);
+
 export function withPush(notifications, { push, users }) {
   return {
     ...notifications,
@@ -71,7 +74,7 @@ export function withPush(notifications, { push, users }) {
         const nome = autor?.nomeExibicao || autor?.nome || 'TuneTalk';
         await push.enviar(notificacao.destinatarioId, {
           titulo: 'TuneTalk',
-          texto: `${nome} ${notificacao.conteudo}`,
+          texto: AVISOS_DO_TUNETALK.has(notificacao.tipo) ? notificacao.conteudo : `${nome} ${notificacao.conteudo}`,
           url: notificacao.postId ? `/post/${notificacao.postId}` : `/perfil/${notificacao.autorId}`,
           naoLidas,
         });

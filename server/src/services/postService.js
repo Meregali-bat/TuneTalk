@@ -6,6 +6,8 @@ import { capaDoDeezer } from '../../../shared/favorites.js';
 import { validarEnquete } from '../../../shared/poll.js';
 
 const TEXTO_MAX = 500;
+// Ao chegar a esse número de posts (sem contar comentários), o TuneTalk dá os parabéns.
+export const MARCO_POSTS = 100;
 const MAX_MARCACOES = 10;
 
 const CREATE_FIELDS = [
@@ -65,6 +67,19 @@ export function createPostService({
   const notifyAuthor = async (post, autorId, tipo, conteudo) => {
     if (post.autor.id === autorId) return;
     await notifications.create({ destinatarioId: post.autor.id, autorId, tipo, conteudo, postId: post.id });
+  };
+
+  // Parabéns no 100º post. Só uma vez: apagar e postar de novo não repete o aviso.
+  const celebrarMarco = async (autorId, postId) => {
+    if ((await posts.countByAuthor(autorId)) !== MARCO_POSTS) return;
+    if (await notifications.exists(autorId, 'marco_posts')) return;
+    await notifications.create({
+      destinatarioId: autorId,
+      autorId,
+      tipo: 'marco_posts',
+      conteudo: `Parabéns pelo seu ${MARCO_POSTS}º post! Obrigado por fazer o TuneTalk acontecer.`,
+      postId,
+    });
   };
 
   // Quem foi marcado com @ recebe aviso; o autor do post respondido já recebe o de comentário.
@@ -174,6 +189,7 @@ export function createPostService({
       const id = await posts.create({ ...data, ...(pai && { parentId }), ...(enquete && { enquete }), autorId, data: now() });
       if (pai) await notifyAuthor(pai, autorId, 'comment', 'comentou no seu post');
       await notifyMentions(data.texto, { id, autorId, pai });
+      if (!pai) await celebrarMarco(autorId, id);
       return id;
     },
 

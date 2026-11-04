@@ -23,6 +23,7 @@ describe('postService', () => {
       remove: vi.fn(),
       votar: vi.fn().mockResolvedValue(true),
       votosDe: vi.fn().mockResolvedValue(new Map()),
+      countByAuthor: vi.fn().mockResolvedValue(5),
     };
     likes = {
       likedPostIds: vi.fn().mockResolvedValue([2, 3]),
@@ -31,7 +32,7 @@ describe('postService', () => {
       remove: vi.fn(),
       countByPost: vi.fn().mockResolvedValue(6),
     };
-    notifications = { create: vi.fn(), removeLike: vi.fn() };
+    notifications = { create: vi.fn(), removeLike: vi.fn(), exists: vi.fn().mockResolvedValue(false) };
     users = { setPinnedPost: vi.fn(), findByNames: vi.fn().mockResolvedValue([]) };
     service = createPostService({
       posts,
@@ -211,6 +212,44 @@ describe('postService', () => {
       await expect(service.votar(5, 9, 99)).rejects.toMatchObject({ status: 400, message: 'Opção inválida.' });
       posts.votar.mockResolvedValueOnce(false);
       await expect(service.votar(5, 9, 11)).rejects.toMatchObject({ status: 409, message: 'Você já votou nessa enquete.' });
+    });
+  });
+
+  describe('parabéns pelos 100 posts', () => {
+    it('o 100º post gera a notificação do TuneTalk, levando ao post', async () => {
+      posts.countByAuthor.mockResolvedValue(100);
+      await service.create(7, { texto: 'cem!' });
+      expect(posts.countByAuthor).toHaveBeenCalledWith(7);
+      expect(notifications.create).toHaveBeenCalledWith({
+        destinatarioId: 7,
+        autorId: 7,
+        tipo: 'marco_posts',
+        conteudo: 'Parabéns pelo seu 100º post! Obrigado por fazer o TuneTalk acontecer.',
+        postId: 42,
+      });
+    });
+
+    it('antes ou depois do 100º, não avisa', async () => {
+      for (const total of [99, 101]) {
+        posts.countByAuthor.mockResolvedValue(total);
+        await service.create(7, { texto: 'oi' });
+      }
+      expect(notifications.create).not.toHaveBeenCalled();
+    });
+
+    it('só uma vez: apagar e postar de novo o 100º não repete', async () => {
+      posts.countByAuthor.mockResolvedValue(100);
+      notifications.exists.mockResolvedValue(true);
+      await service.create(7, { texto: 'oi' });
+      expect(notifications.exists).toHaveBeenCalledWith(7, 'marco_posts');
+      expect(notifications.create).not.toHaveBeenCalled();
+    });
+
+    it('comentário não conta para os 100', async () => {
+      posts.countByAuthor.mockResolvedValue(100);
+      await service.create(7, { texto: 'oi', parentId: 1 });
+      expect(posts.countByAuthor).not.toHaveBeenCalled();
+      expect(notifications.create).not.toHaveBeenCalledWith(expect.objectContaining({ tipo: 'marco_posts' }));
     });
   });
 

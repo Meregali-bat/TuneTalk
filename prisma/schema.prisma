@@ -16,6 +16,7 @@ enum TipoNotificacao {
   selo_fundador
   mention
   voto_enquete
+  marco_posts
 }
 
 model Usuario {

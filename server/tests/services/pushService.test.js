@@ -75,6 +75,16 @@ describe('withPush (toda notificação vira aviso)', () => {
     expect(comPush.listForUser).toBe(notifications.listForUser);
   });
 
+  it('aviso do próprio TuneTalk vai sem o nome da pessoa na frente', async () => {
+    const notifications = { create: vi.fn(), countUnread: vi.fn().mockResolvedValue(1) };
+    const push = { enviar: vi.fn() };
+    const users = { findById: vi.fn().mockResolvedValue({ id: 7, nome: 'ana' }) };
+    const comPush = withPush(notifications, { push, users });
+
+    await comPush.create({ destinatarioId: 7, autorId: 7, tipo: 'marco_posts', conteudo: 'Parabéns pelo seu 100º post!', postId: 42 });
+    expect(push.enviar).toHaveBeenCalledWith(7, { titulo: 'TuneTalk', texto: 'Parabéns pelo seu 100º post!', url: '/post/42', naoLidas: 1 });
+  });
+
   it('se o aviso falhar, a notificação continua gravada e nada quebra', async () => {
     const notifications = { create: vi.fn(), countUnread: vi.fn().mockRejectedValue(new Error('x')) };
     const comPush = withPush(notifications, { push: { enviar: vi.fn() }, users: { findById: vi.fn() } });

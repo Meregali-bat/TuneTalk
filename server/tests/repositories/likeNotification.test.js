@@ -74,5 +74,12 @@ describe('likeRepository e notificationRepository (Postgres)', () => {
 
       expect((await notifications.listForUser(ana.id)).map((n) => n.tipo)).toEqual(['comment']);
     });
+
+    it('exists diz se a pessoa já recebeu uma notificação daquele tipo', async () => {
+      expect(await notifications.exists(ana.id, 'marco_posts')).toBe(false);
+      await notifications.create({ destinatarioId: ana.id, autorId: ana.id, tipo: 'marco_posts', conteudo: 'Parabéns!', postId: post.id });
+      expect(await notifications.exists(ana.id, 'marco_posts')).toBe(true);
+      expect(await notifications.exists(bia.id, 'marco_posts')).toBe(false);
+    });
   });
 });

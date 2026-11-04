@@ -38,4 +38,14 @@ describe('NotificationList: selo de fundador e marcações', () => {
     expect(item).toHaveTextContent('bia votou na sua enquete');
     expect(item.querySelector('.notif__icon--voto_enquete .bi-bar-chart-fill')).not.toBeNull();
   });
+
+  it('100 posts: parabéns do TuneTalk com troféu, levando ao 100º post', () => {
+    renderWithProviders(<NotificationList notifications={[{
+      id: 4, tipo: 'marco_posts', conteudo: 'Parabéns pelo seu 100º post!', lida: false, postId: 50, autor: ana,
+    }]} />);
+    const item = screen.getByRole('link');
+    expect(item).toHaveAttribute('href', '/post/50');
+    expect(item).toHaveTextContent('TuneTalk Parabéns pelo seu 100º post!');
+    expect(item.querySelector('.notif__icon--marco_posts .bi-trophy-fill')).not.toBeNull();
+  });
 });

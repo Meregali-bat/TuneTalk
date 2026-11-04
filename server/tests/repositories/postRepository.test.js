@@ -150,6 +150,15 @@ describe('postRepository (Postgres)', () => {
     expect((await repo.listFromFollowed(ana.id)).map((p) => p.id)).toEqual([pai.id]);
   });
 
+  it('countByAuthor conta os posts da pessoa, sem os comentários', async () => {
+    const pai = await factory.post(ana.id);
+    await factory.post(ana.id);
+    await factory.post(bia.id);
+    await factory.reply(pai.id, ana.id);
+    expect(await repo.countByAuthor(ana.id)).toBe(2);
+    expect(await repo.countByAuthor(bia.id)).toBe(1);
+  });
+
   it('listReplies devolve as respostas diretas, mais antigas primeiro, com suas contagens', async () => {
     const pai = await factory.post(ana.id);
     const primeira = await factory.reply(pai.id, bia.id, { createdAt: new Date('2024-01-01T10:00:00Z') });

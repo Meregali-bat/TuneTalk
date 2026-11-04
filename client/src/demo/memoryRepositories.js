@@ -183,6 +183,9 @@ export function createMemoryRepositories(state, onChange) {
       }
       return primeiras;
     },
+    async countByAuthor(autorId) {
+      return state.posts.filter((p) => p.autorId === autorId && !p.parentId).length;
+    },
     async findById(id) {
       const post = state.posts.find((p) => p.id === id);
       return post ? postRow(post) : null;
@@ -314,6 +317,9 @@ export function createMemoryRepositories(state, onChange) {
         id: nextId('notificacoes'), destinatarioId, autorId, tipo, conteudo, lida: false, postId, createdAt: new Date().toISOString(),
       });
       changed();
+    },
+    async exists(destinatarioId, tipo) {
+      return state.notificacoes.some((n) => n.destinatarioId === destinatarioId && n.tipo === tipo);
     },
     async removeLike(postId, usuarioId) {
       state.notificacoes = state.notificacoes.filter((n) => !(n.postId === postId && n.autorId === usuarioId && n.tipo === 'like'));

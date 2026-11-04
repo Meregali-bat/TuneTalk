@@ -31,6 +31,10 @@ export function createNotificationRepository(prisma) {
       await prisma.notificacao.create({ data: { destinatarioId, autorId, tipo, conteudo, postId } });
     },
 
+    async exists(destinatarioId, tipo) {
+      return (await prisma.notificacao.count({ where: { destinatarioId, tipo } })) > 0;
+    },
+
     async removeLike(postId, usuarioId) {
       await prisma.notificacao.deleteMany({ where: { postId, autorId: usuarioId, tipo: 'like' } });
     },

@@ -136,6 +136,11 @@ export function createPostRepository(prisma) {
       return new Map(rows.map((post) => [post.parentId, post]));
     },
 
+    // Posts principais da pessoa (comentários não contam).
+    countByAuthor(autorId) {
+      return prisma.post.count({ where: { ...TOP_LEVEL, autorId } });
+    },
+
     async findById(id) {
       const row = await prisma.post.findUnique({ where: { id }, include: POST_INCLUDE });
       return row ? toPost(row) : null;
