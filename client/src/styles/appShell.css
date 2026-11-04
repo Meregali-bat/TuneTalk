@@ -1364,6 +1364,12 @@ button.track-row:hover {
     }
   }
 
+  &.is-confirming,
+  &.is-confirming:hover:not(:disabled) {
+    border-color: var(--erro);
+    color: var(--erro);
+  }
+
   &:disabled {
     opacity: .6;
   }

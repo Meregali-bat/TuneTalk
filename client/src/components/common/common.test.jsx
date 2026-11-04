@@ -1,5 +1,5 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest';
-import { render, screen } from '@testing-library/react';
+import { act, render, screen } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { Modal } from './Modal.jsx';
 import { PasswordInput } from './PasswordInput.jsx';
@@ -81,9 +81,22 @@ describe('FollowButton', () => {
     const onChange = vi.fn();
     render(<FollowButton userId={2} following onChange={onChange} />);
 
+    // Primeiro toque só pede confirmação; o segundo deixa de seguir.
     await userEvent.click(screen.getByRole('button', { name: 'Seguindo' }));
+    expect(usersApi.unfollow).not.toHaveBeenCalled();
+    await userEvent.click(screen.getByRole('button', { name: 'Deixar de seguir?' }));
 
     expect(usersApi.unfollow).toHaveBeenCalledWith(2);
     expect(onChange).toHaveBeenCalledWith(false);
+  });
+
+  it('a confirmação de deixar de seguir some ao sair do botão', async () => {
+    render(<FollowButton userId={2} following />);
+    const botao = screen.getByRole('button', { name: 'Seguindo' });
+    await userEvent.click(botao);
+    expect(botao).toHaveTextContent('Deixar de seguir?');
+    await act(() => { botao.blur(); });
+    expect(botao).toHaveTextContent('Seguindo');
+    expect(usersApi.unfollow).not.toHaveBeenCalled();
   });
 });
