@@ -13,6 +13,7 @@ import { createPushRoutes } from './http/pushRoutes.js';
 import { createObraRoutes } from './http/obraRoutes.js';
 import { createQueroOuvirRoutes } from './http/queroOuvirRoutes.js';
 import { createShareApiRoutes, createSharePageRoutes } from './http/shareRoutes.js';
+import { createSeoRoutes } from './http/seoRoutes.js';
 import { apiNotFound, errorHandler } from './http/middlewares.js';
 
 const SESSION_MAX_AGE = 30 * 24 * 60 * 60 * 1000;
@@ -51,6 +52,9 @@ export function createApp(deps) {
   if (deps.sharePreview) api.use(createShareApiRoutes(deps));
   api.use(apiNotFound);
   app.use('/api', api);
+
+  // robots.txt e sitemap.xml para o Google (na Vercel, reescritos para esta função).
+  if (deps.appUrl) app.use(createSeoRoutes(deps));
 
   // Link de post com cartão (tags Open Graph). Na Vercel, /post/:id é reescrito para esta função.
   if (deps.sharePreview) app.use(createSharePageRoutes(deps));

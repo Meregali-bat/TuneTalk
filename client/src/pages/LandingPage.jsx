@@ -88,6 +88,19 @@ export function LandingPage() {
         </ol>
       </section>
 
+      {/* Texto para quem chega pelo Google: explica o site com as palavras que as pessoas pesquisam. */}
+      <section className="landing-section landing-sobre" aria-labelledby="landing-sobre">
+        <h2 id="landing-sobre">Um diário de música, em português</h2>
+        <p>
+          O TuneTalk é uma rede social de música: pense num Letterboxd, só que de discos. Registre os álbuns e as
+          músicas que você ouve, dê sua nota, escreva sua resenha e veja a média de todo mundo em cada disco.
+        </p>
+        <p>
+          Guarde na lista &ldquo;Quero ouvir&rdquo; o que recomendaram, crie enquetes para decidir qual é o melhor álbum
+          da banda e siga quem tem o gosto parecido com o seu para descobrir artistas novos. É grátis.
+        </p>
+      </section>
+
       <section className="landing-final">
         <h2>Pronto para dar sua primeira nota?</h2>
         <Link to="/cadastrar" className="landing-button landing-button--primary">Criar conta</Link>

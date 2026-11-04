@@ -3735,6 +3735,42 @@ button.poll__opcao {
   }
 }
 
+/* Sem internet com o app aberto: faixa no topo, abaixo do cabeçalho. */
+.aviso-offline {
+  position: fixed;
+  /* Fora do app logado não existe --app-header-h: usa a altura do topo das páginas públicas. */
+  top: calc(env(safe-area-inset-top, 0px) + var(--app-header-h, 4.5rem) + .5rem);
+  left: 50%;
+  z-index: 1031;
+  display: flex;
+  align-items: center;
+  gap: .55rem;
+  width: max-content;
+  max-width: calc(100vw - 2rem);
+  padding: .55rem 1rem;
+  border: 1px solid rgba(245, 91, 100, .45);
+  border-radius: 999px;
+  background: #2a0e11;
+  box-shadow: 0 10px 30px -10px rgba(0, 0, 0, .8);
+  color: #ffd9dc;
+  font-size: .88rem;
+  transform: translateX(-50%);
+  animation: aviso-offline-entra .2s ease-out;
+
+  i {
+    flex: none;
+    color: var(--erro, #f55b64);
+  }
+}
+
+@keyframes aviso-offline-entra {
+  from { opacity: 0; transform: translate(-50%, -6px); }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .aviso-offline { animation: none; }
+}
+
 /* Aviso de versão nova (depois de uma publicação). */
 .aviso-versao {
   position: fixed;

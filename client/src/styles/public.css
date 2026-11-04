@@ -346,6 +346,17 @@
   border-top: 1px solid var(--linhas);
 }
 
+.landing-sobre {
+  max-width: 44rem;
+
+  p {
+    margin: 0 0 1rem;
+    color: var(--texto-suave);
+    font-size: 1.05rem;
+    line-height: 1.65;
+  }
+}
+
 .landing-features {
   display: grid;
   grid-template-columns: repeat(4, minmax(0, 1fr));
