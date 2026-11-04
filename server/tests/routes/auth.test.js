@@ -1,4 +1,4 @@
-import { describe, it, expect, beforeEach, vi } from 'vitest';
+import { describe, it, expect, beforeEach } from 'vitest';
 import request from 'supertest';
 import session from 'express-session';
 import { buildTestApp, loggedAgent, sessionUser } from '../helpers/buildTestApp.js';
@@ -24,14 +24,6 @@ describe('rotas /api/auth', () => {
       const res = await agent.get('/api/auth/me');
       expect(res.status).toBe(200);
       expect(res.body).toEqual(sessionUser);
-    });
-
-    it('sessão antiga sem a foto: busca uma vez e guarda na sessão', async () => {
-      deps.userService.getFoto = vi.fn().mockResolvedValue('foto.png');
-      const agent = await loggedAgent(app);
-      expect((await agent.get('/api/auth/me')).body).toEqual({ ...sessionUser, fotoPerfil: 'foto.png' });
-      await agent.get('/api/auth/me');
-      expect(deps.userService.getFoto).toHaveBeenCalledTimes(1);
     });
   });
 

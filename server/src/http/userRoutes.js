@@ -40,7 +40,6 @@ export function createUserRoutes({ userService, postService, uploader, sessions 
     if (bannerUrl !== undefined && !uploader.isOwnUrl(bannerUrl, 'banner')) throw badRequest('Capa inválida. Envie a imagem de novo.');
     const usuario = await userService.updateProfile(currentUserId(req), { nome, bio, nomeExibicao, fotoPerfil, bannerUrl, mostrarSeloFundador });
     if (usuario.nome) req.session.user = { ...req.session.user, nome: usuario.nome };
-    if (usuario.fotoPerfil) req.session.user = { ...req.session.user, fotoPerfil: usuario.fotoPerfil };
     res.json(usuario);
   }));
 

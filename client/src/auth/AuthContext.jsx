@@ -48,8 +48,3 @@ export function useAuth() {
   if (!context) throw new Error('useAuth precisa estar dentro de <AuthProvider>.');
   return context;
 }
-
-// Para partes que só enfeitam com o usuário (ex.: a foto no compositor) e funcionam sem ele.
-export function useAuthOpcional() {
-  return useContext(AuthContext);
-}

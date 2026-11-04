@@ -30,7 +30,7 @@ describe('userRepository (Postgres)', () => {
       const id = await repo.create({ email: 'ana@x.com', senhaHash: '$2b$hash', fotoPerfil: 'f.png' });
       await repo.update(id, { nome: 'Ana' });
       expect(await repo.findAuthByEmail('ana@x.com')).toEqual({
-        id, nome: 'Ana', email: 'ana@x.com', senha: '$2b$hash', fotoPerfil: 'f.png', veterano: false, fundadorDesde: null,
+        id, nome: 'Ana', email: 'ana@x.com', senha: '$2b$hash', veterano: false, fundadorDesde: null,
       });
     });
 

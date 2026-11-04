@@ -11,7 +11,7 @@ export function createUserRepository(prisma) {
     findAuthByEmail(email) {
       return prisma.usuario.findFirst({
         where: { email: sameText(email) },
-        select: { id: true, nome: true, email: true, senha: true, fotoPerfil: true, veterano: true, fundadorDesde: true },
+        select: { id: true, nome: true, email: true, senha: true, veterano: true, fundadorDesde: true },
       });
     },
 

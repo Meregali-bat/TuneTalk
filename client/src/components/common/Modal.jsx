@@ -3,8 +3,7 @@ import { useVisualViewportVars } from '../../hooks/useVisualViewport.js';
 
 // variant "panel": painel ancorado no canto superior direito (notificações); no celular ocupa a largura.
 // variant "sheet": no celular ocupa a tela a partir do topo e encolhe para caber acima do teclado.
-// semCabecalho: o conteúdo faz o próprio topo (ex.: o compositor, com Cancelar e Publicar); o título fica só para leitor de tela.
-export function Modal({ open, title, onClose, children, centered = false, variant = 'dialog', semCabecalho = false }) {
+export function Modal({ open, title, onClose, children, centered = false, variant = 'dialog' }) {
   const titleId = useId();
 
   useEffect(() => {
@@ -27,7 +26,7 @@ export function Modal({ open, title, onClose, children, centered = false, varian
 
   if (!open) return null;
 
-  const dialogClass = ['modal-dialog', 'app-modal', `app-modal--${variant}`, centered && 'modal-dialog-centered', semCabecalho && 'app-modal--sem-cabecalho']
+  const dialogClass = ['modal-dialog', 'app-modal', `app-modal--${variant}`, centered && 'modal-dialog-centered']
     .filter(Boolean)
     .join(' ');
 
@@ -41,16 +40,12 @@ export function Modal({ open, title, onClose, children, centered = false, varian
       >
         <div className={dialogClass}>
           <div className="modal-content" role="dialog" aria-modal="true" aria-labelledby={titleId}>
-            {semCabecalho ? (
-              <h2 className="visually-hidden" id={titleId}>{title}</h2>
-            ) : (
-              <div className="modal-header">
-                <h2 className="modal-title" id={titleId}>{title}</h2>
-                <button type="button" className="icon-button" aria-label="Fechar" onClick={onClose}>
-                  <i className="bi bi-x-lg" aria-hidden="true" />
-                </button>
-              </div>
-            )}
+            <div className="modal-header">
+              <h2 className="modal-title" id={titleId}>{title}</h2>
+              <button type="button" className="icon-button" aria-label="Fechar" onClick={onClose}>
+                <i className="bi bi-x-lg" aria-hidden="true" />
+              </button>
+            </div>
             <div className="modal-body">{children}</div>
           </div>
         </div>
