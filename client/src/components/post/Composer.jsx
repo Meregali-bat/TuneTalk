@@ -15,14 +15,15 @@ import { DURACOES_DIAS, ENQUETE_MAX, ENQUETE_MIN } from '../../../../shared/poll
 const TEXTO_MAX = 500;
 
 function TrackInfo({ track }) {
+  const artista = track.tipo === 'artista';
+  let meta = `${track.artista} · ${track.tipo === 'album' ? `${track.faixas} faixas` : formatDuration(track.duracao)}`;
+  if (artista) meta = track.fas ? `${Number(track.fas).toLocaleString('pt-BR')} fãs` : 'Artista';
   return (
     <>
-      <img src={track.capa} alt="" className="track-row__cover" />
+      <img src={track.capa} alt="" className={`track-row__cover${artista ? ' track-row__cover--redondo' : ''}`} />
       <span className="track-row__info">
         <span className="track-row__title">{track.titulo}</span>
-        <span className="track-row__meta">
-          {track.artista} · {track.tipo === 'album' ? `${track.faixas} faixas` : formatDuration(track.duracao)}
-        </span>
+        <span className="track-row__meta">{meta}</span>
       </span>
     </>
   );
@@ -65,9 +66,11 @@ function CropPreview({ src, recorte }) {
 const BUSCAS = {
   musica: { aba: 'Músicas', rotulo: 'Buscar música', placeholder: 'Música ou artista', dica: 'Digite o nome de uma música ou artista.' },
   album: { aba: 'Álbuns', rotulo: 'Buscar álbum', placeholder: 'Álbum ou artista', dica: 'Digite o nome de um álbum ou artista.' },
+  // Só na enquete: o post normal avalia música ou álbum, não artista.
+  artista: { aba: 'Artistas', rotulo: 'Buscar artista', placeholder: 'Nome do artista', dica: 'Digite o nome de um artista.' },
 };
 
-function SearchStep({ query, onQueryChange, tipo, onTipoChange, search, onSelect, onBack }) {
+function SearchStep({ query, onQueryChange, tipo, onTipoChange, search, onSelect, onBack, comArtistas = false }) {
   const busca = BUSCAS[tipo];
   return (
     <div className="composer-step">
@@ -92,7 +95,7 @@ function SearchStep({ query, onQueryChange, tipo, onTipoChange, search, onSelect
 
       {/* No celular: a busca vem primeiro (com o voltar ao lado); o tipo fica logo abaixo, compacto. */}
       <div role="tablist" aria-label="O que buscar" className="composer-tabs composer-tabs--compacto">
-        {Object.entries(BUSCAS).map(([chave, { aba }]) => (
+        {Object.entries(BUSCAS).filter(([chave]) => comArtistas || chave !== 'artista').map(([chave, { aba }]) => (
           <button
             key={chave}
             type="button"
@@ -135,7 +138,7 @@ function SearchStep({ query, onQueryChange, tipo, onTipoChange, search, onSelect
   );
 }
 
-const chaveOpcao = (item) => `${item.tipo === 'album' ? 'album' : 'musica'}-${item.id}`;
+const chaveOpcao = (item) => `${['album', 'artista'].includes(item.tipo) ? item.tipo : 'musica'}-${item.id}`;
 
 const musicFields = (track) => (track.tipo === 'album' ? {
   albumName: track.titulo,
@@ -258,6 +261,7 @@ export function Composer({
 
   const abrirBusca = (para) => {
     setBuscandoPara(para);
+    if (para === 'post' && tipoBusca === 'artista') setTipoBusca('musica');
     setSearching(true);
   };
 
@@ -304,8 +308,12 @@ export function Composer({
         ...(enquete && {
           enquete: {
             duracaoDias: enquete.duracaoDias,
+            // Artista vai sem "artista" (é ele mesmo) e sem prévia; álbum, sem prévia.
             opcoes: enquete.opcoes.map(({ titulo, artista, capa, preview, tipo }) => ({
-              titulo, artista, capa, preview: tipo === 'album' ? null : preview,
+              titulo,
+              artista: tipo === 'artista' ? null : artista,
+              capa,
+              preview: tipo === 'album' || tipo === 'artista' ? null : preview,
             })),
           },
         }),
@@ -348,6 +356,7 @@ export function Composer({
         search={search}
         onSelect={chooseTrack}
         onBack={() => setSearching(false)}
+        comArtistas={buscandoPara === 'enquete'}
       />
     );
   }
@@ -456,7 +465,7 @@ export function Composer({
       {enquete && (
         <div className="composer-poll" role="group" aria-label="Enquete">
           <div className="composer-poll__topo">
-            <span>Enquete · de {ENQUETE_MIN} a {ENQUETE_MAX} músicas ou álbuns</span>
+            <span>Enquete · de {ENQUETE_MIN} a {ENQUETE_MAX} opções</span>
             <button type="button" className="icon-button" aria-label="Remover enquete" onClick={() => setEnquete(null)}>
               <i className="bi bi-x-lg" aria-hidden="true" />
             </button>
@@ -481,7 +490,7 @@ export function Composer({
           </ol>
           {enquete.opcoes.length < ENQUETE_MAX && (
             <button type="button" className="composer-poll__adicionar" aria-label="Adicionar opção à enquete" onClick={() => abrirBusca('enquete')}>
-              <i className="bi bi-plus-lg" aria-hidden="true" /> Adicionar música ou álbum
+              <i className="bi bi-plus-lg" aria-hidden="true" /> Adicionar música, álbum ou artista
             </button>
           )}
           <div className="composer-poll__duracao" role="radiogroup" aria-label="Duração da enquete">
@@ -527,7 +536,7 @@ export function Composer({
         >
           <i className="bi bi-bar-chart-line" aria-hidden="true" />
           Criar enquete
-          <span className="composer-attach__hint" aria-hidden="true">músicas ou álbuns</span>
+          <span className="composer-attach__hint" aria-hidden="true">músicas, álbuns ou artistas</span>
         </button>
       )}
 

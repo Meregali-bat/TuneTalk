@@ -1,4 +1,4 @@
-// Enquete de músicas e/ou álbuns: de 2 a 4 opções, a pessoa vota numa só, com prazo.
+// Enquete de músicas, álbuns e/ou artistas: de 2 a 4 opções, a pessoa vota numa só, com prazo.
 export const ENQUETE_MIN = 2;
 export const ENQUETE_MAX = 4;
 export const DURACOES_DIAS = [1, 3, 7];
@@ -13,7 +13,7 @@ const linkHttps = (valor, max) => (typeof valor === 'string' && valor.startsWith
 export function validarEnquete(valor, { capaValida = () => true } = {}) {
   if (!valor || typeof valor !== 'object' || !Array.isArray(valor.opcoes)) return { erro: 'Enquete inválida.' };
   if (valor.opcoes.length < ENQUETE_MIN || valor.opcoes.length > ENQUETE_MAX) {
-    return { erro: `A enquete precisa de ${ENQUETE_MIN} a ${ENQUETE_MAX} músicas ou álbuns.` };
+    return { erro: `A enquete precisa de ${ENQUETE_MIN} a ${ENQUETE_MAX} opções.` };
   }
   const duracaoDias = Number(valor.duracaoDias ?? 1);
   if (!DURACOES_DIAS.includes(duracaoDias)) return { erro: 'Duração da enquete inválida.' };

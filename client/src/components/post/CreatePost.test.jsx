@@ -371,6 +371,32 @@ describe('CreatePost', () => {
       ]);
     });
 
+    it('dá para pôr artistas na enquete (só nela; o post normal não tem a aba Artistas)', async () => {
+      const olivia = { id: 7, tipo: 'artista', titulo: 'Olivia Rodrigo', capa: 'olivia.jpg', fas: 1200 };
+      render(<CreatePost onCreated={vi.fn()} />);
+      await open();
+      await addMusic();
+      expect(screen.queryByRole('tab', { name: 'Artistas' })).toBeNull();
+      await userEvent.click(screen.getByRole('button', { name: 'Voltar' }));
+
+      await userEvent.click(screen.getByRole('button', { name: /Criar enquete/ }));
+      musicApi.search.mockResolvedValue([olivia]);
+      await userEvent.click(screen.getByRole('tab', { name: 'Artistas' }));
+      await userEvent.type(screen.getByLabelText('Buscar artista'), 'olivia');
+      expect(await screen.findByRole('button', { name: /^Olivia Rodrigo/ })).toHaveTextContent('1.200 fãs');
+      expect(musicApi.search).toHaveBeenLastCalledWith('olivia', 'artista');
+      await userEvent.click(screen.getByRole('button', { name: /^Olivia Rodrigo/ }));
+
+      musicApi.search.mockResolvedValue([help]);
+      await userEvent.click(screen.getByRole('button', { name: 'Adicionar opção à enquete' }));
+      await userEvent.click(screen.getByRole('tab', { name: 'Músicas' }));
+      await userEvent.type(screen.getByLabelText('Buscar música'), 'help');
+      await userEvent.click(await screen.findByRole('button', { name: /^Help!/ }));
+      await userEvent.click(screen.getByRole('button', { name: 'Publicar' }));
+
+      expect(postsApi.create.mock.calls[0][0].enquete.opcoes[0]).toEqual({ titulo: 'Olivia Rodrigo', artista: null, capa: 'olivia.jpg', preview: null });
+    });
+
     it('tirar uma música e remover a enquete', async () => {
       render(<CreatePost onCreated={vi.fn()} />);
       await open();

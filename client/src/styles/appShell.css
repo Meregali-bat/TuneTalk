@@ -952,7 +952,8 @@
 /* Abas Músicas/Álbuns da busca: menores, abaixo do campo. */
 .composer-tabs--compacto {
   align-self: flex-start;
-  grid-template-columns: auto auto;
+  grid-template-columns: none;
+  grid-auto-flow: column;
   padding: .2rem;
 
   .composer-tabs__tab {
@@ -3072,6 +3073,11 @@ button.poll__opcao {
     position: relative;
     z-index: 1;
   }
+}
+
+.track-row__cover--redondo,
+.poll__capa--redondo {
+  border-radius: 50% !important;
 }
 
 .poll__capa {

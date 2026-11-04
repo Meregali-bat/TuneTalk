@@ -51,7 +51,8 @@ export function PollBlock({ post }) {
       <ul className="poll__opcoes">
         {enquete.opcoes.map((opcao) => {
           const pct = porcentagem(opcao.votos ?? 0, total);
-          const capa = opcao.capa && <img src={opcao.capa} alt="" className="poll__capa" />;
+          // Opção sem artista é o próprio artista: foto redonda, como nos favoritos.
+          const capa = opcao.capa && <img src={opcao.capa} alt="" className={`poll__capa${opcao.artista ? '' : ' poll__capa--redondo'}`} />;
           const nome = (
             <span className="poll__nome">
               <span className="poll__titulo">{opcao.titulo}</span>
