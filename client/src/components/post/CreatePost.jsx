@@ -22,8 +22,8 @@ export function CreatePost({ onCreated, open: controlledOpen, onOpenChange }) {
         <i className="bi bi-music-note-beamed" aria-hidden="true" />
         <span className="composer-fab__label" aria-hidden="true">Postar</span>
       </button>
-      <Modal open={open} title="Novo post" onClose={close} variant="sheet">
-        <Composer onPublished={handlePublished} />
+      <Modal open={open} title="Novo post" onClose={close} variant="sheet" semCabecalho>
+        <Composer onPublished={handlePublished} onCancel={close} />
       </Modal>
     </>
   );

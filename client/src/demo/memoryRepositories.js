@@ -52,7 +52,7 @@ export function createMemoryRepositories(state, onChange) {
     async findAuthByEmail(email) {
       const user = state.usuarios.find((u) => same(u.email, email));
       return user ? {
-        id: user.id, nome: user.nome, email: user.email, senha: user.senha, veterano: Boolean(user.veterano), fundadorDesde: user.fundadorDesde ?? null,
+        id: user.id, nome: user.nome, email: user.email, senha: user.senha, fotoPerfil: user.fotoPerfil ?? null, veterano: Boolean(user.veterano), fundadorDesde: user.fundadorDesde ?? null,
       } : null;
     },
     async findAuthById(id) {

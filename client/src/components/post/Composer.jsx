@@ -1,5 +1,6 @@
 import { useEffect, useId, useLayoutEffect, useRef, useState } from 'react';
 import { postsApi } from '../../api/index.js';
+import { useAuthOpcional } from '../../auth/AuthContext.jsx';
 import { useMusicSearch } from '../../hooks/useMusicSearch.js';
 import { formatDuration } from '../../utils/postFormat.js';
 import { StarRatingInput } from './StarRatingInput.jsx';
@@ -161,7 +162,10 @@ export function Composer({
   textLabel = 'O que você quer dizer?',
   placeholder = 'Fale de uma música, um disco, um show…',
   submitLabel = 'Publicar',
+  onCancel, // com ele, o compositor vira tela cheia como no Twitter: Cancelar e Publicar no topo
+  contexto, // ex.: "Respondendo a fulano", logo abaixo do topo
 }) {
+  const user = useAuthOpcional()?.user;
   const textoId = useId();
   const sugestoesId = useId();
   const textoRef = useRef(null);
@@ -177,6 +181,15 @@ export function Composer({
     setCursorPendente(null);
   }, [cursorPendente]);
   const [texto, setTexto] = useState('');
+
+  // O texto cresce com o que é escrito (sem caixa com rolagem própria), como no Twitter.
+  // Ajusta a cada mudança e também quando o campo volta à tela (ex.: depois da busca de música).
+  const ajustarAltura = (campo) => {
+    if (!campo || !onCancel) return;
+    campo.style.height = 'auto';
+    campo.style.height = `${campo.scrollHeight}px`;
+  };
+  useLayoutEffect(() => ajustarAltura(textoRef.current));
   const [track, setTrack] = useState(null);
   const [nota, setNota] = useState(null);
   const [searching, setSearching] = useState(false);
@@ -352,13 +365,29 @@ export function Composer({
   }
 
   return (
-    <form className="composer-step" onSubmit={submit}>
+    <form className={`composer-step${onCancel ? ' composer-tela' : ''}`} onSubmit={submit}>
+      {onCancel && (
+        <div className="composer-tela__topo">
+          <button type="button" className="composer-tela__cancelar" onClick={onCancel}>Cancelar</button>
+          <button type="submit" className="composer-submit composer-tela__publicar" disabled={!canPublish}>
+            {{ imagem: 'Enviando imagem…', post: 'Publicando…' }[sending] ?? submitLabel}
+          </button>
+        </div>
+      )}
+      {contexto}
+      <div className={onCancel ? 'composer-tela__corpo' : undefined}>
+      {onCancel && (
+        user?.fotoPerfil
+          ? <img src={user.fotoPerfil} alt="" className="composer-tela__avatar" />
+          : <span className="composer-tela__avatar composer-tela__avatar--vazio" aria-hidden="true"><i className="bi bi-person" /></span>
+      )}
+      <div className={onCancel ? 'composer-tela__conteudo' : 'composer-step'}>
       <div className="composer-field">
-        <label htmlFor={textoId}>{textLabel}</label>
+        <label htmlFor={textoId} className={onCancel ? 'visually-hidden' : undefined}>{textLabel}</label>
         <textarea
-          ref={textoRef}
+          ref={(campo) => { textoRef.current = campo; ajustarAltura(campo); }}
           id={textoId}
-          rows={4}
+          rows={onCancel ? 2 : 4}
           maxLength={TEXTO_MAX}
           autoFocus
           placeholder={placeholder}
@@ -371,7 +400,7 @@ export function Composer({
           onKeyDown={teclaNoTexto}
           onPaste={colar}
         />
-        <span className="composer-counter">{texto.length}/{TEXTO_MAX}</span>
+        {!onCancel && <span className="composer-counter">{texto.length}/{TEXTO_MAX}</span>}
         {marcacao.aberta && (
           <ul id={sugestoesId} role="listbox" aria-label="Sugestões de marcação" className="mention-list">
             {marcacao.sugestoes.map((usuario, i) => (
@@ -495,6 +524,11 @@ export function Composer({
         </div>
       )}
 
+      </div>
+      </div>
+
+      {error && <p role="alert" className="composer-error">{error}</p>}
+
       {/* Barra de ícones, como no Twitter: cada um adiciona algo ao post. */}
       <div className="composer-toolbar" role="toolbar" aria-label="Adicionar ao post">
         {!imagem && (
@@ -544,6 +578,11 @@ export function Composer({
             <i className="bi bi-bar-chart-line" aria-hidden="true" />
           </button>
         )}
+        {onCancel && (
+          <span className={`composer-counter composer-tela__contador${texto.length > TEXTO_MAX - 20 ? ' is-perto' : ''}`}>
+            {texto.length}/{TEXTO_MAX}
+          </span>
+        )}
       </div>
 
       <input
@@ -556,11 +595,11 @@ export function Composer({
         onChange={(event) => { chooseImagem(event.target.files[0]); event.target.value = ''; }}
       />
 
-      {error && <p role="alert" className="composer-error">{error}</p>}
-
-      <button type="submit" className="composer-submit" disabled={!canPublish}>
-        {{ imagem: 'Enviando imagem…', post: 'Publicando…' }[sending] ?? submitLabel}
-      </button>
+      {!onCancel && (
+        <button type="submit" className="composer-submit" disabled={!canPublish}>
+          {{ imagem: 'Enviando imagem…', post: 'Publicando…' }[sending] ?? submitLabel}
+        </button>
+      )}
     </form>
   );
 }

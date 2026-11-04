@@ -1,7 +1,7 @@
 import { Router } from 'express';
 import { asyncRoute, requireAuth } from './middlewares.js';
 
-export function createAuthRoutes({ authService, passwordResetService, defaultProfilePhoto }) {
+export function createAuthRoutes({ authService, passwordResetService, defaultProfilePhoto, userService }) {
   const router = Router();
 
   const startSession = (req, user) =>
@@ -13,9 +13,14 @@ export function createAuthRoutes({ authService, passwordResetService, defaultPro
       });
     });
 
-  router.get('/me', requireAuth, (req, res) => {
+  // Sessões antigas não tinham a foto: busca uma vez e guarda na sessão.
+  router.get('/me', requireAuth, asyncRoute(async (req, res) => {
+    const sessao = req.session.user;
+    if (sessao.fotoPerfil === undefined && userService?.getFoto) {
+      req.session.user = { ...sessao, fotoPerfil: await userService.getFoto(sessao.id).catch(() => null) };
+    }
     res.json(req.session.user);
-  });
+  }));
 
   router.post('/login', asyncRoute(async (req, res) => {
     const user = await authService.login(req.body.email, req.body.senha);

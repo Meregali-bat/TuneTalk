@@ -84,6 +84,10 @@ export function createUserService({ users, follows, postService, notifications, 
       return favoritos;
     },
 
+    async getFoto(usuarioId) {
+      return (await users.findById(usuarioId))?.fotoPerfil ?? null;
+    },
+
     async getProfileByName(nome, viewerId) {
       const [usuario] = await users.findByNames([nome]);
       if (!usuario) throw notFound('Usuário não encontrado.');

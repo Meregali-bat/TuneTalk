@@ -154,9 +154,10 @@ export function PostPage() {
         )}
       </section>
 
-      <Modal open={replying} title="Comentar" onClose={() => setReplying(false)} variant="sheet">
-        <p className="composer-context">Respondendo a <strong>{post.autor.nome}</strong></p>
+      <Modal open={replying} title="Comentar" onClose={() => setReplying(false)} variant="sheet" semCabecalho>
         <Composer
+          onCancel={() => setReplying(false)}
+          contexto={<p className="composer-context">Respondendo a <strong>{post.autor.nome}</strong></p>}
           parentId={post.id}
           onPublished={handlePublished}
           textLabel="Seu comentário"

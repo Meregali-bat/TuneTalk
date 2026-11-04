@@ -25,7 +25,7 @@ describe('authService', () => {
 
   describe('login', () => {
     it('devolve o usuário da sessão (sem a senha) quando as credenciais batem', async () => {
-      expect(await auth.login('ana@x.com', 'Senha!1')).toEqual({ id: 1, nome: 'Ana', email: 'ana@x.com' });
+      expect(await auth.login('ana@x.com', 'Senha!1')).toEqual({ id: 1, nome: 'Ana', email: 'ana@x.com', fotoPerfil: null });
       expect(users.updatePassword).not.toHaveBeenCalled();
     });
 
@@ -93,7 +93,7 @@ describe('authService', () => {
     const valid = { email: 'ana@x.com', senha: 'Senha!1', fotoPerfil: 'f.png' };
 
     it('cria a conta só com email e senha (guardada em bcrypt); o nome de usuário vem depois', async () => {
-      expect(await auth.register(valid)).toEqual({ id: 1, nome: null, email: 'ana@x.com' });
+      expect(await auth.register(valid)).toEqual({ id: 1, nome: null, email: 'ana@x.com', fotoPerfil: 'f.png' });
       const { senhaHash, ...resto } = users.create.mock.calls[0][0];
       expect(resto).toEqual({ email: 'ana@x.com', fotoPerfil: 'f.png' });
       expect(senhaHash).not.toContain('Senha!1');

@@ -1,7 +1,8 @@
 import { badRequest, conflict, unauthorized } from '../errors.js';
 import { PASSWORD_RULES_MESSAGE, isPasswordValid } from '../../../shared/passwordRules.js';
 
-const toSessionUser = ({ id, nome, email }) => ({ id, nome, email });
+// A foto vai na sessão para o app mostrar quem está postando (ex.: ao lado do texto no compositor).
+const toSessionUser = ({ id, nome, email, fotoPerfil = null }) => ({ id, nome, email, fotoPerfil });
 
 const EMAIL_PATTERN = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 
@@ -39,7 +40,7 @@ export function createAuthService({ users, passwords, notifications }) {
       if (await users.existsByEmail(cleanEmail)) throw conflict('Já existe uma conta com esse email.');
 
       const id = await users.create({ email: cleanEmail, senhaHash: await passwords.hash(senha), fotoPerfil });
-      return toSessionUser({ id, nome: null, email: cleanEmail });
+      return toSessionUser({ id, nome: null, email: cleanEmail, fotoPerfil: fotoPerfil ?? null });
     },
   };
 }

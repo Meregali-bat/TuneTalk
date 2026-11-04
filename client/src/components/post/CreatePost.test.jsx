@@ -637,11 +637,22 @@ describe('CreatePost', () => {
     });
   });
 
-  it('fechar descarta o rascunho', async () => {
+  it('tela cheia como no Twitter: Cancelar e Publicar no topo, ícones embaixo', async () => {
+    render(<CreatePost onCreated={vi.fn()} />);
+    await open();
+    const dialog = screen.getByRole('dialog', { name: 'Novo post' });
+    expect(within(dialog).queryByRole('button', { name: 'Fechar' })).toBeNull();
+    const [primeiro, segundo] = within(dialog).getAllByRole('button');
+    expect(primeiro).toHaveTextContent('Cancelar');
+    expect(segundo).toHaveTextContent('Publicar');
+    expect(within(dialog).getByRole('toolbar', { name: 'Adicionar ao post' })).toHaveTextContent('0/500');
+  });
+
+  it('cancelar descarta o rascunho', async () => {
     render(<CreatePost onCreated={vi.fn()} />);
     await chooseHelp();
     await userEvent.type(texto(), 'rascunho');
-    await userEvent.click(screen.getByRole('button', { name: 'Fechar' }));
+    await userEvent.click(screen.getByRole('button', { name: 'Cancelar' }));
     expect(screen.queryByRole('dialog')).toBeNull();
 
     await open();
