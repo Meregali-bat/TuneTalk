@@ -1,3 +1,4 @@
+import fs from 'node:fs/promises';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { v2 as cloudinary } from 'cloudinary';
@@ -22,8 +23,26 @@ import { createHashtagService } from './services/hashtagService.js';
 import webpush from 'web-push';
 import { createPushSubscriptionRepository } from './repositories/pushSubscriptionRepository.js';
 import { createPushService, withPush } from './services/pushService.js';
+import { renderizarCard } from './share/postCard.js';
 
 const rootDir = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '../..');
+
+// index.html do build do React, onde entram as tags do post compartilhado. Na Vercel ele vai junto
+// da função (includeFiles no vercel.json); se faltar, é buscado do próprio site.
+function createIndexLoader(appUrl) {
+  let cache;
+  return async () => {
+    if (cache) return cache;
+    try {
+      cache = await fs.readFile(path.join(rootDir, 'dist', 'index.html'), 'utf8');
+    } catch {
+      const resposta = await fetch(`${appUrl}/index.html`, { signal: AbortSignal.timeout(4000) });
+      if (!resposta.ok) throw new Error(`index.html indisponível (${resposta.status}).`);
+      cache = await resposta.text();
+    }
+    return cache;
+  };
+}
 
 // Composição real das dependências (Postgres via Prisma, Cloudinary, Deezer).
 export function buildContainer(config) {
@@ -66,6 +85,12 @@ export function buildContainer(config) {
     sessionSecret: config.sessionSecret,
     secureCookies: config.secureCookies,
     defaultProfilePhoto: config.defaultProfilePhoto,
+    sharePreview: {
+      appUrl: config.appUrl,
+      findPost: (id) => posts.findById(id),
+      carregarIndex: createIndexLoader(config.appUrl),
+      renderizarCard,
+    },
     clientDist: config.serveClient ? path.join(rootDir, 'dist') : undefined,
   };
 }

@@ -4,6 +4,9 @@
   "installCommand": "npm ci",
   "buildCommand": "npm run vercel-build",
   "outputDirectory": "dist",
+  "functions": {
+    "api/index.js": { "includeFiles": "{dist/index.html,server/assets/**}" }
+  },
   "headers": [
     {
       "source": "/((?!assets/|api/).*)",
@@ -16,6 +19,7 @@
   ],
   "rewrites": [
     { "source": "/api/(.*)", "destination": "/api" },
+    { "source": "/post/:id", "destination": "/api" },
     { "source": "/(.*)", "destination": "/index.html" }
   ]
 }

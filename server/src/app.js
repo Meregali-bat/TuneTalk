@@ -9,6 +9,7 @@ import { createNotificationRoutes } from './http/notificationRoutes.js';
 import { createMusicRoutes } from './http/musicRoutes.js';
 import { createHashtagRoutes } from './http/hashtagRoutes.js';
 import { createPushRoutes } from './http/pushRoutes.js';
+import { createShareApiRoutes, createSharePageRoutes } from './http/shareRoutes.js';
 import { apiNotFound, errorHandler } from './http/middlewares.js';
 
 const SESSION_MAX_AGE = 30 * 24 * 60 * 60 * 1000;
@@ -41,8 +42,12 @@ export function createApp(deps) {
   api.use('/music', createMusicRoutes(deps));
   api.use('/hashtags', createHashtagRoutes(deps));
   api.use('/push', createPushRoutes(deps));
+  if (deps.sharePreview) api.use(createShareApiRoutes(deps));
   api.use(apiNotFound);
   app.use('/api', api);
+
+  // Link de post com cartão (tags Open Graph). Na Vercel, /post/:id é reescrito para esta função.
+  if (deps.sharePreview) app.use(createSharePageRoutes(deps));
 
   // Em produção o Express também entrega o build do React (SPA).
   if (deps.clientDist && fs.existsSync(deps.clientDist)) {
