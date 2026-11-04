@@ -89,6 +89,27 @@
   gap: .25rem;
 }
 
+/* Telas bem estreitas (320px): logo e ícones juntos passavam da largura da tela. */
+@media (max-width: 359.98px) {
+  .app-header__inner {
+    gap: .5rem;
+  }
+
+  .app-logo {
+    gap: .4rem;
+    font-size: 1.05rem;
+
+    img {
+      width: 2rem;
+      height: 2rem;
+    }
+  }
+
+  .app-header__actions {
+    gap: 0;
+  }
+}
+
 .app-badge {
   position: absolute;
   top: .1rem;
@@ -2793,4 +2814,41 @@ button.favorites-editor__capa {
   color: var(--texto-suave);
   font-size: .78rem;
   text-align: center;
+}
+
+/* --- Nada rola para o lado no celular --- */
+
+/* Campos de texto encolhem dentro de linhas flexíveis. No Safari do iPhone, um <input> tem uma
+   largura mínima própria e, numa linha com outros itens (ex.: voltar + busca), empurrava a
+   janela para além da tela, deixando arrastar para o lado. */
+.layout-app,
+.layout-public {
+  input,
+  textarea,
+  select {
+    min-width: 0;
+    max-width: 100%;
+  }
+}
+
+.composer-search {
+  min-width: 0;
+
+  input {
+    width: 100%;
+  }
+}
+
+/* Trava de segurança: a página e as janelas nunca rolam na horizontal (o que tem rolagem lateral
+   de propósito, como as fileiras de favoritos, rola dentro do próprio trilho). */
+/* (No contêiner do app, não no html/body: no html o "clip" vai para a janela e atrapalha a rolagem.) */
+.layout-app,
+.layout-public {
+  overflow-x: clip;
+}
+
+.layout-app .modal,
+.layout-app .modal-content,
+.layout-app .modal-body {
+  overflow-x: clip;
 }

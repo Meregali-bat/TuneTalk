@@ -77,6 +77,34 @@
     color: var(--background);
   }
 
+  /* Telas bem estreitas (320px): logo e links juntos passavam da largura. */
+  @media (max-width: 359.98px) {
+    .navegacao {
+      gap: .5rem;
+    }
+
+    .logo img {
+      width: 2rem;
+      height: 2rem;
+    }
+
+    .titulo-logo {
+      font-size: 1.15rem;
+    }
+
+    .navegacao__links {
+      gap: .6rem;
+    }
+
+    .link-header {
+      font-size: .9rem;
+    }
+
+    .link-header--cta {
+      padding: .35rem .75rem;
+    }
+  }
+
   a:focus-visible,
   button:focus-visible {
     outline: 2px solid var(--destaque-claro);
