@@ -38,6 +38,11 @@ export function createMemoryRepositories(state, onChange) {
   });
   const byIdDesc = (a, b) => b.id - a.id;
   const topLevel = () => state.posts.filter((p) => !p.parentId);
+  // Mesmo critério do banco: título e artista sem diferenciar maiúsculas; álbum separado de música.
+  const igual = (a, b) => (a ?? '').toLowerCase() === (b ?? '').toLowerCase();
+  const daObra = (p, { tipo, titulo, artista }) => igual(p.artistName, artista) && (tipo === 'album'
+    ? p.postType === 'album' && igual(p.albumName, titulo)
+    : p.postType !== 'album' && igual(p.musicName, titulo));
   // Mesma ordem e mesmo corte por página do banco: data e, no empate, id.
   const feedPage = (lista, { limit, antes }) => {
     const depois = antes && ((p) => {
@@ -195,6 +200,13 @@ export function createMemoryRepositories(state, onChange) {
         if (primeira) primeiras.set(parentId, primeira);
       }
       return primeiras;
+    },
+    async listByObra(obra, { limit = FEED_PAGINA, antes } = {}) {
+      return feedPage(topLevel().filter((p) => daObra(p, obra)), { limit, antes });
+    },
+    async notasDaObra(obra) {
+      return feedPage(topLevel().filter((p) => daObra(p, obra) && p.nota != null), { limit: Infinity })
+        .map((p) => ({ autorId: p.autor.id, nota: p.nota }));
     },
     async countByAuthor(autorId) {
       return state.posts.filter((p) => p.autorId === autorId && !p.parentId).length;

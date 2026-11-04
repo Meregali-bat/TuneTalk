@@ -33,6 +33,17 @@ const depoisDe = (antes) => (antes
   ? { OR: [{ createdAt: { lt: antes.data } }, { createdAt: antes.data, id: { lt: antes.id } }] }
   : {});
 
+// Posts sobre um álbum ou uma música: mesmo título e artista, sem diferenciar maiúsculas.
+// (Os posts não guardam o id do Deezer, então é assim que dá para juntar as avaliações.)
+const ondeObra = ({ tipo, titulo, artista }) => ({
+  ...TOP_LEVEL,
+  artistName: { equals: artista, mode: 'insensitive' },
+  ...(tipo === 'album'
+    ? { postType: 'album', albumName: { equals: titulo, mode: 'insensitive' } }
+    // Música: tudo que não é álbum (posts antigos têm o tipo vazio).
+    : { musicName: { equals: titulo, mode: 'insensitive' }, OR: [{ postType: null }, { postType: { not: 'album' } }] }),
+});
+
 const normalizeType = (postType) => (postType === 'album' ? 'album' : 'música');
 
 const toNota = (nota) => {
@@ -106,6 +117,20 @@ export function createPostRepository(prisma) {
         take: limite,
       });
       return rows.map((row) => row.texto);
+    },
+
+    listByObra(obra, { limit = FEED_PAGINA, antes } = {}) {
+      return findPosts({ where: { AND: [ondeObra(obra), depoisDe(antes)] }, orderBy: FEED_ORDEM, take: limit });
+    },
+
+    // Todas as notas dadas a um álbum ou música, das mais novas para as mais antigas.
+    async notasDaObra(obra) {
+      const rows = await prisma.post.findMany({
+        where: { ...ondeObra(obra), nota: { not: null } },
+        orderBy: FEED_ORDEM,
+        select: { autorId: true, nota: true },
+      });
+      return rows;
     },
 
     // Comentários de alguém (aba "Comentários" do perfil), com quem cada um respondeu.

@@ -1,9 +1,10 @@
-import { useEffect, useRef, useState } from 'react';
+import { useState } from 'react';
 import { Link } from 'react-router-dom';
 import { useFeed } from '../hooks/useFeed.js';
 import { PostCard } from '../components/post/PostCard.jsx';
 import { CreatePost } from '../components/post/CreatePost.jsx';
 import { PullToRefresh } from '../components/common/PullToRefresh.jsx';
+import { LoadMore } from '../components/common/LoadMore.jsx';
 
 const TABS = [
   { feed: 'foryou', label: 'Para você', to: '/foryou' },
@@ -40,42 +41,6 @@ function FeedSkeleton() {
           <span className="skeleton skeleton--music" />
         </div>
       ))}
-    </div>
-  );
-}
-
-// Fica no fim da lista: quando chega perto da tela (bem antes de a pessoa ver o último post),
-// já pede a próxima página. Assim o feed continua sem a pessoa esperar.
-function FimDoFeed({ carregarMais, carregandoMais, erroMais, fim, onRetry, quantidade }) {
-  const ref = useRef(null);
-
-  useEffect(() => {
-    if (fim || erroMais || !ref.current || !('IntersectionObserver' in window)) return undefined;
-    const observer = new IntersectionObserver(([entrada]) => {
-      if (entrada.isIntersecting) carregarMais();
-    }, { rootMargin: '0px 0px 1500px 0px' });
-    observer.observe(ref.current);
-    return () => observer.disconnect();
-    // Recria ao crescer a lista: se o fim ainda estiver perto da tela, pede mais uma página.
-  }, [carregarMais, fim, erroMais, quantidade]);
-
-  if (erroMais) {
-    return (
-      <div className="feed-more feed-more--error">
-        <p>Não deu para carregar mais posts.</p>
-        <button type="button" onClick={onRetry}>Tentar de novo</button>
-      </div>
-    );
-  }
-  if (fim) return <p className="feed-more feed-more--end">Você chegou ao fim.</p>;
-  return (
-    <div ref={ref} className="feed-more">
-      {carregandoMais && (
-        <span role="status" className="feed-more__loading">
-          <span className="feed-more__spinner" aria-hidden="true" />
-          <span className="visually-hidden">Carregando mais posts</span>
-        </span>
-      )}
     </div>
   );
 }
@@ -132,7 +97,7 @@ export function FeedPage({ feed }) {
       )}
 
       {posts?.length > 0 && !error && (
-        <FimDoFeed
+        <LoadMore
           carregarMais={carregarMais}
           carregandoMais={carregandoMais}
           erroMais={erroMais}

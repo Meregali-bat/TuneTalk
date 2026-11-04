@@ -3,6 +3,7 @@ import { Link, useNavigate } from 'react-router-dom';
 import { useAuth } from '../../auth/AuthContext.jsx';
 import { postsApi } from '../../api/index.js';
 import { releaseInfo } from '../../utils/postFormat.js';
+import { obraUrl } from '../../utils/obra.js';
 import { relativeTime, shortTime } from '../../utils/relativeTime.js';
 import { StarRating } from './StarRating.jsx';
 import { formatEstrelas } from '../../../../shared/rating.js';
@@ -27,13 +28,15 @@ function TextoComMarcacoes({ texto }) {
 
 const TIPO_LABEL = { album: 'álbum', 'música': 'música' };
 
-function MusicBlock({ post, postUrl }) {
+// Tocar na música abre a página do álbum/música (com a média de todo mundo); dentro dela, abre o post.
+function MusicBlock({ post, postUrl, linkObra }) {
   const isAlbum = post.tipo === 'album';
+  const destino = linkObra && post.artista ? obraUrl(post) : postUrl;
   const meta = [post.artista, TIPO_LABEL[post.tipo], releaseInfo(post.releaseDate)].filter(Boolean).join(' • ');
 
   return (
     <div className="post-card__music">
-      <Link to={postUrl} className="post-card__music-link">
+      <Link to={destino} className="post-card__music-link">
         <img
           src={post.capa}
           alt={isAlbum ? 'Poster do álbum' : 'Poster da música'}
@@ -58,7 +61,7 @@ function MusicBlock({ post, postUrl }) {
 // showPinned: mostra a etiqueta "Fixado" (só faz sentido no perfil do autor).
 export function PostCard({
   post, onDeleted, onPinChange, commentCount = post.quantidadeComentarios, showMenu = true, showPinned = false, variant = 'feed',
-  threadLine = false,
+  threadLine = false, linkObra = true,
 }) {
   const { user } = useAuth();
   const [fixado, setFixado] = useState(Boolean(post.fixado));
@@ -156,7 +159,7 @@ export function PostCard({
 
       {post.enquete && <PollBlock post={post} />}
       {post.titulo && <LyricQuote versos={post.trechoLetra} titulo={post.titulo} artista={post.artista} />}
-      {post.titulo && <MusicBlock post={post} postUrl={postUrl} />}
+      {post.titulo && <MusicBlock post={post} postUrl={postUrl} linkObra={linkObra} />}
 
       <footer className="post-card__actions">
         <Link to={postUrl} className="post-action" aria-label={`Comentários: ${commentCount}`}>

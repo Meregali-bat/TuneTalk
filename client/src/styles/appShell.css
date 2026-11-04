@@ -241,6 +241,163 @@
   }
 }
 
+/* --- Página do álbum / música --- */
+.obra-header {
+  display: grid;
+  gap: 1.25rem;
+  margin-bottom: 1.5rem;
+  padding: 1.25rem;
+  border: 1px solid var(--linhas);
+  border-radius: 18px;
+  background: var(--superficie);
+}
+
+.obra-header__top {
+  display: flex;
+  gap: 1.1rem;
+  align-items: flex-end;
+  min-width: 0;
+}
+
+.obra-header__capa {
+  flex: none;
+  width: 8.5rem;
+  height: 8.5rem;
+  border-radius: 12px;
+  object-fit: cover;
+  box-shadow: 0 18px 40px -18px rgba(0, 0, 0, .9);
+}
+
+.obra-header__info {
+  display: grid;
+  gap: .2rem;
+  justify-items: start;
+  min-width: 0;
+}
+
+.obra-header__tipo {
+  margin: 0;
+  color: var(--texto-suave);
+  font-size: .8rem;
+  font-weight: 600;
+  letter-spacing: .04em;
+  text-transform: uppercase;
+}
+
+.obra-header__titulo {
+  margin: 0;
+  font-size: 1.6rem;
+  font-weight: 700;
+  line-height: 1.15;
+  overflow-wrap: anywhere;
+  text-wrap: balance;
+}
+
+.obra-header__artista {
+  margin: 0 0 .35rem;
+  color: var(--texto-suave);
+  overflow-wrap: anywhere;
+}
+
+.obra-nota {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 1rem 1.5rem;
+  align-items: flex-end;
+  padding-top: 1.1rem;
+  border-top: 1px solid var(--linhas);
+}
+
+.obra-nota__media {
+  display: grid;
+  gap: .15rem;
+}
+
+.obra-nota__numero {
+  font-size: 2.6rem;
+  font-weight: 700;
+  line-height: 1;
+  font-variant-numeric: tabular-nums;
+}
+
+.obra-nota__estrelas {
+  color: var(--destaque);
+  font-size: 1.05rem;
+  letter-spacing: .1em;
+}
+
+.obra-nota__quantas,
+.obra-nota__vazia {
+  margin: 0;
+  color: var(--texto-suave);
+  font-size: .85rem;
+}
+
+.obra-dist {
+  display: grid;
+  flex: 1;
+  grid-template-columns: repeat(10, 1fr);
+  grid-template-rows: 3.25rem auto;
+  gap: .35rem 3px;
+  align-items: end;
+  min-width: 9rem;
+}
+
+.obra-dist__barra {
+  align-self: end;
+  height: var(--altura);
+  border-radius: 3px 3px 1px 1px;
+  background: var(--destaque);
+  opacity: .85;
+}
+
+.obra-dist__legenda {
+  display: flex;
+  grid-column: 1 / -1;
+  justify-content: space-between;
+  align-items: center;
+  color: var(--texto-suave);
+  font-size: .75rem;
+
+  i {
+    color: var(--destaque);
+  }
+}
+
+.obra-header__avaliar {
+  display: inline-flex;
+  justify-self: start;
+  align-items: center;
+  gap: .5rem;
+  padding: .65rem 1.3rem;
+  border: none;
+  border-radius: 999px;
+  background: var(--destaque);
+  color: var(--background);
+  font-weight: 600;
+
+  &:hover {
+    background: var(--destaque-claro);
+  }
+}
+
+.obra-posts__titulo {
+  margin: 0 0 .75rem;
+  font-size: 1.05rem;
+  font-weight: 600;
+}
+
+@media (max-width: 480px) {
+  .obra-header__capa {
+    width: 6.5rem;
+    height: 6.5rem;
+  }
+
+  .obra-header__titulo {
+    font-size: 1.3rem;
+  }
+}
+
 /* Fim da lista do feed: carrega a próxima página, avisa se falhou ou que acabou. */
 .feed-more {
   display: flex;

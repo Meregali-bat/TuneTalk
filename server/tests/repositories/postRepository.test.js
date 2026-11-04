@@ -179,6 +179,33 @@ describe('postRepository (Postgres)', () => {
     expect((await repo.listFromFollowed(ana.id)).map((p) => p.id)).toEqual([pai.id]);
   });
 
+  describe('álbum e música (página da obra)', () => {
+    const help = { tipo: 'musica', titulo: 'help!', artista: 'THE BEATLES' };
+    const abbey = { tipo: 'album', titulo: 'Abbey Road', artista: 'The Beatles' };
+
+    it('listByObra junta os posts pelo título e artista, sem diferenciar maiúsculas, separando álbum de música', async () => {
+      const p1 = await factory.post(ana.id, { createdAt: new Date(Date.UTC(2024, 0, 1)) });
+      const p2 = await factory.post(bia.id, { musicName: 'HELP!', postType: null, createdAt: new Date(Date.UTC(2024, 0, 2)) });
+      await factory.post(ana.id, { musicName: 'Yesterday' });
+      await factory.post(ana.id, { musicName: null, albumName: 'Help!', postType: 'album' });
+      const album = await factory.post(bia.id, { musicName: null, albumName: 'Abbey Road', postType: 'album' });
+      await factory.reply(p1.id, bia.id, { musicName: 'Help!', artistName: 'The Beatles', nota: 2 });
+
+      expect((await repo.listByObra(help)).map((p) => p.id)).toEqual([p2.id, p1.id]);
+      expect((await repo.listByObra(abbey)).map((p) => p.id)).toEqual([album.id]);
+      expect((await repo.listByObra(help, { limit: 1 })).map((p) => p.id)).toEqual([p2.id]);
+      const depois = await repo.listByObra(help, { antes: { data: new Date(Date.UTC(2024, 0, 2)), id: p2.id } });
+      expect(depois.map((p) => p.id)).toEqual([p1.id]);
+    });
+
+    it('notasDaObra traz quem deu cada nota, das mais novas para as mais antigas', async () => {
+      await factory.post(ana.id, { nota: 6, createdAt: new Date(Date.UTC(2024, 0, 1)) });
+      await factory.post(bia.id, { nota: 10, createdAt: new Date(Date.UTC(2024, 0, 2)) });
+      await factory.post(ana.id, { nota: null, createdAt: new Date(Date.UTC(2024, 0, 3)) });
+      expect(await repo.notasDaObra(help)).toEqual([{ autorId: bia.id, nota: 10 }, { autorId: ana.id, nota: 6 }]);
+    });
+  });
+
   it('countByAuthor conta os posts da pessoa, sem os comentários', async () => {
     const pai = await factory.post(ana.id);
     await factory.post(ana.id);

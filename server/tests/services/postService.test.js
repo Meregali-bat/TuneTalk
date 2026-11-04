@@ -230,6 +230,47 @@ describe('postService', () => {
     });
   });
 
+  describe('obra (página do álbum ou música)', () => {
+    const musica = (id, extra) => post(id, 2, { titulo: 'Help!', artista: 'The Beatles', capa: 'h.jpg', tipo: 'música', releaseDate: '138', preview: 'p.mp3', ...extra });
+
+    beforeEach(() => {
+      posts.listByObra = vi.fn().mockResolvedValue([musica(5), musica(4)]);
+      posts.notasDaObra = vi.fn().mockResolvedValue([
+        { autorId: 1, nota: 8 }, { autorId: 2, nota: 10 }, { autorId: 1, nota: 2 }, { autorId: 3, nota: 7 },
+      ]);
+    });
+
+    it('traz a obra, a média com uma nota por pessoa (a mais recente) e os posts marcados', async () => {
+      const resposta = await service.obra(7, { tipo: 'musica', titulo: ' help! ', artista: 'the beatles' });
+      expect(posts.listByObra).toHaveBeenCalledWith({ tipo: 'musica', titulo: 'help!', artista: 'the beatles' });
+      expect(resposta.obra).toEqual({
+        tipo: 'musica', titulo: 'Help!', artista: 'The Beatles', capa: 'h.jpg', releaseDate: '138', preview: 'p.mp3',
+      });
+      expect(resposta.avaliacoes).toBe(3);
+      expect(resposta.media).toBeCloseTo((8 + 10 + 7) / 3);
+      expect(resposta.distribuicao).toEqual([0, 0, 0, 0, 0, 0, 0, 1, 1, 0, 1]);
+      expect(resposta.posts.map((p) => [p.id, p.curtido])).toEqual([[5, false], [4, false]]);
+    });
+
+    it('a página seguinte só traz mais posts', async () => {
+      const resposta = await service.obra(7, { tipo: 'album', titulo: 'Abbey Road', artista: 'The Beatles' }, { antes: '2024-01-02T00:00:00.000Z', antesId: '4' });
+      expect(posts.listByObra).toHaveBeenCalledWith(
+        { tipo: 'album', titulo: 'Abbey Road', artista: 'The Beatles' },
+        { antes: { data: new Date('2024-01-02T00:00:00.000Z'), id: 4 } },
+      );
+      expect(posts.notasDaObra).not.toHaveBeenCalled();
+      expect(Object.keys(resposta)).toEqual(['posts']);
+    });
+
+    it('sem nenhum post responde 404; tipo, título ou artista inválidos, 400', async () => {
+      posts.listByObra.mockResolvedValue([]);
+      await expect(service.obra(7, { tipo: 'musica', titulo: 'x', artista: 'y' })).rejects.toMatchObject({ status: 404 });
+      for (const consulta of [{ tipo: 'artista', titulo: 'x', artista: 'y' }, { tipo: 'album', titulo: ' ', artista: 'y' }, { tipo: 'album', titulo: 'x' }, { tipo: 'album', titulo: 'x'.repeat(256), artista: 'y' }]) {
+        await expect(service.obra(7, consulta)).rejects.toMatchObject({ status: 400 });
+      }
+    });
+  });
+
   describe('parabéns pelos 100 posts', () => {
     it('o 100º post gera a notificação do TuneTalk, levando ao post', async () => {
       posts.countByAuthor.mockResolvedValue(100);

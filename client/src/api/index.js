@@ -29,6 +29,14 @@ export const authApi = {
   resetPassword: (token, novaSenha) => request('/auth/reset-password', { method: 'POST', body: { token, novaSenha } }),
 };
 
+const paginaSeguinte = (depois) => (depois ? `&antes=${encodeURIComponent(depois.data)}&antesId=${depois.id}` : '');
+
+// Página de um álbum ou música (tipo 'album' ou 'musica'): resumo das notas e posts, em páginas.
+export const obrasApi = {
+  get: (tipo, titulo, artista, depois) =>
+    request(`/obras/${tipo}?${new URLSearchParams({ titulo, artista })}${paginaSeguinte(depois)}`),
+};
+
 export const postsApi = {
   // Sem `depois`, a primeira página; com ele (o último post já mostrado), a página seguinte.
   feed: (feed, depois) => request(depois

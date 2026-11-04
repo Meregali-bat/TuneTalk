@@ -16,7 +16,10 @@ const TEXTO_MAX = 500;
 
 function TrackInfo({ track }) {
   const artista = track.tipo === 'artista';
-  let meta = `${track.artista} · ${track.tipo === 'album' ? `${track.faixas} faixas` : formatDuration(track.duracao)}`;
+  let detalhe = track.tipo === 'album' ? 'Álbum' : null;
+  if (track.tipo === 'album' && track.faixas) detalhe = `${track.faixas} faixas`;
+  if (track.tipo !== 'album' && track.duracao) detalhe = formatDuration(track.duracao);
+  let meta = [track.artista, detalhe].filter(Boolean).join(' · ');
   if (artista) meta = track.fas ? `${Number(track.fas).toLocaleString('pt-BR')} fãs` : 'Artista';
   return (
     <>
@@ -164,6 +167,8 @@ export function Composer({
   textLabel = 'O que você quer dizer?',
   placeholder = 'Fale de uma música, um disco, um show…',
   submitLabel = 'Publicar',
+  // Música ou álbum já escolhido ao abrir (ex.: "Avaliar" na página do disco).
+  musicaInicial = null,
 }) {
   const textoId = useId();
   const sugestoesId = useId();
@@ -180,7 +185,7 @@ export function Composer({
     setCursorPendente(null);
   }, [cursorPendente]);
   const [texto, setTexto] = useState('');
-  const [track, setTrack] = useState(null);
+  const [track, setTrack] = useState(musicaInicial);
   const [nota, setNota] = useState(null);
   const [searching, setSearching] = useState(false);
   const [buscandoPara, setBuscandoPara] = useState('post'); // 'post' (música do post) ou 'enquete'

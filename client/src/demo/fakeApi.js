@@ -19,6 +19,11 @@ const LETRA_DEMO = [
 
 export { DEMO_LOGIN };
 
+// Página seguinte de uma lista (antes e antesId), como na API de verdade.
+const paginaDa = (query) => (query.has('antes') || query.has('antesId')
+  ? { antes: query.get('antes') ?? undefined, antesId: query.get('antesId') ?? undefined }
+  : undefined);
+
 const STORAGE_KEY = 'tunetalk-demo-v12';
 
 const readState = (storage) => {
@@ -130,11 +135,13 @@ export function createFakeApi({ storage = globalThis.localStorage } = {}) {
       const feeds = { foryou: services.posts.forYou, seguindo: services.posts.following };
       const load = feeds[query.get('feed')];
       if (!load) throw badRequest('Feed inválido.');
-      const pagina = query.has('antes') || query.has('antesId')
-        ? { antes: query.get('antes') ?? undefined, antesId: query.get('antesId') ?? undefined }
-        : undefined;
-      return ok(await load(me(), pagina));
+      return ok(await load(me(), paginaDa(query)));
     }],
+    ['GET', /^\/obras\/(album|musica)$/, async ({ match, query }) => ok(await services.posts.obra(
+      me(),
+      { tipo: match[1], titulo: query.get('titulo') ?? undefined, artista: query.get('artista') ?? undefined },
+      paginaDa(query),
+    ))],
     ['POST', /^\/posts$/, async ({ body }) => ok({ id: await services.posts.create(me(), body) }, 201)],
     ['GET', /^\/posts\/(\d+)$/, async ({ id }) => ok(await services.posts.get(id, me()))],
     ['DELETE', /^\/posts\/(\d+)$/, async ({ id }) => { await services.posts.remove(id, me()); return noContent(); }],

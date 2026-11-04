@@ -51,6 +51,22 @@ describe('PostCard', () => {
     expect(screen.getByRole('button', { name: 'Tocar prévia' })).toBeInTheDocument();
   });
 
+  it('tocar na música abre a página do álbum/música; com linkObra=false, abre o post', () => {
+    const { unmount } = renderWithProviders(<PostCard post={musicPost} />);
+    expect(screen.getByAltText('Poster da música').closest('a'))
+      .toHaveAttribute('href', '/musica?titulo=Help%21&artista=The+Beatles');
+    unmount();
+
+    renderWithProviders(<PostCard post={{ ...musicPost, tipo: 'album', titulo: 'AC/DC Live', artista: 'AC/DC' }} />);
+    expect(screen.getByAltText('Poster do álbum').closest('a'))
+      .toHaveAttribute('href', '/album?titulo=AC%2FDC+Live&artista=AC%2FDC');
+  });
+
+  it('dentro da página do disco, a música do post leva ao post', () => {
+    renderWithProviders(<PostCard post={musicPost} linkObra={false} />);
+    expect(screen.getByAltText('Poster da música').closest('a')).toHaveAttribute('href', '/post/10');
+  });
+
   it('topo: nome de exibição em cima; @usuario e o tempo embaixo', () => {
     renderWithProviders(<PostCard post={{ ...musicPost, autor: { ...musicPost.autor, nome: 'carol', nomeExibicao: 'Twit da Carol' } }} />);
     const topo = screen.getByRole('link', { name: 'Twit da Carol' }).closest('.post-card__who');

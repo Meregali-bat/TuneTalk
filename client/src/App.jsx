@@ -13,6 +13,7 @@ import { ProfilePage } from './pages/ProfilePage.jsx';
 import { PostPage } from './pages/PostPage.jsx';
 import { SearchPage } from './pages/SearchPage.jsx';
 import { TagPage } from './pages/TagPage.jsx';
+import { ObraPage } from './pages/ObraPage.jsx';
 
 export function AppRoutes() {
   return (
@@ -45,6 +46,8 @@ export function AppRoutes() {
             <Route path="/post/:id" element={<PostPage />} />
             <Route path="/buscar" element={<SearchPage />} />
             <Route path="/tag/:tag" element={<TagPage />} />
+            <Route path="/album" element={<ObraPage key="album" tipo="album" />} />
+            <Route path="/musica" element={<ObraPage key="musica" tipo="musica" />} />
           </Route>
         </Route>
       </Route>

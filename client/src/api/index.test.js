@@ -1,5 +1,5 @@
 import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
-import { authApi, hashtagsApi, musicApi, notificationsApi, postsApi, usersApi } from './index.js';
+import { authApi, hashtagsApi, musicApi, notificationsApi, obrasApi, postsApi, usersApi } from './index.js';
 import { request } from './http.js';
 
 vi.mock('./http.js', async (importOriginal) => ({
@@ -16,6 +16,8 @@ describe('endpoints da API', () => {
     ['authApi.login', () => authApi.login('a@a.com', 's'), ['/auth/login', { method: 'POST', body: { email: 'a@a.com', senha: 's' } }]],
     ['authApi.logout', () => authApi.logout(), ['/auth/logout', { method: 'POST' }]],
     ['postsApi.feed', () => postsApi.feed('seguindo'), ['/posts?feed=seguindo']],
+    ['obrasApi.get', () => obrasApi.get('album', 'AC/DC Live', 'AC/DC'), ['/obras/album?titulo=AC%2FDC+Live&artista=AC%2FDC']],
+    ['obrasApi.get (página seguinte)', () => obrasApi.get('musica', 'Help!', 'The Beatles', { data: '2024-01-02T00:00:00.000Z', id: 4 }), ['/obras/musica?titulo=Help%21&artista=The+Beatles&antes=2024-01-02T00%3A00%3A00.000Z&antesId=4']],
     ['postsApi.feed (página seguinte)', () => postsApi.feed('foryou', { data: '2024-01-02T00:00:00.000Z', id: 40 }), ['/posts?feed=foryou&antes=2024-01-02T00%3A00%3A00.000Z&antesId=40']],
     ['postsApi.get', () => postsApi.get(3), ['/posts/3']],
     ['postsApi.byHashtag', () => postsApi.byHashtag('músicaboa'), [`/posts?tag=${encodeURIComponent('músicaboa')}`]],

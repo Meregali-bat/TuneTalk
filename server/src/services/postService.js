@@ -36,6 +36,29 @@ const lerPagina = ({ antes, antesId } = {}) => {
   return { antes: { data, id } };
 };
 
+const OBRA_TEXTO_MAX = 255;
+
+// Álbum ou música pedida na URL: tipo e os nomes como aparecem nos posts.
+const lerObra = ({ tipo, titulo, artista } = {}) => {
+  const limpo = (valor) => (typeof valor === 'string' ? valor.trim() : '');
+  const obra = { tipo, titulo: limpo(titulo), artista: limpo(artista) };
+  if (!['album', 'musica'].includes(tipo) || !obra.titulo || !obra.artista
+    || obra.titulo.length > OBRA_TEXTO_MAX || obra.artista.length > OBRA_TEXTO_MAX) {
+    throw badRequest('Álbum ou música inválido.');
+  }
+  return obra;
+};
+
+// Uma nota por pessoa (a mais recente): postar de novo sobre o mesmo disco atualiza a avaliação.
+function resumirNotas(notas) {
+  const porPessoa = new Map();
+  for (const { autorId, nota } of notas) if (!porPessoa.has(autorId)) porPessoa.set(autorId, nota);
+  const valores = [...porPessoa.values()];
+  const distribuicao = Array.from({ length: 11 }, (_, nota) => valores.filter((v) => v === nota).length);
+  const media = valores.length ? valores.reduce((soma, v) => soma + v, 0) / valores.length : null;
+  return { media, avaliacoes: valores.length, distribuicao };
+}
+
 const pick = (source, fields) =>
   Object.fromEntries(fields.filter((f) => source[f] !== undefined).map((f) => [f, source[f]]));
 
@@ -119,6 +142,32 @@ export function createPostService({
 
     async following(viewerId, pagina) {
       return markLiked(await posts.listFromFollowed(viewerId, lerPagina(pagina)), viewerId);
+    },
+
+    // Página de um álbum ou música: dados da obra, média das notas (uma por pessoa), quantas
+    // notas de cada valor e os posts sobre ela, em páginas como os feeds.
+    async obra(viewerId, consulta, pagina) {
+      const obra = lerObra(consulta);
+      const seguinte = lerPagina(pagina);
+      // Páginas seguintes só trazem mais posts; o resumo já veio com a primeira.
+      if (seguinte.antes) return { posts: await markLiked(await posts.listByObra(obra, seguinte), viewerId) };
+
+      const [lista, notas] = await Promise.all([posts.listByObra(obra), posts.notasDaObra(obra)]);
+      if (lista.length === 0) throw notFound('Ninguém postou sobre isso ainda.');
+      // Nome, capa e prévia do post mais recente.
+      const base = lista[0];
+      return {
+        obra: {
+          tipo: obra.tipo,
+          titulo: base.titulo,
+          artista: base.artista,
+          capa: base.capa,
+          releaseDate: base.releaseDate,
+          preview: base.preview,
+        },
+        ...resumirNotas(notas),
+        posts: await markLiked(lista, viewerId),
+      };
     },
 
     async repliesByAuthor(autorId, viewerId) {
