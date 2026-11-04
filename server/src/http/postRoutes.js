@@ -16,7 +16,8 @@ export function createPostRoutes({ postService, uploader }) {
     if (req.query.tag !== undefined) return res.json(await postService.byHashtag(req.query.tag, currentUserId(req)));
     const loadFeed = feeds[req.query.feed];
     if (!loadFeed) throw badRequest('Feed inválido.');
-    res.json(await loadFeed(currentUserId(req)));
+    const { antes, antesId } = req.query;
+    res.json(await loadFeed(currentUserId(req), { antes, antesId }));
   }));
 
   // A imagem vai direto do navegador ao Cloudinary; aqui só assinamos e depois conferimos o link.

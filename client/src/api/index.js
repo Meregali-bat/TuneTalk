@@ -30,7 +30,10 @@ export const authApi = {
 };
 
 export const postsApi = {
-  feed: (feed) => request(`/posts?feed=${feed}`),
+  // Sem `depois`, a primeira página; com ele (o último post já mostrado), a página seguinte.
+  feed: (feed, depois) => request(depois
+    ? `/posts?feed=${feed}&antes=${encodeURIComponent(depois.data)}&antesId=${depois.id}`
+    : `/posts?feed=${feed}`),
   get: (id) => request(`/posts/${id}`),
   byHashtag: (tag) => request(`/posts?tag=${encodeURIComponent(tag)}`),
   // Comentários também são criados aqui, com parentId.

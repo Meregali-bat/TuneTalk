@@ -131,12 +131,41 @@ describe('postRepository (Postgres)', () => {
     });
   });
 
-  it('listLatest devolve os mais recentes (50 por padrão), do mais novo para o mais antigo', async () => {
-    for (let i = 0; i < 5; i++) {
+  it('listLatest devolve os mais recentes, do mais novo para o mais antigo, em páginas de 20', async () => {
+    for (let i = 0; i < 25; i++) {
       await factory.post(ana.id, { texto: `p${i}`, createdAt: new Date(Date.UTC(2024, 0, i + 1)) });
     }
-    expect((await repo.listLatest()).map((p) => p.texto)).toEqual(['p4', 'p3', 'p2', 'p1', 'p0']);
-    expect((await repo.listLatest(3)).map((p) => p.texto)).toEqual(['p4', 'p3', 'p2']);
+    const primeira = await repo.listLatest();
+    expect(primeira).toHaveLength(20);
+    expect(primeira.slice(0, 3).map((p) => p.texto)).toEqual(['p24', 'p23', 'p22']);
+    expect((await repo.listLatest({ limit: 3 })).map((p) => p.texto)).toEqual(['p24', 'p23', 'p22']);
+
+    const ultimo = primeira.at(-1);
+    const segunda = await repo.listLatest({ antes: { data: new Date(ultimo.data), id: ultimo.id } });
+    expect(segunda.map((p) => p.texto)).toEqual(['p4', 'p3', 'p2', 'p1', 'p0']);
+  });
+
+  it('página seguinte não pula nem repete posts com a mesma data', async () => {
+    const mesmaData = new Date(Date.UTC(2024, 0, 1));
+    const ids = [];
+    for (let i = 0; i < 5; i++) ids.push((await factory.post(ana.id, { createdAt: mesmaData })).id);
+    const primeira = await repo.listLatest({ limit: 2 });
+    const ultimo = primeira.at(-1);
+    const resto = await repo.listLatest({ limit: 10, antes: { data: new Date(ultimo.data), id: ultimo.id } });
+    expect([...primeira, ...resto].map((p) => p.id)).toEqual([...ids].reverse());
+  });
+
+  it('listFromFollowed também vem em páginas, do mais novo para o mais antigo', async () => {
+    await db.prisma.seguimento.create({ data: { seguidorId: ana.id, seguidoId: bia.id } });
+    for (let i = 0; i < 4; i++) {
+      await factory.post(bia.id, { texto: `b${i}`, createdAt: new Date(Date.UTC(2024, 0, i + 1)) });
+    }
+    await factory.post(ana.id, { texto: 'da ana' });
+    const primeira = await repo.listFromFollowed(ana.id, { limit: 2 });
+    expect(primeira.map((p) => p.texto)).toEqual(['b3', 'b2']);
+    const ultimo = primeira.at(-1);
+    const segunda = await repo.listFromFollowed(ana.id, { limit: 2, antes: { data: new Date(ultimo.data), id: ultimo.id } });
+    expect(segunda.map((p) => p.texto)).toEqual(['b1', 'b0']);
   });
 
   it('os feeds e o perfil não mostram respostas', async () => {

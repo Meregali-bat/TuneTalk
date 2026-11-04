@@ -130,7 +130,10 @@ export function createFakeApi({ storage = globalThis.localStorage } = {}) {
       const feeds = { foryou: services.posts.forYou, seguindo: services.posts.following };
       const load = feeds[query.get('feed')];
       if (!load) throw badRequest('Feed inválido.');
-      return ok(await load(me()));
+      const pagina = query.has('antes') || query.has('antesId')
+        ? { antes: query.get('antes') ?? undefined, antesId: query.get('antesId') ?? undefined }
+        : undefined;
+      return ok(await load(me(), pagina));
     }],
     ['POST', /^\/posts$/, async ({ body }) => ok({ id: await services.posts.create(me(), body) }, 201)],
     ['GET', /^\/posts\/(\d+)$/, async ({ id }) => ok(await services.posts.get(id, me()))],

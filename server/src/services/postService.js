@@ -25,6 +25,17 @@ const parseProporcao = (value, temImagem) => {
   return proporcao;
 };
 
+// Página seguinte do feed: a data e o id do último post já mostrado (os dois ou nenhum).
+const lerPagina = ({ antes, antesId } = {}) => {
+  if (antes === undefined && antesId === undefined) return {};
+  const data = new Date(antes);
+  const id = Number(antesId);
+  if (typeof antes !== 'string' || Number.isNaN(data.getTime()) || !Number.isInteger(id) || id <= 0) {
+    throw badRequest('Página do feed inválida.');
+  }
+  return { antes: { data, id } };
+};
+
 const pick = (source, fields) =>
   Object.fromEntries(fields.filter((f) => source[f] !== undefined).map((f) => [f, source[f]]));
 
@@ -100,13 +111,14 @@ export function createPostService({
   };
 
   return {
-    async forYou(viewerId) {
-      // Os mais recentes primeiro: quem acabou de postar aparece no topo.
-      return markLiked(await posts.listLatest(), viewerId);
+    // Os mais recentes primeiro: quem acabou de postar aparece no topo. `pagina` traz o último
+    // post já carregado ({ antes, antesId }) para continuar dali; sem ela, vem a primeira página.
+    async forYou(viewerId, pagina) {
+      return markLiked(await posts.listLatest(lerPagina(pagina)), viewerId);
     },
 
-    async following(viewerId) {
-      return markLiked(await posts.listFromFollowed(viewerId), viewerId);
+    async following(viewerId, pagina) {
+      return markLiked(await posts.listFromFollowed(viewerId, lerPagina(pagina)), viewerId);
     },
 
     async repliesByAuthor(autorId, viewerId) {

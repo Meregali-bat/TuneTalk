@@ -2,6 +2,7 @@
 // para que os serviços reais (server/src/services) rodem no navegador.
 import { toPost } from '../../../server/src/repositories/postRepository.js';
 import { hasHashtag } from '../../../shared/mentions.js';
+import { FEED_PAGINA } from '../../../shared/feed.js';
 
 const publicUser = ({
   id, nome, nomeExibicao = null, fotoPerfil, bannerUrl = null, bio, fundadorDesde = null, mostrarSeloFundador = true,
@@ -37,6 +38,18 @@ export function createMemoryRepositories(state, onChange) {
   });
   const byIdDesc = (a, b) => b.id - a.id;
   const topLevel = () => state.posts.filter((p) => !p.parentId);
+  // Mesma ordem e mesmo corte por página do banco: data e, no empate, id.
+  const feedPage = (lista, { limit, antes }) => {
+    const depois = antes && ((p) => {
+      const data = new Date(p.createdAt).getTime();
+      return data < antes.data.getTime() || (data === antes.data.getTime() && p.id < antes.id);
+    });
+    return lista
+      .filter((p) => !depois || depois(p))
+      .sort((a, b) => b.createdAt.localeCompare(a.createdAt) || b.id - a.id)
+      .slice(0, limit)
+      .map(postRow);
+  };
 
   const same = (a, b) => (a ?? '').toLowerCase() === (b ?? '').toLowerCase();
 
@@ -134,15 +147,15 @@ export function createMemoryRepositories(state, onChange) {
   };
 
   const posts = {
-    async listLatest(limit = 50) {
-      return topLevel().sort((a, b) => b.createdAt.localeCompare(a.createdAt) || b.id - a.id).slice(0, limit).map(postRow);
+    async listLatest({ limit = FEED_PAGINA, antes } = {}) {
+      return feedPage(topLevel(), { limit, antes });
     },
     async listByAuthor(autorId) {
       return topLevel().filter((p) => p.autorId === autorId).sort(byIdDesc).map(postRow);
     },
-    async listFromFollowed(usuarioId) {
+    async listFromFollowed(usuarioId, { limit = FEED_PAGINA, antes } = {}) {
       const followed = new Set(await follows.followingIds(usuarioId));
-      return topLevel().filter((p) => followed.has(p.autorId)).sort(byIdDesc).map(postRow);
+      return feedPage(topLevel().filter((p) => followed.has(p.autorId)), { limit, antes });
     },
     async listHashtagTexts({ desde, contem, limite }) {
       const trecho = contem ? `#${contem}`.toLowerCase() : '#';

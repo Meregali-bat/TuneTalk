@@ -24,14 +24,20 @@ describe('rotas /api/posts', () => {
       const res = await agent.get('/api/posts?feed=foryou');
       expect(res.status).toBe(200);
       expect(res.body).toEqual([{ id: 1 }]);
-      expect(deps.postService.forYou).toHaveBeenCalledWith(1);
+      expect(deps.postService.forYou).toHaveBeenCalledWith(1, { antes: undefined, antesId: undefined });
+    });
+
+    it('repassa a página seguinte (data e id do último post já mostrado)', async () => {
+      deps.postService.forYou.mockResolvedValue([]);
+      await agent.get('/api/posts?feed=foryou&antes=2024-01-02T00%3A00%3A00.000Z&antesId=40').expect(200);
+      expect(deps.postService.forYou).toHaveBeenCalledWith(1, { antes: '2024-01-02T00:00:00.000Z', antesId: '40' });
     });
 
     it('feed=seguindo usa o feed de quem o usuário segue', async () => {
       deps.postService.following.mockResolvedValue([{ id: 2 }]);
       const res = await agent.get('/api/posts?feed=seguindo');
       expect(res.body).toEqual([{ id: 2 }]);
-      expect(deps.postService.following).toHaveBeenCalledWith(1);
+      expect(deps.postService.following).toHaveBeenCalledWith(1, { antes: undefined, antesId: undefined });
     });
 
     it('feed desconhecido responde 400', async () => {

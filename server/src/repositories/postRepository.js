@@ -1,4 +1,5 @@
 import { hasHashtag } from '../../../shared/mentions.js';
+import { FEED_PAGINA } from '../../../shared/feed.js';
 
 const POST_INCLUDE = {
   autor: { select: { id: true, nome: true, nomeExibicao: true, fotoPerfil: true, postFixadoId: true, fundadorDesde: true, mostrarSeloFundador: true } },
@@ -24,6 +25,13 @@ function toEnquete(row) {
 
 // Feeds e perfis mostram só posts principais; respostas aparecem dentro do post pai.
 const TOP_LEVEL = { parentId: null };
+
+// Feeds paginados do mais novo para o mais antigo. `antes` é o último post da página anterior
+// ({ data, id }); compara pela data e, no empate, pelo id, para não pular nem repetir posts.
+const FEED_ORDEM = [{ createdAt: 'desc' }, { id: 'desc' }];
+const depoisDe = (antes) => (antes
+  ? { OR: [{ createdAt: { lt: antes.data } }, { createdAt: antes.data, id: { lt: antes.id } }] }
+  : {});
 
 const normalizeType = (postType) => (postType === 'album' ? 'album' : 'música');
 
@@ -70,18 +78,19 @@ export function createPostRepository(prisma) {
   const findPosts = async (args) => (await prisma.post.findMany({ ...args, include: POST_INCLUDE })).map(toPost);
 
   return {
-    listLatest(limit = 50) {
-      return findPosts({ where: TOP_LEVEL, orderBy: [{ createdAt: 'desc' }, { id: 'desc' }], take: limit });
+    listLatest({ limit = FEED_PAGINA, antes } = {}) {
+      return findPosts({ where: { ...TOP_LEVEL, ...depoisDe(antes) }, orderBy: FEED_ORDEM, take: limit });
     },
 
     listByAuthor(autorId) {
       return findPosts({ where: { ...TOP_LEVEL, autorId }, orderBy: { id: 'desc' } });
     },
 
-    listFromFollowed(usuarioId) {
+    listFromFollowed(usuarioId, { limit = FEED_PAGINA, antes } = {}) {
       return findPosts({
-        where: { ...TOP_LEVEL, autor: { seguidores: { some: { seguidorId: usuarioId } } } },
-        orderBy: { id: 'desc' },
+        where: { ...TOP_LEVEL, ...depoisDe(antes), autor: { seguidores: { some: { seguidorId: usuarioId } } } },
+        orderBy: FEED_ORDEM,
+        take: limit,
       });
     },
 

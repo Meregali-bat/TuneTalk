@@ -16,6 +16,7 @@ describe('endpoints da API', () => {
     ['authApi.login', () => authApi.login('a@a.com', 's'), ['/auth/login', { method: 'POST', body: { email: 'a@a.com', senha: 's' } }]],
     ['authApi.logout', () => authApi.logout(), ['/auth/logout', { method: 'POST' }]],
     ['postsApi.feed', () => postsApi.feed('seguindo'), ['/posts?feed=seguindo']],
+    ['postsApi.feed (página seguinte)', () => postsApi.feed('foryou', { data: '2024-01-02T00:00:00.000Z', id: 40 }), ['/posts?feed=foryou&antes=2024-01-02T00%3A00%3A00.000Z&antesId=40']],
     ['postsApi.get', () => postsApi.get(3), ['/posts/3']],
     ['postsApi.byHashtag', () => postsApi.byHashtag('músicaboa'), [`/posts?tag=${encodeURIComponent('músicaboa')}`]],
     ['postsApi.create', () => postsApi.create({ texto: 'x' }), ['/posts', { method: 'POST', body: { texto: 'x' } }]],

@@ -241,6 +241,56 @@
   }
 }
 
+/* Fim da lista do feed: carrega a próxima página, avisa se falhou ou que acabou. */
+.feed-more {
+  display: flex;
+  justify-content: center;
+  min-height: 4rem;
+  padding: 1.25rem 0 2rem;
+}
+
+.feed-more--end {
+  margin: 0;
+  color: var(--texto-suave);
+  font-size: .9rem;
+}
+
+.feed-more--error {
+  flex-direction: column;
+  align-items: center;
+  gap: .6rem;
+  color: var(--texto-suave);
+
+  p {
+    margin: 0;
+  }
+
+  button {
+    padding: .45rem 1rem;
+    border: 1px solid var(--linhas);
+    border-radius: 999px;
+    background: none;
+    color: var(--texto);
+    font-weight: 600;
+  }
+}
+
+.feed-more__spinner {
+  display: block;
+  width: 1.5rem;
+  height: 1.5rem;
+  border: 2px solid var(--linhas);
+  border-top-color: var(--destaque);
+  border-radius: 50%;
+  animation: pull-refresh-giro .8s linear infinite;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .feed-more__spinner {
+    animation-duration: 2s;
+  }
+}
+
 /* --- Card do post --- */
 .post-card {
   min-width: 0;

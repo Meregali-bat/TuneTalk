@@ -1,5 +1,5 @@
-import { describe, it, expect, vi, beforeEach } from 'vitest';
-import { fireEvent, screen, waitFor } from '@testing-library/react';
+import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
+import { act, fireEvent, screen, waitFor } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { FeedPage } from './FeedPage.jsx';
 import { musicApi, postsApi } from '../api/index.js';
@@ -127,5 +127,83 @@ describe('FeedPage', () => {
     await userEvent.click(screen.getByRole('button', { name: 'Publicar' }));
 
     await waitFor(() => expect(postsApi.feed).toHaveBeenCalledTimes(2));
+  });
+
+  describe('rolagem infinita', () => {
+    // Simula o fim da lista chegando perto da tela.
+    let observados;
+    beforeEach(() => {
+      observados = [];
+      vi.stubGlobal('IntersectionObserver', class {
+        constructor(callback, opcoes) {
+          this.callback = callback;
+          this.opcoes = opcoes;
+        }
+        observe(el) { observados.push(this); this.el = el; }
+        disconnect() { observados = observados.filter((o) => o !== this); }
+      });
+    });
+    afterEach(() => vi.unstubAllGlobals());
+
+    const chegarPertoDoFim = () => act(() => {
+      observados.at(-1).callback([{ isIntersecting: true }]);
+    });
+    const pagina = (de, quantos) => Array.from({ length: quantos }, (_, i) => ({
+      ...post(de - i), data: new Date(Date.UTC(2024, 0, 1, 0, 0, de - i)).toISOString(),
+    }));
+
+    it('perto do fim já carrega a próxima página, a partir do último post', async () => {
+      postsApi.feed.mockResolvedValueOnce(pagina(100, 20)).mockResolvedValueOnce(pagina(80, 5));
+      renderWithProviders(<FeedPage feed="foryou" />);
+      await screen.findByText('post 100');
+      // Começa a buscar bem antes de o último post aparecer.
+      expect(observados.at(-1).opcoes.rootMargin).toBe('0px 0px 1500px 0px');
+
+      chegarPertoDoFim();
+
+      expect(await screen.findByText('post 76')).toBeInTheDocument();
+      expect(postsApi.feed).toHaveBeenLastCalledWith('foryou', { data: pagina(81, 1)[0].data, id: 81 });
+      expect(screen.getAllByRole('article')).toHaveLength(25);
+      // Página menor que 20: acabou, e não pede mais nada.
+      expect(screen.getByText('Você chegou ao fim.')).toBeInTheDocument();
+      expect(observados).toHaveLength(0);
+    });
+
+    it('não pede a mesma página duas vezes enquanto ela carrega', async () => {
+      let terminar;
+      postsApi.feed.mockResolvedValueOnce(pagina(100, 20)).mockReturnValueOnce(new Promise((r) => { terminar = r; }));
+      renderWithProviders(<FeedPage feed="foryou" />);
+      await screen.findByText('post 100');
+
+      chegarPertoDoFim();
+      chegarPertoDoFim();
+      expect(screen.getByRole('status')).toHaveTextContent('Carregando mais posts');
+      expect(postsApi.feed).toHaveBeenCalledTimes(2);
+
+      await act(async () => terminar([]));
+      expect(screen.getByText('Você chegou ao fim.')).toBeInTheDocument();
+    });
+
+    it('se a página seguinte falhar, deixa tentar de novo', async () => {
+      postsApi.feed
+        .mockResolvedValueOnce(pagina(100, 20))
+        .mockRejectedValueOnce(new Error('sem rede'))
+        .mockResolvedValueOnce(pagina(80, 3));
+      renderWithProviders(<FeedPage feed="foryou" />);
+      await screen.findByText('post 100');
+
+      chegarPertoDoFim();
+      await userEvent.click(await screen.findByRole('button', { name: 'Tentar de novo' }));
+
+      expect(await screen.findByText('post 78')).toBeInTheDocument();
+      expect(screen.getAllByRole('article')).toHaveLength(23);
+    });
+
+    it('feed com menos de uma página já mostra que acabou', async () => {
+      renderWithProviders(<FeedPage feed="foryou" />);
+      await screen.findByText('post 1');
+      expect(screen.getByText('Você chegou ao fim.')).toBeInTheDocument();
+      expect(postsApi.feed).toHaveBeenCalledTimes(1);
+    });
   });
 });

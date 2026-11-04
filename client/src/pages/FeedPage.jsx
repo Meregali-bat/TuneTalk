@@ -1,7 +1,6 @@
-import { useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { Link } from 'react-router-dom';
-import { postsApi } from '../api/index.js';
-import { useAsync } from '../hooks/useAsync.js';
+import { useFeed } from '../hooks/useFeed.js';
 import { PostCard } from '../components/post/PostCard.jsx';
 import { CreatePost } from '../components/post/CreatePost.jsx';
 import { PullToRefresh } from '../components/common/PullToRefresh.jsx';
@@ -45,6 +44,42 @@ function FeedSkeleton() {
   );
 }
 
+// Fica no fim da lista: quando chega perto da tela (bem antes de a pessoa ver o último post),
+// já pede a próxima página. Assim o feed continua sem a pessoa esperar.
+function FimDoFeed({ carregarMais, carregandoMais, erroMais, fim, onRetry, quantidade }) {
+  const ref = useRef(null);
+
+  useEffect(() => {
+    if (fim || erroMais || !ref.current || !('IntersectionObserver' in window)) return undefined;
+    const observer = new IntersectionObserver(([entrada]) => {
+      if (entrada.isIntersecting) carregarMais();
+    }, { rootMargin: '0px 0px 1500px 0px' });
+    observer.observe(ref.current);
+    return () => observer.disconnect();
+    // Recria ao crescer a lista: se o fim ainda estiver perto da tela, pede mais uma página.
+  }, [carregarMais, fim, erroMais, quantidade]);
+
+  if (erroMais) {
+    return (
+      <div className="feed-more feed-more--error">
+        <p>Não deu para carregar mais posts.</p>
+        <button type="button" onClick={onRetry}>Tentar de novo</button>
+      </div>
+    );
+  }
+  if (fim) return <p className="feed-more feed-more--end">Você chegou ao fim.</p>;
+  return (
+    <div ref={ref} className="feed-more">
+      {carregandoMais && (
+        <span role="status" className="feed-more__loading">
+          <span className="feed-more__spinner" aria-hidden="true" />
+          <span className="visually-hidden">Carregando mais posts</span>
+        </span>
+      )}
+    </div>
+  );
+}
+
 function EmptyFeed({ feed, onCompose }) {
   if (feed === 'seguindo') {
     return (
@@ -67,10 +102,12 @@ function EmptyFeed({ feed, onCompose }) {
 }
 
 export function FeedPage({ feed }) {
-  const { data: posts, error, loading, reload, setData } = useAsync(() => postsApi.feed(feed), [feed]);
+  const {
+    posts, error, loading, reload, setPosts, carregarMais, tentarMaisDeNovo, carregandoMais, erroMais, fim,
+  } = useFeed(feed);
   const [composerOpen, setComposerOpen] = useState(false);
 
-  const removePost = (id) => setData((list) => list.filter((post) => post.id !== id));
+  const removePost = (id) => setPosts((list) => list.filter((post) => post.id !== id));
 
   return (
     <div className="feed">
@@ -92,6 +129,17 @@ export function FeedPage({ feed }) {
         <div className="feed-list">
           {posts.map((post) => <PostCard key={post.id} post={post} onDeleted={removePost} />)}
         </div>
+      )}
+
+      {posts?.length > 0 && !error && (
+        <FimDoFeed
+          carregarMais={carregarMais}
+          carregandoMais={carregandoMais}
+          erroMais={erroMais}
+          fim={fim}
+          onRetry={tentarMaisDeNovo}
+          quantidade={posts.length}
+        />
       )}
 
       <CreatePost open={composerOpen} onOpenChange={setComposerOpen} onCreated={reload} />

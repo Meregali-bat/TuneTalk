@@ -53,8 +53,23 @@ describe('postService', () => {
 
     it('following lista os posts de quem o usuário segue', async () => {
       const feed = await service.following(7);
-      expect(posts.listFromFollowed).toHaveBeenCalledWith(7);
+      expect(posts.listFromFollowed).toHaveBeenCalledWith(7, {});
       expect(feed).toEqual([{ ...post(3), curtido: true }]);
+    });
+
+    it('sem página, pede a primeira; com página, continua do último post mostrado', async () => {
+      await service.forYou(7);
+      expect(posts.listLatest).toHaveBeenLastCalledWith({});
+      await service.forYou(7, { antes: '2024-01-02T00:00:00.000Z', antesId: '40' });
+      expect(posts.listLatest).toHaveBeenLastCalledWith({ antes: { data: new Date('2024-01-02T00:00:00.000Z'), id: 40 } });
+      await service.following(7, { antes: '2024-01-02T00:00:00.000Z', antesId: '40' });
+      expect(posts.listFromFollowed).toHaveBeenLastCalledWith(7, { antes: { data: new Date('2024-01-02T00:00:00.000Z'), id: 40 } });
+    });
+
+    it('página inválida responde 400', async () => {
+      for (const pagina of [{ antes: 'ontem', antesId: '1' }, { antes: '2024-01-01', antesId: 'x' }, { antesId: '3' }, { antes: '2024-01-01', antesId: '-1' }]) {
+        await expect(service.forYou(7, pagina)).rejects.toMatchObject({ status: 400 });
+      }
     });
 
     it('byHashtag lista os posts da hashtag (sem o #) marcados para quem vê', async () => {
