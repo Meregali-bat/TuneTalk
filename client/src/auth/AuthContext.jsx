@@ -1,5 +1,6 @@
 import { createContext, useCallback, useContext, useEffect, useMemo, useState } from 'react';
 import { authApi } from '../api/index.js';
+import { esquecerListas } from '../hooks/memoriaDaLista.js';
 
 export const AuthContext = createContext(null);
 
@@ -16,6 +17,8 @@ export function AuthProvider({ children }) {
 
   const login = useCallback(async (email, senha) => {
     const logged = await authApi.login(email, senha);
+    // Feeds lembrados eram de outra conta (ou de antes de sair).
+    esquecerListas();
     setUser(logged);
     return logged;
   }, []);
@@ -28,6 +31,7 @@ export function AuthProvider({ children }) {
 
   const logout = useCallback(async () => {
     await authApi.logout();
+    esquecerListas();
     setUser(null);
   }, []);
 

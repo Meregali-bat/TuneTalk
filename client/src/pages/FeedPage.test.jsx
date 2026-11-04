@@ -1,9 +1,11 @@
 import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
-import { act, fireEvent, screen, waitFor, within } from '@testing-library/react';
+import { act, fireEvent, render, screen, waitFor, within } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { FeedPage } from './FeedPage.jsx';
 import { musicApi, postsApi, usersApi } from '../api/index.js';
-import { renderWithProviders } from '../test/render.jsx';
+import { Link, MemoryRouter, Route, Routes, useNavigate } from 'react-router-dom';
+import { AuthContext } from '../auth/AuthContext.jsx';
+import { makeAuth, renderWithProviders } from '../test/render.jsx';
 
 vi.mock('../api/index.js', () => ({
   postsApi: { feed: vi.fn(), remove: vi.fn(), like: vi.fn(), unlike: vi.fn(), create: vi.fn() },
@@ -225,6 +227,57 @@ describe('FeedPage', () => {
       await screen.findByText('post 1');
       expect(screen.getByText('Você chegou ao fim.')).toBeInTheDocument();
       expect(postsApi.feed).toHaveBeenCalledTimes(1);
+    });
+  });
+
+  describe('voltar de um post', () => {
+    function PostDeMentira() {
+      const navigate = useNavigate();
+      return (
+        <>
+          <button type="button" onClick={() => navigate(-1)}>Voltar</button>
+          <Link to="/foryou">Ir para o feed</Link>
+        </>
+      );
+    }
+    const abrirFeed = () => render(
+      <AuthContext.Provider value={makeAuth()}>
+        <MemoryRouter initialEntries={['/foryou']}>
+          <Routes>
+            <Route path="/foryou" element={<FeedPage feed="foryou" />} />
+            <Route path="/post/:id" element={<PostDeMentira />} />
+          </Routes>
+        </MemoryRouter>
+      </AuthContext.Provider>,
+    );
+
+    it('o feed reaparece igual, no mesmo ponto da rolagem, sem buscar de novo', async () => {
+      const rolar = vi.spyOn(window, 'scrollTo').mockImplementation(() => {});
+      abrirFeed();
+      await screen.findByText('post 2');
+
+      window.scrollY = 1234;
+      await userEvent.click(screen.getAllByRole('link', { name: 'Comentários: 0' })[1]);
+      await userEvent.click(await screen.findByRole('button', { name: 'Voltar' }));
+
+      expect(await screen.findByText('post 2')).toBeInTheDocument();
+      expect(postsApi.feed).toHaveBeenCalledTimes(1);
+      expect(rolar).toHaveBeenLastCalledWith({ top: 1234, behavior: 'instant' });
+      window.scrollY = 0;
+    });
+
+    it('entrar no feed por um link (não pelo voltar) busca de novo e começa do topo', async () => {
+      const rolar = vi.spyOn(window, 'scrollTo').mockImplementation(() => {});
+      abrirFeed();
+      await screen.findByText('post 2');
+      window.scrollY = 1234;
+      await userEvent.click(screen.getAllByRole('link', { name: 'Comentários: 0' })[1]);
+      await userEvent.click(await screen.findByRole('link', { name: 'Ir para o feed' }));
+
+      expect(await screen.findByText('post 2')).toBeInTheDocument();
+      expect(postsApi.feed).toHaveBeenCalledTimes(2);
+      expect(rolar).not.toHaveBeenCalledWith({ top: 1234, behavior: 'instant' });
+      window.scrollY = 0;
     });
   });
 });

@@ -1,5 +1,5 @@
 import { useEffect } from 'react';
-import { Link, Outlet, useLocation } from 'react-router-dom';
+import { Link, Outlet, useLocation, useNavigationType } from 'react-router-dom';
 import { Header } from './Header.jsx';
 import { asset } from '../../utils/asset.js';
 import { AvisoNovaVersao } from './AvisoNovaVersao.jsx';
@@ -31,11 +31,13 @@ export function PublicLayout({ authForm = false, showLinks = true }) {
 
 export function AppLayout() {
   const { pathname } = useLocation();
+  const navegacao = useNavigationType();
 
-  // Com o topo e as abas fixos, cada página (ou aba do feed) começa do início.
+  // Com o topo e as abas fixos, cada página (ou aba do feed) começa do início. Ao voltar
+  // (botão voltar), não: o feed devolve a rolagem de onde a pessoa estava.
   useEffect(() => {
-    window.scrollTo(0, 0);
-  }, [pathname]);
+    if (navegacao !== 'POP') window.scrollTo(0, 0);
+  }, [pathname, navegacao]);
 
   return (
     <div className="layout-app">
