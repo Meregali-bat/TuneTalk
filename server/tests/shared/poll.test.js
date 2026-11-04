@@ -17,12 +17,12 @@ describe('validarEnquete', () => {
 
   it('recusa formato errado, quantidade fora do limite, duração estranha, opção sem título/capa e repetida', () => {
     expect(validarEnquete(null).erro).toBe('Enquete inválida.');
-    expect(validarEnquete({ opcoes: [opcao('A')] }).erro).toBe('A enquete precisa de 2 a 4 músicas.');
-    expect(validarEnquete({ opcoes: ['A', 'B', 'C', 'D', 'E'].map((t) => opcao(t)) }).erro).toBe('A enquete precisa de 2 a 4 músicas.');
+    expect(validarEnquete({ opcoes: [opcao('A')] }).erro).toBe('A enquete precisa de 2 a 4 músicas ou álbuns.');
+    expect(validarEnquete({ opcoes: ['A', 'B', 'C', 'D', 'E'].map((t) => opcao(t)) }).erro).toBe('A enquete precisa de 2 a 4 músicas ou álbuns.');
     expect(validarEnquete({ opcoes: [opcao('A'), opcao('B')], duracaoDias: 2 }).erro).toBe('Duração da enquete inválida.');
     expect(validarEnquete({ opcoes: [opcao(' '), opcao('B')] }).erro).toMatch(/Opção da enquete inválida/);
     expect(validarEnquete({ opcoes: [opcao('A', { capa: 'https://x.com/a.jpg' }), opcao('B')] }, { capaValida: () => false }).erro).toMatch(/Opção/);
-    expect(validarEnquete({ opcoes: [opcao('A'), opcao('A')] }).erro).toBe('A mesma música aparece duas vezes na enquete.');
+    expect(validarEnquete({ opcoes: [opcao('A'), opcao('A')] }).erro).toBe('A mesma opção aparece duas vezes na enquete.');
   });
 });
 

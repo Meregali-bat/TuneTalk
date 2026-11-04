@@ -1,4 +1,4 @@
-// Enquete de músicas: de 2 a 4 faixas, a pessoa vota numa só, com prazo.
+// Enquete de músicas e/ou álbuns: de 2 a 4 opções, a pessoa vota numa só, com prazo.
 export const ENQUETE_MIN = 2;
 export const ENQUETE_MAX = 4;
 export const DURACOES_DIAS = [1, 3, 7];
@@ -13,7 +13,7 @@ const linkHttps = (valor, max) => (typeof valor === 'string' && valor.startsWith
 export function validarEnquete(valor, { capaValida = () => true } = {}) {
   if (!valor || typeof valor !== 'object' || !Array.isArray(valor.opcoes)) return { erro: 'Enquete inválida.' };
   if (valor.opcoes.length < ENQUETE_MIN || valor.opcoes.length > ENQUETE_MAX) {
-    return { erro: `A enquete precisa de ${ENQUETE_MIN} a ${ENQUETE_MAX} músicas.` };
+    return { erro: `A enquete precisa de ${ENQUETE_MIN} a ${ENQUETE_MAX} músicas ou álbuns.` };
   }
   const duracaoDias = Number(valor.duracaoDias ?? 1);
   if (!DURACOES_DIAS.includes(duracaoDias)) return { erro: 'Duração da enquete inválida.' };
@@ -23,11 +23,11 @@ export function validarEnquete(valor, { capaValida = () => true } = {}) {
     const titulo = texto(bruta?.titulo, 255);
     // O tamanho da capa (até 500) é conferido por capaValida (capaDoDeezer) no app real.
     const capa = typeof bruta?.capa === 'string' && capaValida(bruta.capa) ? bruta.capa : null;
-    if (!titulo || !capa) return { erro: 'Opção da enquete inválida. Escolha a música pela busca.' };
+    if (!titulo || !capa) return { erro: 'Opção da enquete inválida. Escolha pela busca.' };
     opcoes.push({ titulo, artista: texto(bruta.artista, 255) || null, capa, preview: linkHttps(bruta.preview, 2000) });
   }
   const repetida = opcoes.some((o, i) => opcoes.findIndex((x) => x.titulo === o.titulo && x.artista === o.artista) !== i);
-  if (repetida) return { erro: 'A mesma música aparece duas vezes na enquete.' };
+  if (repetida) return { erro: 'A mesma opção aparece duas vezes na enquete.' };
   return { enquete: { opcoes, duracaoDias } };
 }
 

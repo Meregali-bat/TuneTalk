@@ -320,14 +320,12 @@ describe('CreatePost', () => {
       await open();
       await userEvent.type(texto(), 'qual?');
       await userEvent.click(screen.getByRole('button', { name: 'Criar enquete' }));
-      // Na enquete a busca é só de músicas.
-      expect(screen.queryByRole('tab', { name: 'Álbuns' })).toBeNull();
       await search('help');
       await userEvent.click(await screen.findByRole('button', { name: /^Help!/ }));
 
       const enquete = screen.getByRole('group', { name: 'Enquete' });
       expect(screen.getByRole('button', { name: 'Publicar' })).toBeDisabled();
-      await userEvent.click(within(enquete).getByRole('button', { name: 'Adicionar música à enquete' }));
+      await userEvent.click(within(enquete).getByRole('button', { name: 'Adicionar opção à enquete' }));
       await userEvent.click(await screen.findByRole('button', { name: /^Yesterday/ }));
       await userEvent.click(within(screen.getByRole('group', { name: 'Enquete' })).getByRole('radio', { name: '3 dias' }));
 
@@ -346,6 +344,28 @@ describe('CreatePost', () => {
           ],
         },
       });
+    });
+
+    it('dá para pôr álbuns na enquete (sem prévia), misturados com músicas', async () => {
+      const abbey = { id: 1, tipo: 'album', titulo: 'Abbey Road', artista: 'The Beatles', capa: 'abbey.jpg', faixas: 17 };
+      render(<CreatePost onCreated={vi.fn()} />);
+      await open();
+      await userEvent.click(screen.getByRole('button', { name: 'Criar enquete' }));
+      await search('help');
+      await userEvent.click(await screen.findByRole('button', { name: /^Help!/ }));
+
+      musicApi.search.mockResolvedValue([abbey]);
+      await userEvent.click(within(screen.getByRole('group', { name: 'Enquete' })).getByRole('button', { name: 'Adicionar opção à enquete' }));
+      await userEvent.click(screen.getByRole('tab', { name: 'Álbuns' }));
+      await userEvent.type(screen.getByLabelText('Buscar álbum'), 'abbey');
+      // Mesmo id da música Help! (1), mas é um álbum: entra normalmente.
+      await userEvent.click(await screen.findByRole('button', { name: /^Abbey Road/ }));
+      await userEvent.click(screen.getByRole('button', { name: 'Publicar' }));
+
+      expect(postsApi.create.mock.calls[0][0].enquete.opcoes).toEqual([
+        { titulo: 'Help!', artista: 'The Beatles', capa: 'help.jpg', preview: 'help.mp3' },
+        { titulo: 'Abbey Road', artista: 'The Beatles', capa: 'abbey.jpg', preview: null },
+      ]);
     });
 
     it('tirar uma música e remover a enquete', async () => {

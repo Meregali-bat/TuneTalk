@@ -68,7 +68,7 @@ const BUSCAS = {
   album: { aba: 'Álbuns', rotulo: 'Buscar álbum', placeholder: 'Álbum ou artista', dica: 'Digite o nome de um álbum ou artista.' },
 };
 
-function SearchStep({ query, onQueryChange, tipo, onTipoChange, search, onSelect, onBack, soMusicas = false }) {
+function SearchStep({ query, onQueryChange, tipo, onTipoChange, search, onSelect, onBack }) {
   const busca = BUSCAS[tipo];
   return (
     <div className="composer-step">
@@ -92,7 +92,6 @@ function SearchStep({ query, onQueryChange, tipo, onTipoChange, search, onSelect
       </div>
 
       {/* No celular: a busca vem primeiro (com o voltar ao lado); o tipo fica logo abaixo, compacto. */}
-      {!soMusicas && (
       <div role="tablist" aria-label="O que buscar" className="composer-tabs composer-tabs--compacto">
         {Object.entries(BUSCAS).map(([chave, { aba }]) => (
           <button
@@ -107,7 +106,6 @@ function SearchStep({ query, onQueryChange, tipo, onTipoChange, search, onSelect
           </button>
         ))}
       </div>
-      )}
 
       {search.status === 'idle' && <p className="composer-hint">{busca.dica}</p>}
       {search.status === 'loading' && <p role="status" className="composer-hint">Buscando…</p>}
@@ -137,6 +135,8 @@ function SearchStep({ query, onQueryChange, tipo, onTipoChange, search, onSelect
     </div>
   );
 }
+
+const chaveOpcao = (item) => `${item.tipo === 'album' ? 'album' : 'musica'}-${item.id}`;
 
 const musicFields = (track) => (track.tipo === 'album' ? {
   albumName: track.titulo,
@@ -271,13 +271,13 @@ export function Composer({
 
   const abrirBusca = (para) => {
     setBuscandoPara(para);
-    if (para === 'enquete') setTipoBusca('musica');
     setSearching(true);
   };
 
   const chooseTrack = (chosen) => {
     if (buscandoPara === 'enquete') {
-      setEnquete((atual) => (atual.opcoes.some((o) => o.id === chosen.id) || atual.opcoes.length >= ENQUETE_MAX
+      // Música e álbum podem ter o mesmo id no Deezer: a chave considera o tipo.
+      setEnquete((atual) => (atual.opcoes.some((o) => chaveOpcao(o) === chaveOpcao(chosen)) || atual.opcoes.length >= ENQUETE_MAX
         ? atual
         : { ...atual, opcoes: [...atual.opcoes, chosen] }));
       setSearching(false);
@@ -317,7 +317,9 @@ export function Composer({
         ...(enquete && {
           enquete: {
             duracaoDias: enquete.duracaoDias,
-            opcoes: enquete.opcoes.map(({ titulo, artista, capa, preview }) => ({ titulo, artista, capa, preview })),
+            opcoes: enquete.opcoes.map(({ titulo, artista, capa, preview, tipo }) => ({
+              titulo, artista, capa, preview: tipo === 'album' ? null : preview,
+            })),
           },
         }),
       });
@@ -359,7 +361,6 @@ export function Composer({
         search={search}
         onSelect={chooseTrack}
         onBack={() => setSearching(false)}
-        soMusicas={buscandoPara === 'enquete'}
       />
     );
   }
@@ -478,14 +479,14 @@ export function Composer({
       {enquete && (
         <div className="composer-poll" role="group" aria-label="Enquete">
           <div className="composer-poll__topo">
-            <span>Enquete · de {ENQUETE_MIN} a {ENQUETE_MAX} músicas</span>
+            <span>Enquete · de {ENQUETE_MIN} a {ENQUETE_MAX} músicas ou álbuns</span>
             <button type="button" className="icon-button" aria-label="Remover enquete" onClick={() => setEnquete(null)}>
               <i className="bi bi-x-lg" aria-hidden="true" />
             </button>
           </div>
           <ol className="composer-poll__opcoes">
             {enquete.opcoes.map((opcao) => (
-              <li key={opcao.id} className="track-row track-row--selected">
+              <li key={chaveOpcao(opcao)} className="track-row track-row--selected">
                 <TrackInfo track={opcao} />
                 {opcao.preview && (
                   <PlayButton src={opcao.preview} titulo={opcao.titulo} artista={opcao.artista} rotulo={opcao.titulo} size="sm" />
@@ -494,7 +495,7 @@ export function Composer({
                   type="button"
                   className="icon-button"
                   aria-label={`Tirar ${opcao.titulo} da enquete`}
-                  onClick={() => setEnquete((atual) => ({ ...atual, opcoes: atual.opcoes.filter((o) => o.id !== opcao.id) }))}
+                  onClick={() => setEnquete((atual) => ({ ...atual, opcoes: atual.opcoes.filter((o) => chaveOpcao(o) !== chaveOpcao(opcao)) }))}
                 >
                   <i className="bi bi-x-lg" aria-hidden="true" />
                 </button>
@@ -502,8 +503,8 @@ export function Composer({
             ))}
           </ol>
           {enquete.opcoes.length < ENQUETE_MAX && (
-            <button type="button" className="composer-poll__adicionar" onClick={() => abrirBusca('enquete')}>
-              <i className="bi bi-plus-lg" aria-hidden="true" /> Adicionar música à enquete
+            <button type="button" className="composer-poll__adicionar" aria-label="Adicionar opção à enquete" onClick={() => abrirBusca('enquete')}>
+              <i className="bi bi-plus-lg" aria-hidden="true" /> Adicionar música ou álbum
             </button>
           )}
           <div className="composer-poll__duracao" role="radiogroup" aria-label="Duração da enquete">
