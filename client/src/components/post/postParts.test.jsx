@@ -1,5 +1,5 @@
-import { describe, it, expect, vi, beforeEach } from 'vitest';
-import { render, screen } from '@testing-library/react';
+import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
+import { render, screen, waitFor } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { StarRating } from './StarRating.jsx';
 import { LikeButton } from './LikeButton.jsx';
@@ -143,15 +143,70 @@ describe('PlayButton', () => {
 });
 
 describe('ShareButton', () => {
+  afterEach(() => {
+    vi.unstubAllGlobals();
+    delete navigator.canShare;
+    delete navigator.share;
+  });
+
   it('copia a URL absoluta do post', async () => {
     const user = userEvent.setup();
+    vi.stubGlobal('fetch', vi.fn().mockResolvedValue(new Response('png')));
     const writeText = vi.spyOn(navigator.clipboard, 'writeText').mockResolvedValue();
     render(<ShareButton postId={9} />);
 
-    await user.click(screen.getByRole('button', { name: 'Copiar link do post' }));
+    await user.click(screen.getByRole('button', { name: 'Compartilhar post' }));
+    await user.click(screen.getByRole('menuitem', { name: 'Copiar link' }));
 
     expect(writeText).toHaveBeenCalledWith(`${window.location.origin}/post/9`);
     expect(await screen.findByRole('status')).toHaveTextContent('Link copiado!');
+    expect(screen.queryByRole('menu')).toBeNull();
+  });
+
+  it('manda a imagem do Stories para o menu de compartilhar do celular', async () => {
+    const user = userEvent.setup();
+    const fetchMock = vi.fn().mockResolvedValue(new Response('png', { headers: { 'content-type': 'image/png' } }));
+    vi.stubGlobal('fetch', fetchMock);
+    navigator.canShare = vi.fn(() => true);
+    navigator.share = vi.fn().mockResolvedValue();
+    render(<ShareButton postId={9} />);
+
+    await user.click(screen.getByRole('button', { name: 'Compartilhar post' }));
+    // A imagem começa a ser gerada assim que o menu abre.
+    expect(fetchMock).toHaveBeenCalledWith('/api/og/post/9/stories.png');
+    await user.click(screen.getByRole('menuitem', { name: 'Compartilhar no Stories' }));
+
+    await waitFor(() => expect(navigator.share).toHaveBeenCalled());
+    const [arquivo] = navigator.share.mock.calls[0][0].files;
+    expect(arquivo.name).toBe('tunetalk-post-9.png');
+    expect(arquivo.type).toBe('image/png');
+  });
+
+  it('sem menu de compartilhar (computador), baixa a imagem', async () => {
+    const user = userEvent.setup();
+    vi.stubGlobal('fetch', vi.fn().mockResolvedValue(new Response('png')));
+    URL.createObjectURL = vi.fn(() => 'blob:x');
+    URL.revokeObjectURL = vi.fn();
+    const clique = vi.spyOn(HTMLAnchorElement.prototype, 'click').mockImplementation(() => {});
+    render(<ShareButton postId={9} />);
+
+    await user.click(screen.getByRole('button', { name: 'Compartilhar post' }));
+    await user.click(screen.getByRole('menuitem', { name: 'Compartilhar no Stories' }));
+
+    expect(await screen.findByRole('status')).toHaveTextContent('Imagem salva!');
+    expect(clique).toHaveBeenCalled();
+    clique.mockRestore();
+  });
+
+  it('avisa se não der para gerar a imagem', async () => {
+    const user = userEvent.setup();
+    vi.stubGlobal('fetch', vi.fn().mockResolvedValue(new Response('erro', { status: 500 })));
+    render(<ShareButton postId={9} />);
+
+    await user.click(screen.getByRole('button', { name: 'Compartilhar post' }));
+    await user.click(screen.getByRole('menuitem', { name: 'Compartilhar no Stories' }));
+
+    expect(await screen.findByRole('status')).toHaveTextContent('Não deu para gerar a imagem.');
   });
 });
 

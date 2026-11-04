@@ -23,7 +23,7 @@ import { createHashtagService } from './services/hashtagService.js';
 import webpush from 'web-push';
 import { createPushSubscriptionRepository } from './repositories/pushSubscriptionRepository.js';
 import { createPushService, withPush } from './services/pushService.js';
-import { renderizarCard } from './share/postCard.js';
+import { renderizarImagem } from './share/postCard.js';
 
 const rootDir = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '../..');
 
@@ -89,7 +89,7 @@ export function buildContainer(config) {
       appUrl: config.appUrl,
       findPost: (id) => posts.findById(id),
       carregarIndex: createIndexLoader(config.appUrl),
-      renderizarCard,
+      renderizarImagem,
     },
     clientDist: config.serveClient ? path.join(rootDir, 'dist') : undefined,
   };

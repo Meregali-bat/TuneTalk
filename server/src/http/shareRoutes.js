@@ -45,19 +45,22 @@ export function createSharePageRoutes({ sharePreview }) {
 export function createShareApiRoutes({ sharePreview }) {
   const router = Router();
 
-  router.get('/og/post/:id.png', async (req, res, next) => {
+  // Cartão da prévia do link (1200×630) e imagem vertical para o Stories (1080×1920).
+  const imagem = (formato) => async (req, res, next) => {
     const { id } = req.params;
     try {
       const post = idValido(id) ? await sharePreview.findPost(Number(id)) : null;
       if (!post) return res.status(404).json({ error: 'Post não encontrado.' });
-      const png = await sharePreview.renderizarCard(post);
+      const png = await sharePreview.renderizarImagem(post, formato);
       res.set('Content-Type', 'image/png');
       res.set('Cache-Control', 'public, max-age=3600, s-maxage=86400, stale-while-revalidate=604800');
       res.send(png);
     } catch (err) {
       next(err);
     }
-  });
+  };
+  router.get('/og/post/:id.png', imagem('cartao'));
+  router.get('/og/post/:id/stories.png', imagem('story'));
 
   return router;
 }

@@ -10,7 +10,7 @@ function montar(findPost = vi.fn().mockResolvedValue(post)) {
     appUrl: 'https://tunetalk.app',
     findPost,
     carregarIndex: vi.fn().mockResolvedValue(INDEX),
-    renderizarCard: vi.fn().mockResolvedValue(Buffer.from('png')),
+    renderizarImagem: vi.fn().mockResolvedValue(Buffer.from('png')),
   };
   return { ...buildTestApp({ sharePreview }), sharePreview };
 }
@@ -40,7 +40,14 @@ describe('link de post compartilhado', () => {
     const res = await request(app).get('/api/og/post/7.png').expect(200);
     expect(res.headers['content-type']).toBe('image/png');
     expect(res.headers['cache-control']).toContain('s-maxage');
-    expect(sharePreview.renderizarCard).toHaveBeenCalledWith(post);
+    expect(sharePreview.renderizarImagem).toHaveBeenCalledWith(post, 'cartao');
+  });
+
+  it('GET /api/og/post/:id/stories.png devolve a imagem vertical do Stories', async () => {
+    const { app, sharePreview } = montar();
+    const res = await request(app).get('/api/og/post/7/stories.png').expect(200);
+    expect(res.headers['content-type']).toBe('image/png');
+    expect(sharePreview.renderizarImagem).toHaveBeenCalledWith(post, 'story');
   });
 
   it('imagem de post que não existe é 404', async () => {

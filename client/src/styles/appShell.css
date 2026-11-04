@@ -490,6 +490,13 @@
   }
 }
 
+/* Compartilhar fica no pé do post: o menu abre para cima. */
+.share-menu__list {
+  top: auto;
+  bottom: calc(100% + .25rem);
+  white-space: nowrap;
+}
+
 /* Posts de exemplo enquanto o feed carrega. */
 .post-card--skeleton {
   display: grid;

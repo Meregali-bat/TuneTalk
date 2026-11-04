@@ -48,12 +48,12 @@ const estrela = (preenchida) => svgUri(`<svg xmlns="http://www.w3.org/2000/svg" 
 <path d="${ESTRELA}" fill="url(#m)"/></svg>`);
 const ESTRELAS = { cheia: estrela(1), meia: estrela(0.5), vazia: estrela(0) };
 
-function estrelas(nota) {
-  return h('div', { gap: 6, alignItems: 'center' },
+function estrelas(nota, tamanho = 44) {
+  return h('div', { gap: tamanho / 7, alignItems: 'center' },
     [0, 1, 2, 3, 4].map((i) => {
       const pontos = nota - i * 2;
       const src = pontos >= 2 ? ESTRELAS.cheia : pontos === 1 ? ESTRELAS.meia : ESTRELAS.vazia;
-      return img(src, { width: 44, height: 44 });
+      return img(src, { width: tamanho, height: tamanho });
     }));
 }
 
@@ -131,15 +131,68 @@ export function montarCard(post, { capa, foto }) {
     rodape));
 }
 
-/** PNG do cartão do post. `fetchImpl` permite testar sem rede. */
-export async function renderizarCard(post, { fetchImpl = fetch } = {}) {
+export const STORY_LARGURA = 1080;
+export const STORY_ALTURA = 1920;
+
+// Imagem vertical para o Stories do Instagram. O Instagram cobre o topo (~250px) e o pé (~300px)
+// com os botões dele, então o conteúdo fica no meio.
+export function montarStory(post, { capa, foto }) {
+  const temObra = Boolean(post.titulo);
+  const texto = cortar(post.texto, temObra ? (capa ? 110 : 200) : capa ? 140 : post.enquete ? 120 : 320);
+
+  const autor = h('div', { alignItems: 'center', gap: 24 },
+    foto && img(foto, { width: 96, height: 96, borderRadius: 999, objectFit: 'cover' }),
+    h('div', { flexDirection: 'column' },
+      h('div', { fontSize: 40, fontWeight: 700, color: COR.texto }, cortar(nomeDoAutor(post.autor), 26)),
+      post.autor.nome && h('div', { fontSize: 32, color: COR.suave }, `@${post.autor.nome}`)));
+
+  const obra = temObra && h('div', { flexDirection: 'column', gap: 12 },
+    h('div', { fontSize: 68, fontWeight: 700, color: COR.texto, lineHeight: 1.1 }, cortar(post.titulo, 44)),
+    post.artista && h('div', { fontSize: 42, color: COR.suave }, cortar(post.artista, 40)),
+    post.nota != null && h('div', { marginTop: 14 }, estrelas(post.nota, 72)));
+
+  const enquete = !temObra && post.enquete && h('div', { flexDirection: 'column', gap: 18 },
+    h('div', { fontSize: 32, fontWeight: 700, color: COR.destaque, letterSpacing: 3 }, 'ENQUETE'),
+    post.enquete.opcoes.slice(0, 4).map((opcao) => h('div', {
+      fontSize: 38, color: COR.texto, padding: '22px 30px', borderRadius: 20,
+      border: `3px solid ${COR.linha}`, backgroundColor: COR.superficie,
+    }, cortar(opcao.artista ? `${opcao.titulo} — ${opcao.artista}` : opcao.titulo, 40))));
+
+  const tamanhoTexto = temObra ? 38 : capa || post.enquete ? 46 : 60;
+  const corpo = texto && h('div', {
+    fontSize: tamanhoTexto, color: temObra ? COR.suave : COR.texto, lineHeight: 1.35,
+  }, temObra ? `“${texto}”` : texto);
+
+  return h('div', {
+    width: STORY_LARGURA, height: STORY_ALTURA, flexDirection: 'column', justifyContent: 'center',
+    padding: '260px 80px 320px', fontFamily: 'Geologica', backgroundColor: COR.fundo,
+    backgroundImage: `linear-gradient(180deg, ${COR.superficie} 0%, ${COR.fundo} 55%)`,
+  },
+  h('div', { flexDirection: 'column', gap: 40, overflow: 'hidden' },
+    capa && img(capa, { width: 620, height: 620, borderRadius: 32, objectFit: 'cover', alignSelf: 'center' }),
+    autor,
+    obra,
+    post.enquete && !temObra ? [corpo, enquete] : [enquete, corpo],
+    h('div', { alignItems: 'center', gap: 18, marginTop: 8 },
+      img(LOGO, { width: 34, height: 50 }),
+      h('div', { fontSize: 38, fontWeight: 700, color: COR.texto }, 'TuneTalk'))));
+}
+
+const FORMATOS = {
+  cartao: { montar: montarCard, largura: CARD_LARGURA, altura: CARD_ALTURA, lado: 880 },
+  story: { montar: montarStory, largura: STORY_LARGURA, altura: STORY_ALTURA, lado: 1240 },
+};
+
+/** PNG do post: `cartao` (prévia do link, 1200×630) ou `story` (1080×1920). `fetchImpl` permite testar sem rede. */
+export async function renderizarImagem(post, formato = 'cartao', { fetchImpl = fetch } = {}) {
+  const { montar, largura, altura, lado } = FORMATOS[formato];
   const { ImageResponse } = await import('@vercel/og');
   const [capa, foto] = await Promise.all([
-    baixarImagem(post.capa ?? post.imagem, 880, fetchImpl),
-    baixarImagem(post.autor.fotoPerfil, 144, fetchImpl),
+    baixarImagem(post.capa ?? post.imagem, lado, fetchImpl),
+    baixarImagem(post.autor.fotoPerfil, 192, fetchImpl),
   ]);
-  const resposta = new ImageResponse(montarCard(post, { capa, foto }), {
-    width: CARD_LARGURA, height: CARD_ALTURA, fonts: carregarFontes(),
-  });
+  const resposta = new ImageResponse(montar(post, { capa, foto }), { width: largura, height: altura, fonts: carregarFontes() });
   return Buffer.from(await resposta.arrayBuffer());
 }
+
+export const renderizarCard = (post, opcoes) => renderizarImagem(post, 'cartao', opcoes);
