@@ -562,6 +562,27 @@
   }
 }
 
+/* Play e "Quero ouvir" juntos: um em cima do outro e menores, para sobrar largura para o título
+   e as estrelas. */
+.post-card__music-actions:has(> :nth-child(2)) {
+  flex-direction: column;
+  gap: .3rem;
+
+  .play-button,
+  .quero-ouvir-button {
+    width: 2.25rem;
+    height: 2.25rem;
+  }
+
+  .play-button {
+    font-size: 1.1rem;
+  }
+
+  .quero-ouvir-button {
+    font-size: .95rem;
+  }
+}
+
 /* Guardar no "Quero ouvir": ícone de marcador; vira verde quando está na lista. */
 .quero-ouvir-button {
   display: inline-grid;
@@ -721,7 +742,18 @@
 }
 
 .post-card__music-info {
+  flex: 1;
   min-width: 0;
+  /* Para a nota se ajustar à largura que sobra (ver @container abaixo). */
+  container-type: inline-size;
+}
+
+/* Sem espaço para estrelas e número numa linha (celular estreito): fica só com as estrelas.
+   O valor continua no nome acessível das estrelas ("Nota 3,5 de 5"). */
+@container (max-width: 106px) {
+  .post-card__score {
+    display: none;
+  }
 }
 
 .post-card__title,
@@ -1164,10 +1196,17 @@
 }
 
 /* --- Nota no card --- */
+/* Estrelas e nota numa linha só, sempre (com "3,5/5" a linha ficava mais larga e quebrava). */
 .post-card__rating {
   display: inline-flex;
+  flex-wrap: nowrap;
   align-items: center;
   gap: .45rem;
+  white-space: nowrap;
+
+  > * {
+    flex: none;
+  }
 }
 
 .post-card__score {
