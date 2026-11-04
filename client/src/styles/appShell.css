@@ -2623,8 +2623,17 @@ button.track-row:hover {
   color: var(--destaque);
 }
 
-/* Roxo, lilás e rosa (Olivia Rodrigo): o degradê preenche o desenho do ícone. */
+/* O ícone do Bootstrap desce .125em além da própria caixa; aqui ele fica dentro dela
+   (senão o degradê, que só pinta dentro da caixa, corta a ponta do selo). */
+.verified-badge::before {
+  vertical-align: 0;
+}
+
+/* Roxo, lilás e rosa (Olivia Rodrigo): o degradê preenche o desenho do ícone.
+   A folga em cima e embaixo garante que ele cubra o desenho inteiro, sem mudar o tamanho na linha. */
 .verified-badge--olivia {
+  padding-block: .1em;
+  margin-block: -.1em;
   background: linear-gradient(135deg, #9b5de5 0%, #c084fc 45%, #f4a6c8 100%);
   -webkit-background-clip: text;
   background-clip: text;
