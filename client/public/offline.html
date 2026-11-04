@@ -46,8 +46,8 @@
         radial-gradient(circle, var(--background) 0 9%, var(--destaque) 9.5% 30%, transparent 30.5%),
         repeating-radial-gradient(circle, #101c17 0 2px, #0a1410 2px 5px);
       box-shadow: 0 0 0 1px var(--linhas), 0 20px 50px -20px rgba(43, 168, 74, .45);
-      animation: girar 6s linear infinite;
-      animation-play-state: paused;
+      /* Gira como um disco na vitrola (33 rpm dá ~1,8 s por volta; aqui mais calmo). */
+      animation: girar 4s linear infinite;
     }
     .disco::after {
       content: '';
@@ -56,7 +56,8 @@
       border-radius: 50%;
       background: linear-gradient(135deg, rgba(255, 255, 255, .12), transparent 45%);
     }
-    .tentando .disco { animation-play-state: running; }
+    /* Tentando reconectar: acelera. */
+    .tentando .disco { animation-duration: 1.2s; }
     @keyframes girar { to { transform: rotate(360deg); } }
     @media (prefers-reduced-motion: reduce) { .disco { animation: none; } }
     h1 { margin: .25rem 0 0; font-size: 1.5rem; font-weight: 700; line-height: 1.2; }

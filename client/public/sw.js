@@ -2,7 +2,7 @@
    "Sem internet" quando o site é aberto sem conexão. */
 
 // Troque a versão quando mudar offline.html, para o aparelho guardar a nova.
-const CACHE_OFFLINE = 'tunetalk-offline-v1';
+const CACHE_OFFLINE = 'tunetalk-offline-v2';
 const PAGINA_OFFLINE = '/offline.html';
 
 self.addEventListener('install', (event) => {
