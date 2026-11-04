@@ -19,7 +19,7 @@ const LETRA_DEMO = [
 
 export { DEMO_LOGIN };
 
-const STORAGE_KEY = 'tunetalk-demo-v11';
+const STORAGE_KEY = 'tunetalk-demo-v12';
 
 const readState = (storage) => {
   try {
@@ -64,6 +64,7 @@ export function createFakeApi({ storage = globalThis.localStorage } = {}) {
     const repos = createMemoryRepositories(state, () => writeState(storage, state));
     const postService = createPostService({
       posts: repos.posts, likes: repos.likes, notifications: repos.notifications, users: repos.users,
+      capaEnqueteValida: (url) => url.startsWith('data:image/svg+xml'),
     });
     services = {
       auth: createAuthService({ users: repos.users, passwords, notifications: repos.notifications }),
@@ -136,6 +137,7 @@ export function createFakeApi({ storage = globalThis.localStorage } = {}) {
     ['DELETE', /^\/posts\/(\d+)$/, async ({ id }) => { await services.posts.remove(id, me()); return noContent(); }],
     ['POST', /^\/posts\/(\d+)\/pin$/, async ({ id }) => { await services.posts.pin(id, me()); return noContent(); }],
     ['DELETE', /^\/posts\/(\d+)\/pin$/, async ({ id }) => { await services.posts.unpin(id, me()); return noContent(); }],
+    ['POST', /^\/posts\/(\d+)\/votos$/, async ({ id, body }) => ok(await services.posts.votar(id, me(), body?.opcaoId))],
     ['POST', /^\/posts\/(\d+)\/like$/, async ({ id }) => ok({ likes: await services.posts.like(id, me()) })],
     ['DELETE', /^\/posts\/(\d+)\/like$/, async ({ id }) => ok({ likes: await services.posts.unlike(id, me()) })],
 

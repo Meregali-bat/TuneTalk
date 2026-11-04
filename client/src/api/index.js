@@ -37,6 +37,8 @@ export const postsApi = {
   create: (post) => request('/posts', { method: 'POST', body: post }),
   remove: (id) => request(`/posts/${id}`, { method: 'DELETE' }),
   uploadImage: (file) => uploadImage('/posts/image-upload', file),
+  // Voto na enquete de músicas: devolve a enquete atualizada (com meuVoto).
+  votar: (id, opcaoId) => request(`/posts/${id}/votos`, { method: 'POST', body: { opcaoId } }),
   pin: (id) => request(`/posts/${id}/pin`, { method: 'POST' }),
   unpin: (id) => request(`/posts/${id}/pin`, { method: 'DELETE' }),
   like: async (id) => (await request(`/posts/${id}/like`, { method: 'POST' })).likes,

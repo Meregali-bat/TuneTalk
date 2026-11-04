@@ -56,6 +56,7 @@ describe('postRepository (Postgres)', () => {
         imagem: null,
         imagemProporcao: null,
         trechoLetra: null,
+        enquete: null,
         fixado: false,
         autor: { id: ana.id, nome: 'Ana', nomeExibicao: null, fotoPerfil: 'ana.png', fundador: false },
       });
@@ -101,6 +102,28 @@ describe('postRepository (Postgres)', () => {
         trechoLetra: ['primeiro verso', 'segundo verso'], data: new Date(),
       });
       expect((await repo.findById(id)).trechoLetra).toEqual(['primeiro verso', 'segundo verso']);
+    });
+
+    it('enquete: grava as opções na ordem, conta votos (um por pessoa) e diz em qual cada um votou', async () => {
+      const bia = await factory.user();
+      const fim = new Date(Date.now() + 86400000);
+      const opcoes = [
+        { titulo: 'Help!', artista: 'The Beatles', capa: 'h.jpg', preview: null },
+        { titulo: 'Yesterday', artista: 'The Beatles', capa: 'y.jpg', preview: 'https://p/y.mp3' },
+      ];
+      const id = await repo.create({ autorId: ana.id, texto: 'qual?', enquete: { opcoes, fim }, data: new Date() });
+
+      const [help, yesterday] = (await repo.findById(id)).enquete.opcoes;
+      expect(help).toEqual({ id: help.id, titulo: 'Help!', artista: 'The Beatles', capa: 'h.jpg', preview: null, votos: 0 });
+      expect(await repo.votar(id, ana.id, yesterday.id)).toBe(true);
+      expect(await repo.votar(id, bia.id, yesterday.id)).toBe(true);
+      expect(await repo.votar(id, bia.id, help.id)).toBe(false);
+
+      const { enquete } = await repo.findById(id);
+      expect(enquete).toMatchObject({ fim: fim.toISOString(), encerrada: false, total: 2 });
+      expect(enquete.opcoes.map((o) => o.votos)).toEqual([0, 2]);
+      expect(await repo.votosDe(bia.id, [id, 999])).toEqual(new Map([[id, yesterday.id]]));
+      expect(await repo.votosDe(bia.id, [])).toEqual(new Map());
     });
 
     it('findById devolve null para post inexistente', async () => {

@@ -10,6 +10,7 @@ import { useMentions } from './useMentions.js';
 import { LyricsPicker } from './LyricsPicker.jsx';
 import { LyricQuote } from './LyricQuote.jsx';
 import { PlayButton } from './PlayButton.jsx';
+import { DURACOES_DIAS, ENQUETE_MAX, ENQUETE_MIN } from '../../../../shared/poll.js';
 
 const TEXTO_MAX = 500;
 
@@ -66,7 +67,7 @@ const BUSCAS = {
   album: { aba: 'Álbuns', rotulo: 'Buscar álbum', placeholder: 'Álbum ou artista', dica: 'Digite o nome de um álbum ou artista.' },
 };
 
-function SearchStep({ query, onQueryChange, tipo, onTipoChange, search, onSelect, onBack }) {
+function SearchStep({ query, onQueryChange, tipo, onTipoChange, search, onSelect, onBack, soMusicas = false }) {
   const busca = BUSCAS[tipo];
   return (
     <div className="composer-step">
@@ -90,6 +91,7 @@ function SearchStep({ query, onQueryChange, tipo, onTipoChange, search, onSelect
       </div>
 
       {/* No celular: a busca vem primeiro (com o voltar ao lado); o tipo fica logo abaixo, compacto. */}
+      {!soMusicas && (
       <div role="tablist" aria-label="O que buscar" className="composer-tabs composer-tabs--compacto">
         {Object.entries(BUSCAS).map(([chave, { aba }]) => (
           <button
@@ -104,6 +106,7 @@ function SearchStep({ query, onQueryChange, tipo, onTipoChange, search, onSelect
           </button>
         ))}
       </div>
+      )}
 
       {search.status === 'idle' && <p className="composer-hint">{busca.dica}</p>}
       {search.status === 'loading' && <p role="status" className="composer-hint">Buscando…</p>}
@@ -177,6 +180,8 @@ export function Composer({
   const [track, setTrack] = useState(null);
   const [nota, setNota] = useState(null);
   const [searching, setSearching] = useState(false);
+  const [buscandoPara, setBuscandoPara] = useState('post'); // 'post' (música do post) ou 'enquete'
+  const [enquete, setEnquete] = useState(null); // { opcoes: [faixas], duracaoDias }
   const [trecho, setTrecho] = useState(null); // versos da letra escolhidos
   const [escolhendoTrecho, setEscolhendoTrecho] = useState(false);
   const [query, setQuery] = useState('');
@@ -218,7 +223,9 @@ export function Composer({
   };
 
   const clean = texto.trim();
-  const canPublish = !sending && (track ? nota !== null : clean.length > 0 || imagem !== null);
+  const podeEnquete = parentId === undefined;
+  let canPublish = !sending && (track ? nota !== null : clean.length > 0 || imagem !== null);
+  if (enquete) canPublish = !sending && enquete.opcoes.length >= ENQUETE_MIN;
 
   const chooseImagem = (file) => {
     if (!file) return;
@@ -249,7 +256,20 @@ export function Composer({
     setRecorte(null);
   };
 
+  const abrirBusca = (para) => {
+    setBuscandoPara(para);
+    if (para === 'enquete') setTipoBusca('musica');
+    setSearching(true);
+  };
+
   const chooseTrack = (chosen) => {
+    if (buscandoPara === 'enquete') {
+      setEnquete((atual) => (atual.opcoes.some((o) => o.id === chosen.id) || atual.opcoes.length >= ENQUETE_MAX
+        ? atual
+        : { ...atual, opcoes: [...atual.opcoes, chosen] }));
+      setSearching(false);
+      return;
+    }
     if (chosen.id !== track?.id) {
       setNota(null);
       setTrecho(null);
@@ -281,6 +301,12 @@ export function Composer({
         ...(track && { ...musicFields(track), nota }),
         ...(track && track.tipo !== 'album' && trecho?.length && { trechoLetra: trecho }),
         ...(imagemUrl && { imagemUrl, imagemProporcao: recorte.proporcao }),
+        ...(enquete && {
+          enquete: {
+            duracaoDias: enquete.duracaoDias,
+            opcoes: enquete.opcoes.map(({ titulo, artista, capa, preview }) => ({ titulo, artista, capa, preview })),
+          },
+        }),
       });
       onPublished();
     } catch (err) {
@@ -320,6 +346,7 @@ export function Composer({
         search={search}
         onSelect={chooseTrack}
         onBack={() => setSearching(false)}
+        soMusicas={buscandoPara === 'enquete'}
       />
     );
   }
@@ -380,7 +407,7 @@ export function Composer({
         </figure>
       )}
 
-      {track ? (
+      {track && (
         <div className="composer-music">
           <div
             role="group"
@@ -396,7 +423,7 @@ export function Composer({
               type="button"
               className="composer-link"
               aria-label={track.tipo === 'album' ? 'Trocar álbum' : 'Trocar música'}
-              onClick={() => setSearching(true)}
+              onClick={() => abrirBusca('post')}
             >
               Trocar
             </button>
@@ -405,7 +432,7 @@ export function Composer({
             </button>
           </div>
           <StarRatingInput value={nota} onChange={setNota} />
-          {track.tipo !== 'album' && (trecho ? (
+          {trecho && (
             <div className="composer-lyric">
               <LyricQuote versos={trecho} titulo={track.titulo} artista={track.artista} />
               <div className="composer-lyric__tools">
@@ -415,29 +442,110 @@ export function Composer({
                 </button>
               </div>
             </div>
-          ) : (
-            <button type="button" className="composer-attach" onClick={() => setEscolhendoTrecho(true)}>
-              <i className="bi bi-quote" aria-hidden="true" />
-              Adicionar trecho da letra
-              <span className="composer-attach__hint" aria-hidden="true">opcional</span>
-            </button>
-          ))}
+          )}
         </div>
-      ) : (
-        <button type="button" className="composer-attach" onClick={() => setSearching(true)}>
-          <i className="bi bi-music-note-beamed" aria-hidden="true" />
-          Adicionar música ou álbum
-          <span className="composer-attach__hint" aria-hidden="true">opcional</span>
-        </button>
       )}
 
-      {!imagem && (
-        <button type="button" className="composer-attach" onClick={() => imagemInput.current?.click()}>
-          <i className="bi bi-image" aria-hidden="true" />
-          Adicionar imagem
-          <span className="composer-attach__hint" aria-hidden="true">ou cole um GIF</span>
-        </button>
+      {enquete && (
+        <div className="composer-poll" role="group" aria-label="Enquete">
+          <div className="composer-poll__topo">
+            <span>Enquete · de {ENQUETE_MIN} a {ENQUETE_MAX} músicas</span>
+            <button type="button" className="icon-button" aria-label="Remover enquete" onClick={() => setEnquete(null)}>
+              <i className="bi bi-x-lg" aria-hidden="true" />
+            </button>
+          </div>
+          <ol className="composer-poll__opcoes">
+            {enquete.opcoes.map((opcao) => (
+              <li key={opcao.id} className="track-row track-row--selected">
+                <TrackInfo track={opcao} />
+                {opcao.preview && (
+                  <PlayButton src={opcao.preview} titulo={opcao.titulo} artista={opcao.artista} rotulo={opcao.titulo} size="sm" />
+                )}
+                <button
+                  type="button"
+                  className="icon-button"
+                  aria-label={`Tirar ${opcao.titulo} da enquete`}
+                  onClick={() => setEnquete((atual) => ({ ...atual, opcoes: atual.opcoes.filter((o) => o.id !== opcao.id) }))}
+                >
+                  <i className="bi bi-x-lg" aria-hidden="true" />
+                </button>
+              </li>
+            ))}
+          </ol>
+          {enquete.opcoes.length < ENQUETE_MAX && (
+            <button type="button" className="composer-poll__adicionar" onClick={() => abrirBusca('enquete')}>
+              <i className="bi bi-plus-lg" aria-hidden="true" /> Adicionar música à enquete
+            </button>
+          )}
+          <div className="composer-poll__duracao" role="radiogroup" aria-label="Duração da enquete">
+            <span>Dura</span>
+            {DURACOES_DIAS.map((dias) => (
+              <button
+                key={dias}
+                type="button"
+                role="radio"
+                aria-checked={enquete.duracaoDias === dias}
+                className={enquete.duracaoDias === dias ? 'is-active' : undefined}
+                onClick={() => setEnquete((atual) => ({ ...atual, duracaoDias: dias }))}
+              >
+                {dias} {dias === 1 ? 'dia' : 'dias'}
+              </button>
+            ))}
+          </div>
+        </div>
       )}
+
+      {/* Barra de ícones, como no Twitter: cada um adiciona algo ao post. */}
+      <div className="composer-toolbar" role="toolbar" aria-label="Adicionar ao post">
+        {!imagem && (
+          <button
+            type="button"
+            className="composer-toolbar__botao"
+            aria-label="Adicionar imagem"
+            title="Imagem ou GIF"
+            disabled={Boolean(enquete)}
+            onClick={() => imagemInput.current?.click()}
+          >
+            <i className="bi bi-image" aria-hidden="true" />
+          </button>
+        )}
+        {!track && (
+          <button
+            type="button"
+            className="composer-toolbar__botao"
+            aria-label="Adicionar música ou álbum"
+            title="Música ou álbum"
+            disabled={Boolean(enquete)}
+            onClick={() => abrirBusca('post')}
+          >
+            <i className="bi bi-music-note-beamed" aria-hidden="true" />
+          </button>
+        )}
+        {track && track.tipo !== 'album' && !trecho && (
+          <button
+            type="button"
+            className="composer-toolbar__botao"
+            aria-label="Adicionar trecho da letra"
+            title="Trecho da letra"
+            onClick={() => setEscolhendoTrecho(true)}
+          >
+            <i className="bi bi-quote" aria-hidden="true" />
+          </button>
+        )}
+        {podeEnquete && !enquete && (
+          <button
+            type="button"
+            className="composer-toolbar__botao"
+            aria-label="Criar enquete"
+            title="Enquete de músicas"
+            disabled={Boolean(track || imagem)}
+            onClick={() => { setEnquete({ opcoes: [], duracaoDias: 1 }); abrirBusca('enquete'); }}
+          >
+            <i className="bi bi-bar-chart-line" aria-hidden="true" />
+          </button>
+        )}
+      </div>
+
       <input
         ref={imagemInput}
         type="file"

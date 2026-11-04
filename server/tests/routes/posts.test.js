@@ -1,4 +1,4 @@
-import { describe, it, expect, beforeEach } from 'vitest';
+import { describe, it, expect, beforeEach, vi } from 'vitest';
 import request from 'supertest';
 import { buildTestApp, loggedAgent } from '../helpers/buildTestApp.js';
 import { HttpError } from '../../src/errors.js';
@@ -138,5 +138,12 @@ describe('rotas /api/posts', () => {
     const res = await agent.get('/api/posts?feed=foryou');
     expect(res.status).toBe(500);
     expect(res.body).toEqual({ error: 'Erro interno do servidor.' });
+  });
+
+  it('POST /api/posts/:id/votos vota na enquete', async () => {
+    deps.postService.votar = vi.fn().mockResolvedValue({ total: 1, meuVoto: 12 });
+    const res = await agent.post('/api/posts/5/votos').send({ opcaoId: 12 }).expect(200);
+    expect(res.body).toEqual({ total: 1, meuVoto: 12 });
+    expect(deps.postService.votar).toHaveBeenCalledWith(5, 1, 12);
   });
 });

@@ -51,6 +51,10 @@ export function createPostRoutes({ postService, uploader }) {
     res.status(204).end();
   }));
 
+  router.post('/:id/votos', asyncRoute(async (req, res) => {
+    res.json(await postService.votar(req.params.id, currentUserId(req), req.body?.opcaoId));
+  }));
+
   router.post('/:id/like', asyncRoute(async (req, res) => {
     res.json({ likes: await postService.like(req.params.id, currentUserId(req)) });
   }));

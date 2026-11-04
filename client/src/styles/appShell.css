@@ -2909,3 +2909,257 @@ button.favorites-editor__capa {
     opacity: .6;
   }
 }
+
+/* --- Barra de ícones do compositor (como no Twitter) --- */
+.composer-toolbar {
+  display: flex;
+  align-items: center;
+  gap: .15rem;
+  padding-top: .5rem;
+  border-top: 1px solid var(--linhas);
+}
+
+.composer-toolbar__botao {
+  display: grid;
+  place-items: center;
+  width: 2.75rem;
+  height: 2.75rem;
+  border: 0;
+  border-radius: 50%;
+  background: none;
+  color: var(--destaque-claro);
+  font-size: 1.3rem;
+  transition: background-color .15s ease;
+
+  &:hover:not(:disabled) {
+    background: rgba(43, 168, 74, .12);
+  }
+
+  &:disabled {
+    color: var(--texto-suave);
+    opacity: .4;
+  }
+
+  &:focus-visible {
+    outline: 2px solid var(--destaque);
+    outline-offset: 2px;
+  }
+}
+
+/* --- Editor de enquete no compositor --- */
+.composer-poll {
+  display: grid;
+  gap: .6rem;
+  padding: .85rem;
+  border: 1px solid var(--linhas);
+  border-radius: 16px;
+}
+
+.composer-poll__topo {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  color: var(--texto-suave);
+  font-size: .85rem;
+  font-weight: 600;
+
+  .icon-button {
+    width: 2.25rem;
+    height: 2.25rem;
+  }
+}
+
+.composer-poll__opcoes {
+  display: grid;
+  gap: .4rem;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+
+  .track-row {
+    gap: .6rem;
+    padding: .45rem;
+  }
+
+  .icon-button {
+    flex: none;
+    width: 2.25rem;
+    height: 2.25rem;
+  }
+}
+
+button.composer-poll__adicionar {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: .4rem;
+  min-height: 2.75rem;
+  border: 1px dashed var(--linhas);
+  border-radius: 12px;
+  background: none;
+  color: var(--destaque-claro);
+  font-weight: 600;
+}
+
+.composer-poll__duracao {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: .4rem;
+
+  span {
+    margin-right: .2rem;
+    color: var(--texto-suave);
+    font-size: .85rem;
+  }
+
+  button {
+    min-height: 2.25rem;
+    padding: 0 .85rem;
+    border: 1px solid var(--linhas);
+    border-radius: 999px;
+    background: none;
+    color: var(--texto-suave);
+    font-size: .85rem;
+    font-weight: 600;
+
+    &.is-active {
+      border-color: var(--destaque);
+      color: var(--texto);
+    }
+  }
+}
+
+/* --- Enquete no post --- */
+.poll {
+  margin-top: .85rem;
+}
+
+.poll__opcoes {
+  display: grid;
+  gap: .45rem;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.poll__item {
+  display: flex;
+  align-items: center;
+  gap: .4rem;
+  min-width: 0;
+
+  .play-button {
+    flex: none;
+  }
+
+  .play-button--sm:not(.is-playing) {
+    border: 1px solid var(--linhas);
+    background: none;
+    color: var(--destaque-claro);
+  }
+}
+
+.poll__opcao,
+.poll__resultado {
+  position: relative;
+  display: flex;
+  flex: 1 1 0%;
+  align-items: center;
+  gap: .65rem;
+  min-width: 0;
+  min-height: 3.25rem;
+  padding: .35rem .75rem .35rem .35rem;
+  border: 1px solid var(--linhas);
+  border-radius: 12px;
+  overflow: hidden;
+  background: none;
+  color: var(--texto);
+  text-align: left;
+}
+
+button.poll__opcao {
+  transition: border-color .15s ease, background-color .15s ease;
+
+  &:hover:not(:disabled) {
+    border-color: var(--destaque);
+    background: rgba(43, 168, 74, .06);
+  }
+}
+
+/* Barra de resultado: o fundo enche até a porcentagem. */
+.poll__resultado {
+  &::before {
+    content: '';
+    position: absolute;
+    inset: 0 auto 0 0;
+    z-index: 0;
+    width: var(--pct);
+    background: var(--superficie-2);
+    transition: width .4s ease-out;
+  }
+
+  &.is-meu::before,
+  &.is-lider::before {
+    background: rgba(43, 168, 74, .22);
+  }
+
+  > * {
+    position: relative;
+    z-index: 1;
+  }
+}
+
+.poll__capa {
+  flex: none;
+  width: 2.5rem;
+  height: 2.5rem;
+  border-radius: 6px;
+  object-fit: cover;
+}
+
+.poll__nome {
+  display: flex;
+  flex: 1;
+  flex-direction: column;
+  min-width: 0;
+}
+
+.poll__titulo,
+.poll__artista {
+  overflow: hidden;
+  white-space: nowrap;
+  text-overflow: ellipsis;
+}
+
+.poll__titulo {
+  font-weight: 600;
+}
+
+.poll__artista {
+  color: var(--texto-suave);
+  font-size: .82rem;
+}
+
+.poll__check {
+  flex: none;
+  color: var(--destaque-claro);
+}
+
+.poll__pct {
+  flex: none;
+  font-weight: 700;
+  font-variant-numeric: tabular-nums;
+}
+
+.poll__rodape {
+  margin: .5rem 0 0;
+  color: var(--texto-suave);
+  font-size: .85rem;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .poll__resultado::before {
+    transition: none;
+  }
+}

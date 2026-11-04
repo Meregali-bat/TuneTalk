@@ -46,6 +46,17 @@ const albumPost = (id, autorId, albumName, artistName, releaseDate, texto, nota,
   musicName: null, posterMusica: null, musicPreview: null,
 });
 
+// Enquete de músicas da demo (termina em 2 dias), já com alguns votos.
+const enquetePost = (id, autorId, texto, titulos, minutes) => ({
+  ...reply(id, null, autorId, texto, minutes),
+  parentId: null,
+  enqueteFim: new Date(Date.now() + 2 * 24 * 60 * 60 * 1000).toISOString(),
+  opcoesEnquete: titulos.map((titulo, i) => {
+    const t = track(titulo);
+    return { id: id * 10 + i, posicao: i, titulo: t.titulo, artista: t.artista, capa: t.capa, preview: null };
+  }),
+});
+
 const reply = (id, parentId, autorId, texto, minutes) => ({
   id, parentId, autorId, texto, nota: null, createdAt: minutesAgo(minutes), postType: null,
   musicName: null, artistName: null, posterMusica: null, releaseDate: null, musicPreview: null, albumName: null, posterAlbum: null,
@@ -53,7 +64,7 @@ const reply = (id, parentId, autorId, texto, minutes) => ({
 
 export function createSeed() {
   return {
-    seq: { usuarios: 4, posts: 16, notificacoes: 3 },
+    seq: { usuarios: 4, posts: 17, notificacoes: 3 },
     session: null,
     usuarios: [
       { ...user(1, 'ana.souza', DEMO_LOGIN.email, 'MPB de manhã, rock à noite', 'Ana Souza'), veterano: true },
@@ -86,6 +97,11 @@ export function createSeed() {
       reply(14, 10, 1, 'Qual versão? A do Shea Stadium?', 20),
       reply(15, 10, 2, 'A do Anthology também é muito boa.', 18),
       reply(16, 10, 3, 'Essa mesmo, a do Shea!', 15),
+      enquetePost(17, 3, 'Qual a melhor dos Beatles?', ['Help!', 'Here Comes the Sun', 'Come Together'], 12),
+    ],
+    votosEnquete: [
+      { postId: 17, usuarioId: 2, opcaoId: 170 },
+      { postId: 17, usuarioId: 4, opcaoId: 172 },
     ],
     curtidas: [
       { postId: 1, usuarioId: 1 }, { postId: 1, usuarioId: 3 }, { postId: 2, usuarioId: 2 }, { postId: 4, usuarioId: 2 },

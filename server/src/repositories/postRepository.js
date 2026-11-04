@@ -3,7 +3,24 @@ import { hasHashtag } from '../../../shared/mentions.js';
 const POST_INCLUDE = {
   autor: { select: { id: true, nome: true, nomeExibicao: true, fotoPerfil: true, postFixadoId: true, fundadorDesde: true, mostrarSeloFundador: true } },
   _count: { select: { respostas: true, curtidas: true } },
+  opcoesEnquete: {
+    orderBy: { posicao: 'asc' },
+    select: { id: true, titulo: true, artista: true, capa: true, preview: true, _count: { select: { votos: true } } },
+  },
 };
+
+// Enquete no formato da API (o voto de quem está vendo é marcado depois, no serviço).
+function toEnquete(row) {
+  if (!row.enqueteFim) return null;
+  const opcoes = (row.opcoesEnquete ?? []).map(({ _count, ...opcao }) => ({ ...opcao, votos: _count?.votos ?? 0 }));
+  const fim = new Date(row.enqueteFim);
+  return {
+    fim: fim.toISOString(),
+    encerrada: fim.getTime() <= Date.now(),
+    total: opcoes.reduce((soma, o) => soma + o.votos, 0),
+    opcoes,
+  };
+}
 
 // Feeds e perfis mostram só posts principais; respostas aparecem dentro do post pai.
 const TOP_LEVEL = { parentId: null };
@@ -37,6 +54,7 @@ export function toPost(row) {
     imagem: row.imagemUrl ?? null,
     imagemProporcao: row.imagemProporcao ?? null,
     trechoLetra: row.trechoLetra ? row.trechoLetra.split('\n') : null,
+    enquete: toEnquete(row),
     fixado: row.autor.postFixadoId === row.id,
     autor: {
       id: row.autor.id,
@@ -142,10 +160,35 @@ export function createPostRepository(prisma) {
           imagemProporcao: post.imagemProporcao ?? null,
           trechoLetra: post.trechoLetra?.length ? post.trechoLetra.join('\n') : null,
           createdAt: post.data,
+          ...(post.enquete && {
+            enqueteFim: post.enquete.fim,
+            opcoesEnquete: { create: post.enquete.opcoes.map((opcao, posicao) => ({ ...opcao, posicao })) },
+          }),
         },
         select: { id: true },
       });
       return created.id;
+    },
+
+    // Um voto por pessoa: votar de novo na mesma enquete devolve false.
+    async votar(postId, usuarioId, opcaoId) {
+      try {
+        await prisma.enqueteVoto.create({ data: { postId, usuarioId, opcaoId } });
+        return true;
+      } catch (err) {
+        if (err?.code === 'P2002') return false;
+        throw err;
+      }
+    },
+
+    // Em quais enquetes (dentre esses posts) a pessoa votou, e em qual opção: Map postId → opcaoId.
+    async votosDe(usuarioId, postIds) {
+      if (!usuarioId || postIds.length === 0) return new Map();
+      const votos = await prisma.enqueteVoto.findMany({
+        where: { usuarioId, postId: { in: postIds } },
+        select: { postId: true, opcaoId: true },
+      });
+      return new Map(votos.map((v) => [v.postId, v.opcaoId]));
     },
 
     // Respostas (e as respostas delas), curtidas e notificações são apagadas em cascata pelo banco.

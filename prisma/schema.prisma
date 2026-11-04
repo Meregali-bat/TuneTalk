@@ -48,6 +48,7 @@ model Usuario {
   notificacoesRecebidas Notificacao[]      @relation("destinatario")
   notificacoesEnviadas  Notificacao[]      @relation("autor")
   aparelhosPush         InscricaoPush[]
+  votosEnquete          EnqueteVoto[]
   redefinicoesSenha     RedefinicaoSenha[]
   postFixado            Post?              @relation("fixado", fields: [postFixadoId], references: [id], onDelete: SetNull)
 
@@ -75,6 +76,8 @@ model Post {
   imagemProporcao Float?   @map("imagem_proporcao") @db.Real
   // Trecho da letra (até 4 versos, um por linha), escolhido na LRCLIB. Só em posts de música.
   trechoLetra     String?  @map("trecho_letra") @db.VarChar(700)
+  // Enquete de músicas: quando termina (vazio se o post não tem enquete). As opções ficam em enquete_opcoes.
+  enqueteFim      DateTime? @map("enquete_fim")
   createdAt       DateTime @default(now()) @map("created_at")
   autorId         Int      @map("autor_id")
   parentId        Int?     @map("parent_id")
@@ -82,6 +85,8 @@ model Post {
   autor        Usuario       @relation(fields: [autorId], references: [id], onDelete: Cascade)
   pai          Post?         @relation("respostas", fields: [parentId], references: [id], onDelete: Cascade)
   respostas    Post[]        @relation("respostas")
+  opcoesEnquete EnqueteOpcao[]
+  votosEnquete  EnqueteVoto[]
   fixadoPor    Usuario?      @relation("fixado")
   curtidas     Curtida[]
   notificacoes Notificacao[]
@@ -134,6 +139,39 @@ model Notificacao {
 
   @@index([destinatarioId, lida])
   @@map("notificacoes")
+}
+
+// Opções de uma enquete de músicas (de 2 a 4), na ordem em que aparecem.
+model EnqueteOpcao {
+  id      Int     @id @default(autoincrement())
+  postId  Int     @map("post_id")
+  posicao Int
+  titulo  String  @db.VarChar(255)
+  artista String? @db.VarChar(255)
+  capa    String? @db.VarChar(500)
+  preview String? @db.VarChar(2000)
+
+  post  Post          @relation(fields: [postId], references: [id], onDelete: Cascade)
+  votos EnqueteVoto[]
+
+  @@unique([postId, posicao])
+  @@map("enquete_opcoes")
+}
+
+// Um voto por pessoa em cada enquete.
+model EnqueteVoto {
+  postId    Int      @map("post_id")
+  usuarioId Int      @map("usuario_id")
+  opcaoId   Int      @map("opcao_id")
+  createdAt DateTime @default(now()) @map("created_at")
+
+  post    Post         @relation(fields: [postId], references: [id], onDelete: Cascade)
+  usuario Usuario      @relation(fields: [usuarioId], references: [id], onDelete: Cascade)
+  opcao   EnqueteOpcao @relation(fields: [opcaoId], references: [id], onDelete: Cascade)
+
+  @@id([postId, usuarioId])
+  @@index([opcaoId])
+  @@map("enquete_votos")
 }
 
 // Aparelhos que aceitaram receber avisos (push da web): um por navegador/celular da pessoa.

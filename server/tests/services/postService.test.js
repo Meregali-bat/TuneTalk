@@ -21,6 +21,8 @@ describe('postService', () => {
       listFirstReplies: vi.fn().mockResolvedValue(new Map()),
       create: vi.fn().mockResolvedValue(42),
       remove: vi.fn(),
+      votar: vi.fn().mockResolvedValue(true),
+      votosDe: vi.fn().mockResolvedValue(new Map()),
     };
     likes = {
       likedPostIds: vi.fn().mockResolvedValue([2, 3]),
@@ -120,6 +122,67 @@ describe('postService', () => {
     it('lança 404 quando o post não existe', async () => {
       posts.findById.mockResolvedValue(null);
       await expect(service.get(1, 7)).rejects.toMatchObject({ status: 404 });
+    });
+  });
+
+  describe('enquete de músicas', () => {
+    const capa = 'https://cdn-images.dzcdn.net/c.jpg';
+    const opcoes = [{ titulo: 'Help!', artista: 'The Beatles', capa }, { titulo: 'Yesterday', artista: 'The Beatles', capa }];
+    const enqueteDoPost = (fim, extra = {}) => ({
+      fim, encerrada: false, total: 1,
+      opcoes: [{ id: 11, titulo: 'Help!', votos: 1 }, { id: 12, titulo: 'Yesterday', votos: 0 }], ...extra,
+    });
+
+    it('cria o post com a enquete e o fim calculado pela duração', async () => {
+      await service.create(7, { texto: 'qual a melhor?', enquete: { opcoes, duracaoDias: 3 } });
+      const criado = posts.create.mock.calls[0][0];
+      expect(criado.enquete.opcoes.map((o) => o.titulo)).toEqual(['Help!', 'Yesterday']);
+      expect(criado.enquete.fim).toEqual(new Date(now.getTime() + 3 * 86400000));
+      expect(criado.nota).toBeNull();
+    });
+
+    it('pode ser só a enquete, sem texto', async () => {
+      await service.create(7, { enquete: { opcoes } });
+      expect(posts.create).toHaveBeenCalled();
+    });
+
+    it('recusa enquete com música avaliada, imagem, em resposta ou inválida', async () => {
+      const sozinha = { status: 400, message: 'A enquete vai sozinha no post: sem música avaliada, imagem ou resposta.' };
+      await expect(service.create(7, { musicName: 'X', nota: 8, enquete: { opcoes } })).rejects.toMatchObject(sozinha);
+      await expect(service.create(7, { imagemUrl: 'https://res.cloudinary.com/x.gif', enquete: { opcoes } })).rejects.toMatchObject(sozinha);
+      await expect(service.create(7, { parentId: 1, enquete: { opcoes } })).rejects.toMatchObject(sozinha);
+      await expect(service.create(7, { enquete: { opcoes: [opcoes[0]] } })).rejects.toMatchObject({ status: 400 });
+      await expect(service.create(7, { enquete: { opcoes: [{ ...opcoes[0], capa: 'https://outro.com/a.jpg' }, opcoes[1]] } }))
+        .rejects.toMatchObject({ status: 400 });
+      expect(posts.create).not.toHaveBeenCalled();
+    });
+
+    it('nas listas, marca em qual opção quem está vendo votou', async () => {
+      posts.listLatest.mockResolvedValue([post(1), post(2, 3, { enquete: enqueteDoPost('2099-01-01T00:00:00.000Z') })]);
+      posts.votosDe.mockResolvedValue(new Map([[2, 12]]));
+      const feed = await service.forYou(9);
+      expect(posts.votosDe).toHaveBeenCalledWith(9, [2]);
+      expect(feed[1].enquete.meuVoto).toBe(12);
+      expect(feed[0].enquete).toBeUndefined();
+    });
+
+    it('votar: registra e devolve a enquete atualizada com o voto', async () => {
+      posts.findById.mockResolvedValue(post(5, 3, { enquete: enqueteDoPost('2099-01-01T00:00:00.000Z') }));
+      expect(await service.votar(5, 9, '12')).toMatchObject({ total: 1, meuVoto: 12 });
+      expect(posts.votar).toHaveBeenCalledWith(5, 9, 12);
+    });
+
+    it('votar: recusa post sem enquete, enquete encerrada, opção de outra enquete e voto repetido', async () => {
+      posts.findById.mockResolvedValueOnce(post(5));
+      await expect(service.votar(5, 9, 11)).rejects.toMatchObject({ status: 400, message: 'Esse post não tem enquete.' });
+
+      posts.findById.mockResolvedValue(post(5, 3, { enquete: enqueteDoPost('2000-01-01T00:00:00.000Z') }));
+      await expect(service.votar(5, 9, 11)).rejects.toMatchObject({ status: 400, message: 'Essa enquete já terminou.' });
+
+      posts.findById.mockResolvedValue(post(5, 3, { enquete: enqueteDoPost('2099-01-01T00:00:00.000Z') }));
+      await expect(service.votar(5, 9, 99)).rejects.toMatchObject({ status: 400, message: 'Opção inválida.' });
+      posts.votar.mockResolvedValueOnce(false);
+      await expect(service.votar(5, 9, 11)).rejects.toMatchObject({ status: 409, message: 'Você já votou nessa enquete.' });
     });
   });
 

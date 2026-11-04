@@ -22,9 +22,13 @@ export function createMemoryRepositories(state, onChange) {
     return { id, nome, nomeExibicao, fotoPerfil, fundadorDesde, mostrarSeloFundador };
   };
 
+  const votos = () => (state.votosEnquete ??= []);
   const postRow = (post) => toPost({
     ...post,
     createdAt: new Date(post.createdAt),
+    opcoesEnquete: (post.opcoesEnquete ?? []).map((opcao) => ({
+      ...opcao, _count: { votos: votos().filter((v) => v.opcaoId === opcao.id).length },
+    })),
     autor: { ...author(post.autorId), postFixadoId: userById(post.autorId).postFixadoId ?? null },
     _count: {
       curtidas: state.curtidas.filter((c) => c.postId === post.id).length,
@@ -204,8 +208,21 @@ export function createMemoryRepositories(state, onChange) {
         imagemProporcao: post.imagemProporcao ?? null,
         trechoLetra: post.trechoLetra?.length ? post.trechoLetra.join('\n') : null,
         createdAt: post.data.toISOString(),
+        ...(post.enquete && {
+          enqueteFim: post.enquete.fim.toISOString(),
+          opcoesEnquete: post.enquete.opcoes.map((opcao, i) => ({ ...opcao, id: id * 10 + i, posicao: i })),
+        }),
       });
       return changed(id);
+    },
+    async votar(postId, usuarioId, opcaoId) {
+      if (votos().some((v) => v.postId === postId && v.usuarioId === usuarioId)) return false;
+      votos().push({ postId, usuarioId, opcaoId });
+      changed();
+      return true;
+    },
+    async votosDe(usuarioId, postIds) {
+      return new Map(votos().filter((v) => v.usuarioId === usuarioId && postIds.includes(v.postId)).map((v) => [v.postId, v.opcaoId]));
     },
     // Como o ON DELETE CASCADE do banco: leva junto as respostas, e as respostas delas.
     async remove(id) {
@@ -223,6 +240,7 @@ export function createMemoryRepositories(state, onChange) {
       state.posts = state.posts.filter((p) => !removed.has(p.id));
       state.usuarios.forEach((u) => { if (removed.has(u.postFixadoId)) u.postFixadoId = null; });
       state.curtidas = state.curtidas.filter((c) => !removed.has(c.postId));
+      state.votosEnquete = votos().filter((v) => !removed.has(v.postId));
       state.notificacoes = state.notificacoes.filter((n) => !removed.has(n.postId));
       changed();
     },
