@@ -148,12 +148,10 @@ export function createPostService({
       if (trecho.versos && !data.musicName) throw badRequest('Escolha uma música para postar um trecho da letra.');
       if (trecho.versos) data.trechoLetra = trecho.versos;
 
-      // Enquete de músicas: no lugar da música do post (não combina com música, imagem nem resposta).
+      // Enquete: combina com texto, imagem e música avaliada; só não vai em comentário.
       let enquete = null;
       if (body.enquete !== undefined && body.enquete !== null) {
-        if (hasMusic || data.imagemUrl || parentId !== undefined) {
-          throw badRequest('A enquete vai sozinha no post: sem música avaliada, imagem ou resposta.');
-        }
+        if (parentId !== undefined) throw badRequest('Comentário não pode ter enquete.');
         const validada = validarEnquete(body.enquete, { capaValida: capaEnqueteValida });
         if (validada.erro) throw badRequest(validada.erro);
         const fim = new Date(now().getTime() + validada.enquete.duracaoDias * 24 * 60 * 60 * 1000);

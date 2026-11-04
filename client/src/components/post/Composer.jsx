@@ -227,8 +227,11 @@ export function Composer({
 
   const clean = texto.trim();
   const podeEnquete = parentId === undefined;
-  let canPublish = !sending && (track ? nota !== null : clean.length > 0 || imagem !== null);
-  if (enquete) canPublish = !sending && enquete.opcoes.length >= ENQUETE_MIN;
+  // Música escolhida precisa de nota; enquete precisa de pelo menos 2 opções; e o post precisa de algo.
+  const temConteudo = clean.length > 0 || imagem !== null || track !== null || enquete !== null;
+  const canPublish = !sending && temConteudo
+    && (!track || nota !== null)
+    && (!enquete || enquete.opcoes.length >= ENQUETE_MIN);
 
   const chooseImagem = (file) => {
     if (!file) return;
@@ -511,7 +514,7 @@ export function Composer({
         </div>
       )}
 
-      {!track && !enquete && (
+      {!track && (
         <button type="button" className="composer-attach" onClick={() => abrirBusca('post')}>
           <i className="bi bi-music-note-beamed" aria-hidden="true" />
           Adicionar música ou álbum
@@ -519,7 +522,7 @@ export function Composer({
         </button>
       )}
 
-      {!imagem && !enquete && (
+      {!imagem && (
         <button type="button" className="composer-attach" onClick={() => imagemInput.current?.click()}>
           <i className="bi bi-image" aria-hidden="true" />
           Adicionar imagem
@@ -527,8 +530,8 @@ export function Composer({
         </button>
       )}
 
-      {/* Enquete vai sozinha: aparece só sem música avaliada e sem imagem (e não em comentário). */}
-      {podeEnquete && !enquete && !track && !imagem && (
+      {/* Enquete combina com texto, imagem e música avaliada; só não aparece em comentário. */}
+      {podeEnquete && !enquete && (
         <button
           type="button"
           className="composer-attach"

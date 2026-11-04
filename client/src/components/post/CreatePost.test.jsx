@@ -311,11 +311,11 @@ describe('CreatePost', () => {
       await open();
       expect(screen.getByRole('button', { name: /Criar enquete/ })).toBeInTheDocument();
       expect(screen.queryByRole('toolbar')).toBeNull();
-      // Com música escolhida, não dá para criar enquete.
+      // Combina com música escolhida.
       await addMusic();
       await search('help');
       await userEvent.click(await screen.findByRole('button', { name: /^Help!/ }));
-      expect(screen.queryByRole('button', { name: /Criar enquete/ })).toBeNull();
+      expect(screen.getByRole('button', { name: /Criar enquete/ })).toBeInTheDocument();
     });
 
     it('cria uma enquete com 2 músicas, escolhe a duração e publica', async () => {
@@ -332,9 +332,9 @@ describe('CreatePost', () => {
       await userEvent.click(await screen.findByRole('button', { name: /^Yesterday/ }));
       await userEvent.click(within(screen.getByRole('group', { name: 'Enquete' })).getByRole('radio', { name: '3 dias' }));
 
-      // Com enquete, não aparecem música avaliada nem imagem.
-      expect(screen.queryByRole('button', { name: /Adicionar imagem/ })).toBeNull();
-      expect(screen.queryByRole('button', { name: /Adicionar música ou álbum/ })).toBeNull();
+      // Com enquete, ainda dá para pôr imagem e música avaliada.
+      expect(screen.getByRole('button', { name: /Adicionar imagem/ })).toBeInTheDocument();
+      expect(screen.getByRole('button', { name: /^Adicionar música ou álbum/ })).toBeInTheDocument();
 
       await userEvent.click(screen.getByRole('button', { name: 'Publicar' }));
       expect(postsApi.create).toHaveBeenCalledWith({
@@ -395,6 +395,23 @@ describe('CreatePost', () => {
       await userEvent.click(screen.getByRole('button', { name: 'Publicar' }));
 
       expect(postsApi.create.mock.calls[0][0].enquete.opcoes[0]).toEqual({ titulo: 'Olivia Rodrigo', artista: null, capa: 'olivia.jpg', preview: null });
+    });
+
+    it('enquete junto com música avaliada: precisa da nota e vai tudo no post', async () => {
+      render(<CreatePost onCreated={vi.fn()} />);
+      await chooseHelp();
+      await userEvent.click(screen.getByRole('button', { name: 'Estrela 4' }));
+      musicApi.search.mockResolvedValue([help, yesterday]);
+      await userEvent.click(screen.getByRole('button', { name: /Criar enquete/ }));
+      await userEvent.click(await screen.findByRole('button', { name: /^Yesterday/ }));
+      expect(screen.getByRole('button', { name: 'Publicar' })).toBeDisabled();
+      await userEvent.click(screen.getByRole('button', { name: 'Adicionar opção à enquete' }));
+      await userEvent.click(await screen.findByRole('button', { name: /^Help!/ }));
+      await userEvent.click(screen.getByRole('button', { name: 'Publicar' }));
+
+      const enviado = postsApi.create.mock.calls[0][0];
+      expect(enviado).toMatchObject({ musicName: 'Help!', nota: 7 });
+      expect(enviado.enquete.opcoes.map((o) => o.titulo)).toEqual(['Yesterday', 'Help!']);
     });
 
     it('tirar uma música e remover a enquete', async () => {

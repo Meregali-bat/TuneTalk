@@ -146,11 +146,16 @@ describe('postService', () => {
       expect(posts.create).toHaveBeenCalled();
     });
 
-    it('recusa enquete com música avaliada, imagem, em resposta ou inválida', async () => {
-      const sozinha = { status: 400, message: 'A enquete vai sozinha no post: sem música avaliada, imagem ou resposta.' };
-      await expect(service.create(7, { musicName: 'X', nota: 8, enquete: { opcoes } })).rejects.toMatchObject(sozinha);
-      await expect(service.create(7, { imagemUrl: 'https://res.cloudinary.com/x.gif', enquete: { opcoes } })).rejects.toMatchObject(sozinha);
-      await expect(service.create(7, { parentId: 1, enquete: { opcoes } })).rejects.toMatchObject(sozinha);
+    it('combina com música avaliada e imagem', async () => {
+      await service.create(7, { musicName: 'X', artistName: 'Y', postType: 'música', nota: 8, imagemUrl: 'https://res.cloudinary.com/x.gif', enquete: { opcoes } });
+      const criado = posts.create.mock.calls[0][0];
+      expect(criado).toMatchObject({ musicName: 'X', nota: 8, imagemUrl: 'https://res.cloudinary.com/x.gif' });
+      expect(criado.enquete.opcoes).toHaveLength(2);
+    });
+
+    it('recusa enquete em comentário ou inválida', async () => {
+      await expect(service.create(7, { parentId: 1, enquete: { opcoes } }))
+        .rejects.toMatchObject({ status: 400, message: 'Comentário não pode ter enquete.' });
       await expect(service.create(7, { enquete: { opcoes: [opcoes[0]] } })).rejects.toMatchObject({ status: 400 });
       await expect(service.create(7, { enquete: { opcoes: [{ ...opcoes[0], capa: 'https://outro.com/a.jpg' }, opcoes[1]] } }))
         .rejects.toMatchObject({ status: 400 });
