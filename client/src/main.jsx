@@ -22,6 +22,11 @@ async function start() {
     banner = <DemoBanner api={installFakeBackend()} />;
   }
 
+  // Service worker dos avisos no celular (não na demo, que roda sem servidor).
+  if (!import.meta.env.VITE_DEMO && 'serviceWorker' in navigator) {
+    navigator.serviceWorker.register('/sw.js').catch(() => {});
+  }
+
   createRoot(document.getElementById('root')).render(
     <StrictMode>
       <App router={router}>{banner}</App>

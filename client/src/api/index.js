@@ -62,6 +62,13 @@ export const usersApi = {
   unfollow: (id) => request(`/users/${id}/follow`, { method: 'DELETE' }),
 };
 
+// Avisos no celular (push da web). chave() é null quando o servidor está sem as chaves VAPID.
+export const pushApi = {
+  chave: async () => (await request('/push/chave')).chave ?? null,
+  inscrever: (inscricao) => request('/push/inscricoes', { method: 'POST', body: inscricao }),
+  cancelar: (endpoint) => request('/push/inscricoes', { method: 'DELETE', body: { endpoint } }),
+};
+
 export const notificationsApi = {
   list: () => request('/notifications'),
   unreadCount: async () => (await request('/notifications/unread-count')).count,

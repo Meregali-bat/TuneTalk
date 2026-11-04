@@ -33,6 +33,12 @@ export function loadConfig(env = process.env) {
     emailFrom: env.EMAIL_FROM || 'TuneTalk <onboarding@resend.dev>',
     // Base dos links enviados por email. Nunca vem do cabeçalho Host da requisição, que pode ser forjado.
     appUrl: appUrl(env),
+    // Avisos no celular (push da web). Sem as duas chaves, os avisos ficam desligados.
+    vapid: {
+      publicKey: env.VAPID_PUBLIC_KEY,
+      privateKey: env.VAPID_PRIVATE_KEY,
+      subject: env.VAPID_SUBJECT || 'mailto:avisos@tunetalk.app',
+    },
     cloudinary: {
       cloud_name: env.CLOUDINARY_CLOUD_NAME,
       api_key: env.CLOUDINARY_API_KEY,

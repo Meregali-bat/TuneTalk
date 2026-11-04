@@ -19,6 +19,9 @@ import { createUserService } from './services/userService.js';
 import { createMusicService } from './services/musicService.js';
 import { createLyricsService } from './services/lyricsService.js';
 import { createHashtagService } from './services/hashtagService.js';
+import webpush from 'web-push';
+import { createPushSubscriptionRepository } from './repositories/pushSubscriptionRepository.js';
+import { createPushService, withPush } from './services/pushService.js';
 
 const rootDir = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '../..');
 
@@ -32,7 +35,11 @@ export function buildContainer(config) {
   const posts = createPostRepository(prisma);
   const likes = createLikeRepository(prisma);
   const follows = createFollowRepository(prisma);
-  const notifications = createNotificationRepository(prisma);
+  const pushService = createPushService({
+    subscriptions: createPushSubscriptionRepository(prisma), webpush, vapid: config.vapid,
+  });
+  // Toda notificação criada também vira aviso no celular de quem ativou.
+  const notifications = withPush(createNotificationRepository(prisma), { push: pushService, users });
 
   const passwords = createPasswords();
   const sessions = createSessionCleaner(pool);
@@ -51,6 +58,7 @@ export function buildContainer(config) {
     musicService: createMusicService(),
     lyricsService: createLyricsService(),
     hashtagService: createHashtagService({ posts }),
+    pushService,
     notifications,
     uploader: createCloudinaryUploader(cloudinary),
     sessionStore: createSessionStore(pool),

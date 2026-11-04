@@ -4,6 +4,8 @@ import { useAuth } from '../../auth/AuthContext.jsx';
 import { notificationsApi } from '../../api/index.js';
 import { Modal } from '../common/Modal.jsx';
 import { NotificationList } from './NotificationList.jsx';
+import { AvisosNoCelular } from './AvisosNoCelular.jsx';
+import { atualizarBolinha } from '../../utils/avisos.js';
 import { asset } from '../../utils/asset.js';
 
 // De quanto em quanto tempo o app confere se chegou notificação nova (só com a aba visível).
@@ -21,6 +23,9 @@ export function Header() {
   const refreshUnread = useCallback(() => {
     notificationsApi.unreadCount().then(setUnread).catch(() => {});
   }, []);
+
+  // Bolinha no ícone do app (tela inicial) acompanha o contador.
+  useEffect(() => { if (user) atualizarBolinha(unread); }, [user, unread]);
 
   // Atualiza o contador a cada navegação.
   useEffect(refreshUnread, [pathname, refreshUnread]);
@@ -122,6 +127,7 @@ export function Header() {
       </header>
 
       <Modal open={open} title="Notificações" onClose={closeModal} variant="panel">
+        <AvisosNoCelular />
         <NotificationList notifications={notifications} onNavigate={closeModal} />
       </Modal>
     </>

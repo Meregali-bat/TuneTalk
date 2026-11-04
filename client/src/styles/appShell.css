@@ -2852,3 +2852,60 @@ button.favorites-editor__capa {
 .layout-app .modal-body {
   overflow-x: clip;
 }
+
+/* Avisos no celular (topo das notificações). */
+.avisos-celular {
+  display: flex;
+  align-items: flex-start;
+  gap: .65rem;
+  margin-bottom: .75rem;
+  padding: .75rem .85rem;
+  border: 1px solid var(--linhas);
+  border-radius: 14px;
+  background: var(--superficie-2);
+
+  > i {
+    margin-top: .1rem;
+    color: var(--destaque-claro);
+  }
+
+  p {
+    margin: 0;
+    color: var(--texto-suave);
+    font-size: .85rem;
+    line-height: 1.4;
+  }
+}
+
+.avisos-celular__texto {
+  flex: 1;
+  min-width: 0;
+}
+
+.avisos-celular__erro {
+  margin-top: .3rem !important;
+  color: var(--erro) !important;
+}
+
+.avisos-celular__botao {
+  flex: none;
+  align-self: center;
+  min-height: 2.5rem;
+  padding: 0 1rem;
+  border: 0;
+  border-radius: 999px;
+  background: var(--destaque);
+  color: var(--background);
+  font-size: .85rem;
+  font-weight: 600;
+
+  &.is-secundario {
+    border: 1px solid var(--linhas);
+    background: none;
+    color: var(--texto);
+  }
+
+  &:disabled {
+    opacity: .6;
+  }
+}

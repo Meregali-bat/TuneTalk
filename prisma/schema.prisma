@@ -47,6 +47,7 @@ model Usuario {
   seguidores            Seguimento[]       @relation("seguido")
   notificacoesRecebidas Notificacao[]      @relation("destinatario")
   notificacoesEnviadas  Notificacao[]      @relation("autor")
+  aparelhosPush         InscricaoPush[]
   redefinicoesSenha     RedefinicaoSenha[]
   postFixado            Post?              @relation("fixado", fields: [postFixadoId], references: [id], onDelete: SetNull)
 
@@ -133,6 +134,21 @@ model Notificacao {
 
   @@index([destinatarioId, lida])
   @@map("notificacoes")
+}
+
+// Aparelhos que aceitaram receber avisos (push da web): um por navegador/celular da pessoa.
+model InscricaoPush {
+  id        Int      @id @default(autoincrement())
+  usuarioId Int      @map("usuario_id")
+  endpoint  String   @unique @db.VarChar(1000)
+  p256dh    String   @db.VarChar(255)
+  auth      String   @db.VarChar(255)
+  createdAt DateTime @default(now()) @map("created_at")
+
+  usuario Usuario @relation(fields: [usuarioId], references: [id], onDelete: Cascade)
+
+  @@index([usuarioId])
+  @@map("inscricoes_push")
 }
 
 // Sessões de login (express-session + connect-pg-simple). Ficam no banco porque na
