@@ -1,7 +1,7 @@
-import { describe, it, expect, vi, beforeEach } from 'vitest';
-import { screen, waitFor, within } from '@testing-library/react';
+import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
+import { act, screen, waitFor, within } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
-import { Header } from './Header.jsx';
+import { Header, INTERVALO_NOTIFICACOES_MS } from './Header.jsx';
 import { notificationsApi } from '../../api/index.js';
 import { makeAuth, renderWithProviders } from '../../test/render.jsx';
 
@@ -124,5 +124,49 @@ describe('Header', () => {
 
     expect(logout).toHaveBeenCalled();
     expect(screen.getByTestId('location')).toHaveTextContent('/login');
+  });
+
+  describe('atualiza sozinho, sem recarregar a página', () => {
+    afterEach(() => vi.useRealTimers());
+
+    it('confere as não lidas a cada 30 s', async () => {
+      vi.useFakeTimers({ shouldAdvanceTime: true });
+      notificationsApi.unreadCount.mockResolvedValueOnce(0).mockResolvedValue(3);
+      renderWithProviders(<Header />);
+      await waitFor(() => expect(notificationsApi.unreadCount).toHaveBeenCalledTimes(1));
+      expect(screen.queryByTestId('unread-count')).toBeNull();
+
+      await act(() => vi.advanceTimersByTimeAsync(INTERVALO_NOTIFICACOES_MS));
+      expect(await screen.findByTestId('unread-count')).toHaveTextContent('3');
+    });
+
+    it('não consulta com a aba escondida e confere na hora em que a pessoa volta', async () => {
+      vi.useFakeTimers({ shouldAdvanceTime: true });
+      let visivel = 'hidden';
+      vi.spyOn(document, 'visibilityState', 'get').mockImplementation(() => visivel);
+      renderWithProviders(<Header />);
+      await waitFor(() => expect(notificationsApi.unreadCount).toHaveBeenCalledTimes(1));
+
+      await act(() => vi.advanceTimersByTimeAsync(INTERVALO_NOTIFICACOES_MS * 3));
+      expect(notificationsApi.unreadCount).toHaveBeenCalledTimes(1);
+
+      visivel = 'visible';
+      await act(async () => { document.dispatchEvent(new Event('visibilitychange')); });
+      expect(notificationsApi.unreadCount).toHaveBeenCalledTimes(2);
+    });
+
+    it('com a lista aberta, notificação nova entra nela', async () => {
+      vi.useFakeTimers({ shouldAdvanceTime: true });
+      renderWithProviders(<Header />);
+      const painel = await openPanel();
+      await within(painel).findByText(/comentou no seu post/);
+
+      const nova = { id: 4, tipo: 'like', conteudo: 'curtiu seu comentário', lida: false, postId: 10, data: minutesAgo(0), autor: { id: 6, nome: 'edu', fotoPerfil: 'e.png' } };
+      notificationsApi.unreadCount.mockResolvedValue(1);
+      notificationsApi.list.mockResolvedValue([nova, ...notifications]);
+      await act(() => vi.advanceTimersByTimeAsync(INTERVALO_NOTIFICACOES_MS));
+
+      expect(await within(painel).findByText(/curtiu seu comentário/)).toBeInTheDocument();
+    });
   });
 });

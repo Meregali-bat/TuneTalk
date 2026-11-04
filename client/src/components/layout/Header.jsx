@@ -1,10 +1,13 @@
-import { useCallback, useEffect, useId, useState } from 'react';
+import { useCallback, useEffect, useId, useRef, useState } from 'react';
 import { Link, useLocation, useNavigate } from 'react-router-dom';
 import { useAuth } from '../../auth/AuthContext.jsx';
 import { notificationsApi } from '../../api/index.js';
 import { Modal } from '../common/Modal.jsx';
 import { NotificationList } from './NotificationList.jsx';
 import { asset } from '../../utils/asset.js';
+
+// De quanto em quanto tempo o app confere se chegou notificação nova (só com a aba visível).
+export const INTERVALO_NOTIFICACOES_MS = 30_000;
 
 export function Header() {
   const { user, logout } = useAuth();
@@ -22,9 +25,47 @@ export function Header() {
   // Atualiza o contador a cada navegação.
   useEffect(refreshUnread, [pathname, refreshUnread]);
 
+  // E sozinho: a cada 30 s enquanto a aba está visível, e na hora em que a pessoa volta para o app
+  // (troca de aba, reabre o atalho do iPhone). Com a aba escondida, não fica consultando o servidor.
+  useEffect(() => {
+    if (!user) return undefined;
+    const conferir = () => {
+      if (document.visibilityState === 'visible') refreshUnread();
+    };
+    const intervalo = setInterval(conferir, INTERVALO_NOTIFICACOES_MS);
+    document.addEventListener('visibilitychange', conferir);
+    window.addEventListener('focus', conferir);
+    return () => {
+      clearInterval(intervalo);
+      document.removeEventListener('visibilitychange', conferir);
+      window.removeEventListener('focus', conferir);
+    };
+  }, [user, refreshUnread]);
+
+  // Com a lista aberta, notificação nova que chegar entra nela (e já fica marcada como lida).
+  const abertoRef = useRef(false);
+  abertoRef.current = open;
+  useEffect(() => {
+    if (!open || unread === 0) return;
+    let ativo = true;
+    (async () => {
+      try {
+        const lista = await notificationsApi.list();
+        if (!ativo || !abertoRef.current) return;
+        setNotifications(lista);
+        await notificationsApi.readAll();
+        setUnread(0);
+      } catch {
+        // Sem rede: a lista aberta continua como estava.
+      }
+    })();
+    return () => { ativo = false; };
+  }, [open, unread]);
+
   // Busca a lista antes de marcar como lidas, para destacar o que é novo.
   const openNotifications = async () => {
     setOpen(true);
+    setUnread(0); // a lista abre agora; o que chegar depois entra pelo efeito acima
     setNotifications(null);
     try {
       setNotifications(await notificationsApi.list());
