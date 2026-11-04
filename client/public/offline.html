@@ -39,25 +39,43 @@
     }
     .disco {
       position: relative;
-      width: 7.5rem;
-      height: 7.5rem;
+      width: 8.5rem;
+      height: 8.5rem;
       border-radius: 50%;
       background:
-        radial-gradient(circle, var(--background) 0 9%, var(--destaque) 9.5% 30%, transparent 30.5%),
-        repeating-radial-gradient(circle, #101c17 0 2px, #0a1410 2px 5px);
+        /* Reflexos de luz nos sulcos: duas faixas claras que giram junto e mostram o movimento. */
+        conic-gradient(from 20deg,
+          transparent 0deg 20deg, rgba(255, 255, 255, .16) 38deg, transparent 56deg 200deg,
+          rgba(255, 255, 255, .11) 218deg, transparent 236deg 360deg),
+        repeating-radial-gradient(circle, #13221c 0 2px, #09130f 2px 5px);
       box-shadow: 0 0 0 1px var(--linhas), 0 20px 50px -20px rgba(43, 168, 74, .45);
-      /* Gira como um disco na vitrola (33 rpm dá ~1,8 s por volta; aqui mais calmo). */
-      animation: girar 4s linear infinite;
+      animation: girar 3s linear infinite;
     }
+    /* Selo verde no meio, com o furo e uma marca escura (o "rótulo" que deixa o giro visível). */
+    .disco::before {
+      content: '';
+      position: absolute;
+      inset: 32%;
+      border-radius: 50%;
+      background:
+        radial-gradient(circle, var(--background) 0 14%, transparent 15%),
+        linear-gradient(transparent 0 22%, rgba(0, 0, 0, .35) 22% 32%, transparent 32%) center / 60% 100% no-repeat,
+        var(--destaque);
+    }
+    /* Ponto claro na borda do selo. */
     .disco::after {
       content: '';
       position: absolute;
-      inset: 0;
+      top: 58%;
+      left: 50%;
+      width: .45rem;
+      height: .45rem;
+      margin-left: -.225rem;
       border-radius: 50%;
-      background: linear-gradient(135deg, rgba(255, 255, 255, .12), transparent 45%);
+      background: #d9ffe3;
     }
     /* Tentando reconectar: acelera. */
-    .tentando .disco { animation-duration: 1.2s; }
+    .tentando .disco { animation-duration: .9s; }
     @keyframes girar { to { transform: rotate(360deg); } }
     @media (prefers-reduced-motion: reduce) { .disco { animation: none; } }
     h1 { margin: .25rem 0 0; font-size: 1.5rem; font-weight: 700; line-height: 1.2; }
