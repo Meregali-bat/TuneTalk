@@ -2910,42 +2910,6 @@ button.favorites-editor__capa {
   }
 }
 
-/* --- Barra de ícones do compositor (como no Twitter) --- */
-.composer-toolbar {
-  display: flex;
-  align-items: center;
-  gap: .15rem;
-  padding-top: .5rem;
-  border-top: 1px solid var(--linhas);
-}
-
-.composer-toolbar__botao {
-  display: grid;
-  place-items: center;
-  width: 2.75rem;
-  height: 2.75rem;
-  border: 0;
-  border-radius: 50%;
-  background: none;
-  color: var(--destaque-claro);
-  font-size: 1.3rem;
-  transition: background-color .15s ease;
-
-  &:hover:not(:disabled) {
-    background: rgba(43, 168, 74, .12);
-  }
-
-  &:disabled {
-    color: var(--texto-suave);
-    opacity: .4;
-  }
-
-  &:focus-visible {
-    outline: 2px solid var(--destaque);
-    outline-offset: 2px;
-  }
-}
-
 /* --- Editor de enquete no compositor --- */
 .composer-poll {
   display: grid;

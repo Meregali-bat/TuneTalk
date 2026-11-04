@@ -306,20 +306,23 @@ describe('CreatePost', () => {
   });
 
   describe('barra de ícones e enquete', () => {
-    it('os anexos são ícones numa barra (imagem, música e enquete)', async () => {
+    it('a enquete é mais um botão de anexo, como música e imagem', async () => {
       render(<CreatePost onCreated={vi.fn()} />);
       await open();
-      const barra = screen.getByRole('toolbar', { name: 'Adicionar ao post' });
-      expect(within(barra).getAllByRole('button').map((b) => b.getAttribute('aria-label')))
-        .toEqual(['Adicionar imagem', 'Adicionar música ou álbum', 'Criar enquete']);
-      expect(within(barra).getByRole('button', { name: 'Adicionar imagem' })).toHaveTextContent('');
+      expect(screen.getByRole('button', { name: /Criar enquete/ })).toBeInTheDocument();
+      expect(screen.queryByRole('toolbar')).toBeNull();
+      // Com música escolhida, não dá para criar enquete.
+      await addMusic();
+      await search('help');
+      await userEvent.click(await screen.findByRole('button', { name: /^Help!/ }));
+      expect(screen.queryByRole('button', { name: /Criar enquete/ })).toBeNull();
     });
 
     it('cria uma enquete com 2 músicas, escolhe a duração e publica', async () => {
       render(<CreatePost onCreated={vi.fn()} />);
       await open();
       await userEvent.type(texto(), 'qual?');
-      await userEvent.click(screen.getByRole('button', { name: 'Criar enquete' }));
+      await userEvent.click(screen.getByRole('button', { name: /Criar enquete/ }));
       await search('help');
       await userEvent.click(await screen.findByRole('button', { name: /^Help!/ }));
 
@@ -329,9 +332,9 @@ describe('CreatePost', () => {
       await userEvent.click(await screen.findByRole('button', { name: /^Yesterday/ }));
       await userEvent.click(within(screen.getByRole('group', { name: 'Enquete' })).getByRole('radio', { name: '3 dias' }));
 
-      // Com enquete, imagem e música do post ficam desligadas.
-      expect(screen.getByRole('button', { name: 'Adicionar imagem' })).toBeDisabled();
-      expect(screen.getByRole('button', { name: 'Adicionar música ou álbum' })).toBeDisabled();
+      // Com enquete, não aparecem música avaliada nem imagem.
+      expect(screen.queryByRole('button', { name: /Adicionar imagem/ })).toBeNull();
+      expect(screen.queryByRole('button', { name: /Adicionar música ou álbum/ })).toBeNull();
 
       await userEvent.click(screen.getByRole('button', { name: 'Publicar' }));
       expect(postsApi.create).toHaveBeenCalledWith({
@@ -350,7 +353,7 @@ describe('CreatePost', () => {
       const abbey = { id: 1, tipo: 'album', titulo: 'Abbey Road', artista: 'The Beatles', capa: 'abbey.jpg', faixas: 17 };
       render(<CreatePost onCreated={vi.fn()} />);
       await open();
-      await userEvent.click(screen.getByRole('button', { name: 'Criar enquete' }));
+      await userEvent.click(screen.getByRole('button', { name: /Criar enquete/ }));
       await search('help');
       await userEvent.click(await screen.findByRole('button', { name: /^Help!/ }));
 
@@ -371,14 +374,14 @@ describe('CreatePost', () => {
     it('tirar uma música e remover a enquete', async () => {
       render(<CreatePost onCreated={vi.fn()} />);
       await open();
-      await userEvent.click(screen.getByRole('button', { name: 'Criar enquete' }));
+      await userEvent.click(screen.getByRole('button', { name: /Criar enquete/ }));
       await search('help');
       await userEvent.click(await screen.findByRole('button', { name: /^Help!/ }));
       await userEvent.click(screen.getByRole('button', { name: 'Tirar Help! da enquete' }));
       expect(within(screen.getByRole('group', { name: 'Enquete' })).queryByText('Help!')).toBeNull();
       await userEvent.click(screen.getByRole('button', { name: 'Remover enquete' }));
       expect(screen.queryByRole('group', { name: 'Enquete' })).toBeNull();
-      expect(screen.getByRole('button', { name: 'Criar enquete' })).toBeEnabled();
+      expect(screen.getByRole('button', { name: /Criar enquete/ })).toBeInTheDocument();
     });
   });
 

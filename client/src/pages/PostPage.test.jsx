@@ -82,7 +82,7 @@ describe('PostPage', () => {
     expect(dialog).toHaveTextContent('Respondendo a Ana');
     expect(within(dialog).getByRole('button', { name: 'Adicionar música ou álbum' })).toBeInTheDocument();
     // Enquete só em post, não em comentário.
-    expect(within(dialog).queryByRole('button', { name: 'Criar enquete' })).toBeNull();
+    expect(within(dialog).queryByRole('button', { name: /Criar enquete/ })).toBeNull();
 
     postsApi.get.mockResolvedValue(detail({ respostas: [reply(5, 'concordo'), reply(6, 'demais', ana)] }));
     await userEvent.type(within(dialog).getByLabelText('Seu comentário'), 'demais');

@@ -433,7 +433,7 @@ export function Composer({
             </button>
           </div>
           <StarRatingInput value={nota} onChange={setNota} />
-          {trecho && (
+          {track.tipo !== 'album' && (trecho ? (
             <div className="composer-lyric">
               <LyricQuote versos={trecho} titulo={track.titulo} artista={track.artista} />
               <div className="composer-lyric__tools">
@@ -443,7 +443,13 @@ export function Composer({
                 </button>
               </div>
             </div>
-          )}
+          ) : (
+            <button type="button" className="composer-attach" onClick={() => setEscolhendoTrecho(true)}>
+              <i className="bi bi-quote" aria-hidden="true" />
+              Adicionar trecho da letra
+              <span className="composer-attach__hint" aria-hidden="true">opcional</span>
+            </button>
+          ))}
         </div>
       )}
 
@@ -496,56 +502,34 @@ export function Composer({
         </div>
       )}
 
-      {/* Barra de ícones, como no Twitter: cada um adiciona algo ao post. */}
-      <div className="composer-toolbar" role="toolbar" aria-label="Adicionar ao post">
-        {!imagem && (
-          <button
-            type="button"
-            className="composer-toolbar__botao"
-            aria-label="Adicionar imagem"
-            title="Imagem ou GIF"
-            disabled={Boolean(enquete)}
-            onClick={() => imagemInput.current?.click()}
-          >
-            <i className="bi bi-image" aria-hidden="true" />
-          </button>
-        )}
-        {!track && (
-          <button
-            type="button"
-            className="composer-toolbar__botao"
-            aria-label="Adicionar música ou álbum"
-            title="Música ou álbum"
-            disabled={Boolean(enquete)}
-            onClick={() => abrirBusca('post')}
-          >
-            <i className="bi bi-music-note-beamed" aria-hidden="true" />
-          </button>
-        )}
-        {track && track.tipo !== 'album' && !trecho && (
-          <button
-            type="button"
-            className="composer-toolbar__botao"
-            aria-label="Adicionar trecho da letra"
-            title="Trecho da letra"
-            onClick={() => setEscolhendoTrecho(true)}
-          >
-            <i className="bi bi-quote" aria-hidden="true" />
-          </button>
-        )}
-        {podeEnquete && !enquete && (
-          <button
-            type="button"
-            className="composer-toolbar__botao"
-            aria-label="Criar enquete"
-            title="Enquete de músicas"
-            disabled={Boolean(track || imagem)}
-            onClick={() => { setEnquete({ opcoes: [], duracaoDias: 1 }); abrirBusca('enquete'); }}
-          >
-            <i className="bi bi-bar-chart-line" aria-hidden="true" />
-          </button>
-        )}
-      </div>
+      {!track && !enquete && (
+        <button type="button" className="composer-attach" onClick={() => abrirBusca('post')}>
+          <i className="bi bi-music-note-beamed" aria-hidden="true" />
+          Adicionar música ou álbum
+          <span className="composer-attach__hint" aria-hidden="true">opcional</span>
+        </button>
+      )}
+
+      {!imagem && !enquete && (
+        <button type="button" className="composer-attach" onClick={() => imagemInput.current?.click()}>
+          <i className="bi bi-image" aria-hidden="true" />
+          Adicionar imagem
+          <span className="composer-attach__hint" aria-hidden="true">ou cole um GIF</span>
+        </button>
+      )}
+
+      {/* Enquete vai sozinha: aparece só sem música avaliada e sem imagem (e não em comentário). */}
+      {podeEnquete && !enquete && !track && !imagem && (
+        <button
+          type="button"
+          className="composer-attach"
+          onClick={() => { setEnquete({ opcoes: [], duracaoDias: 1 }); abrirBusca('enquete'); }}
+        >
+          <i className="bi bi-bar-chart-line" aria-hidden="true" />
+          Criar enquete
+          <span className="composer-attach__hint" aria-hidden="true">músicas ou álbuns</span>
+        </button>
+      )}
 
       <input
         ref={imagemInput}
