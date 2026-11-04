@@ -877,10 +877,12 @@
 
 .composer-results {
   display: grid;
+  grid-template-columns: minmax(0, 1fr);
   gap: .15rem;
   max-height: 55vh;
   margin: 0 -.5rem;
   padding: 0;
+  overflow-x: hidden;
   overflow-y: auto;
   list-style: none;
 }
@@ -889,10 +891,19 @@
   display: flex;
   align-items: center;
   gap: .25rem;
+  min-width: 0;
   padding-right: .5rem;
 
+  /* A linha encolhe para o play caber: com "width: 100%" o Safari do iPhone mantinha a linha na
+     largura toda e empurrava o play para fora da tela. */
   .track-row {
-    flex: 1;
+    flex: 1 1 0%;
+    width: auto;
+    min-width: 0;
+  }
+
+  .play-button {
+    flex: none;
   }
 }
 
