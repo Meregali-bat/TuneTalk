@@ -2,6 +2,7 @@ import { useEffect } from 'react';
 import { Link, Outlet, useLocation } from 'react-router-dom';
 import { Header } from './Header.jsx';
 import { asset } from '../../utils/asset.js';
+import { AvisoNovaVersao } from './AvisoNovaVersao.jsx';
 
 export function PublicLayout({ authForm = false, showLinks = true }) {
   return (
@@ -23,6 +24,7 @@ export function PublicLayout({ authForm = false, showLinks = true }) {
       <main>
         <Outlet />
       </main>
+      <AvisoNovaVersao />
     </div>
   );
 }
@@ -41,6 +43,7 @@ export function AppLayout() {
       <main>
         <Outlet />
       </main>
+      <AvisoNovaVersao />
     </div>
   );
 }

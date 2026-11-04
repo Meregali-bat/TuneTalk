@@ -3134,3 +3134,35 @@ button.poll__opcao {
     transition: none;
   }
 }
+
+/* Aviso de versão nova (depois de uma publicação). */
+.aviso-versao {
+  position: fixed;
+  left: 50%;
+  bottom: calc(env(safe-area-inset-bottom, 0px) + 6rem);
+  z-index: 1030;
+  display: flex;
+  align-items: center;
+  gap: .75rem;
+  width: max-content;
+  max-width: calc(100vw - 2rem);
+  padding: .6rem .6rem .6rem 1rem;
+  border: 1px solid rgba(43, 168, 74, .45);
+  border-radius: 999px;
+  background: #0d2416;
+  box-shadow: 0 10px 30px -10px rgba(0, 0, 0, .8);
+  color: var(--texto);
+  font-size: .9rem;
+  transform: translateX(-50%);
+
+  button {
+    flex: none;
+    min-height: 2.25rem;
+    padding: 0 1rem;
+    border: 0;
+    border-radius: 999px;
+    background: var(--destaque);
+    color: var(--background);
+    font-weight: 600;
+  }
+}
