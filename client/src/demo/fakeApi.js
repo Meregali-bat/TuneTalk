@@ -7,6 +7,7 @@ import { createUserService } from '../../../server/src/services/userService.js';
 import { createPasswords } from '../../../server/src/security/passwords.js';
 import { createPasswordResetService } from '../../../server/src/services/passwordResetService.js';
 import { createHashtagService } from '../../../server/src/services/hashtagService.js';
+import { createRestricaoService, semNotificacaoDeOcultos } from '../../../server/src/services/restricaoService.js';
 import { createMemoryRepositories } from './memoryRepositories.js';
 import { ALBUM_CATALOG, ARTIST_CATALOG, CATALOG, DEMO_LOGIN, createSeed } from './seed.js';
 import { avatar } from './art.js';
@@ -67,8 +68,10 @@ export function createFakeApi({ storage = globalThis.localStorage } = {}) {
 
   const build = () => {
     const repos = createMemoryRepositories(state, () => writeState(storage, state));
+    // Como no servidor: sem notificações de quem a pessoa silenciou ou bloqueou.
+    const notifications = semNotificacaoDeOcultos(repos.notifications, repos.restricoes);
     const postService = createPostService({
-      posts: repos.posts, likes: repos.likes, notifications: repos.notifications, users: repos.users,
+      posts: repos.posts, likes: repos.likes, notifications, users: repos.users, restricoes: repos.restricoes,
       capaEnqueteValida: (url) => url.startsWith('data:image/svg+xml'),
     });
     services = {
@@ -84,12 +87,13 @@ export function createFakeApi({ storage = globalThis.localStorage } = {}) {
       }),
       posts: postService,
       users: createUserService({
-        users: repos.users, follows: repos.follows, postService, notifications: repos.notifications, passwords,
+        users: repos.users, follows: repos.follows, postService, notifications, passwords, restricoes: repos.restricoes,
         // As capas da demo são desenhadas (data:), não vêm do Deezer.
         capaFavoritoValida: (url) => url.startsWith('data:image/svg+xml'),
       }),
       notifications: repos.notifications,
       hashtags: createHashtagService({ posts: repos.posts }),
+      restricoes: createRestricaoService({ restricoes: repos.restricoes, users: repos.users }),
     };
   };
   build();
@@ -180,6 +184,11 @@ export function createFakeApi({ storage = globalThis.localStorage } = {}) {
     ['GET', /^\/users\/(\d+)$/, async ({ id }) => ok(await services.users.getProfile(id, me()))],
     ['POST', /^\/users\/(\d+)\/follow$/, async ({ id }) => { await services.users.follow(me(), id); return noContent(); }],
     ['DELETE', /^\/users\/(\d+)\/follow$/, async ({ id }) => { await services.users.unfollow(me(), id); return noContent(); }],
+    ['POST', /^\/users\/(\d+)\/bloqueio$/, async ({ id }) => { await services.restricoes.bloquear(me(), id); return noContent(); }],
+    ['DELETE', /^\/users\/(\d+)\/bloqueio$/, async ({ id }) => { await services.restricoes.desbloquear(me(), id); return noContent(); }],
+    ['POST', /^\/users\/(\d+)\/silencio$/, async ({ id }) => { await services.restricoes.silenciar(me(), id); return noContent(); }],
+    ['DELETE', /^\/users\/(\d+)\/silencio$/, async ({ id }) => { await services.restricoes.dessilenciar(me(), id); return noContent(); }],
+    ['GET', /^\/users\/me\/restricoes$/, async () => ok(await services.restricoes.listar(me()))],
 
     ['GET', /^\/notifications$/, async () => ok(await services.notifications.listForUser(me()))],
     ['GET', /^\/notifications\/unread-count$/, async () => ok({ count: await services.notifications.countUnread(me()) })],

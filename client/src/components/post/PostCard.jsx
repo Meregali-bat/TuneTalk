@@ -61,7 +61,7 @@ function MusicBlock({ post, postUrl, linkObra }) {
 // showPinned: mostra a etiqueta "Fixado" (só faz sentido no perfil do autor).
 export function PostCard({
   post, onDeleted, onPinChange, commentCount = post.quantidadeComentarios, showMenu = true, showPinned = false, variant = 'feed',
-  threadLine = false, linkObra = true,
+  threadLine = false, linkObra = true, onAutorOculto,
 }) {
   const { user } = useAuth();
   const [fixado, setFixado] = useState(Boolean(post.fixado));
@@ -123,6 +123,8 @@ export function PostCard({
             onDelete={handleDelete}
             pinned={isOwner && !post.parentId ? fixado : undefined}
             onTogglePin={togglePin}
+            autor={post.autor}
+            onAutorOculto={onAutorOculto}
           />
         )}
       </header>

@@ -44,13 +44,14 @@ export function createMemoryRepositories(state, onChange) {
     ? p.postType === 'album' && igual(p.albumName, titulo)
     : p.postType !== 'album' && igual(p.musicName, titulo));
   // Mesma ordem e mesmo corte por página do banco: data e, no empate, id.
-  const feedPage = (lista, { limit, antes }) => {
+  const visivel = (ocultos) => (p) => !ocultos?.includes(p.autorId);
+  const feedPage = (lista, { limit, antes, ocultos }) => {
     const depois = antes && ((p) => {
       const data = new Date(p.createdAt).getTime();
       return data < antes.data.getTime() || (data === antes.data.getTime() && p.id < antes.id);
     });
     return lista
-      .filter((p) => !depois || depois(p))
+      .filter((p) => (!depois || depois(p)) && visivel(ocultos)(p))
       .sort((a, b) => b.createdAt.localeCompare(a.createdAt) || b.id - a.id)
       .slice(0, limit)
       .map(postRow);
@@ -152,15 +153,15 @@ export function createMemoryRepositories(state, onChange) {
   };
 
   const posts = {
-    async listLatest({ limit = FEED_PAGINA, antes } = {}) {
-      return feedPage(topLevel(), { limit, antes });
+    async listLatest({ limit = FEED_PAGINA, antes, ocultos } = {}) {
+      return feedPage(topLevel(), { limit, antes, ocultos });
     },
     async listByAuthor(autorId) {
       return topLevel().filter((p) => p.autorId === autorId).sort(byIdDesc).map(postRow);
     },
-    async listFromFollowed(usuarioId, { limit = FEED_PAGINA, antes } = {}) {
+    async listFromFollowed(usuarioId, { limit = FEED_PAGINA, antes, ocultos } = {}) {
       const followed = new Set(await follows.followingIds(usuarioId));
-      return feedPage(topLevel().filter((p) => followed.has(p.autorId)), { limit, antes });
+      return feedPage(topLevel().filter((p) => followed.has(p.autorId)), { limit, antes, ocultos });
     },
     async listHashtagTexts({ desde, contem, limite }) {
       const trecho = contem ? `#${contem}`.toLowerCase() : '#';
@@ -180,29 +181,29 @@ export function createMemoryRepositories(state, onChange) {
           return { ...postRow(p), respondendoA: { postId: pai.id, nome: userById(pai.autorId).nome } };
         });
     },
-    async listByHashtag(tag, limit = 50) {
+    async listByHashtag(tag, { limit = 50, ocultos } = {}) {
       return [...state.posts]
-        .filter((p) => hasHashtag(p.texto ?? '', tag))
+        .filter((p) => hasHashtag(p.texto ?? '', tag) && visivel(ocultos)(p))
         .sort((a, b) => b.createdAt.localeCompare(a.createdAt) || b.id - a.id)
         .slice(0, limit)
         .map(postRow);
     },
-    async listReplies(parentId) {
+    async listReplies(parentId, { ocultos } = {}) {
       return state.posts
-        .filter((p) => p.parentId === parentId)
+        .filter((p) => p.parentId === parentId && visivel(ocultos)(p))
         .sort((a, b) => a.createdAt.localeCompare(b.createdAt) || a.id - b.id)
         .map(postRow);
     },
-    async listFirstReplies(parentIds) {
+    async listFirstReplies(parentIds, { ocultos } = {}) {
       const primeiras = new Map();
       for (const parentId of parentIds) {
-        const [primeira] = await posts.listReplies(parentId);
+        const [primeira] = await posts.listReplies(parentId, { ocultos });
         if (primeira) primeiras.set(parentId, primeira);
       }
       return primeiras;
     },
-    async listByObra(obra, { limit = FEED_PAGINA, antes } = {}) {
-      return feedPage(topLevel().filter((p) => daObra(p, obra)), { limit, antes });
+    async listByObra(obra, { limit = FEED_PAGINA, antes, ocultos } = {}) {
+      return feedPage(topLevel().filter((p) => daObra(p, obra)), { limit, antes, ocultos });
     },
     async notasDaObra(obra) {
       return feedPage(topLevel().filter((p) => daObra(p, obra) && p.nota != null), { limit: Infinity })
@@ -352,5 +353,55 @@ export function createMemoryRepositories(state, onChange) {
     },
   };
 
-  return { users, follows, posts, likes, resets, notifications };
+  state.bloqueios ??= [];
+  state.silencios ??= [];
+  // Mesmo comportamento do restricaoRepository do servidor.
+  const restricoes = {
+    async bloquear(bloqueadorId, bloqueadoId) {
+      if (!state.bloqueios.some((b) => b.bloqueadorId === bloqueadorId && b.bloqueadoId === bloqueadoId)) {
+        state.bloqueios.push({ bloqueadorId, bloqueadoId });
+      }
+      state.seguimentos = state.seguimentos.filter((s) => !(
+        (s.seguidorId === bloqueadorId && s.seguidoId === bloqueadoId) || (s.seguidorId === bloqueadoId && s.seguidoId === bloqueadorId)
+      ));
+      changed();
+    },
+    async desbloquear(bloqueadorId, bloqueadoId) {
+      state.bloqueios = state.bloqueios.filter((b) => !(b.bloqueadorId === bloqueadorId && b.bloqueadoId === bloqueadoId));
+      changed();
+    },
+    async silenciar(usuarioId, silenciadoId) {
+      if (!state.silencios.some((s) => s.usuarioId === usuarioId && s.silenciadoId === silenciadoId)) {
+        state.silencios.push({ usuarioId, silenciadoId });
+      }
+      changed();
+    },
+    async dessilenciar(usuarioId, silenciadoId) {
+      state.silencios = state.silencios.filter((s) => !(s.usuarioId === usuarioId && s.silenciadoId === silenciadoId));
+      changed();
+    },
+    async relacao(viewerId, outroId) {
+      return {
+        bloqueado: state.bloqueios.some((b) => b.bloqueadorId === viewerId && b.bloqueadoId === outroId),
+        meBloqueou: state.bloqueios.some((b) => b.bloqueadorId === outroId && b.bloqueadoId === viewerId),
+        silenciado: state.silencios.some((s) => s.usuarioId === viewerId && s.silenciadoId === outroId),
+      };
+    },
+    async ocultosPara(viewerId) {
+      const ids = new Set(state.silencios.filter((s) => s.usuarioId === viewerId).map((s) => s.silenciadoId));
+      for (const b of state.bloqueios) {
+        if (b.bloqueadorId === viewerId) ids.add(b.bloqueadoId);
+        if (b.bloqueadoId === viewerId) ids.add(b.bloqueadorId);
+      }
+      return [...ids];
+    },
+    async listar(usuarioId) {
+      return {
+        bloqueados: state.bloqueios.filter((b) => b.bloqueadorId === usuarioId).map((b) => publicUser(userById(b.bloqueadoId))),
+        silenciados: state.silencios.filter((s) => s.usuarioId === usuarioId).map((s) => publicUser(userById(s.silenciadoId))),
+      };
+    },
+  };
+
+  return { users, follows, posts, likes, resets, notifications, restricoes };
 }

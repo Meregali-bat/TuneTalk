@@ -53,17 +53,17 @@ describe('postService', () => {
 
     it('following lista os posts de quem o usuário segue', async () => {
       const feed = await service.following(7);
-      expect(posts.listFromFollowed).toHaveBeenCalledWith(7, {});
+      expect(posts.listFromFollowed).toHaveBeenCalledWith(7, { ocultos: [] });
       expect(feed).toEqual([{ ...post(3), curtido: true }]);
     });
 
     it('sem página, pede a primeira; com página, continua do último post mostrado', async () => {
       await service.forYou(7);
-      expect(posts.listLatest).toHaveBeenLastCalledWith({});
+      expect(posts.listLatest).toHaveBeenLastCalledWith({ ocultos: [] });
       await service.forYou(7, { antes: '2024-01-02T00:00:00.000Z', antesId: '40' });
-      expect(posts.listLatest).toHaveBeenLastCalledWith({ antes: { data: new Date('2024-01-02T00:00:00.000Z'), id: 40 } });
+      expect(posts.listLatest).toHaveBeenLastCalledWith({ antes: { data: new Date('2024-01-02T00:00:00.000Z'), id: 40 }, ocultos: [] });
       await service.following(7, { antes: '2024-01-02T00:00:00.000Z', antesId: '40' });
-      expect(posts.listFromFollowed).toHaveBeenLastCalledWith(7, { antes: { data: new Date('2024-01-02T00:00:00.000Z'), id: 40 } });
+      expect(posts.listFromFollowed).toHaveBeenLastCalledWith(7, { antes: { data: new Date('2024-01-02T00:00:00.000Z'), id: 40 }, ocultos: [] });
     });
 
     it('página inválida responde 400', async () => {
@@ -75,7 +75,7 @@ describe('postService', () => {
     it('byHashtag lista os posts da hashtag (sem o #) marcados para quem vê', async () => {
       posts.listByHashtag = vi.fn().mockResolvedValue([post(3)]);
       expect(await service.byHashtag('#Rock', 7)).toEqual([{ ...post(3), curtido: true }]);
-      expect(posts.listByHashtag).toHaveBeenCalledWith('rock');
+      expect(posts.listByHashtag).toHaveBeenCalledWith('rock', { ocultos: [] });
       await expect(service.byHashtag('#', 7)).rejects.toMatchObject({ status: 400 });
     });
 
@@ -103,7 +103,7 @@ describe('postService', () => {
       likes.likedPostIds.mockResolvedValue([9]);
       const result = await service.get(1, 7);
 
-      expect(posts.listReplies).toHaveBeenCalledWith(1);
+      expect(posts.listReplies).toHaveBeenCalledWith(1, { ocultos: [] });
       expect(result).toEqual({
         post: { ...post(1, 2, { likes: 5 }), curtido: true },
         pai: null,
@@ -120,7 +120,7 @@ describe('postService', () => {
 
       const { respostas } = await service.get(1, 7);
 
-      expect(posts.listFirstReplies).toHaveBeenCalledWith([8, 9]);
+      expect(posts.listFirstReplies).toHaveBeenCalledWith([8, 9], { ocultos: [] });
       expect(respostas[0].primeiraResposta).toEqual({ ...post(20, 2, { parentId: 8 }), curtido: true });
       expect(respostas[1].primeiraResposta).toBeNull();
     });
@@ -230,6 +230,57 @@ describe('postService', () => {
     });
   });
 
+  describe('bloqueios e silêncios', () => {
+    let restricoes;
+    beforeEach(() => {
+      restricoes = {
+        ocultosPara: vi.fn().mockResolvedValue([3, 9]),
+        relacao: vi.fn().mockResolvedValue({ bloqueado: false, meBloqueou: false, silenciado: false }),
+      };
+      service = createPostService({ posts, likes, notifications, users, restricoes, now: () => now });
+    });
+    const bloqueado = () => restricoes.relacao.mockResolvedValue({ bloqueado: false, meBloqueou: true, silenciado: false });
+
+    it('os feeds, a hashtag e o disco pedem ao banco sem os posts de quem a pessoa não vê', async () => {
+      await service.forYou(7);
+      expect(restricoes.ocultosPara).toHaveBeenCalledWith(7);
+      expect(posts.listLatest).toHaveBeenCalledWith({ ocultos: [3, 9] });
+      await service.following(7);
+      expect(posts.listFromFollowed).toHaveBeenCalledWith(7, { ocultos: [3, 9] });
+      posts.listByHashtag = vi.fn().mockResolvedValue([]);
+      await service.byHashtag('rock', 7);
+      expect(posts.listByHashtag).toHaveBeenCalledWith('rock', { ocultos: [3, 9] });
+    });
+
+    it('post de quem bloqueou (ou foi bloqueado) não abre', async () => {
+      bloqueado();
+      await expect(service.get(1, 7)).rejects.toMatchObject({ status: 404 });
+    });
+
+    it('no post aberto, some o post respondido de quem a pessoa não vê', async () => {
+      posts.findById.mockImplementation(async (id) => (id === 1 ? post(1, 2, { parentId: 50 }) : post(50, 9)));
+      const { pai } = await service.get(1, 7);
+      expect(pai).toBeNull();
+      expect(posts.listReplies).toHaveBeenCalledWith(1, { ocultos: [3, 9] });
+    });
+
+    it('não dá para curtir, comentar nem votar entre quem se bloqueou', async () => {
+      bloqueado();
+      await expect(service.like(1, 7)).rejects.toMatchObject({ status: 403 });
+      await expect(service.create(7, { texto: 'oi', parentId: 1 })).rejects.toMatchObject({ status: 403 });
+      await expect(service.votar(1, 7, 11)).rejects.toMatchObject({ status: 403 });
+      expect(likes.add).not.toHaveBeenCalled();
+      expect(posts.create).not.toHaveBeenCalled();
+    });
+
+    it('comentários de alguém com bloqueio no meio voltam vazios', async () => {
+      bloqueado();
+      posts.listRepliesByAuthor = vi.fn();
+      expect(await service.repliesByAuthor(2, 7)).toEqual([]);
+      expect(posts.listRepliesByAuthor).not.toHaveBeenCalled();
+    });
+  });
+
   describe('obra (página do álbum ou música)', () => {
     const musica = (id, extra) => post(id, 2, { titulo: 'Help!', artista: 'The Beatles', capa: 'h.jpg', tipo: 'música', releaseDate: '138', preview: 'p.mp3', ...extra });
 
@@ -242,7 +293,7 @@ describe('postService', () => {
 
     it('traz a obra, a média com uma nota por pessoa (a mais recente) e os posts marcados', async () => {
       const resposta = await service.obra(7, { tipo: 'musica', titulo: ' help! ', artista: 'the beatles' });
-      expect(posts.listByObra).toHaveBeenCalledWith({ tipo: 'musica', titulo: 'help!', artista: 'the beatles' });
+      expect(posts.listByObra).toHaveBeenCalledWith({ tipo: 'musica', titulo: 'help!', artista: 'the beatles' }, { ocultos: [] });
       expect(resposta.obra).toEqual({
         tipo: 'musica', titulo: 'Help!', artista: 'The Beatles', capa: 'h.jpg', releaseDate: '138', preview: 'p.mp3',
       });
@@ -256,7 +307,7 @@ describe('postService', () => {
       const resposta = await service.obra(7, { tipo: 'album', titulo: 'Abbey Road', artista: 'The Beatles' }, { antes: '2024-01-02T00:00:00.000Z', antesId: '4' });
       expect(posts.listByObra).toHaveBeenCalledWith(
         { tipo: 'album', titulo: 'Abbey Road', artista: 'The Beatles' },
-        { antes: { data: new Date('2024-01-02T00:00:00.000Z'), id: 4 } },
+        { antes: { data: new Date('2024-01-02T00:00:00.000Z'), id: 4 }, ocultos: [] },
       );
       expect(posts.notasDaObra).not.toHaveBeenCalled();
       expect(Object.keys(resposta)).toEqual(['posts']);

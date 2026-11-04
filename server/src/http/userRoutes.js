@@ -2,7 +2,7 @@ import { Router } from 'express';
 import { badRequest } from '../errors.js';
 import { asyncRoute, currentUserId, parseIdParam, requireAuth, requireUsername } from './middlewares.js';
 
-export function createUserRoutes({ userService, postService, uploader, sessions }) {
+export function createUserRoutes({ userService, postService, restricaoService, uploader, sessions }) {
   const router = Router();
   router.use(requireAuth);
   router.param('id', parseIdParam);
@@ -43,6 +43,11 @@ export function createUserRoutes({ userService, postService, uploader, sessions 
     res.json(usuario);
   }));
 
+  // Quem a pessoa bloqueou e silenciou.
+  router.get('/me/restricoes', asyncRoute(async (req, res) => {
+    res.json(await restricaoService.listar(currentUserId(req)));
+  }));
+
   // Link das marcações (@usuario) abre o perfil pelo nome.
   router.get('/by-name/:nome', asyncRoute(async (req, res) => {
     res.json(await userService.getProfileByName(req.params.nome, currentUserId(req)));
@@ -70,6 +75,22 @@ export function createUserRoutes({ userService, postService, uploader, sessions 
     await userService.unfollow(currentUserId(req), req.params.id);
     res.status(204).end();
   }));
+
+  // Bloquear e silenciar (POST faz, DELETE desfaz).
+  const acoes = [
+    ['bloqueio', 'bloquear', 'desbloquear'],
+    ['silencio', 'silenciar', 'dessilenciar'],
+  ];
+  for (const [caminho, fazer, desfazer] of acoes) {
+    router.post(`/:id/${caminho}`, asyncRoute(async (req, res) => {
+      await restricaoService[fazer](currentUserId(req), req.params.id);
+      res.status(204).end();
+    }));
+    router.delete(`/:id/${caminho}`, asyncRoute(async (req, res) => {
+      await restricaoService[desfazer](currentUserId(req), req.params.id);
+      res.status(204).end();
+    }));
+  }
 
   return router;
 }

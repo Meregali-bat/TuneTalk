@@ -73,6 +73,12 @@ export const usersApi = {
     request('/users/me/password', { method: 'PUT', body: { senhaAtual, novaSenha } }),
   follow: (id) => request(`/users/${id}/follow`, { method: 'POST' }),
   unfollow: (id) => request(`/users/${id}/follow`, { method: 'DELETE' }),
+  bloquear: (id) => request(`/users/${id}/bloqueio`, { method: 'POST' }),
+  desbloquear: (id) => request(`/users/${id}/bloqueio`, { method: 'DELETE' }),
+  silenciar: (id) => request(`/users/${id}/silencio`, { method: 'POST' }),
+  dessilenciar: (id) => request(`/users/${id}/silencio`, { method: 'DELETE' }),
+  // { bloqueados, silenciados }
+  restricoes: () => request('/users/me/restricoes'),
 };
 
 // Avisos no celular (push da web). chave() é null quando o servidor está sem as chaves VAPID.

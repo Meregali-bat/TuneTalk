@@ -40,6 +40,31 @@ describe('userService', () => {
     service = createUserService({ users, follows, postService, notifications, passwords });
   });
 
+  describe('bloqueios', () => {
+    const comRelacao = (relacao) => createUserService({
+      users, follows, postService, notifications, passwords, restricoes: { relacao: vi.fn().mockResolvedValue(relacao) },
+    });
+
+    it('perfil com bloqueio em qualquer sentido vem só com o usuário, sem posts nem listas', async () => {
+      for (const relacao of [{ bloqueado: true, meBloqueou: false, silenciado: false }, { bloqueado: false, meBloqueou: true, silenciado: false }]) {
+        const profile = await comRelacao(relacao).getProfile(1, 2);
+        expect(profile).toMatchObject({ usuario: ana, relacao, posts: [], seguidores: [], seguindo: [], quantidadePosts: 0 });
+      }
+      expect(postService.byAuthor).not.toHaveBeenCalled();
+    });
+
+    it('perfil silenciado continua normal, só avisa que está silenciado', async () => {
+      const profile = await comRelacao({ bloqueado: false, meBloqueou: false, silenciado: true }).getProfile(1, 2);
+      expect(profile.relacao.silenciado).toBe(true);
+      expect(profile.posts).toEqual([{ id: 10 }]);
+    });
+
+    it('não dá para seguir com bloqueio no meio', async () => {
+      await expect(comRelacao({ bloqueado: false, meBloqueou: true, silenciado: false }).follow(2, 1)).rejects.toMatchObject({ status: 403 });
+      expect(follows.follow).not.toHaveBeenCalled();
+    });
+  });
+
   describe('getProfile', () => {
     it('agrega usuário, posts, contadores, listas e quem o visitante segue', async () => {
       const profile = await service.getProfile(1, 2);
@@ -48,6 +73,7 @@ describe('userService', () => {
       expect(follows.followingIds).toHaveBeenCalledWith(2);
       expect(profile).toEqual({
         usuario: ana,
+        relacao: { bloqueado: false, meBloqueou: false, silenciado: false },
         posts: [{ id: 10 }],
         quantidadePosts: 1,
         quantidadeSeguidores: 1,

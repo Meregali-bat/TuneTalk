@@ -24,6 +24,8 @@ import webpush from 'web-push';
 import { createPushSubscriptionRepository } from './repositories/pushSubscriptionRepository.js';
 import { createPushService, withPush } from './services/pushService.js';
 import { renderizarImagem } from './share/postCard.js';
+import { createRestricaoRepository } from './repositories/restricaoRepository.js';
+import { createRestricaoService, semNotificacaoDeOcultos } from './services/restricaoService.js';
 
 const rootDir = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '../..');
 
@@ -57,15 +59,20 @@ export function buildContainer(config) {
   const pushService = createPushService({
     subscriptions: createPushSubscriptionRepository(prisma), webpush, vapid: config.vapid,
   });
-  // Toda notificação criada também vira aviso no celular de quem ativou.
-  const notifications = withPush(createNotificationRepository(prisma), { push: pushService, users });
+  const restricoes = createRestricaoRepository(prisma);
+  // Toda notificação criada também vira aviso no celular de quem ativou, menos as de quem a
+  // pessoa silenciou ou bloqueou.
+  const notifications = semNotificacaoDeOcultos(
+    withPush(createNotificationRepository(prisma), { push: pushService, users }),
+    restricoes,
+  );
 
   const passwords = createPasswords();
   const sessions = createSessionCleaner(pool);
   const mailer = config.resendApiKey
     ? createResendMailer({ apiKey: config.resendApiKey, from: config.emailFrom })
     : createConsoleMailer();
-  const postService = createPostService({ posts, likes, notifications, users });
+  const postService = createPostService({ posts, likes, notifications, users, restricoes });
 
   return {
     authService: createAuthService({ users, passwords, notifications }),
@@ -73,7 +80,8 @@ export function buildContainer(config) {
       users, resets: createPasswordResetRepository(prisma), passwords, mailer, sessions, appUrl: config.appUrl,
     }),
     postService,
-    userService: createUserService({ users, follows, postService, notifications, passwords }),
+    userService: createUserService({ users, follows, postService, notifications, passwords, restricoes }),
+    restricaoService: createRestricaoService({ restricoes, users }),
     musicService: createMusicService(),
     lyricsService: createLyricsService(),
     hashtagService: createHashtagService({ posts }),

@@ -6,7 +6,10 @@ import { musicApi, postsApi, usersApi } from '../api/index.js';
 import { makeAuth, renderWithProviders } from '../test/render.jsx';
 
 vi.mock('../api/index.js', () => ({
-  usersApi: { profile: vi.fn(), comments: vi.fn(), updateFavorites: vi.fn(), follow: vi.fn(), unfollow: vi.fn(), updateMe: vi.fn(), changePassword: vi.fn() },
+  usersApi: {
+    profile: vi.fn(), comments: vi.fn(), updateFavorites: vi.fn(), follow: vi.fn(), unfollow: vi.fn(), updateMe: vi.fn(), changePassword: vi.fn(),
+    bloquear: vi.fn(), desbloquear: vi.fn(), silenciar: vi.fn(), dessilenciar: vi.fn(),
+  },
   postsApi: { like: vi.fn(), unlike: vi.fn(), remove: vi.fn(), create: vi.fn(), pin: vi.fn(), unpin: vi.fn() },
   musicApi: { search: vi.fn() },
 }));
@@ -38,6 +41,67 @@ describe('ProfilePage', () => {
   beforeEach(() => {
     vi.clearAllMocks();
     usersApi.profile.mockResolvedValue(profile());
+  });
+
+  describe('silenciar e bloquear', () => {
+    const relacao = (r) => ({ bloqueado: false, meBloqueou: false, silenciado: false, ...r });
+
+    it('o ⋯ do perfil de outra pessoa silencia e recarrega', async () => {
+      usersApi.silenciar.mockResolvedValue(null);
+      renderProfile();
+      await userEvent.click(await screen.findByRole('button', { name: 'Mais opções' }));
+      await userEvent.click(screen.getByRole('menuitem', { name: 'Silenciar @bia' }));
+      expect(usersApi.silenciar).toHaveBeenCalledWith(2);
+      await waitFor(() => expect(usersApi.profile).toHaveBeenCalledTimes(2));
+    });
+
+    it('perfil silenciado avisa e o menu oferece desfazer', async () => {
+      usersApi.profile.mockResolvedValue(profile({ relacao: relacao({ silenciado: true }) }));
+      usersApi.dessilenciar.mockResolvedValue(null);
+      renderProfile();
+      expect(await screen.findByText(/Você silenciou @bia/)).toBeInTheDocument();
+      expect(screen.getByText('post 10')).toBeInTheDocument();
+      await userEvent.click(screen.getByRole('button', { name: 'Mais opções' }));
+      await userEvent.click(screen.getByRole('menuitem', { name: 'Deixar de silenciar @bia' }));
+      expect(usersApi.dessilenciar).toHaveBeenCalledWith(2);
+    });
+
+    it('bloquear pelo perfil pede confirmação', async () => {
+      usersApi.bloquear.mockResolvedValue(null);
+      renderProfile();
+      await userEvent.click(await screen.findByRole('button', { name: 'Mais opções' }));
+      await userEvent.click(screen.getByRole('menuitem', { name: 'Bloquear @bia' }));
+      await userEvent.click(within(screen.getByRole('dialog', { name: 'Bloquear @bia?' })).getByRole('button', { name: 'Bloquear' }));
+      expect(usersApi.bloquear).toHaveBeenCalledWith(2);
+    });
+
+    it('perfil que você bloqueou: sem seguir, sem posts, e dá para desbloquear', async () => {
+      usersApi.profile.mockResolvedValue(profile({ relacao: relacao({ bloqueado: true }), posts: [] }));
+      usersApi.desbloquear.mockResolvedValue(null);
+      renderProfile();
+      expect(await screen.findByRole('heading', { name: 'Você bloqueou @bia' })).toBeInTheDocument();
+      expect(screen.queryByRole('button', { name: 'Seguir' })).toBeNull();
+      expect(screen.queryByRole('tab', { name: 'Posts' })).toBeNull();
+      expect(screen.queryByRole('list', { name: 'Números do perfil' })).toBeNull();
+      await userEvent.click(screen.getByRole('button', { name: 'Mais opções' }));
+      expect(screen.queryByRole('menuitem', { name: /Silenciar/ })).toBeNull();
+      await userEvent.click(screen.getByRole('menuitem', { name: 'Desbloquear @bia' }));
+      expect(usersApi.desbloquear).toHaveBeenCalledWith(2);
+    });
+
+    it('perfil de quem bloqueou você', async () => {
+      usersApi.profile.mockResolvedValue(profile({ relacao: relacao({ meBloqueou: true }), posts: [] }));
+      renderProfile();
+      expect(await screen.findByRole('heading', { name: '@bia bloqueou você' })).toBeInTheDocument();
+      expect(screen.queryByRole('button', { name: 'Seguir' })).toBeNull();
+    });
+
+    it('no próprio perfil não há ⋯', async () => {
+      usersApi.profile.mockResolvedValue(profile({ usuario: { ...bia, id: 1 } }));
+      renderProfile(1);
+      await screen.findByRole('button', { name: 'Editar perfil' });
+      expect(screen.queryByRole('button', { name: 'Mais opções' })).toBeNull();
+    });
   });
 
   it('mostra um esqueleto enquanto carrega', () => {

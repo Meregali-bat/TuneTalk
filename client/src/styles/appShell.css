@@ -681,6 +681,7 @@
   align-items: center;
   gap: .55rem;
   width: 100%;
+  white-space: nowrap;
   padding: .55rem .75rem;
   border: none;
   border-radius: 8px;
@@ -1526,6 +1527,66 @@ button.track-row:hover {
     min-height: 2.4rem;
     padding: 0 1.1rem;
     font-size: .9rem;
+  }
+}
+
+/* "⋯" do perfil de outra pessoa: botão redondo ao lado do Seguir; o menu abre para baixo, à direita. */
+.profile-menu__botao {
+  .profile-header__actions & {
+    width: 2.4rem;
+    padding: 0;
+  }
+}
+
+.profile-notice--silenciado {
+  border-color: var(--linhas);
+  background: var(--superficie);
+  color: var(--texto-suave);
+
+  i {
+    color: var(--texto-suave);
+  }
+}
+
+/* Confirmação (ex.: bloquear alguém). */
+.confirmar {
+  display: grid;
+  gap: 1rem;
+  padding: .9rem .9rem .6rem;
+
+  p {
+    margin: 0;
+    color: var(--texto-suave);
+    line-height: 1.5;
+  }
+}
+
+.confirmar__acoes {
+  display: flex;
+  justify-content: flex-end;
+  gap: .6rem;
+
+  button {
+    min-height: 2.6rem;
+    padding: 0 1.2rem;
+    border-radius: 999px;
+    font-weight: 600;
+  }
+}
+
+.confirmar__cancelar {
+  border: 1px solid var(--linhas);
+  background: none;
+  color: var(--texto);
+}
+
+.confirmar__perigo {
+  border: none;
+  background: var(--erro);
+  color: #fff;
+
+  &:disabled {
+    opacity: .6;
   }
 }
 

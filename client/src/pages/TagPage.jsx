@@ -12,6 +12,7 @@ export function TagPage() {
 
   const quantos = posts ? `${posts.length} ${posts.length === 1 ? 'post' : 'posts'}` : null;
   const removePost = (id) => setData((lista) => lista.filter((p) => p.id !== id));
+  const ocultarAutor = (autorId) => setData((lista) => lista.filter((p) => p.autor.id !== autorId));
 
   return (
     <div className="feed">
@@ -28,7 +29,7 @@ export function TagPage() {
       )}
       {posts?.length > 0 && (
         <div className="feed-list">
-          {posts.map((post) => <PostCard key={post.id} post={post} onDeleted={removePost} />)}
+          {posts.map((post) => <PostCard key={post.id} post={post} onDeleted={removePost} onAutorOculto={ocultarAutor} />)}
         </div>
       )}
     </div>

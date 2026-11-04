@@ -202,4 +202,30 @@ describe('rotas /api/users', () => {
       await novo.post('/api/auth/logout').expect(204);
     });
   });
+
+  describe('bloquear e silenciar', () => {
+    it('POST faz e DELETE desfaz, sempre para quem está logado', async () => {
+      const agent = await loggedAgent(app);
+      await agent.post('/api/users/2/bloqueio').expect(204);
+      await agent.delete('/api/users/2/bloqueio').expect(204);
+      await agent.post('/api/users/2/silencio').expect(204);
+      await agent.delete('/api/users/2/silencio').expect(204);
+      expect(deps.restricaoService.bloquear).toHaveBeenCalledWith(1, 2);
+      expect(deps.restricaoService.desbloquear).toHaveBeenCalledWith(1, 2);
+      expect(deps.restricaoService.silenciar).toHaveBeenCalledWith(1, 2);
+      expect(deps.restricaoService.dessilenciar).toHaveBeenCalledWith(1, 2);
+    });
+
+    it('GET /me/restricoes lista quem a pessoa bloqueou e silenciou', async () => {
+      deps.restricaoService.listar.mockResolvedValue({ bloqueados: [{ id: 2 }], silenciados: [] });
+      const agent = await loggedAgent(app);
+      const res = await agent.get('/api/users/me/restricoes').expect(200);
+      expect(res.body).toEqual({ bloqueados: [{ id: 2 }], silenciados: [] });
+      expect(deps.restricaoService.listar).toHaveBeenCalledWith(1);
+    });
+
+    it('exige login', async () => {
+      await request(app).post('/api/users/2/bloqueio').expect(401);
+    });
+  });
 });

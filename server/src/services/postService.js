@@ -4,6 +4,7 @@ import { extractMentions } from '../../../shared/mentions.js';
 import { validarTrecho } from '../../../shared/lyrics.js';
 import { capaDoDeezer } from '../../../shared/favorites.js';
 import { validarEnquete } from '../../../shared/poll.js';
+import { SEM_RESTRICOES, haBloqueio } from './restricaoService.js';
 
 const TEXTO_MAX = 500;
 // Ao chegar a esse número de posts (sem contar comentários), o TuneTalk dá os parabéns.
@@ -74,6 +75,8 @@ export function createPostService({
   likes,
   notifications,
   users,
+  // Bloqueios e silêncios: some com os posts de quem a pessoa não vê e barra interações.
+  restricoes = SEM_RESTRICOES,
   now = () => new Date(),
   // Capas das opções de enquete: no app real, só do Deezer; a demo troca pelas capas desenhadas dela.
   capaEnqueteValida = capaDoDeezer,
@@ -90,6 +93,15 @@ export function createPostService({
       comEnquete.length ? posts.votosDe(viewerId, comEnquete) : new Map(),
     ]);
     return list.map((post) => comVoto({ ...post, curtido: liked.has(post.id) }, votos));
+  };
+
+  const ocultosPara = (viewerId) => restricoes.ocultosPara(viewerId);
+
+  // Curtir, comentar e votar não valem entre quem se bloqueou.
+  const podeInteragir = async (post, usuarioId) => {
+    if (await haBloqueio(restricoes, usuarioId, post.autor.id)) {
+      throw forbidden('Você não pode interagir com os posts dessa pessoa.');
+    }
   };
 
   const findOrFail = async (postId) => {
@@ -137,11 +149,13 @@ export function createPostService({
     // Os mais recentes primeiro: quem acabou de postar aparece no topo. `pagina` traz o último
     // post já carregado ({ antes, antesId }) para continuar dali; sem ela, vem a primeira página.
     async forYou(viewerId, pagina) {
-      return markLiked(await posts.listLatest(lerPagina(pagina)), viewerId);
+      const ocultos = await ocultosPara(viewerId);
+      return markLiked(await posts.listLatest({ ...lerPagina(pagina), ocultos }), viewerId);
     },
 
     async following(viewerId, pagina) {
-      return markLiked(await posts.listFromFollowed(viewerId, lerPagina(pagina)), viewerId);
+      const ocultos = await ocultosPara(viewerId);
+      return markLiked(await posts.listFromFollowed(viewerId, { ...lerPagina(pagina), ocultos }), viewerId);
     },
 
     // Página de um álbum ou música: dados da obra, média das notas (uma por pessoa), quantas
@@ -149,13 +163,18 @@ export function createPostService({
     async obra(viewerId, consulta, pagina) {
       const obra = lerObra(consulta);
       const seguinte = lerPagina(pagina);
+      const ocultos = await ocultosPara(viewerId);
       // Páginas seguintes só trazem mais posts; o resumo já veio com a primeira.
-      if (seguinte.antes) return { posts: await markLiked(await posts.listByObra(obra, seguinte), viewerId) };
+      if (seguinte.antes) return { posts: await markLiked(await posts.listByObra(obra, { ...seguinte, ocultos }), viewerId) };
 
-      const [lista, notas] = await Promise.all([posts.listByObra(obra), posts.notasDaObra(obra)]);
-      if (lista.length === 0) throw notFound('Ninguém postou sobre isso ainda.');
-      // Nome, capa e prévia do post mais recente.
-      const base = lista[0];
+      // A média conta todo mundo; só a lista de posts esconde quem a pessoa não vê.
+      // Nome, capa e prévia vêm do post mais recente de qualquer pessoa.
+      const [lista, notas, [base]] = await Promise.all([
+        posts.listByObra(obra, { ocultos }),
+        posts.notasDaObra(obra),
+        posts.listByObra(obra, { limit: 1 }),
+      ]);
+      if (!base) throw notFound('Ninguém postou sobre isso ainda.');
       return {
         obra: {
           tipo: obra.tipo,
@@ -171,13 +190,15 @@ export function createPostService({
     },
 
     async repliesByAuthor(autorId, viewerId) {
+      if (await haBloqueio(restricoes, viewerId, autorId)) return [];
       return markLiked(await posts.listRepliesByAuthor(autorId), viewerId);
     },
 
     async byHashtag(tag, viewerId) {
       const limpa = (tag ?? '').trim().replace(/^#/, '').toLowerCase();
       if (!limpa) throw badRequest('Hashtag inválida.');
-      return markLiked(await posts.listByHashtag(limpa), viewerId);
+      const ocultos = await ocultosPara(viewerId);
+      return markLiked(await posts.listByHashtag(limpa, { ocultos }), viewerId);
     },
 
     // O post fixado vem primeiro; os outros seguem do mais novo para o mais antigo.
@@ -188,14 +209,18 @@ export function createPostService({
 
     async get(postId, viewerId) {
       const post = await findOrFail(postId);
+      const ocultos = await ocultosPara(viewerId);
+      // Post de quem bloqueou (ou foi bloqueado por) quem está vendo: como se não existisse.
+      if (await haBloqueio(restricoes, viewerId, post.autor.id)) throw notFound('Post não encontrado.');
       const [curtido, pai, respostas, votos] = await Promise.all([
         likes.hasLiked(postId, viewerId),
         post.parentId ? posts.findById(post.parentId) : null,
-        posts.listReplies(postId),
+        posts.listReplies(postId, { ocultos }),
         post.enquete ? posts.votosDe(viewerId, [post.id]) : new Map(),
       ]);
-      const primeiras = await posts.listFirstReplies(respostas.map((r) => r.id));
-      const [paiMarcado = null] = pai ? await markLiked([pai], viewerId) : [];
+      const primeiras = await posts.listFirstReplies(respostas.map((r) => r.id), { ocultos });
+      const paiVisivel = pai && !ocultos.includes(pai.autor.id) ? pai : null;
+      const [paiMarcado = null] = paiVisivel ? await markLiked([paiVisivel], viewerId) : [];
       const primeirasMarcadas = new Map(
         (await markLiked([...primeiras.values()], viewerId)).map((p) => [p.parentId, p]),
       );
@@ -247,6 +272,7 @@ export function createPostService({
       if ((data.texto ?? '').length > TEXTO_MAX) throw badRequest(`O texto pode ter no máximo ${TEXTO_MAX} caracteres.`);
 
       const pai = parentId === undefined ? null : await findOrFail(parentId);
+      if (pai) await podeInteragir(pai, autorId);
       const id = await posts.create({ ...data, ...(pai && { parentId }), ...(enquete && { enquete }), autorId, data: now() });
       if (pai) await notifyAuthor(pai, autorId, 'comment', 'comentou no seu post');
       await notifyMentions(data.texto, { id, autorId, pai });
@@ -257,6 +283,7 @@ export function createPostService({
     // Votar numa opção da enquete: um voto por pessoa, só enquanto ela está aberta.
     async votar(postId, usuarioId, opcaoId) {
       const post = await findOrFail(postId);
+      await podeInteragir(post, usuarioId);
       if (!post.enquete) throw badRequest('Esse post não tem enquete.');
       if (new Date(post.enquete.fim).getTime() <= now().getTime()) throw badRequest('Essa enquete já terminou.');
       const opcao = Number(opcaoId);
@@ -289,6 +316,7 @@ export function createPostService({
 
     async like(postId, usuarioId) {
       const post = await findOrFail(postId);
+      await podeInteragir(post, usuarioId);
       if (await likes.hasLiked(postId, usuarioId)) return post.likes;
 
       await likes.add({ postId, usuarioId });

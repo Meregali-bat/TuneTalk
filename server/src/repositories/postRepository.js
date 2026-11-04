@@ -44,6 +44,9 @@ const ondeObra = ({ tipo, titulo, artista }) => ({
     : { musicName: { equals: titulo, mode: 'insensitive' }, OR: [{ postType: null }, { postType: { not: 'album' } }] }),
 });
 
+// Sem os posts de quem a pessoa não vê (silenciou, bloqueou ou a bloqueou).
+const semOcultos = (ocultos) => (ocultos?.length ? { autorId: { notIn: ocultos } } : {});
+
 const normalizeType = (postType) => (postType === 'album' ? 'album' : 'música');
 
 const toNota = (nota) => {
@@ -89,17 +92,17 @@ export function createPostRepository(prisma) {
   const findPosts = async (args) => (await prisma.post.findMany({ ...args, include: POST_INCLUDE })).map(toPost);
 
   return {
-    listLatest({ limit = FEED_PAGINA, antes } = {}) {
-      return findPosts({ where: { ...TOP_LEVEL, ...depoisDe(antes) }, orderBy: FEED_ORDEM, take: limit });
+    listLatest({ limit = FEED_PAGINA, antes, ocultos } = {}) {
+      return findPosts({ where: { ...TOP_LEVEL, ...depoisDe(antes), ...semOcultos(ocultos) }, orderBy: FEED_ORDEM, take: limit });
     },
 
     listByAuthor(autorId) {
       return findPosts({ where: { ...TOP_LEVEL, autorId }, orderBy: { id: 'desc' } });
     },
 
-    listFromFollowed(usuarioId, { limit = FEED_PAGINA, antes } = {}) {
+    listFromFollowed(usuarioId, { limit = FEED_PAGINA, antes, ocultos } = {}) {
       return findPosts({
-        where: { ...TOP_LEVEL, ...depoisDe(antes), autor: { seguidores: { some: { seguidorId: usuarioId } } } },
+        where: { ...TOP_LEVEL, ...depoisDe(antes), ...semOcultos(ocultos), autor: { seguidores: { some: { seguidorId: usuarioId } } } },
         orderBy: FEED_ORDEM,
         take: limit,
       });
@@ -119,8 +122,8 @@ export function createPostRepository(prisma) {
       return rows.map((row) => row.texto);
     },
 
-    listByObra(obra, { limit = FEED_PAGINA, antes } = {}) {
-      return findPosts({ where: { AND: [ondeObra(obra), depoisDe(antes)] }, orderBy: FEED_ORDEM, take: limit });
+    listByObra(obra, { limit = FEED_PAGINA, antes, ocultos } = {}) {
+      return findPosts({ where: { AND: [ondeObra(obra), depoisDe(antes), semOcultos(ocultos)] }, orderBy: FEED_ORDEM, take: limit });
     },
 
     // Todas as notas dadas a um álbum ou música, das mais novas para as mais antigas.
@@ -145,9 +148,9 @@ export function createPostRepository(prisma) {
     },
 
     // Posts e comentários com a hashtag inteira (o banco filtra por "contém"; aqui conferimos a tag).
-    async listByHashtag(tag, limit = 50) {
+    async listByHashtag(tag, { limit = 50, ocultos } = {}) {
       const candidatos = await findPosts({
-        where: { texto: { contains: `#${tag}`, mode: 'insensitive' } },
+        where: { texto: { contains: `#${tag}`, mode: 'insensitive' }, ...semOcultos(ocultos) },
         orderBy: [{ createdAt: 'desc' }, { id: 'desc' }],
         take: limit * 2,
       });
@@ -155,15 +158,15 @@ export function createPostRepository(prisma) {
     },
 
     // Em ordem de conversa: a primeira resposta fica no topo.
-    listReplies(parentId) {
-      return findPosts({ where: { parentId }, orderBy: [{ createdAt: 'asc' }, { id: 'asc' }] });
+    listReplies(parentId, { ocultos } = {}) {
+      return findPosts({ where: { parentId, ...semOcultos(ocultos) }, orderBy: [{ createdAt: 'asc' }, { id: 'asc' }] });
     },
 
     // Primeira resposta de cada comentário (a mais antiga), para mostrar a conversa como no Twitter.
-    async listFirstReplies(parentIds) {
+    async listFirstReplies(parentIds, { ocultos } = {}) {
       if (parentIds.length === 0) return new Map();
       const rows = await findPosts({
-        where: { parentId: { in: parentIds } },
+        where: { parentId: { in: parentIds }, ...semOcultos(ocultos) },
         orderBy: [{ parentId: 'asc' }, { createdAt: 'asc' }, { id: 'asc' }],
         distinct: ['parentId'],
       });

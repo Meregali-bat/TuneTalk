@@ -17,6 +17,7 @@ import { FounderBadge, mostraSeloFundador } from '../components/effects/FounderB
 import { PullToRefresh } from '../components/common/PullToRefresh.jsx';
 import { ProfileFavorites } from '../components/profile/ProfileFavorites.jsx';
 import { EditFavoritesModal } from '../components/profile/EditFavoritesModal.jsx';
+import { ProfileMenu } from '../components/profile/ProfileMenu.jsx';
 
 // Só posts com música têm nota. A média sai na escala guardada (0 a 10) e é mostrada em estrelas.
 function notaMedia(posts) {
@@ -64,8 +65,12 @@ function Stat({ value, label, onClick }) {
 // Nome de exibição (livre) quando existe; senão, o nome de usuário. O @ é sempre o nome de usuário.
 export const displayName = (usuario) => usuario.nomeExibicao || usuario.nome;
 
-function ProfileHeader({ profile, isOwnProfile, onEdit, onChangePassword, onOpenList, onFollowChange }) {
+const SEM_RELACAO = { bloqueado: false, meBloqueou: false, silenciado: false };
+
+function ProfileHeader({ profile, isOwnProfile, onEdit, onChangePassword, onOpenList, onFollowChange, onRelacaoChange }) {
   const { usuario } = profile;
+  const relacao = profile.relacao ?? SEM_RELACAO;
+  const comBloqueio = relacao.bloqueado || relacao.meBloqueou;
   const nome = displayName(usuario);
   const media = notaMedia(profile.posts);
 
@@ -98,11 +103,16 @@ function ProfileHeader({ profile, isOwnProfile, onEdit, onChangePassword, onOpen
                 </button>
               </>
             ) : (
-              <FollowButton
-                userId={usuario.id}
-                following={profile.seguindoIds.includes(usuario.id)}
-                onChange={onFollowChange}
-              />
+              <>
+                {!comBloqueio && (
+                  <FollowButton
+                    userId={usuario.id}
+                    following={profile.seguindoIds.includes(usuario.id)}
+                    onChange={onFollowChange}
+                  />
+                )}
+                <ProfileMenu usuario={usuario} relacao={relacao} onMudou={onRelacaoChange} />
+              </>
             )}
           </div>
         </div>
@@ -117,12 +127,14 @@ function ProfileHeader({ profile, isOwnProfile, onEdit, onChangePassword, onOpen
           {usuario.bio && <p className="profile-header__bio">{usuario.bio}</p>}
         </div>
 
+        {!comBloqueio && (
         <ul className="profile-stats" aria-label="Números do perfil">
           <Stat value={profile.quantidadePosts} label="Posts" />
           <Stat value={profile.quantidadeSeguidores} label="Seguidores" onClick={() => onOpenList('seguidores')} />
           <Stat value={profile.quantidadeSeguindo} label="Seguindo" onClick={() => onOpenList('seguindo')} />
           {media !== null && <Stat value={`${formatMediaEstrelas(media)}/5`} label="Nota média" />}
         </ul>
+        )}
       </div>
     </header>
   );
@@ -192,6 +204,8 @@ export function ProfilePage() {
   if (!profile) return <div className="feed"><ProfileSkeleton /></div>;
 
   const isOwnProfile = profile.usuario.id === user.id;
+  const relacao = profile.relacao ?? SEM_RELACAO;
+  const comBloqueio = relacao.bloqueado || relacao.meBloqueou;
 
   const handleSaved = (usuario) => {
     updateUser({ nome: usuario.nome });
@@ -214,6 +228,7 @@ export function ProfilePage() {
         onChangePassword={() => { setNotice(''); setChangingPassword(true); }}
         onOpenList={setOpenList}
         onFollowChange={reload}
+        onRelacaoChange={reload}
       />
       {notice && (
         <p role="status" className="profile-notice">
@@ -221,6 +236,30 @@ export function ProfilePage() {
         </p>
       )}
 
+      {relacao.silenciado && !comBloqueio && (
+        <p className="profile-notice profile-notice--silenciado">
+          <i className="bi bi-volume-mute" aria-hidden="true" />
+          Você silenciou @{profile.usuario.nome}: os posts não aparecem nos seus feeds e você não recebe notificações.
+        </p>
+      )}
+
+      {comBloqueio ? (
+        <div className="feed-empty">
+          <i className="bi bi-slash-circle" aria-hidden="true" />
+          {relacao.bloqueado ? (
+            <>
+              <h2>Você bloqueou @{profile.usuario.nome}</h2>
+              <p>Vocês não veem os posts um do outro. Para desfazer, use o menu ⋯ acima.</p>
+            </>
+          ) : (
+            <>
+              <h2>@{profile.usuario.nome} bloqueou você</h2>
+              <p>Você não pode ver os posts nem seguir essa pessoa.</p>
+            </>
+          )}
+        </div>
+      ) : (
+      <>
       <ProfileFavorites
         favoritos={profile.favoritos}
         editavel={isOwnProfile}
@@ -263,6 +302,8 @@ export function ProfilePage() {
       <div role="tabpanel" id="painel-comentarios" aria-labelledby="aba-comentarios" hidden={aba !== 'comentarios'}>
         {abriuComentarios && <ProfileComments usuarioId={profile.usuario.id} nome={displayName(profile.usuario)} />}
       </div>
+      </>
+      )}
 
       <UserListModal
         open={openList === 'seguidores'}

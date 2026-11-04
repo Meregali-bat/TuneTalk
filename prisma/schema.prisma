@@ -52,6 +52,10 @@ model Usuario {
   aparelhosPush         InscricaoPush[]
   votosEnquete          EnqueteVoto[]
   redefinicoesSenha     RedefinicaoSenha[]
+  bloqueados            Bloqueio[]         @relation("bloqueador")
+  bloqueadoPor          Bloqueio[]         @relation("bloqueado")
+  silenciados           Silencio[]         @relation("silenciador")
+  silenciadoPor         Silencio[]         @relation("silenciado")
   postFixado            Post?              @relation("fixado", fields: [postFixadoId], references: [id], onDelete: SetNull)
 
   @@map("usuarios")
@@ -110,6 +114,34 @@ model Curtida {
   @@id([postId, usuarioId])
   @@index([usuarioId])
   @@map("curtidas")
+}
+
+// Bloquear: nenhum dos dois vê os posts do outro nem interage com ele (seguir, curtir, comentar...).
+model Bloqueio {
+  bloqueadorId Int      @map("bloqueador_id")
+  bloqueadoId  Int      @map("bloqueado_id")
+  createdAt    DateTime @default(now()) @map("created_at")
+
+  bloqueador Usuario @relation("bloqueador", fields: [bloqueadorId], references: [id], onDelete: Cascade)
+  bloqueado  Usuario @relation("bloqueado", fields: [bloqueadoId], references: [id], onDelete: Cascade)
+
+  @@id([bloqueadorId, bloqueadoId])
+  @@index([bloqueadoId])
+  @@map("bloqueios")
+}
+
+// Silenciar: quem silenciou deixa de ver os posts e de receber notificações da outra pessoa,
+// sem ela saber.
+model Silencio {
+  usuarioId    Int      @map("usuario_id")
+  silenciadoId Int      @map("silenciado_id")
+  createdAt    DateTime @default(now()) @map("created_at")
+
+  usuario    Usuario @relation("silenciador", fields: [usuarioId], references: [id], onDelete: Cascade)
+  silenciado Usuario @relation("silenciado", fields: [silenciadoId], references: [id], onDelete: Cascade)
+
+  @@id([usuarioId, silenciadoId])
+  @@map("silencios")
 }
 
 model Seguimento {

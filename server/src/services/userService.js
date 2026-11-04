@@ -1,7 +1,8 @@
-import { badRequest, conflict, notFound } from '../errors.js';
+import { badRequest, conflict, forbidden, notFound } from '../errors.js';
+import { SEM_RESTRICOES, haBloqueio } from './restricaoService.js';
 import { USERNAME_MESSAGES, checkUsername } from '../../../shared/usernameRules.js';
 import { PASSWORD_RULES_MESSAGE, isPasswordValid } from '../../../shared/passwordRules.js';
-import { capaDoDeezer, lerFavoritos, validarFavoritos } from '../../../shared/favorites.js';
+import { capaDoDeezer, favoritosVazios, lerFavoritos, validarFavoritos } from '../../../shared/favorites.js';
 
 export const BIO_MAX = 255;
 export const NOME_EXIBICAO_MAX = 50;
@@ -10,7 +11,9 @@ export const NOME_EXIBICAO_MAX = 50;
 const cleanNomeExibicao = (valor, atual) => (valor === undefined ? atual : String(valor).trim() || null);
 
 // capaFavoritoValida: no app real, só imagens do Deezer; a demo troca pelas capas desenhadas dela.
-export function createUserService({ users, follows, postService, notifications, passwords, capaFavoritoValida = capaDoDeezer }) {
+export function createUserService({
+  users, follows, postService, notifications, passwords, capaFavoritoValida = capaDoDeezer, restricoes = SEM_RESTRICOES,
+}) {
   const findOrFail = async (id) => {
     const user = await users.findById(id);
     if (!user) throw notFound('Usuário não encontrado.');
@@ -26,6 +29,26 @@ export function createUserService({ users, follows, postService, notifications, 
   return {
     async getProfile(profileId, viewerId) {
       const usuario = await findOrFail(profileId);
+      const relacao = profileId === viewerId
+        ? { bloqueado: false, meBloqueou: false, silenciado: false }
+        : await restricoes.relacao(viewerId, profileId);
+
+      // Bloqueio em qualquer sentido: o perfil aparece só com nome e foto, sem posts nem listas.
+      if (relacao.bloqueado || relacao.meBloqueou) {
+        return {
+          usuario,
+          relacao,
+          posts: [],
+          quantidadePosts: 0,
+          quantidadeSeguidores: 0,
+          quantidadeSeguindo: 0,
+          seguidores: [],
+          seguindo: [],
+          seguindoIds: [],
+          favoritos: favoritosVazios(),
+        };
+      }
+
       const [posts, quantidadeSeguidores, quantidadeSeguindo, seguidores, seguindo, seguindoIds, favoritos] =
         await Promise.all([
           postService.byAuthor(profileId, viewerId),
@@ -39,6 +62,7 @@ export function createUserService({ users, follows, postService, notifications, 
 
       return {
         usuario,
+        relacao,
         posts,
         quantidadePosts: posts.length,
         quantidadeSeguidores,
@@ -114,6 +138,7 @@ export function createUserService({ users, follows, postService, notifications, 
     async follow(seguidorId, seguidoId) {
       if (seguidorId === seguidoId) throw badRequest('Você não pode seguir a si mesmo.');
       await findOrFail(seguidoId);
+      if (await haBloqueio(restricoes, seguidorId, seguidoId)) throw forbidden('Você não pode seguir essa pessoa.');
       if (await follows.isFollowing(seguidorId, seguidoId)) {
         throw conflict('Você já está seguindo este usuário');
       }

@@ -1,8 +1,13 @@
 import { useEffect, useRef, useState } from 'react';
+import { usersApi } from '../../api/index.js';
+import { ConfirmarBloqueio } from '../common/ConfirmarBloqueio.jsx';
 
 // pinned: undefined quando o post não pode ser fixado (não é do usuário ou é comentário).
-export function PostMenu({ isOwner, onDelete, pinned, onTogglePin }) {
+// autor + onAutorOculto: no post de outra pessoa, silenciar ou bloquear quem postou; depois disso
+// a lista some com os posts dela (onAutorOculto recebe o id).
+export function PostMenu({ isOwner, onDelete, pinned, onTogglePin, autor, onAutorOculto }) {
   const [open, setOpen] = useState(false);
+  const [confirmandoBloqueio, setConfirmandoBloqueio] = useState(false);
   const ref = useRef(null);
 
   useEffect(() => {
@@ -17,6 +22,22 @@ export function PostMenu({ isOwner, onDelete, pinned, onTogglePin }) {
   const select = (action) => {
     setOpen(false);
     action?.();
+  };
+
+  const silenciar = async () => {
+    setOpen(false);
+    try {
+      await usersApi.silenciar(autor.id);
+      onAutorOculto?.(autor.id);
+    } catch {
+      // Sem rede: o post continua aí e dá para tentar de novo.
+    }
+  };
+
+  const bloquear = async () => {
+    await usersApi.bloquear(autor.id);
+    setConfirmandoBloqueio(false);
+    onAutorOculto?.(autor.id);
   };
 
   return (
@@ -41,6 +62,25 @@ export function PostMenu({ isOwner, onDelete, pinned, onTogglePin }) {
               </button>
             </li>
           )}
+          {!isOwner && autor && (
+            <>
+              <li role="none">
+                <button type="button" role="menuitem" className="post-menu__item" onClick={silenciar}>
+                  <i className="bi bi-volume-mute" aria-hidden="true" /> Silenciar @{autor.nome}
+                </button>
+              </li>
+              <li role="none">
+                <button
+                  type="button"
+                  role="menuitem"
+                  className="post-menu__item"
+                  onClick={() => select(() => setConfirmandoBloqueio(true))}
+                >
+                  <i className="bi bi-slash-circle" aria-hidden="true" /> Bloquear @{autor.nome}
+                </button>
+              </li>
+            </>
+          )}
           <li role="none">
             {isOwner ? (
               <button type="button" role="menuitem" className="post-menu__item is-danger" onClick={() => select(onDelete)}>
@@ -53,6 +93,9 @@ export function PostMenu({ isOwner, onDelete, pinned, onTogglePin }) {
             )}
           </li>
         </ul>
+      )}
+      {confirmandoBloqueio && (
+        <ConfirmarBloqueio usuario={autor} onClose={() => setConfirmandoBloqueio(false)} onConfirmar={bloquear} />
       )}
     </div>
   );

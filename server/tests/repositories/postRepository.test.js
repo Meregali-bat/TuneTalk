@@ -206,6 +206,22 @@ describe('postRepository (Postgres)', () => {
     });
   });
 
+  it('ocultos tira dos feeds, das respostas e do disco os posts dessas pessoas', async () => {
+    const daAna = await factory.post(ana.id);
+    const daBia = await factory.post(bia.id);
+    await factory.reply(daAna.id, bia.id);
+    const respostaDaAna = await factory.reply(daAna.id, ana.id);
+    await db.prisma.seguimento.create({ data: { seguidorId: ana.id, seguidoId: bia.id } });
+    const ocultos = [bia.id];
+
+    expect((await repo.listLatest({ ocultos })).map((p) => p.id)).toEqual([daAna.id]);
+    expect(await repo.listFromFollowed(ana.id, { ocultos })).toEqual([]);
+    expect((await repo.listReplies(daAna.id, { ocultos })).map((p) => p.id)).toEqual([respostaDaAna.id]);
+    expect((await repo.listByObra({ tipo: 'musica', titulo: 'Help!', artista: 'The Beatles' }, { ocultos })).map((p) => p.id)).toEqual([daAna.id]);
+    // Lista vazia de ocultos não esconde nada.
+    expect((await repo.listLatest({ ocultos: [] })).map((p) => p.id)).toEqual([daBia.id, daAna.id]);
+  });
+
   it('countByAuthor conta os posts da pessoa, sem os comentários', async () => {
     const pai = await factory.post(ana.id);
     await factory.post(ana.id);

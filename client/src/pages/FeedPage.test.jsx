@@ -30,6 +30,8 @@ const post = (id, autorId = 2) => ({
 describe('FeedPage', () => {
   beforeEach(() => {
     vi.clearAllMocks();
+    // mockReset também descarta respostas "once" que um teste anterior não usou.
+    postsApi.feed.mockReset();
     postsApi.feed.mockResolvedValue([post(1), post(2, 1)]);
   });
 

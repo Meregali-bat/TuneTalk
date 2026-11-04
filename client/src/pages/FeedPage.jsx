@@ -73,6 +73,8 @@ export function FeedPage({ feed }) {
   const [composerOpen, setComposerOpen] = useState(false);
 
   const removePost = (id) => setPosts((list) => list.filter((post) => post.id !== id));
+  // Silenciou ou bloqueou alguém pelo menu do post: some com tudo dessa pessoa.
+  const ocultarAutor = (autorId) => setPosts((list) => list.filter((post) => post.autor.id !== autorId));
 
   return (
     <div className="feed">
@@ -92,7 +94,7 @@ export function FeedPage({ feed }) {
 
       {posts?.length > 0 && (
         <div className="feed-list">
-          {posts.map((post) => <PostCard key={post.id} post={post} onDeleted={removePost} />)}
+          {posts.map((post) => <PostCard key={post.id} post={post} onDeleted={removePost} onAutorOculto={ocultarAutor} />)}
         </div>
       )}
 

@@ -6,9 +6,13 @@ import { LikeButton } from './LikeButton.jsx';
 import { PlayButton } from './PlayButton.jsx';
 import { ShareButton } from './ShareButton.jsx';
 import { PostMenu } from './PostMenu.jsx';
-import { musicApi, postsApi } from '../../api/index.js';
+import { musicApi, postsApi, usersApi } from '../../api/index.js';
 
-vi.mock('../../api/index.js', () => ({ postsApi: { like: vi.fn(), unlike: vi.fn() }, musicApi: { preview: vi.fn() } }));
+vi.mock('../../api/index.js', () => ({
+  postsApi: { like: vi.fn(), unlike: vi.fn() },
+  musicApi: { preview: vi.fn() },
+  usersApi: { silenciar: vi.fn(), bloquear: vi.fn() },
+}));
 
 describe('StarRating', () => {
   it('desenha a nota de 0 a 10 como estrelas, com meia estrela para notas ímpares', () => {
@@ -219,6 +223,55 @@ describe('PostMenu', () => {
     await userEvent.click(screen.getByRole('menuitem', { name: 'Deletar' }));
 
     expect(onDelete).toHaveBeenCalled();
+  });
+
+  describe('silenciar e bloquear quem postou', () => {
+    const autor = { id: 5, nome: 'caio' };
+
+    it('aparecem só no post de outra pessoa', async () => {
+      render(<PostMenu isOwner={false} autor={autor} onDelete={vi.fn()} />);
+      await userEvent.click(screen.getByRole('button', { name: 'Opções do post' }));
+      expect(screen.getAllByRole('menuitem').map((i) => i.textContent.trim()))
+        .toEqual(['Silenciar @caio', 'Bloquear @caio', 'Denunciar']);
+    });
+
+    it('silenciar avisa a lista para sumir com os posts da pessoa', async () => {
+      usersApi.silenciar.mockResolvedValue(null);
+      const onAutorOculto = vi.fn();
+      render(<PostMenu isOwner={false} autor={autor} onAutorOculto={onAutorOculto} />);
+      await userEvent.click(screen.getByRole('button', { name: 'Opções do post' }));
+      await userEvent.click(screen.getByRole('menuitem', { name: 'Silenciar @caio' }));
+      expect(usersApi.silenciar).toHaveBeenCalledWith(5);
+      expect(onAutorOculto).toHaveBeenCalledWith(5);
+    });
+
+    it('bloquear pergunta antes; cancelar não bloqueia', async () => {
+      usersApi.bloquear.mockResolvedValue(null);
+      const onAutorOculto = vi.fn();
+      render(<PostMenu isOwner={false} autor={autor} onAutorOculto={onAutorOculto} />);
+
+      await userEvent.click(screen.getByRole('button', { name: 'Opções do post' }));
+      await userEvent.click(screen.getByRole('menuitem', { name: 'Bloquear @caio' }));
+      expect(screen.getByRole('dialog', { name: 'Bloquear @caio?' })).toBeInTheDocument();
+      await userEvent.click(screen.getByRole('button', { name: 'Cancelar' }));
+      expect(usersApi.bloquear).not.toHaveBeenCalled();
+
+      await userEvent.click(screen.getByRole('button', { name: 'Opções do post' }));
+      await userEvent.click(screen.getByRole('menuitem', { name: 'Bloquear @caio' }));
+      await userEvent.click(screen.getByRole('button', { name: 'Bloquear' }));
+      expect(usersApi.bloquear).toHaveBeenCalledWith(5);
+      expect(onAutorOculto).toHaveBeenCalledWith(5);
+      expect(screen.queryByRole('dialog')).toBeNull();
+    });
+
+    it('se o bloqueio falhar, a confirmação mostra o erro', async () => {
+      usersApi.bloquear.mockRejectedValue(new Error('Sem conexão.'));
+      render(<PostMenu isOwner={false} autor={autor} onAutorOculto={vi.fn()} />);
+      await userEvent.click(screen.getByRole('button', { name: 'Opções do post' }));
+      await userEvent.click(screen.getByRole('menuitem', { name: 'Bloquear @caio' }));
+      await userEvent.click(screen.getByRole('button', { name: 'Bloquear' }));
+      expect(await screen.findByRole('alert')).toHaveTextContent('Sem conexão.');
+    });
   });
 
   it('mostra "Denunciar" para quem não é o autor', async () => {

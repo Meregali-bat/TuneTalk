@@ -38,7 +38,7 @@ async function carregarConversa(postId, nivel = 1) {
  * se ainda houver resposta escondida (do comentário ou das respostas), "Mostrar respostas"
  * lista o resto ali mesmo, na mesma coluna.
  */
-function ReplyThread({ resposta, onDeleted }) {
+function ReplyThread({ resposta, onDeleted, onAutorOculto }) {
   const [todas, setTodas] = useState(null);
   const [carregando, setCarregando] = useState(false);
   const respostas = todas ?? (resposta.primeiraResposta ? [resposta.primeiraResposta] : []);
@@ -60,9 +60,9 @@ function ReplyThread({ resposta, onDeleted }) {
   return (
     <div role="group" aria-label={`Conversa do comentário de ${resposta.autor.nome}`} className="reply-thread">
       {/* Todos na mesma coluna; a linha entre as fotos mostra quem responde a quem. */}
-      <PostCard post={resposta} variant="reply" onDeleted={onDeleted} threadLine={respostas.length > 0} />
+      <PostCard post={resposta} variant="reply" onDeleted={onDeleted} threadLine={respostas.length > 0} onAutorOculto={onAutorOculto} />
       {respostas.map((r, i) => (
-        <PostCard key={r.id} post={r} variant="reply" onDeleted={tirar} threadLine={i < respostas.length - 1} />
+        <PostCard key={r.id} post={r} variant="reply" onDeleted={tirar} threadLine={i < respostas.length - 1} onAutorOculto={onAutorOculto} />
       ))}
       {temMais && (
         <button type="button" className="reply-thread__more" onClick={mostrarTodas} disabled={carregando}>
@@ -132,6 +132,7 @@ export function PostPage() {
         variant="detail"
         commentCount={respostas.length}
         onDeleted={() => navigate(pai ? `/post/${pai.id}` : '/foryou')}
+        onAutorOculto={() => navigate('/foryou')}
       />
 
       <button type="button" className="reply-prompt" aria-label="Comentar" onClick={() => setReplying(true)}>
@@ -148,7 +149,7 @@ export function PostPage() {
         ) : (
           <div className="reply-list">
             {respostas.map((resposta) => (
-              <ReplyThread key={resposta.id} resposta={resposta} onDeleted={removeReply} />
+              <ReplyThread key={resposta.id} resposta={resposta} onDeleted={removeReply} onAutorOculto={reload} />
             ))}
           </div>
         )}

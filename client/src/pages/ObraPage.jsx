@@ -95,6 +95,7 @@ export function ObraPage({ tipo }) {
   const { posts, error, reload, setPosts } = lista;
 
   const removePost = (id) => setPosts((atuais) => atuais.filter((p) => p.id !== id));
+  const ocultarAutor = (autorId) => setPosts((atuais) => atuais.filter((p) => p.autor.id !== autorId));
   const obra = resumo?.obra;
   const musicaInicial = obra && {
     tipo: obra.tipo,
@@ -124,7 +125,7 @@ export function ObraPage({ tipo }) {
           <Cabecalho resumo={resumo} onAvaliar={() => setAvaliando(true)} />
           <h2 className="obra-posts__titulo">Posts</h2>
           <div className="feed-list">
-            {posts.map((post) => <PostCard key={post.id} post={post} onDeleted={removePost} linkObra={false} />)}
+            {posts.map((post) => <PostCard key={post.id} post={post} onDeleted={removePost} linkObra={false} onAutorOculto={ocultarAutor} />)}
           </div>
           <LoadMore
             carregarMais={lista.carregarMais}
