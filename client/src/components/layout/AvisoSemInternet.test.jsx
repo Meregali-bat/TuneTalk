@@ -15,7 +15,7 @@ describe('AvisoSemInternet', () => {
     expect(screen.queryByRole('status')).toBeNull();
 
     ficar(false);
-    expect(screen.getByRole('status')).toHaveTextContent('Sem internet');
+    expect(screen.getByRole('status')).toHaveTextContent('Você está sem internet');
 
     ficar(true);
     expect(screen.queryByRole('status')).toBeNull();
