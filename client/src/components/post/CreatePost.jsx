@@ -3,7 +3,7 @@ import { Modal } from '../common/Modal.jsx';
 import { Composer } from './Composer.jsx';
 
 // Pode ser controlado de fora (open/onOpenChange), ex.: botão do feed vazio; sem isso, controla o próprio estado.
-// Fechar o diálogo descarta o rascunho.
+// Fechar o diálogo não perde o que foi escrito: o Composer guarda um rascunho no aparelho.
 export function CreatePost({ onCreated, open: controlledOpen, onOpenChange, musicaInicial }) {
   const [internalOpen, setInternalOpen] = useState(false);
   const open = controlledOpen ?? internalOpen;

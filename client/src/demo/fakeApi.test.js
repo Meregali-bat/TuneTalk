@@ -65,6 +65,37 @@ describe('API fake da demo (serviços reais + banco em memória)', () => {
     expect((await call('GET', `/posts/${soTexto.body.id}`)).body.post).toMatchObject({ texto: 'só texto', titulo: null, nota: null });
   });
 
+  it('"Quero ouvir": guarda um disco de outra pessoa, marca nos posts e sai da lista ao avaliar', async () => {
+    await login();
+    const outro = (await call('GET', '/posts?feed=foryou')).body.find((p) => p.titulo && p.autor.id !== api.currentUserId());
+    const disco = { tipo: outro.tipo === 'album' ? 'album' : 'musica', titulo: outro.titulo, artista: outro.artista, capa: outro.capa };
+
+    expect((await call('POST', '/quero-ouvir', JSON.stringify(disco))).status).toBe(201);
+    const [item] = (await call('GET', '/quero-ouvir')).body;
+    expect(item).toMatchObject({ titulo: outro.titulo, artista: outro.artista, capa: outro.capa });
+    const marcado = (await call('GET', '/posts?feed=foryou')).body.find((p) => p.id === outro.id);
+    expect(marcado.queroOuvir).toBe(true);
+
+    const campos = disco.tipo === 'album'
+      ? { albumName: disco.titulo, postType: 'album' }
+      : { musicName: disco.titulo, postType: 'música' };
+    await call('POST', '/posts', JSON.stringify({ ...campos, artistName: disco.artista, nota: 8, texto: 'ouvi!' }));
+    expect((await call('GET', '/quero-ouvir')).body).toEqual([]);
+  });
+
+  it('sugestões de quem seguir: ninguém que a pessoa já segue, nem ela mesma', async () => {
+    await login();
+    const eu = api.currentUserId();
+    const seguindo = new Set((await call('GET', `/users/${eu}`)).body.seguindoIds);
+    const sugestoes = (await call('GET', '/users/sugestoes')).body;
+    expect(Array.isArray(sugestoes)).toBe(true);
+    for (const { usuario, motivo } of sugestoes) {
+      expect(usuario.id).not.toBe(eu);
+      expect(seguindo.has(usuario.id)).toBe(false);
+      expect(typeof motivo).toBe('string');
+    }
+  });
+
   it('troca a senha: a antiga para de valer e a nova entra', async () => {
     await login();
     const trocar = (senhaAtual, novaSenha) => call('PUT', '/users/me/password', JSON.stringify({ senhaAtual, novaSenha }));

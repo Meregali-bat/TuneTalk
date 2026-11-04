@@ -686,15 +686,45 @@ describe('CreatePost', () => {
     });
   });
 
-  it('fechar descarta o rascunho', async () => {
+  it('fechar sem querer não perde o que foi escrito: texto, música e nota voltam', async () => {
     render(<CreatePost onCreated={vi.fn()} />);
     await chooseHelp();
+    await userEvent.click(screen.getByRole('button', { name: 'Estrela 4' }));
     await userEvent.type(texto(), 'rascunho');
     await userEvent.click(screen.getByRole('button', { name: 'Fechar' }));
     expect(screen.queryByRole('dialog')).toBeNull();
 
     await open();
+    expect(texto()).toHaveValue('rascunho');
+    expect(screen.getByRole('group', { name: 'Música escolhida' })).toBeInTheDocument();
+    expect(screen.getByRole('status')).toHaveTextContent('Rascunho recuperado.');
+    expect(screen.getByRole('button', { name: 'Publicar' })).toBeEnabled();
+  });
+
+  it('"Descartar" limpa o rascunho', async () => {
+    render(<CreatePost onCreated={vi.fn()} />);
+    await open();
+    await userEvent.type(texto(), 'rascunho');
+    await userEvent.click(screen.getByRole('button', { name: 'Fechar' }));
+
+    await open();
+    await userEvent.click(screen.getByRole('button', { name: 'Descartar' }));
     expect(texto()).toHaveValue('');
-    expect(screen.queryByRole('group', { name: 'Música escolhida' })).toBeNull();
+    await userEvent.click(screen.getByRole('button', { name: 'Fechar' }));
+    await open();
+    expect(texto()).toHaveValue('');
+    expect(screen.queryByText('Rascunho recuperado.')).toBeNull();
+  });
+
+  it('publicar apaga o rascunho', async () => {
+    postsApi.create.mockResolvedValue({ id: 1 });
+    render(<CreatePost onCreated={vi.fn()} />);
+    await open();
+    await userEvent.type(texto(), 'bom dia');
+    await userEvent.click(screen.getByRole('button', { name: 'Publicar' }));
+    await waitFor(() => expect(screen.queryByRole('dialog')).toBeNull());
+
+    await open();
+    expect(texto()).toHaveValue('');
   });
 });

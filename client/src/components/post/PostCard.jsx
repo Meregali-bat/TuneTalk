@@ -16,6 +16,7 @@ import { ShareButton } from './ShareButton.jsx';
 import { PostMenu } from './PostMenu.jsx';
 import { LyricQuote } from './LyricQuote.jsx';
 import { PollBlock } from './PollBlock.jsx';
+import { QueroOuvirButton } from './QueroOuvirButton.jsx';
 
 // Texto com as marcações (@usuario, link para o perfil) e hashtags (link para a página da tag).
 function TextoComMarcacoes({ texto }) {
@@ -29,7 +30,7 @@ function TextoComMarcacoes({ texto }) {
 const TIPO_LABEL = { album: 'álbum', 'música': 'música' };
 
 // Tocar na música abre a página do álbum/música (com a média de todo mundo); dentro dela, abre o post.
-function MusicBlock({ post, postUrl, linkObra }) {
+function MusicBlock({ post, postUrl, linkObra, isOwner }) {
   const isAlbum = post.tipo === 'album';
   const destino = linkObra && post.artista ? obraUrl(post) : postUrl;
   const meta = [post.artista, TIPO_LABEL[post.tipo], releaseInfo(post.releaseDate)].filter(Boolean).join(' • ');
@@ -52,7 +53,13 @@ function MusicBlock({ post, postUrl, linkObra }) {
           </span>
         </div>
       </Link>
-      {!isAlbum && post.preview && <PlayButton src={post.preview} titulo={post.titulo} artista={post.artista} />}
+      <div className="post-card__music-actions">
+        {!isAlbum && post.preview && <PlayButton src={post.preview} titulo={post.titulo} artista={post.artista} />}
+        {/* No post de outra pessoa: guardar o disco para ouvir depois. */}
+        {!isOwner && post.queroOuvir !== undefined && post.artista && (
+          <QueroOuvirButton disco={post} salvo={post.queroOuvir} />
+        )}
+      </div>
     </div>
   );
 }
@@ -161,7 +168,7 @@ export function PostCard({
 
       {post.enquete && <PollBlock post={post} />}
       {post.titulo && <LyricQuote versos={post.trechoLetra} titulo={post.titulo} artista={post.artista} />}
-      {post.titulo && <MusicBlock post={post} postUrl={postUrl} linkObra={linkObra} />}
+      {post.titulo && <MusicBlock post={post} postUrl={postUrl} linkObra={linkObra} isOwner={isOwner} />}
 
       <footer className="post-card__actions">
         <Link to={postUrl} className="post-action" aria-label={`Comentários: ${commentCount}`}>

@@ -1,13 +1,14 @@
 import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
-import { act, fireEvent, screen, waitFor } from '@testing-library/react';
+import { act, fireEvent, screen, waitFor, within } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { FeedPage } from './FeedPage.jsx';
-import { musicApi, postsApi } from '../api/index.js';
+import { musicApi, postsApi, usersApi } from '../api/index.js';
 import { renderWithProviders } from '../test/render.jsx';
 
 vi.mock('../api/index.js', () => ({
   postsApi: { feed: vi.fn(), remove: vi.fn(), like: vi.fn(), unlike: vi.fn(), create: vi.fn() },
   musicApi: { search: vi.fn() },
+  usersApi: { sugestoes: vi.fn(), follow: vi.fn(), unfollow: vi.fn() },
 }));
 
 const post = (id, autorId = 2) => ({
@@ -74,6 +75,24 @@ describe('FeedPage', () => {
     renderWithProviders(<FeedPage feed="seguindo" />);
     expect(await screen.findByRole('heading', { name: 'Nada de quem você segue ainda' })).toBeInTheDocument();
     expect(screen.getByRole('link', { name: 'Ver posts para você' })).toHaveAttribute('href', '/foryou');
+  });
+
+  it('"seguindo" vazio sugere quem seguir; depois de seguir alguém, dá para ver os posts', async () => {
+    postsApi.feed.mockResolvedValue([]);
+    usersApi.sugestoes.mockResolvedValue([
+      { usuario: { id: 5, nome: 'caio', fotoPerfil: 'c.png' }, motivo: 'Notas parecidas com as suas em 3 discos' },
+    ]);
+    usersApi.follow.mockResolvedValue(null);
+    renderWithProviders(<FeedPage feed="seguindo" />);
+
+    const sugestoes = await screen.findByRole('region', { name: 'Quem seguir' });
+    expect(within(sugestoes).getByText('Notas parecidas com as suas em 3 discos')).toBeInTheDocument();
+    await userEvent.click(within(sugestoes).getByRole('button', { name: 'Seguir' }));
+    expect(usersApi.follow).toHaveBeenCalledWith(5);
+
+    postsApi.feed.mockResolvedValue([post(1)]);
+    await userEvent.click(screen.getByRole('button', { name: 'Ver posts de quem você seguiu' }));
+    expect(await screen.findByText('post 1')).toBeInTheDocument();
   });
 
   it('mostra erro quando o feed falha e permite tentar de novo', async () => {

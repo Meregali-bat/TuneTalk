@@ -4,6 +4,7 @@ import { hashtagsApi, usersApi } from '../api/index.js';
 import { useAsync } from '../hooks/useAsync.js';
 import { useDebouncedValue } from '../hooks/useDebouncedValue.js';
 import { UserRow } from '../components/profile/UserRow.jsx';
+import { SugestoesDeQuemSeguir } from '../components/profile/SugestoesDeQuemSeguir.jsx';
 
 const ABAS = {
   hashtags: { rotulo: 'Hashtags', campo: 'Buscar hashtags', placeholder: '#hashtag', buscar: (q) => hashtagsApi.search(q) },
@@ -115,7 +116,12 @@ export function SearchPage() {
       </div>
 
       {busca.status === 'idle' && aba === 'hashtags' && <EmAlta />}
-      {busca.status === 'idle' && aba === 'pessoas' && <p className="composer-hint">Busque pelo nome ou pelo @.</p>}
+      {busca.status === 'idle' && aba === 'pessoas' && (
+        <>
+          <p className="composer-hint">Busque pelo nome ou pelo @.</p>
+          <SugestoesDeQuemSeguir titulo="Sugestões para você" />
+        </>
+      )}
       {busca.status === 'loading' && <p role="status" className="composer-hint">Buscando…</p>}
       {busca.status === 'error' && (
         <p role="alert" className="composer-error">Não foi possível buscar agora. Tente de novo.</p>

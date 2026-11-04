@@ -8,5 +8,7 @@ window.HTMLMediaElement.prototype.pause = () => {};
 
 afterEach(() => {
   cleanup();
+  // Rascunhos e preferências guardados num teste não vazam para o próximo.
+  window.localStorage.clear();
   vi.restoreAllMocks();
 });

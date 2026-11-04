@@ -230,6 +230,37 @@ describe('postService', () => {
     });
   });
 
+  describe('lista "Quero ouvir"', () => {
+    let queroOuvir;
+    beforeEach(() => {
+      queroOuvir = { chaves: vi.fn().mockResolvedValue(new Set(['musica|help!|the beatles'])), remover: vi.fn() };
+      service = createPostService({ posts, likes, notifications, users, queroOuvir, now: () => now });
+    });
+
+    it('marca nos posts com música se o disco está na lista de quem vê', async () => {
+      posts.listLatest.mockResolvedValue([
+        post(1, 2, { tipo: 'música', titulo: 'HELP!', artista: 'The Beatles' }),
+        post(2, 2, { tipo: 'album', titulo: 'Help!', artista: 'The Beatles' }),
+        post(3, 2, { titulo: null }),
+      ]);
+      const feed = await service.forYou(7);
+      expect(queroOuvir.chaves).toHaveBeenCalledWith(7);
+      expect(feed.map((p) => p.queroOuvir)).toEqual([true, false, undefined]);
+    });
+
+    it('avaliar um disco tira ele da lista; comentário e post sem música não mexem', async () => {
+      await service.create(7, { musicName: 'Help!', artistName: 'The Beatles', postType: 'música', nota: 8 });
+      expect(queroOuvir.remover).toHaveBeenCalledWith(7, 'musica|help!|the beatles');
+      await service.create(7, { albumName: 'Abbey Road', artistName: 'The Beatles', postType: 'album', nota: 8 });
+      expect(queroOuvir.remover).toHaveBeenLastCalledWith(7, 'album|abbey road|the beatles');
+
+      queroOuvir.remover.mockClear();
+      await service.create(7, { texto: 'oi' });
+      await service.create(7, { musicName: 'Help!', artistName: 'The Beatles', nota: 8, parentId: 1 });
+      expect(queroOuvir.remover).not.toHaveBeenCalled();
+    });
+  });
+
   describe('bloqueios e silêncios', () => {
     let restricoes;
     beforeEach(() => {

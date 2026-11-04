@@ -10,6 +10,7 @@ import { createMusicRoutes } from './http/musicRoutes.js';
 import { createHashtagRoutes } from './http/hashtagRoutes.js';
 import { createPushRoutes } from './http/pushRoutes.js';
 import { createObraRoutes } from './http/obraRoutes.js';
+import { createQueroOuvirRoutes } from './http/queroOuvirRoutes.js';
 import { createShareApiRoutes, createSharePageRoutes } from './http/shareRoutes.js';
 import { apiNotFound, errorHandler } from './http/middlewares.js';
 
@@ -44,6 +45,7 @@ export function createApp(deps) {
   api.use('/hashtags', createHashtagRoutes(deps));
   api.use('/push', createPushRoutes(deps));
   api.use('/obras', createObraRoutes(deps));
+  api.use('/quero-ouvir', createQueroOuvirRoutes(deps));
   if (deps.sharePreview) api.use(createShareApiRoutes(deps));
   api.use(apiNotFound);
   app.use('/api', api);

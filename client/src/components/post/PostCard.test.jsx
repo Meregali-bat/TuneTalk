@@ -2,11 +2,12 @@ import { describe, it, expect, vi, beforeEach } from 'vitest';
 import { screen } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { PostCard } from './PostCard.jsx';
-import { postsApi } from '../../api/index.js';
+import { postsApi, queroOuvirApi } from '../../api/index.js';
 import { renderWithProviders } from '../../test/render.jsx';
 
 vi.mock('../../api/index.js', () => ({
   postsApi: { like: vi.fn(), unlike: vi.fn(), remove: vi.fn(), pin: vi.fn(), unpin: vi.fn() },
+  queroOuvirApi: { add: vi.fn(), remove: vi.fn() },
 }));
 
 const musicPost = {
@@ -60,6 +61,28 @@ describe('PostCard', () => {
     renderWithProviders(<PostCard post={{ ...musicPost, tipo: 'album', titulo: 'AC/DC Live', artista: 'AC/DC' }} />);
     expect(screen.getByAltText('Poster do álbum').closest('a'))
       .toHaveAttribute('href', '/album?titulo=AC%2FDC+Live&artista=AC%2FDC');
+  });
+
+  it('"Quero ouvir": guarda o disco do post de outra pessoa e mostra quando já está na lista', async () => {
+    queroOuvirApi.add.mockResolvedValue({ id: 1 });
+    renderWithProviders(<PostCard post={{ ...musicPost, queroOuvir: false }} />);
+    const botao = screen.getByRole('button', { name: 'Guardar no Quero ouvir' });
+    await userEvent.click(botao);
+    expect(queroOuvirApi.add).toHaveBeenCalledWith({
+      tipo: 'musica', titulo: 'Help!', artista: 'The Beatles', capa: 'help.jpg', releaseDate: '138', preview: 'help.mp3',
+    });
+    expect(screen.getByRole('button', { name: 'Tirar do Quero ouvir' })).toHaveAttribute('aria-pressed', 'true');
+  });
+
+  it('"Quero ouvir" volta atrás se falhar e não aparece no próprio post', async () => {
+    queroOuvirApi.add.mockRejectedValue(new Error('sem rede'));
+    const { unmount } = renderWithProviders(<PostCard post={{ ...musicPost, queroOuvir: false }} />);
+    await userEvent.click(screen.getByRole('button', { name: 'Guardar no Quero ouvir' }));
+    expect(await screen.findByRole('button', { name: 'Guardar no Quero ouvir' })).toHaveAttribute('aria-pressed', 'false');
+    unmount();
+
+    renderWithProviders(<PostCard post={{ ...musicPost, queroOuvir: false, autor: { ...musicPost.autor, id: 1 } }} />);
+    expect(screen.queryByRole('button', { name: /Quero ouvir/ })).toBeNull();
   });
 
   it('dentro da página do disco, a música do post leva ao post', () => {

@@ -2,7 +2,7 @@ import { Router } from 'express';
 import { badRequest } from '../errors.js';
 import { asyncRoute, currentUserId, parseIdParam, requireAuth, requireUsername } from './middlewares.js';
 
-export function createUserRoutes({ userService, postService, restricaoService, uploader, sessions }) {
+export function createUserRoutes({ userService, postService, restricaoService, sugestaoService, uploader, sessions }) {
   const router = Router();
   router.use(requireAuth);
   router.param('id', parseIdParam);
@@ -41,6 +41,11 @@ export function createUserRoutes({ userService, postService, restricaoService, u
     const usuario = await userService.updateProfile(currentUserId(req), { nome, bio, nomeExibicao, fotoPerfil, bannerUrl, mostrarSeloFundador });
     if (usuario.nome) req.session.user = { ...req.session.user, nome: usuario.nome };
     res.json(usuario);
+  }));
+
+  // Sugestões de quem seguir.
+  router.get('/sugestoes', asyncRoute(async (req, res) => {
+    res.json(await sugestaoService.listar(currentUserId(req)));
   }));
 
   // Quem a pessoa bloqueou e silenciou.

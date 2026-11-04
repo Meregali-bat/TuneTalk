@@ -6,6 +6,7 @@ import { BackBar } from '../components/layout/BackBar.jsx';
 import { PostCard } from '../components/post/PostCard.jsx';
 import { StarRating } from '../components/post/StarRating.jsx';
 import { PlayButton } from '../components/post/PlayButton.jsx';
+import { QueroOuvirButton } from '../components/post/QueroOuvirButton.jsx';
 import { CreatePost } from '../components/post/CreatePost.jsx';
 import { PullToRefresh } from '../components/common/PullToRefresh.jsx';
 import { LoadMore } from '../components/common/LoadMore.jsx';
@@ -72,9 +73,12 @@ function Cabecalho({ resumo, onAvaliar }) {
         )}
       </div>
 
-      <button type="button" className="obra-header__avaliar" onClick={onAvaliar}>
-        <i className="bi bi-star" aria-hidden="true" /> Avaliar {ehAlbum ? 'este álbum' : 'esta música'}
-      </button>
+      <div className="obra-header__botoes">
+        <button type="button" className="obra-header__avaliar" onClick={onAvaliar}>
+          <i className="bi bi-star" aria-hidden="true" /> Avaliar {ehAlbum ? 'este álbum' : 'esta música'}
+        </button>
+        <QueroOuvirButton disco={obra} salvo={resumo.naLista} comTexto />
+      </div>
     </section>
   );
 }

@@ -31,6 +31,14 @@ export const authApi = {
 
 const paginaSeguinte = (depois) => (depois ? `&antes=${encodeURIComponent(depois.data)}&antesId=${depois.id}` : '');
 
+// Lista "Quero ouvir". disco: { tipo: 'album' | 'musica', titulo, artista, capa?, releaseDate?, preview? }.
+export const queroOuvirApi = {
+  list: () => request('/quero-ouvir'),
+  add: (disco) => request('/quero-ouvir', { method: 'POST', body: disco }),
+  remove: ({ tipo, titulo, artista }) =>
+    request(`/quero-ouvir?${new URLSearchParams({ tipo, titulo, artista })}`, { method: 'DELETE' }),
+};
+
 // Página de um álbum ou música (tipo 'album' ou 'musica'): resumo das notas e posts, em páginas.
 export const obrasApi = {
   get: (tipo, titulo, artista, depois) =>
@@ -77,6 +85,8 @@ export const usersApi = {
   desbloquear: (id) => request(`/users/${id}/bloqueio`, { method: 'DELETE' }),
   silenciar: (id) => request(`/users/${id}/silencio`, { method: 'POST' }),
   dessilenciar: (id) => request(`/users/${id}/silencio`, { method: 'DELETE' }),
+  // Quem seguir: [{ usuario, motivo }].
+  sugestoes: () => request('/users/sugestoes'),
   // { bloqueados, silenciados }
   restricoes: () => request('/users/me/restricoes'),
 };

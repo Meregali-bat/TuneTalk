@@ -8,6 +8,8 @@ import { createPasswords } from '../../../server/src/security/passwords.js';
 import { createPasswordResetService } from '../../../server/src/services/passwordResetService.js';
 import { createHashtagService } from '../../../server/src/services/hashtagService.js';
 import { createRestricaoService, semNotificacaoDeOcultos } from '../../../server/src/services/restricaoService.js';
+import { createQueroOuvirService } from '../../../server/src/services/queroOuvirService.js';
+import { createSugestaoService } from '../../../server/src/services/sugestaoService.js';
 import { createMemoryRepositories } from './memoryRepositories.js';
 import { ALBUM_CATALOG, ARTIST_CATALOG, CATALOG, DEMO_LOGIN, createSeed } from './seed.js';
 import { avatar } from './art.js';
@@ -71,7 +73,7 @@ export function createFakeApi({ storage = globalThis.localStorage } = {}) {
     // Como no servidor: sem notificações de quem a pessoa silenciou ou bloqueou.
     const notifications = semNotificacaoDeOcultos(repos.notifications, repos.restricoes);
     const postService = createPostService({
-      posts: repos.posts, likes: repos.likes, notifications, users: repos.users, restricoes: repos.restricoes,
+      posts: repos.posts, likes: repos.likes, notifications, users: repos.users, restricoes: repos.restricoes, queroOuvir: repos.queroOuvir,
       capaEnqueteValida: (url) => url.startsWith('data:image/svg+xml'),
     });
     services = {
@@ -94,6 +96,8 @@ export function createFakeApi({ storage = globalThis.localStorage } = {}) {
       notifications: repos.notifications,
       hashtags: createHashtagService({ posts: repos.posts }),
       restricoes: createRestricaoService({ restricoes: repos.restricoes, users: repos.users }),
+      sugestoes: createSugestaoService({ sugestoes: repos.sugestoes, follows: repos.follows, restricoes: repos.restricoes }),
+      queroOuvir: createQueroOuvirService({ queroOuvir: repos.queroOuvir, capaValida: (url) => url.startsWith('data:image/svg+xml') }),
     };
   };
   build();
@@ -188,7 +192,14 @@ export function createFakeApi({ storage = globalThis.localStorage } = {}) {
     ['DELETE', /^\/users\/(\d+)\/bloqueio$/, async ({ id }) => { await services.restricoes.desbloquear(me(), id); return noContent(); }],
     ['POST', /^\/users\/(\d+)\/silencio$/, async ({ id }) => { await services.restricoes.silenciar(me(), id); return noContent(); }],
     ['DELETE', /^\/users\/(\d+)\/silencio$/, async ({ id }) => { await services.restricoes.dessilenciar(me(), id); return noContent(); }],
+    ['GET', /^\/users\/sugestoes$/, async () => ok(await services.sugestoes.listar(me()))],
     ['GET', /^\/users\/me\/restricoes$/, async () => ok(await services.restricoes.listar(me()))],
+    ['GET', /^\/quero-ouvir$/, async () => ok(await services.queroOuvir.listar(me()))],
+    ['POST', /^\/quero-ouvir$/, async ({ body }) => ok(await services.queroOuvir.adicionar(me(), body), 201)],
+    ['DELETE', /^\/quero-ouvir$/, async ({ query }) => {
+      await services.queroOuvir.remover(me(), { tipo: query.get('tipo'), titulo: query.get('titulo'), artista: query.get('artista') });
+      return noContent();
+    }],
 
     ['GET', /^\/notifications$/, async () => ok(await services.notifications.listForUser(me()))],
     ['GET', /^\/notifications\/unread-count$/, async () => ok({ count: await services.notifications.countUnread(me()) })],

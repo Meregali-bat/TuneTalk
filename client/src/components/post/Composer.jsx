@@ -1,5 +1,7 @@
-import { useEffect, useId, useLayoutEffect, useRef, useState } from 'react';
+import { useContext, useEffect, useId, useLayoutEffect, useRef, useState } from 'react';
 import { postsApi } from '../../api/index.js';
+import { AuthContext } from '../../auth/AuthContext.jsx';
+import { apagarRascunho, chaveRascunho, lerRascunho, salvarRascunho } from '../../hooks/rascunho.js';
 import { useMusicSearch } from '../../hooks/useMusicSearch.js';
 import { formatDuration } from '../../utils/postFormat.js';
 import { StarRatingInput } from './StarRatingInput.jsx';
@@ -184,13 +186,20 @@ export function Composer({
     textoRef.current?.setSelectionRange(cursorPendente, cursorPendente);
     setCursorPendente(null);
   }, [cursorPendente]);
-  const [texto, setTexto] = useState('');
-  const [track, setTrack] = useState(musicaInicial);
-  const [nota, setNota] = useState(null);
+  // Rascunho: o que a pessoa escreveu e não publicou volta quando ela abre de novo (por conta e
+  // por post/comentário). Com um disco já escolhido ("Avaliar"), só o texto volta.
+  const usuarioId = useContext(AuthContext)?.user?.id;
+  const chave = chaveRascunho(usuarioId, parentId);
+  const [rascunho] = useState(() => lerRascunho(chave));
+  const musicaDoRascunho = !musicaInicial && rascunho?.track ? rascunho : null;
+  const [recuperado, setRecuperado] = useState(Boolean(rascunho));
+  const [texto, setTexto] = useState(rascunho?.texto ?? '');
+  const [track, setTrack] = useState(musicaInicial ?? musicaDoRascunho?.track ?? null);
+  const [nota, setNota] = useState(musicaDoRascunho?.nota ?? null);
   const [searching, setSearching] = useState(false);
   const [buscandoPara, setBuscandoPara] = useState('post'); // 'post' (música do post) ou 'enquete'
-  const [enquete, setEnquete] = useState(null); // { opcoes: [faixas], duracaoDias }
-  const [trecho, setTrecho] = useState(null); // versos da letra escolhidos
+  const [enquete, setEnquete] = useState(parentId === undefined ? rascunho?.enquete ?? null : null); // { opcoes: [faixas], duracaoDias }
+  const [trecho, setTrecho] = useState(musicaDoRascunho?.trecho ?? null); // versos da letra escolhidos
   const [escolhendoTrecho, setEscolhendoTrecho] = useState(false);
   const [query, setQuery] = useState('');
   const [tipoBusca, setTipoBusca] = useState('musica');
@@ -205,6 +214,24 @@ export function Composer({
   const [sending, setSending] = useState(null); // null, 'imagem' ou 'post'
 
   const marcacao = useMentions(texto, cursor);
+
+  // Guarda a cada mudança; publicar apaga (ver submit).
+  const publicado = useRef(false);
+  useEffect(() => {
+    if (publicado.current) return;
+    salvarRascunho(chave, { texto, track, nota, trecho, enquete });
+  }, [chave, texto, track, nota, trecho, enquete]);
+
+  const descartarRascunho = () => {
+    apagarRascunho(chave);
+    setTexto('');
+    setTrack(musicaInicial);
+    setNota(null);
+    setTrecho(null);
+    setEnquete(null);
+    setRecuperado(false);
+    textoRef.current?.focus();
+  };
 
   const marcar = (usuario) => {
     const completo = marcacao.completar(usuario);
@@ -326,6 +353,8 @@ export function Composer({
           },
         }),
       });
+      publicado.current = true;
+      apagarRascunho(chave);
       onPublished();
     } catch (err) {
       setError(err.message);
@@ -371,6 +400,12 @@ export function Composer({
 
   return (
     <form className="composer-step" onSubmit={submit}>
+      {recuperado && temConteudo && (
+        <p className="composer-rascunho" role="status">
+          <i className="bi bi-clock-history" aria-hidden="true" /> Rascunho recuperado.
+          <button type="button" className="composer-link" onClick={descartarRascunho}>Descartar</button>
+        </p>
+      )}
       <div className="composer-field">
         <label htmlFor={textoId}>{textLabel}</label>
         <textarea

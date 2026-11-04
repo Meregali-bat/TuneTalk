@@ -5,6 +5,7 @@ import { validarTrecho } from '../../../shared/lyrics.js';
 import { capaDoDeezer } from '../../../shared/favorites.js';
 import { validarEnquete } from '../../../shared/poll.js';
 import { SEM_RESTRICOES, haBloqueio } from './restricaoService.js';
+import { chaveObra } from '../../../shared/obra.js';
 
 const TEXTO_MAX = 500;
 // Ao chegar a esse número de posts (sem contar comentários), o TuneTalk dá os parabéns.
@@ -77,6 +78,8 @@ export function createPostService({
   users,
   // Bloqueios e silêncios: some com os posts de quem a pessoa não vê e barra interações.
   restricoes = SEM_RESTRICOES,
+  // Lista "Quero ouvir": marca nos posts o que a pessoa guardou e tira da lista ao avaliar.
+  queroOuvir = null,
   now = () => new Date(),
   // Capas das opções de enquete: no app real, só do Deezer; a demo troca pelas capas desenhadas dela.
   capaEnqueteValida = capaDoDeezer,
@@ -92,7 +95,12 @@ export function createPostService({
       likes.likedPostIds(viewerId).then((ids) => new Set(ids)),
       comEnquete.length ? posts.votosDe(viewerId, comEnquete) : new Map(),
     ]);
-    return list.map((post) => comVoto({ ...post, curtido: liked.has(post.id) }, votos));
+    const salvos = queroOuvir && list.some((post) => post.titulo) ? await queroOuvir.chaves(viewerId) : null;
+    return list.map((post) => comVoto({
+      ...post,
+      curtido: liked.has(post.id),
+      ...(salvos && post.titulo && { queroOuvir: salvos.has(chaveObra(post)) }),
+    }, votos));
   };
 
   const ocultosPara = (viewerId) => restricoes.ocultosPara(viewerId);
@@ -184,6 +192,8 @@ export function createPostService({
           releaseDate: base.releaseDate,
           preview: base.preview,
         },
+        // Está na lista "Quero ouvir" de quem vê?
+        naLista: queroOuvir ? (await queroOuvir.chaves(viewerId)).has(chaveObra(obra)) : false,
         ...resumirNotas(notas),
         posts: await markLiked(lista, viewerId),
       };
@@ -277,6 +287,12 @@ export function createPostService({
       if (pai) await notifyAuthor(pai, autorId, 'comment', 'comentou no seu post');
       await notifyMentions(data.texto, { id, autorId, pai });
       if (!pai) await celebrarMarco(autorId, id);
+      // Avaliou um disco que estava no "Quero ouvir": já ouviu, sai da lista.
+      if (hasMusic && !pai && queroOuvir) {
+        const tipo = data.postType === 'album' ? 'album' : 'musica';
+        const titulo = tipo === 'album' ? data.albumName : data.musicName;
+        await queroOuvir.remover(autorId, chaveObra({ tipo, titulo, artista: data.artistName }));
+      }
       return id;
     },
 

@@ -203,6 +203,14 @@ describe('rotas /api/users', () => {
     });
   });
 
+  it('GET /sugestoes traz as sugestões de quem seguir para quem está logado', async () => {
+    deps.sugestaoService.listar.mockResolvedValue([{ usuario: { id: 2 }, motivo: 'x' }]);
+    const agent = await loggedAgent(app);
+    const res = await agent.get('/api/users/sugestoes').expect(200);
+    expect(res.body).toEqual([{ usuario: { id: 2 }, motivo: 'x' }]);
+    expect(deps.sugestaoService.listar).toHaveBeenCalledWith(1);
+  });
+
   describe('bloquear e silenciar', () => {
     it('POST faz e DELETE desfaz, sempre para quem está logado', async () => {
       const agent = await loggedAgent(app);

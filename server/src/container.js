@@ -25,6 +25,10 @@ import { createPushSubscriptionRepository } from './repositories/pushSubscriptio
 import { createPushService, withPush } from './services/pushService.js';
 import { renderizarImagem } from './share/postCard.js';
 import { createRestricaoRepository } from './repositories/restricaoRepository.js';
+import { createQueroOuvirRepository } from './repositories/queroOuvirRepository.js';
+import { createQueroOuvirService } from './services/queroOuvirService.js';
+import { createSugestaoRepository } from './repositories/sugestaoRepository.js';
+import { createSugestaoService } from './services/sugestaoService.js';
 import { createRestricaoService, semNotificacaoDeOcultos } from './services/restricaoService.js';
 
 const rootDir = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '../..');
@@ -60,6 +64,7 @@ export function buildContainer(config) {
     subscriptions: createPushSubscriptionRepository(prisma), webpush, vapid: config.vapid,
   });
   const restricoes = createRestricaoRepository(prisma);
+  const queroOuvir = createQueroOuvirRepository(prisma);
   // Toda notificação criada também vira aviso no celular de quem ativou, menos as de quem a
   // pessoa silenciou ou bloqueou.
   const notifications = semNotificacaoDeOcultos(
@@ -72,7 +77,7 @@ export function buildContainer(config) {
   const mailer = config.resendApiKey
     ? createResendMailer({ apiKey: config.resendApiKey, from: config.emailFrom })
     : createConsoleMailer();
-  const postService = createPostService({ posts, likes, notifications, users, restricoes });
+  const postService = createPostService({ posts, likes, notifications, users, restricoes, queroOuvir });
 
   return {
     authService: createAuthService({ users, passwords, notifications }),
@@ -82,6 +87,8 @@ export function buildContainer(config) {
     postService,
     userService: createUserService({ users, follows, postService, notifications, passwords, restricoes }),
     restricaoService: createRestricaoService({ restricoes, users }),
+    queroOuvirService: createQueroOuvirService({ queroOuvir }),
+    sugestaoService: createSugestaoService({ sugestoes: createSugestaoRepository(prisma), follows, restricoes }),
     musicService: createMusicService(),
     lyricsService: createLyricsService(),
     hashtagService: createHashtagService({ posts }),

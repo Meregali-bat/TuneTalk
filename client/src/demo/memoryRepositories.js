@@ -39,7 +39,8 @@ export function createMemoryRepositories(state, onChange) {
   const byIdDesc = (a, b) => b.id - a.id;
   const topLevel = () => state.posts.filter((p) => !p.parentId);
   // Mesmo critério do banco: título e artista sem diferenciar maiúsculas; álbum separado de música.
-  const igual = (a, b) => (a ?? '').toLowerCase() === (b ?? '').toLowerCase();
+  const igualdade = (texto) => (texto ?? '').trim().toLowerCase();
+  const igual = (a, b) => igualdade(a) === igualdade(b);
   const daObra = (p, { tipo, titulo, artista }) => igual(p.artistName, artista) && (tipo === 'album'
     ? p.postType === 'album' && igual(p.albumName, titulo)
     : p.postType !== 'album' && igual(p.musicName, titulo));
@@ -403,5 +404,71 @@ export function createMemoryRepositories(state, onChange) {
     },
   };
 
-  return { users, follows, posts, likes, resets, notifications, restricoes };
+  state.queroOuvir ??= [];
+  state.seq.queroOuvir ??= 0;
+  // Mesmo comportamento do queroOuvirRepository do servidor.
+  const queroOuvir = {
+    async listar(usuarioId) {
+      return state.queroOuvir
+        .filter((i) => i.usuarioId === usuarioId)
+        .sort((a, b) => b.data.localeCompare(a.data) || b.id - a.id)
+        .map(({ usuarioId: _u, chave: _c, ...item }) => item);
+    },
+    async adicionar(usuarioId, item) {
+      let atual = state.queroOuvir.find((i) => i.usuarioId === usuarioId && i.chave === item.chave);
+      if (!atual) {
+        atual = { id: nextId('queroOuvir'), usuarioId, ...item, data: new Date().toISOString() };
+        state.queroOuvir.push(atual);
+        changed();
+      }
+      const { usuarioId: _u, chave: _c, ...resto } = atual;
+      return resto;
+    },
+    async remover(usuarioId, chave) {
+      state.queroOuvir = state.queroOuvir.filter((i) => !(i.usuarioId === usuarioId && i.chave === chave));
+      changed();
+    },
+    async chaves(usuarioId) {
+      return new Set(state.queroOuvir.filter((i) => i.usuarioId === usuarioId).map((i) => i.chave));
+    },
+  };
+
+  // Mesmas consultas do sugestaoRepository do servidor, sobre o banco em memória.
+  const sugestoes = {
+    async parecidos(usuarioId) {
+      const chave = (p) => (p.postType === 'album' ? `album|${igualdade(p.albumName)}` : `musica|${igualdade(p.musicName)}`)
+        + `|${igualdade(p.artistName)}`;
+      // Nota mais recente de cada pessoa para cada disco.
+      const notas = new Map();
+      for (const p of [...topLevel()].sort((a, b) => b.createdAt.localeCompare(a.createdAt) || b.id - a.id)) {
+        const titulo = p.postType === 'album' ? p.albumName : p.musicName;
+        if (p.nota == null || !p.artistName || !titulo) continue;
+        const k = `${p.autorId}#${chave(p)}`;
+        if (!notas.has(k)) notas.set(k, { autorId: p.autorId, chave: chave(p), nota: p.nota });
+      }
+      const minhas = new Map([...notas.values()].filter((n) => n.autorId === usuarioId).map((n) => [n.chave, n.nota]));
+      const porPessoa = new Map();
+      for (const n of notas.values()) {
+        if (n.autorId === usuarioId || !minhas.has(n.chave)) continue;
+        const atual = porPessoa.get(n.autorId) ?? { autorId: n.autorId, emComum: 0, soma: 0 };
+        atual.emComum += 1;
+        atual.soma += Math.abs(n.nota - minhas.get(n.chave));
+        porPessoa.set(n.autorId, atual);
+      }
+      return [...porPessoa.values()].map(({ soma, ...p }) => ({ ...p, diferenca: soma / p.emComum }));
+    },
+    async ativos({ desde = null, limite }) {
+      const contagem = new Map();
+      for (const p of topLevel()) {
+        if (desde && new Date(p.createdAt) < desde) continue;
+        contagem.set(p.autorId, (contagem.get(p.autorId) ?? 0) + 1);
+      }
+      return [...contagem].map(([autorId, n]) => ({ autorId, posts: n })).sort((a, b) => b.posts - a.posts).slice(0, limite);
+    },
+    async usuarios(ids) {
+      return ids.map(userById).filter((u) => u?.nome).map(publicUser);
+    },
+  };
+
+  return { users, follows, posts, likes, resets, notifications, restricoes, queroOuvir, sugestoes };
 }

@@ -6,7 +6,7 @@ import { hashtagsApi, usersApi } from '../api/index.js';
 import { renderWithProviders } from '../test/render.jsx';
 
 vi.mock('../api/index.js', () => ({
-  usersApi: { search: vi.fn(), follow: vi.fn(), unfollow: vi.fn() },
+  usersApi: { search: vi.fn(), follow: vi.fn(), unfollow: vi.fn(), sugestoes: vi.fn() },
   hashtagsApi: { trending: vi.fn(), search: vi.fn() },
 }));
 
@@ -115,5 +115,14 @@ describe('SearchPage (buscar)', () => {
       await userEvent.type(campo(), '#g');
       expect(screen.getByRole('tab', { name: 'Hashtags' })).toHaveAttribute('aria-selected', 'true');
     });
+  });
+
+  it('na aba Pessoas, antes de buscar, mostra sugestões de quem seguir', async () => {
+    usersApi.sugestoes.mockResolvedValue([{ usuario: { id: 5, nome: 'caio', fotoPerfil: 'c.png' }, motivo: 'Posta bastante por aqui' }]);
+    renderWithProviders(<SearchPage />);
+    await userEvent.click(screen.getByRole('tab', { name: 'Pessoas' }));
+    const secao = await screen.findByRole('region', { name: 'Sugestões para você' });
+    expect(within(secao).getByRole('link', { name: /caio/ })).toHaveAttribute('href', '/perfil/5');
+    expect(within(secao).getByText('Posta bastante por aqui')).toBeInTheDocument();
   });
 });

@@ -29,6 +29,8 @@ export function buildTestApp(overrides = {}) {
     lyricsService: { letra: vi.fn() },
     pushService: { chavePublica: vi.fn(() => 'chave-publica'), inscrever: vi.fn(), cancelar: vi.fn() },
     hashtagService: { trending: vi.fn(), search: vi.fn() },
+    sugestaoService: { listar: vi.fn() },
+    queroOuvirService: { listar: vi.fn(), adicionar: vi.fn(), remover: vi.fn() },
     restricaoService: { bloquear: vi.fn(), desbloquear: vi.fn(), silenciar: vi.fn(), dessilenciar: vi.fn(), listar: vi.fn() },
     uploader: { signUpload: vi.fn(), isOwnUrl: vi.fn() },
     sessionSecret: 'test-secret',

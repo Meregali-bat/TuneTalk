@@ -100,6 +100,9 @@ export function Header() {
             <Link className="icon-button" to="/buscar" aria-label="Buscar">
               <i className="bi bi-search" aria-hidden="true" />
             </Link>
+            <Link className="icon-button" to="/quero-ouvir" aria-label="Quero ouvir">
+              <i className="bi bi-bookmark" aria-hidden="true" />
+            </Link>
             <button
               type="button"
               className="icon-button app-header__bell"

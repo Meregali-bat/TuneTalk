@@ -5,7 +5,8 @@ import { VerifiedBadge } from '../effects/VerifiedBadge.jsx';
 import { FounderBadge, mostraSeloFundador } from '../effects/FounderBadge.jsx';
 
 // Uma pessoa numa lista (seguidores, busca): foto, nome de exibição, @, selo, bio e o botão de seguir.
-export function UserRow({ usuario, following, onFollowChange, onNavigate }) {
+// `detalhe` (ex.: por que foi sugerida) aparece no lugar da bio.
+export function UserRow({ usuario, following, onFollowChange, onNavigate, detalhe }) {
   const { user: me } = useAuth();
   return (
     <li className="user-row">
@@ -17,7 +18,8 @@ export function UserRow({ usuario, following, onFollowChange, onNavigate }) {
             <FounderBadge ativo={mostraSeloFundador(usuario)} />
           </span>
           <span className="user-row__handle">@{usuario.nome}</span>
-          {usuario.bio && <span className="user-row__bio">{usuario.bio}</span>}
+          {detalhe ? <span className="user-row__bio user-row__detalhe">{detalhe}</span>
+            : usuario.bio && <span className="user-row__bio">{usuario.bio}</span>}
         </span>
       </Link>
       {usuario.id !== me.id && (

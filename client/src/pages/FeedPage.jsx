@@ -5,6 +5,7 @@ import { PostCard } from '../components/post/PostCard.jsx';
 import { CreatePost } from '../components/post/CreatePost.jsx';
 import { PullToRefresh } from '../components/common/PullToRefresh.jsx';
 import { LoadMore } from '../components/common/LoadMore.jsx';
+import { SugestoesDeQuemSeguir } from '../components/profile/SugestoesDeQuemSeguir.jsx';
 
 const TABS = [
   { feed: 'foryou', label: 'Para você', to: '/foryou' },
@@ -45,17 +46,28 @@ function FeedSkeleton() {
   );
 }
 
-function EmptyFeed({ feed, onCompose }) {
-  if (feed === 'seguindo') {
-    return (
+// "Seguindo" vazio (quem acabou de entrar): sugere gente com gosto parecido para seguir dali mesmo.
+function SeguindoVazio({ onReload }) {
+  const [seguiu, setSeguiu] = useState(0);
+  return (
+    <>
       <div className="feed-empty">
         <i className="bi bi-people" aria-hidden="true" />
         <h2>Nada de quem você segue ainda</h2>
-        <p>Siga pessoas pelo perfil delas para ver aqui o que estão ouvindo.</p>
-        <Link to="/foryou" className="feed-empty__action">Ver posts para você</Link>
+        <p>Siga pessoas para ver aqui o que estão ouvindo. Comece por estas:</p>
+        {seguiu > 0 ? (
+          <button type="button" className="feed-empty__action" onClick={onReload}>Ver posts de quem você seguiu</button>
+        ) : (
+          <Link to="/foryou" className="feed-empty__action">Ver posts para você</Link>
+        )}
       </div>
-    );
-  }
+      <SugestoesDeQuemSeguir onSeguiu={setSeguiu} />
+    </>
+  );
+}
+
+function EmptyFeed({ feed, onCompose, onReload }) {
+  if (feed === 'seguindo') return <SeguindoVazio onReload={onReload} />;
   return (
     <div className="feed-empty">
       <i className="bi bi-vinyl" aria-hidden="true" />
@@ -90,7 +102,7 @@ export function FeedPage({ feed }) {
         </div>
       )}
 
-      {posts?.length === 0 && <EmptyFeed feed={feed} onCompose={() => setComposerOpen(true)} />}
+      {posts?.length === 0 && <EmptyFeed feed={feed} onCompose={() => setComposerOpen(true)} onReload={reload} />}
 
       {posts?.length > 0 && (
         <div className="feed-list">

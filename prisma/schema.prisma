@@ -56,6 +56,7 @@ model Usuario {
   bloqueadoPor          Bloqueio[]         @relation("bloqueado")
   silenciados           Silencio[]         @relation("silenciador")
   silenciadoPor         Silencio[]         @relation("silenciado")
+  queroOuvir            QueroOuvir[]
   postFixado            Post?              @relation("fixado", fields: [postFixadoId], references: [id], onDelete: SetNull)
 
   @@map("usuarios")
@@ -114,6 +115,26 @@ model Curtida {
   @@id([postId, usuarioId])
   @@index([usuarioId])
   @@map("curtidas")
+}
+
+// "Quero ouvir": álbuns e músicas que a pessoa guardou para ouvir depois. Sai da lista quando ela
+// avalia o disco. `chave` é tipo|título|artista em minúsculas (o mesmo critério da página do disco).
+model QueroOuvir {
+  id          Int      @id @default(autoincrement())
+  usuarioId   Int      @map("usuario_id")
+  tipo        String   @db.VarChar(10)
+  titulo      String   @db.VarChar(255)
+  artista     String   @db.VarChar(255)
+  capa        String?  @db.VarChar(500)
+  releaseDate String?  @map("release_date") @db.VarChar(20)
+  preview     String?  @db.VarChar(2000)
+  chave       String   @db.VarChar(530)
+  createdAt   DateTime @default(now()) @map("created_at")
+
+  usuario Usuario @relation(fields: [usuarioId], references: [id], onDelete: Cascade)
+
+  @@unique([usuarioId, chave])
+  @@map("quero_ouvir")
 }
 
 // Bloquear: nenhum dos dois vê os posts do outro nem interage com ele (seguir, curtir, comentar...).
