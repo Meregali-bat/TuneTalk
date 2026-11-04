@@ -1,5 +1,31 @@
 # TuneTalk — Roadmap de Melhorias
 
+## Quando tiver o domínio (envio de email)
+
+Coisas escondidas porque o envio de email ainda não funciona em produção. Para achar no código:
+`grep -rn "TODO(email)" client/src`.
+
+**Antes, configurar o envio:**
+- [ ] Comprar o domínio e verificá-lo no [Resend](https://resend.com) (registros DNS que o Resend indica)
+- [ ] Na Vercel, cadastrar `RESEND_API_KEY` e `EMAIL_FROM` (ex.: `TuneTalk <nao-responda@seudominio.com>`)
+- [ ] Conferir `APP_URL` na Vercel (é a base dos links mandados por email)
+- [ ] Testar: pedir "Esqueci minha senha" para um email seu e ver se chega
+
+**Depois, liberar de novo:**
+- [ ] **"Esqueci minha senha" no login**: apagar o `display: none` de `.auth-forgot` em
+  `client/src/styles/authForm.css`. A página `/esqueci-senha` e o link de redefinição já funcionam.
+- [ ] **Aviso na troca de email**: em `client/src/components/profile/ChangeEmailModal.jsx`, voltar a
+  frase "Você vai entrar com o novo email. Avisamos o endereço antigo sobre a troca." O servidor já
+  manda o aviso para o endereço antigo (`userService.changeEmail`); sem `RESEND_API_KEY` ele só
+  aparece no log.
+
+**Ideias que dependem do email:**
+- [ ] Confirmar o email novo antes de trocar (mandar um link para o endereço novo), para ninguém
+  ficar preso por digitar o email errado
+- [ ] Confirmar o email no cadastro
+
+---
+
 Organizado em 4 fases incrementais. Cada fase é independente e deployável.  
 Design completo em `docs/superpowers/specs/2026-06-01-tunetalk-modernization-design.md`.
 

@@ -5,7 +5,7 @@ import { PasswordInput } from '../common/PasswordInput.jsx';
 import { Field } from '../auth/AuthCard.jsx';
 import { emailValido, limparEmail } from '../../../../shared/emailRules.js';
 
-/** Troca o email de login. Pede a senha atual; o endereço antigo recebe um aviso. */
+/** Troca o email de login. Pede a senha atual. */
 export function ChangeEmailModal({ open, emailAtual, onClose, onChanged }) {
   const [novoEmail, setNovoEmail] = useState('');
   const [senhaAtual, setSenhaAtual] = useState('');
@@ -62,7 +62,10 @@ export function ChangeEmailModal({ open, emailAtual, onClose, onChanged }) {
             <PasswordInput {...props} autoComplete="current-password" value={senhaAtual} onChange={(e) => setSenhaAtual(e.target.value)} />
           )}
         </Field>
-        <p className="composer-hint">Você vai entrar com o novo email. Avisamos o endereço antigo sobre a troca.</p>
+        {/* TODO(email): com o envio de email funcionando em produção, voltar a dizer que o endereço
+            antigo é avisado: "Você vai entrar com o novo email. Avisamos o endereço antigo sobre a
+            troca." (o servidor já manda o aviso). Ver TODO.md. */}
+        <p className="composer-hint">Depois da troca, você entra com o novo email.</p>
 
         {error && <p role="alert" className="composer-error">{error}</p>}
 

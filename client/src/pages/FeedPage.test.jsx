@@ -168,9 +168,15 @@ describe('FeedPage', () => {
     });
     afterEach(() => vi.unstubAllGlobals());
 
-    const chegarPertoDoFim = () => act(() => {
-      observados.at(-1).callback([{ isIntersecting: true }]);
-    });
+    // Os posts podem aparecer na tela um instante antes de o React ligar o observador: espera ele.
+    const observador = async () => {
+      await waitFor(() => expect(observados.length).toBeGreaterThan(0));
+      return observados.at(-1);
+    };
+    const chegarPertoDoFim = async () => {
+      const atual = await observador();
+      act(() => atual.callback([{ isIntersecting: true }]));
+    };
     const pagina = (de, quantos) => Array.from({ length: quantos }, (_, i) => ({
       ...post(de - i), data: new Date(Date.UTC(2024, 0, 1, 0, 0, de - i)).toISOString(),
     }));
@@ -180,9 +186,9 @@ describe('FeedPage', () => {
       renderWithProviders(<FeedPage feed="foryou" />);
       await screen.findByText('post 100');
       // Começa a buscar bem antes de o último post aparecer.
-      expect(observados.at(-1).opcoes.rootMargin).toBe('0px 0px 1500px 0px');
+      expect((await observador()).opcoes.rootMargin).toBe('0px 0px 1500px 0px');
 
-      chegarPertoDoFim();
+      await chegarPertoDoFim();
 
       expect(await screen.findByText('post 76')).toBeInTheDocument();
       expect(postsApi.feed).toHaveBeenLastCalledWith('foryou', { data: pagina(81, 1)[0].data, id: 81 });
@@ -198,8 +204,8 @@ describe('FeedPage', () => {
       renderWithProviders(<FeedPage feed="foryou" />);
       await screen.findByText('post 100');
 
-      chegarPertoDoFim();
-      chegarPertoDoFim();
+      await chegarPertoDoFim();
+      await chegarPertoDoFim();
       expect(screen.getByRole('status')).toHaveTextContent('Carregando mais posts');
       expect(postsApi.feed).toHaveBeenCalledTimes(2);
 
@@ -215,7 +221,7 @@ describe('FeedPage', () => {
       renderWithProviders(<FeedPage feed="foryou" />);
       await screen.findByText('post 100');
 
-      chegarPertoDoFim();
+      await chegarPertoDoFim();
       await userEvent.click(await screen.findByRole('button', { name: 'Tentar de novo' }));
 
       expect(await screen.findByText('post 78')).toBeInTheDocument();
