@@ -2777,9 +2777,11 @@ button.track-row:hover {
 }
 
 /* --- Arrastar para atualizar (celular) --- */
-/* Desliga o "puxar para atualizar" do navegador para não brigar com o do app. */
-:root:has(.layout-app) {
-  overscroll-behavior-y: contain;
+/* Desliga o "puxar para atualizar" do navegador e o "elástico" do iPhone (que descia a página
+   inteira, cabeçalho junto, e mostrava uma faixa escura em cima). Quem cuida do gesto é o app. */
+:root:has(.layout-app),
+:root:has(.layout-app) body {
+  overscroll-behavior-y: none;
 }
 
 .pull-refresh {
