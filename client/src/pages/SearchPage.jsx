@@ -1,6 +1,7 @@
 import { useEffect, useState } from 'react';
 import { Link } from 'react-router-dom';
 import { hashtagsApi, usersApi } from '../api/index.js';
+import { hashflag } from '../utils/hashflags.js';
 import { useAsync } from '../hooks/useAsync.js';
 import { useDebouncedValue } from '../hooks/useDebouncedValue.js';
 import { UserRow } from '../components/profile/UserRow.jsx';
@@ -38,7 +39,7 @@ function HashtagItem({ item, posicao }) {
     <li>
       <Link to={`/tag/${encodeURIComponent(item.tag)}`} className="hashtag-row">
         {posicao && <span className="hashtag-row__posicao">{posicao}</span>}
-        <span className="hashtag-row__tag">#{item.tag}</span>
+        <span className="hashtag-row__tag">#{item.tag}{hashflag(item.tag) && <span className="hashflag" aria-hidden="true">{hashflag(item.tag).emoji}</span>}</span>
         <span className="hashtag-row__posts">{quantosPosts(item.posts)}</span>
       </Link>
     </li>

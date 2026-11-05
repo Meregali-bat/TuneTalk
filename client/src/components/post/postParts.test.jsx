@@ -64,6 +64,31 @@ describe('LikeButton', () => {
     await userEvent.click(screen.getByRole('button', { name: 'Curtir' }));
     expect(screen.getByRole('button', { name: 'Curtir' })).toHaveTextContent('3');
   });
+
+  it('post de Natal (#xmas): curtir solta os enfeites; descurtir não', async () => {
+    postsApi.like.mockResolvedValue(4);
+    postsApi.unlike.mockResolvedValue(3);
+    render(<LikeButton postId={7} likes={3} curtido={false} tema="natal" />);
+    const button = screen.getByRole('button', { name: 'Curtir' });
+    expect(button).toHaveClass('like-button--natal');
+    expect(screen.queryByTestId('like-festa')).toBeNull();
+
+    await userEvent.click(button);
+    expect(screen.getByTestId('like-festa')).toHaveTextContent('🎄');
+    await screen.findByRole('button', { name: 'Descurtir' });
+
+    await userEvent.click(screen.getByRole('button', { name: 'Descurtir' }));
+    await screen.findByRole('button', { name: 'Curtir' });
+    // A festa da curtida anterior não se repete ao descurtir.
+    expect(screen.getAllByTestId('like-festa')).toHaveLength(1);
+  });
+
+  it('post comum: curtir não tem enfeites', async () => {
+    postsApi.like.mockResolvedValue(4);
+    render(<LikeButton postId={7} likes={3} curtido={false} />);
+    await userEvent.click(screen.getByRole('button', { name: 'Curtir' }));
+    expect(screen.queryByTestId('like-festa')).toBeNull();
+  });
 });
 
 describe('PlayButton', () => {
