@@ -1,5 +1,5 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest';
-import { screen } from '@testing-library/react';
+import { fireEvent, screen } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { PostCard } from './PostCard.jsx';
 import { postsApi, queroOuvirApi } from '../../api/index.js';
@@ -263,4 +263,17 @@ describe('PostCard', () => {
     renderWithProviders(<PostCard post={musicPost} commentCount={5} />);
     expect(screen.getByRole('link', { name: /Comentários: 5/ })).toBeInTheDocument();
   });
+
+  it('se a versão reduzida da imagem falhar (GIF longo no Cloudinary), mostra o arquivo original', () => {
+    const imagem = 'https://res.cloudinary.com/t/image/upload/c_limit,w_1600/v1700/tunetalk/posts/longo.gif';
+    renderWithProviders(<PostCard post={{ ...musicPost, imagem }} />);
+    const img = screen.getByAltText('Imagem do post de Bia');
+    expect(img).toHaveAttribute('src', imagem);
+    fireEvent.error(img);
+    expect(img).toHaveAttribute('src', 'https://res.cloudinary.com/t/image/upload/v1700/tunetalk/posts/longo.gif');
+    // Se o original também falhar, não fica tentando para sempre.
+    fireEvent.error(img);
+    expect(img).toHaveAttribute('src', 'https://res.cloudinary.com/t/image/upload/v1700/tunetalk/posts/longo.gif');
+  });
 });
+

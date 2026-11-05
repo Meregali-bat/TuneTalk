@@ -17,6 +17,7 @@ import { PostMenu } from './PostMenu.jsx';
 import { LyricQuote } from './LyricQuote.jsx';
 import { PollBlock } from './PollBlock.jsx';
 import { QueroOuvirButton } from './QueroOuvirButton.jsx';
+import { ImagemDoPost } from './ImagemDoPost.jsx';
 
 // Texto com as marcações (@usuario, link para o perfil) e hashtags (link para a página da tag).
 function TextoComMarcacoes({ texto }) {
@@ -162,7 +163,7 @@ export function PostCard({
           style={post.imagemProporcao ? { '--proporcao': post.imagemProporcao } : undefined}
           tabIndex={-1}
         >
-          <img src={post.imagem} alt={`Imagem do post de ${post.autor.nome}`} loading="lazy" />
+          <ImagemDoPost src={post.imagem} alt={`Imagem do post de ${post.autor.nome}`} loading="lazy" />
         </Link>
       )}
 
