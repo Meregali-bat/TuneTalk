@@ -3931,6 +3931,7 @@ button.poll__opcao {
 .post-citado__extra {
   color: var(--texto-suave);
   font-size: .85rem;
+}
 
 /* --- Hashtags especiais (ver utils/hashflags.js) --- */
 .hashflag {
