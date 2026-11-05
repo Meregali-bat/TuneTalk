@@ -2873,7 +2873,8 @@ button.track-row:hover {
   color: #3a2600;
 }
 
-.notif__icon--natal {
+.notif__icon--natal,
+.notif__icon--toca_natal {
   background: linear-gradient(160deg, #ff6b78, #c81d34);
   color: #fff;
 }
@@ -3882,4 +3883,82 @@ button.poll__opcao {
 @media (prefers-reduced-motion: reduce) {
   .like-festa { display: none; }
   .like-button__pulo { animation: none; }
+}
+
+/* --- Toca de Natal em cima da foto (ganha no primeiro like num post com #xmas) --- */
+.com-toca {
+  position: relative;
+  display: inline-block;
+  line-height: 0;
+}
+
+.toca-natal {
+  position: absolute;
+  top: -34%;
+  left: -16%;
+  width: 82%;
+  pointer-events: none;
+  transform: rotate(-24deg);
+  transform-origin: 30% 80%;
+  filter: drop-shadow(0 2px 3px rgba(0, 0, 0, .45));
+}
+
+/* No perfil a foto sobe sobre a capa: quem sobe agora é o conjunto foto + toca. */
+.com-toca--perfil {
+  flex: none;
+  align-self: flex-start;
+  margin-top: -3.25rem;
+
+  .profile-header__avatar {
+    margin-top: 0;
+  }
+
+  @media (max-width: 575px) {
+    margin-top: -2.6rem;
+  }
+}
+
+/* Janela do presente */
+.presente-natal {
+  display: grid;
+  justify-items: center;
+  gap: .9rem;
+  /* Espaço para a ponta da toca, que sobe acima da foto. */
+  padding-top: 3rem;
+  text-align: center;
+
+  p {
+    margin: 0;
+  }
+}
+
+.presente-natal__foto {
+  img,
+  .presente-natal__vazio {
+    display: block;
+    width: 6rem;
+    height: 6rem;
+    border-radius: 50%;
+    object-fit: cover;
+    background: var(--superficie-2);
+  }
+}
+
+.presente-natal__dica {
+  color: var(--texto-suave);
+  font-size: .88rem;
+}
+
+.presente-natal__acoes {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  margin-top: .25rem;
+
+  .composer-submit {
+    padding: 0 1.4rem;
+    text-decoration: none;
+    display: inline-flex;
+    align-items: center;
+  }
 }

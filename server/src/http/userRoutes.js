@@ -41,10 +41,10 @@ export function createUserRoutes({ userService, postService, restricaoService, s
   });
 
   router.put('/me', asyncRoute(async (req, res) => {
-    const { nome, nomeExibicao, bio, fotoPerfil, bannerUrl, mostrarSeloFundador } = req.body;
+    const { nome, nomeExibicao, bio, fotoPerfil, bannerUrl, mostrarSeloFundador, usarTocaNatal } = req.body;
     if (fotoPerfil !== undefined && !uploader.isOwnUrl(fotoPerfil)) throw badRequest('Foto inválida. Envie a imagem de novo.');
     if (bannerUrl !== undefined && !uploader.isOwnUrl(bannerUrl, 'banner')) throw badRequest('Capa inválida. Envie a imagem de novo.');
-    const usuario = await userService.updateProfile(currentUserId(req), { nome, bio, nomeExibicao, fotoPerfil, bannerUrl, mostrarSeloFundador });
+    const usuario = await userService.updateProfile(currentUserId(req), { nome, bio, nomeExibicao, fotoPerfil, bannerUrl, mostrarSeloFundador, usarTocaNatal });
     if (usuario.nome) req.session.user = { ...req.session.user, nome: usuario.nome };
     res.json(usuario);
   }));

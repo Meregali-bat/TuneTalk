@@ -289,5 +289,13 @@ describe('PostCard', () => {
     expect(screen.getByRole('link', { name: '#rock' })).toHaveTextContent(/^#rock$/);
     expect(screen.getByRole('button', { name: 'Curtir' })).not.toHaveClass('like-button--natal');
   });
+
+  it('quem ganhou a toca de Natal aparece com ela em cima da foto', () => {
+    const comToca = renderWithProviders(<PostCard post={{ ...musicPost, autor: { ...musicPost.autor, tocaDeNatal: true } }} />);
+    expect(comToca.container.querySelector('.post-card__avatar .com-toca .toca-natal')).not.toBeNull();
+    comToca.unmount();
+    const semToca = renderWithProviders(<PostCard post={musicPost} />);
+    expect(semToca.container.querySelector('.toca-natal')).toBeNull();
+  });
 });
 

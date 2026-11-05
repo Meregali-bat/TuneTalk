@@ -18,6 +18,7 @@ enum TipoNotificacao {
   voto_enquete
   marco_posts
   natal
+  toca_natal
 }
 
 model Usuario {
@@ -40,6 +41,9 @@ model Usuario {
   fundadorDesde       DateTime? @map("fundador_desde")
   // A pessoa escolhe no Editar perfil se a medalha de fundador aparece.
   mostrarSeloFundador Boolean   @default(true) @map("mostrar_selo_fundador")
+  // Toca de Natal: quando ganhou (primeiro like num post com #xmas) e se quer usar na foto.
+  tocaNatalEm         DateTime? @map("toca_natal_em")
+  usarTocaNatal       Boolean   @default(true) @map("usar_toca_natal")
   admin               Boolean   @default(false)
   // Post que aparece primeiro no perfil. Se o post for apagado, volta a ficar vazio.
   postFixadoId        Int?      @unique @map("post_fixado_id")

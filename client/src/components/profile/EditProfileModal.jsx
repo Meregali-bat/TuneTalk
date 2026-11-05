@@ -47,6 +47,7 @@ export function EditProfileModal({ open, usuario, onClose, onSaved }) {
   const [nomeExibicao, setNomeExibicao] = useState(usuario.nomeExibicao ?? '');
   const [bio, setBio] = useState(usuario.bio ?? '');
   const [mostrarSelo, setMostrarSelo] = useState(usuario.mostrarSeloFundador !== false);
+  const [usarToca, setUsarToca] = useState(usuario.usarTocaNatal !== false);
   const [error, setError] = useState('');
   const [saving, setSaving] = useState(null); // null, 'foto', 'capa' ou 'dados'
   const foto = useImagePick('A foto', setError);
@@ -64,6 +65,7 @@ export function EditProfileModal({ open, usuario, onClose, onSaved }) {
     try {
       const changes = { nome: nome.trim(), nomeExibicao: nomeExibicao.trim(), bio };
       if (usuario.fundadorDesde) changes.mostrarSeloFundador = mostrarSelo;
+      if (usuario.tocaNatalEm) changes.usarTocaNatal = usarToca;
       if (foto.file) {
         setSaving('foto');
         changes.fotoPerfil = await usersApi.uploadPhoto(foto.file);
@@ -168,6 +170,13 @@ export function EditProfileModal({ open, usuario, onClose, onSaved }) {
             <span>
               <i className="bi bi-award-fill founder-badge" aria-hidden="true" /> Mostrar selo de fundador no meu perfil
             </span>
+          </label>
+        )}
+
+        {usuario.tocaNatalEm && (
+          <label className="edit-profile__toggle">
+            <input type="checkbox" checked={usarToca} onChange={(event) => setUsarToca(event.target.checked)} />
+            <span>🎅 Usar a toca de Natal na minha foto</span>
           </label>
         )}
 

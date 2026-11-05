@@ -61,7 +61,12 @@ export const postsApi = {
   votar: (id, opcaoId) => request(`/posts/${id}/votos`, { method: 'POST', body: { opcaoId } }),
   pin: (id) => request(`/posts/${id}/pin`, { method: 'POST' }),
   unpin: (id) => request(`/posts/${id}/pin`, { method: 'DELETE' }),
-  like: async (id) => (await request(`/posts/${id}/like`, { method: 'POST' })).likes,
+  // Devolve o total. Se esse like deu a toca de Natal, avisa o app (PresenteDeNatal comemora).
+  like: async (id) => {
+    const resposta = await request(`/posts/${id}/like`, { method: 'POST' });
+    if (resposta.ganhouToca) window.dispatchEvent(new Event('tunetalk:ganhou-toca'));
+    return resposta.likes;
+  },
   unlike: async (id) => (await request(`/posts/${id}/like`, { method: 'DELETE' })).likes,
 };
 

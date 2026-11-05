@@ -11,10 +11,11 @@ const ICONS = {
   voto_enquete: 'bi-bar-chart-fill',
   marco_posts: 'bi-trophy-fill',
   natal: 'bi-tree-fill',
+  toca_natal: 'bi-gift-fill',
 };
 
 // Avisos do próprio TuneTalk (ex.: selo de fundador) aparecem com o logo, não com o nome de alguém.
-const DO_TUNETALK = new Set(['selo_fundador', 'marco_posts', 'natal']);
+const DO_TUNETALK = new Set(['selo_fundador', 'marco_posts', 'natal', 'toca_natal']);
 
 const targetOf = (notification) => {
   // O aviso de Natal leva para os posts com #xmas.

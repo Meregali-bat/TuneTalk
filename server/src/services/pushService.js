@@ -59,7 +59,7 @@ export function createPushService({ subscriptions, webpush, vapid, logger = cons
  * para os aparelhos da pessoa. O resto (listar, contar, marcar como lida) passa direto.
  */
 // Avisos do próprio TuneTalk: o texto já é a frase inteira, sem o nome de alguém na frente.
-const AVISOS_DO_TUNETALK = new Set(['selo_fundador', 'marco_posts', 'natal']);
+const AVISOS_DO_TUNETALK = new Set(['selo_fundador', 'marco_posts', 'natal', 'toca_natal']);
 
 // Para onde o aviso leva: o de Natal abre a hashtag #xmas; os outros, o post ou o perfil.
 const destinoDoAviso = (n) => {

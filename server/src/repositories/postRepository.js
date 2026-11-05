@@ -2,7 +2,7 @@ import { hasHashtag } from '../../../shared/mentions.js';
 import { FEED_PAGINA } from '../../../shared/feed.js';
 
 const POST_INCLUDE = {
-  autor: { select: { id: true, nome: true, nomeExibicao: true, fotoPerfil: true, postFixadoId: true, fundadorDesde: true, mostrarSeloFundador: true } },
+  autor: { select: { id: true, nome: true, nomeExibicao: true, fotoPerfil: true, postFixadoId: true, fundadorDesde: true, mostrarSeloFundador: true, tocaNatalEm: true, usarTocaNatal: true } },
   _count: { select: { respostas: true, curtidas: true } },
   opcoesEnquete: {
     orderBy: { posicao: 'asc' },
@@ -84,6 +84,7 @@ export function toPost(row) {
       nomeExibicao: row.autor.nomeExibicao ?? null,
       fotoPerfil: row.autor.fotoPerfil,
       fundador: Boolean(row.autor.fundadorDesde) && row.autor.mostrarSeloFundador !== false,
+      tocaDeNatal: Boolean(row.autor.tocaNatalEm) && row.autor.usarTocaNatal !== false,
     },
   };
 }

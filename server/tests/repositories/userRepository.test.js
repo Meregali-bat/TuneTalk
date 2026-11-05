@@ -62,7 +62,7 @@ describe('userRepository (Postgres)', () => {
     expect((await repo.search('olivia')).map((u) => u.id)).toEqual([olivia.id]);
     expect((await repo.search('mat')).map((u) => u.id)).toEqual([mateus.id]);
     expect(await repo.search('ninguém-assim')).toEqual([]);
-    expect(Object.keys((await repo.search('e'))[0]).sort()).toEqual(['bannerUrl', 'bio', 'fotoPerfil', 'fundadorDesde', 'id', 'mostrarSeloFundador', 'nome', 'nomeExibicao']);
+    expect(Object.keys((await repo.search('e'))[0]).sort()).toEqual(['bannerUrl', 'bio', 'fotoPerfil', 'fundadorDesde', 'id', 'mostrarSeloFundador', 'nome', 'nomeExibicao', 'tocaNatalEm', 'usarTocaNatal']);
   });
 
   it('search põe primeiro quem começa com o que foi digitado e devolve no máximo 20', async () => {
@@ -85,6 +85,19 @@ describe('userRepository (Postgres)', () => {
     await repo.activateFounder(ana.id);
     const { fundadorDesde } = await repo.findById(ana.id);
     expect(Date.now() - fundadorDesde.getTime()).toBeLessThan(60_000);
+  });
+
+  it('toca de Natal: ganha uma vez só, aparece no perfil e dá para tirar da foto', async () => {
+    const ana = await factory.user({ nome: 'ana' });
+    expect(await repo.findById(ana.id)).toMatchObject({ tocaNatalEm: null, usarTocaNatal: true });
+
+    expect(await repo.ganharTocaDeNatal(ana.id)).toBe(true);
+    expect(await repo.ganharTocaDeNatal(ana.id)).toBe(false);
+    const { tocaNatalEm } = await repo.findById(ana.id);
+    expect(Date.now() - tocaNatalEm.getTime()).toBeLessThan(60_000);
+
+    await repo.update(ana.id, { usarTocaNatal: false });
+    expect((await repo.findById(ana.id)).usarTocaNatal).toBe(false);
   });
 
   it('findByNames acha as contas pelos nomes de usuário, sem diferenciar maiúsculas', async () => {
@@ -153,7 +166,7 @@ describe('userRepository (Postgres)', () => {
   it('findById devolve o usuário público ou null', async () => {
     const ana = await factory.user({ nome: 'Ana', bio: 'oi' });
     expect(await repo.findById(ana.id)).toEqual({
-      id: ana.id, nome: 'Ana', nomeExibicao: null, fotoPerfil: ana.fotoPerfil, bannerUrl: null, bio: 'oi', fundadorDesde: null, mostrarSeloFundador: true,
+      id: ana.id, nome: 'Ana', nomeExibicao: null, fotoPerfil: ana.fotoPerfil, bannerUrl: null, bio: 'oi', fundadorDesde: null, mostrarSeloFundador: true, tocaNatalEm: null, usarTocaNatal: true,
     });
     expect(await repo.findById(9999)).toBeNull();
   });
@@ -164,7 +177,7 @@ describe('userRepository (Postgres)', () => {
       nome: 'Novo', nomeExibicao: 'Ana Souza', fotoPerfil: 'n.png', bannerUrl: 'b.png', bio: 'bio', mostrarSeloFundador: false,
     });
     expect(await repo.findById(ana.id)).toEqual({
-      id: ana.id, nome: 'Novo', nomeExibicao: 'Ana Souza', fotoPerfil: 'n.png', bannerUrl: 'b.png', bio: 'bio', fundadorDesde: null, mostrarSeloFundador: false,
+      id: ana.id, nome: 'Novo', nomeExibicao: 'Ana Souza', fotoPerfil: 'n.png', bannerUrl: 'b.png', bio: 'bio', fundadorDesde: null, mostrarSeloFundador: false, tocaNatalEm: null, usarTocaNatal: true,
     });
   });
 });

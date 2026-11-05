@@ -120,6 +120,20 @@ describe('EditProfileModal', () => {
     expect(screen.queryByRole('checkbox', { name: /selo de fundador/ })).toBeNull();
   });
 
+  it('quem ganhou a toca de Natal escolhe se usa na foto; quem não ganhou não vê a opção', async () => {
+    usersApi.updateMe.mockResolvedValue(ana);
+    const { unmount } = renderModal({ usuario: { ...ana, tocaNatalEm: '2026-12-20T12:00:00.000Z', usarTocaNatal: true } });
+    const opcao = screen.getByRole('checkbox', { name: /Usar a toca de Natal/ });
+    expect(opcao).toBeChecked();
+    await userEvent.click(opcao);
+    await userEvent.click(screen.getByRole('button', { name: 'Salvar' }));
+    expect(usersApi.updateMe.mock.calls[0][0]).toMatchObject({ usarTocaNatal: false });
+    unmount();
+
+    renderModal();
+    expect(screen.queryByRole('checkbox', { name: /toca de Natal/ })).toBeNull();
+  });
+
   it('limita a bio a 255 caracteres', () => {
     renderModal();
     expect(screen.getByLabelText('Bio')).toHaveAttribute('maxLength', '255');

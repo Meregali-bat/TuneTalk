@@ -1,5 +1,5 @@
 export const PUBLIC_USER_SELECT = {
-  id: true, nome: true, nomeExibicao: true, fotoPerfil: true, bannerUrl: true, bio: true, fundadorDesde: true, mostrarSeloFundador: true,
+  id: true, nome: true, nomeExibicao: true, fotoPerfil: true, bannerUrl: true, bio: true, fundadorDesde: true, mostrarSeloFundador: true, tocaNatalEm: true, usarTocaNatal: true,
 };
 
 const sameText = (value) => ({ equals: value, mode: 'insensitive' });
@@ -45,6 +45,12 @@ export function createUserRepository(prisma) {
         where: { OR: nomes.map((nome) => ({ nome: sameText(nome) })) },
         select: { id: true, nome: true },
       });
+    },
+
+    // Dá a toca de Natal a quem ainda não tem. true se ganhou agora (só a primeira vez conta).
+    async ganharTocaDeNatal(id) {
+      const { count } = await prisma.usuario.updateMany({ where: { id, tocaNatalEm: null }, data: { tocaNatalEm: new Date() } });
+      return count > 0;
     },
 
     async activateFounder(id) {
@@ -102,9 +108,9 @@ export function createUserRepository(prisma) {
       return prisma.usuario.findUnique({ where: { id }, select: PUBLIC_USER_SELECT });
     },
 
-    async update(id, { nome, nomeExibicao, fotoPerfil, bannerUrl, bio, mostrarSeloFundador }) {
+    async update(id, { nome, nomeExibicao, fotoPerfil, bannerUrl, bio, mostrarSeloFundador, usarTocaNatal }) {
       await prisma.usuario.update({
-        where: { id }, data: { nome, nomeExibicao, fotoPerfil, bannerUrl, bio, mostrarSeloFundador },
+        where: { id }, data: { nome, nomeExibicao, fotoPerfil, bannerUrl, bio, mostrarSeloFundador, usarTocaNatal },
       });
     },
   };
