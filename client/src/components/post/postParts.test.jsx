@@ -83,6 +83,19 @@ describe('LikeButton', () => {
     expect(screen.getAllByTestId('like-festa')).toHaveLength(1);
   });
 
+  it('curtir e descurtir várias vezes deixa um coração só', async () => {
+    postsApi.like.mockResolvedValue(4);
+    postsApi.unlike.mockResolvedValue(3);
+    render(<LikeButton postId={7} likes={3} curtido={false} tema="natal" />);
+    for (let i = 0; i < 4; i += 1) {
+      await userEvent.click(await screen.findByRole('button', { name: 'Curtir' }));
+      await userEvent.click(await screen.findByRole('button', { name: 'Descurtir' }));
+    }
+    const button = await screen.findByRole('button', { name: 'Curtir' });
+    expect(button.querySelectorAll('i')).toHaveLength(1);
+    expect(screen.getAllByTestId('like-festa')).toHaveLength(1);
+  });
+
   it('post comum: curtir não tem enfeites', async () => {
     postsApi.like.mockResolvedValue(4);
     render(<LikeButton postId={7} likes={3} curtido={false} />);

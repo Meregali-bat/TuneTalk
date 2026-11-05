@@ -37,14 +37,16 @@ export function LikeButton({ postId, likes, curtido, tema = null }) {
       aria-pressed={state.curtido}
       onClick={toggle}
     >
+      {/* Chaves diferentes para o coração e os enfeites: com a mesma chave, o React não apagava os
+          corações antigos e eles se acumulavam no botão a cada curtida. */}
       <i
-        key={festa}
+        key={`coracao-${festa}`}
         className={`${state.curtido ? 'bi bi-heart-fill' : 'bi bi-heart'}${festa ? ' like-button__pulo' : ''}`}
         aria-hidden="true"
       />
       <span className="numero">{state.likes}</span>
       {festa > 0 && enfeites && (
-        <span key={festa} className="like-festa" aria-hidden="true" data-testid="like-festa">
+        <span key={`festa-${festa}`} className="like-festa" aria-hidden="true" data-testid="like-festa">
           {enfeites.map((enfeite, i) => (
             <span key={i} style={{ '--angulo': `${(360 / enfeites.length) * i - 90}deg`, '--atraso': `${(i % 3) * 40}ms` }}>{enfeite}</span>
           ))}
