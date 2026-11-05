@@ -151,4 +151,16 @@ describe('endpoints da API', () => {
     request.mockResolvedValueOnce({ likes: 7 });
     expect(await postsApi.like(1)).toBe(7);
   });
+
+  it('postsApi.like avisa o app quando o like deu a toca de Natal', async () => {
+    const ouvinte = vi.fn();
+    window.addEventListener('tunetalk:ganhou-toca', ouvinte);
+    request.mockResolvedValueOnce({ likes: 3, ganhouToca: false });
+    await postsApi.like(1);
+    expect(ouvinte).not.toHaveBeenCalled();
+    request.mockResolvedValueOnce({ likes: 4, ganhouToca: true });
+    expect(await postsApi.like(1)).toBe(4);
+    expect(ouvinte).toHaveBeenCalledTimes(1);
+    window.removeEventListener('tunetalk:ganhou-toca', ouvinte);
+  });
 });

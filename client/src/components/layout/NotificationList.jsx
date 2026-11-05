@@ -10,10 +10,11 @@ const ICONS = {
   mention: 'bi-at',
   voto_enquete: 'bi-bar-chart-fill',
   marco_posts: 'bi-trophy-fill',
+  toca_natal: 'bi-gift-fill',
 };
 
 // Avisos do próprio TuneTalk (ex.: selo de fundador) aparecem com o logo, não com o nome de alguém.
-const DO_TUNETALK = new Set(['selo_fundador', 'marco_posts']);
+const DO_TUNETALK = new Set(['selo_fundador', 'marco_posts', 'toca_natal']);
 
 const targetOf = (notification) =>
   notification.tipo === 'new_follower' || !notification.postId

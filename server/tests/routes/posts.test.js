@@ -87,10 +87,10 @@ describe('rotas /api/posts', () => {
     expect(deps.postService.remove).toHaveBeenCalledWith(3, 1);
   });
 
-  it('POST /api/posts/:id/like curte e devolve o total', async () => {
-    deps.postService.like.mockResolvedValue(6);
+  it('POST /api/posts/:id/like curte e devolve o total (e se ganhou a toca de Natal)', async () => {
+    deps.postService.like.mockResolvedValue({ likes: 6, ganhouToca: true });
     const res = await agent.post('/api/posts/3/like');
-    expect(res.body).toEqual({ likes: 6 });
+    expect(res.body).toEqual({ likes: 6, ganhouToca: true });
     expect(deps.postService.like).toHaveBeenCalledWith(3, 1);
   });
 

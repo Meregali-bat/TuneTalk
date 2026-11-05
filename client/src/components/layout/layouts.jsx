@@ -4,6 +4,7 @@ import { Header } from './Header.jsx';
 import { asset } from '../../utils/asset.js';
 import { AvisoNovaVersao } from './AvisoNovaVersao.jsx';
 import { AvisoSemInternet } from './AvisoSemInternet.jsx';
+import { PresenteDeNatal } from '../effects/PresenteDeNatal.jsx';
 
 export function PublicLayout({ authForm = false, showLinks = true }) {
   return (
@@ -49,6 +50,7 @@ export function AppLayout() {
       </main>
       <AvisoNovaVersao />
       <AvisoSemInternet />
+      <PresenteDeNatal />
     </div>
   );
 }

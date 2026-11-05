@@ -97,7 +97,7 @@ export function createUserService({
       return { id: usuarioId, nome: clean };
     },
 
-    async updateProfile(usuarioId, { nome, nomeExibicao, bio, fotoPerfil, bannerUrl, mostrarSeloFundador }) {
+    async updateProfile(usuarioId, { nome, nomeExibicao, bio, fotoPerfil, bannerUrl, mostrarSeloFundador, usarTocaNatal }) {
       const atual = await findOrFail(usuarioId);
       const changes = {
         nome: nome?.trim() || atual.nome,
@@ -106,6 +106,7 @@ export function createUserService({
         fotoPerfil: fotoPerfil || atual.fotoPerfil,
         bannerUrl: bannerUrl || atual.bannerUrl,
         mostrarSeloFundador: typeof mostrarSeloFundador === 'boolean' ? mostrarSeloFundador : atual.mostrarSeloFundador,
+        usarTocaNatal: typeof usarTocaNatal === 'boolean' ? usarTocaNatal : atual.usarTocaNatal,
       };
       if ((changes.bio ?? '').length > BIO_MAX) throw badRequest(`A bio pode ter no máximo ${BIO_MAX} caracteres.`);
       if ((changes.nomeExibicao ?? '').length > NOME_EXIBICAO_MAX) {
