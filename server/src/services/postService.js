@@ -6,6 +6,7 @@ import { capaDoDeezer } from '../../../shared/favorites.js';
 import { validarEnquete } from '../../../shared/poll.js';
 import { SEM_RESTRICOES, haBloqueio } from './restricaoService.js';
 import { chaveObra } from '../../../shared/obra.js';
+import { temaDoTexto } from '../../../shared/hashflags.js';
 
 const TEXTO_MAX = 500;
 // Ao chegar a esse número de posts (sem contar comentários), o TuneTalk dá os parabéns.
@@ -134,6 +135,19 @@ export function createPostService({
   const notifyAuthor = async (post, autorId, tipo, conteudo) => {
     if (post.autor.id === autorId) return;
     await notifications.create({ destinatarioId: post.autor.id, autorId, tipo, conteudo, postId: post.id });
+  };
+
+  // Toca de Natal: no primeiro like num post de Natal (#xmas), uma só vez por pessoa.
+  const darTocaDeNatal = async (post, usuarioId) => {
+    if (temaDoTexto(post.texto) !== 'natal' || !users.ganharTocaDeNatal) return false;
+    if (!(await users.ganharTocaDeNatal(usuarioId))) return false;
+    await notifications.create({
+      destinatarioId: usuarioId,
+      autorId: usuarioId,
+      tipo: 'toca_natal',
+      conteudo: 'Você ganhou uma toca de Natal! 🎅 Ela já está na sua foto de perfil.',
+    });
+    return true;
   };
 
   // Parabéns no 100º post. Só uma vez: apagar e postar de novo não repete o aviso.
@@ -356,14 +370,16 @@ export function createPostService({
       if (post.fixado) await users.setPinnedPost(usuarioId, null);
     },
 
+    // Devolve { likes, ganhouToca }: o primeiro like num post com #xmas dá a toca de Natal.
     async like(postId, usuarioId) {
       const post = await findOrFail(postId);
       await podeInteragir(post, usuarioId);
-      if (await likes.hasLiked(postId, usuarioId)) return post.likes;
+      if (await likes.hasLiked(postId, usuarioId)) return { likes: post.likes, ganhouToca: false };
 
       await likes.add({ postId, usuarioId });
       await notifyAuthor(post, usuarioId, 'like', 'curtiu seu post');
-      return likes.countByPost(postId);
+      const ganhouToca = await darTocaDeNatal(post, usuarioId);
+      return { likes: await likes.countByPost(postId), ganhouToca };
     },
 
     async unlike(postId, usuarioId) {

@@ -6,7 +6,8 @@ import { FEED_PAGINA } from '../../../shared/feed.js';
 
 const publicUser = ({
   id, nome, nomeExibicao = null, fotoPerfil, bannerUrl = null, bio, fundadorDesde = null, mostrarSeloFundador = true,
-}) => ({ id, nome, nomeExibicao, fotoPerfil, bannerUrl, bio, fundadorDesde, mostrarSeloFundador });
+  tocaNatalEm = null, usarTocaNatal = true,
+}) => ({ id, nome, nomeExibicao, fotoPerfil, bannerUrl, bio, fundadorDesde, mostrarSeloFundador, tocaNatalEm, usarTocaNatal });
 
 export function createMemoryRepositories(state, onChange) {
   const nextId = (table) => {
@@ -19,8 +20,8 @@ export function createMemoryRepositories(state, onChange) {
   };
   const userById = (id) => state.usuarios.find((u) => u.id === id);
   const author = (id) => {
-    const { nome, nomeExibicao = null, fotoPerfil, fundadorDesde, mostrarSeloFundador = true } = userById(id);
-    return { id, nome, nomeExibicao, fotoPerfil, fundadorDesde, mostrarSeloFundador };
+    const { nome, nomeExibicao = null, fotoPerfil, fundadorDesde, mostrarSeloFundador = true, tocaNatalEm = null, usarTocaNatal = true } = userById(id);
+    return { id, nome, nomeExibicao, fotoPerfil, fundadorDesde, mostrarSeloFundador, tocaNatalEm, usarTocaNatal };
   };
 
   const votos = () => (state.votosEnquete ??= []);
@@ -82,6 +83,13 @@ export function createMemoryRepositories(state, onChange) {
     async findByNames(nomes) {
       const procurados = new Set(nomes.map((n) => n.toLowerCase()));
       return state.usuarios.filter((u) => u.nome && procurados.has(u.nome.toLowerCase())).map(({ id, nome }) => ({ id, nome }));
+    },
+    async ganharTocaDeNatal(id) {
+      const usuario = userById(id);
+      if (usuario.tocaNatalEm) return false;
+      usuario.tocaNatalEm = new Date().toISOString();
+      changed();
+      return true;
     },
     async activateFounder(id) {
       userById(id).fundadorDesde = new Date().toISOString();

@@ -691,7 +691,7 @@ describe('postService', () => {
 
   describe('like', () => {
     it('registra a curtida, devolve o total contado e notifica o autor', async () => {
-      expect(await service.like(1, 7)).toBe(6);
+      expect(await service.like(1, 7)).toEqual({ likes: 6, ganhouToca: false });
       expect(likes.add).toHaveBeenCalledWith({ postId: 1, usuarioId: 7 });
       expect(likes.countByPost).toHaveBeenCalledWith(1);
       expect(notifications.create).toHaveBeenCalledWith({
@@ -710,13 +710,46 @@ describe('postService', () => {
 
     it('é idempotente: se já curtiu, só devolve a contagem atual', async () => {
       likes.hasLiked.mockResolvedValue(true);
-      expect(await service.like(1, 7)).toBe(5);
+      expect(await service.like(1, 7)).toEqual({ likes: 5, ganhouToca: false });
       expect(likes.add).not.toHaveBeenCalled();
     });
 
     it('lança 404 para post inexistente', async () => {
       posts.findById.mockResolvedValue(null);
       await expect(service.like(1, 7)).rejects.toMatchObject({ status: 404 });
+    });
+
+    describe('toca de Natal', () => {
+      beforeEach(() => {
+        posts.findById.mockResolvedValue(post(1, 2, { likes: 5, texto: 'natal no tunetalk #xmas' }));
+        users.ganharTocaDeNatal = vi.fn().mockResolvedValue(true);
+      });
+
+      it('o primeiro like num post com #xmas dá a toca e avisa quem ganhou', async () => {
+        expect(await service.like(1, 7)).toEqual({ likes: 6, ganhouToca: true });
+        expect(users.ganharTocaDeNatal).toHaveBeenCalledWith(7);
+        expect(notifications.create).toHaveBeenCalledWith({
+          destinatarioId: 7, autorId: 7, tipo: 'toca_natal', conteudo: expect.stringContaining('toca de Natal'),
+        });
+      });
+
+      it('quem já tem a toca não ganha de novo nem recebe outro aviso', async () => {
+        users.ganharTocaDeNatal.mockResolvedValue(false);
+        expect(await service.like(1, 7)).toEqual({ likes: 6, ganhouToca: false });
+        expect(notifications.create).not.toHaveBeenCalledWith(expect.objectContaining({ tipo: 'toca_natal' }));
+      });
+
+      it('post sem hashtag de Natal não dá toca', async () => {
+        posts.findById.mockResolvedValue(post(1, 2, { likes: 5, texto: 'som bom #rock' }));
+        expect(await service.like(1, 7)).toEqual({ likes: 6, ganhouToca: false });
+        expect(users.ganharTocaDeNatal).not.toHaveBeenCalled();
+      });
+
+      it('like repetido (já curtido) não dá toca', async () => {
+        likes.hasLiked.mockResolvedValue(true);
+        await service.like(1, 7);
+        expect(users.ganharTocaDeNatal).not.toHaveBeenCalled();
+      });
     });
   });
 

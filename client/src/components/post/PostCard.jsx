@@ -10,6 +10,7 @@ import { formatEstrelas } from '../../../../shared/rating.js';
 import { splitMentions } from '../../../../shared/mentions.js';
 import { VerifiedBadge } from '../effects/VerifiedBadge.jsx';
 import { FounderBadge } from '../effects/FounderBadge.jsx';
+import { ComToca } from '../effects/TocaDeNatal.jsx';
 import { LikeButton } from './LikeButton.jsx';
 import { PlayButton } from './PlayButton.jsx';
 import { ShareButton } from './ShareButton.jsx';
@@ -120,7 +121,7 @@ export function PostCard({
       )}
       <header className="post-card__header">
         <Link to={profileUrl} className="post-card__avatar" tabIndex={-1} aria-hidden="true">
-          <img src={post.autor.fotoPerfil} alt="" />
+          <ComToca ativa={post.autor.tocaDeNatal}><img src={post.autor.fotoPerfil} alt="" /></ComToca>
         </Link>
         {/* Nome de exibição com os selos em cima; @usuario e o tempo curto embaixo, menores. */}
         <div className="post-card__who">

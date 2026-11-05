@@ -172,7 +172,7 @@ export function createFakeApi({ storage = globalThis.localStorage } = {}) {
     ['POST', /^\/posts\/(\d+)\/pin$/, async ({ id }) => { await services.posts.pin(id, me()); return noContent(); }],
     ['DELETE', /^\/posts\/(\d+)\/pin$/, async ({ id }) => { await services.posts.unpin(id, me()); return noContent(); }],
     ['POST', /^\/posts\/(\d+)\/votos$/, async ({ id, body }) => ok(await services.posts.votar(id, me(), body?.opcaoId))],
-    ['POST', /^\/posts\/(\d+)\/like$/, async ({ id }) => ok({ likes: await services.posts.like(id, me()) })],
+    ['POST', /^\/posts\/(\d+)\/like$/, async ({ id }) => ok(await services.posts.like(id, me()))],
     ['DELETE', /^\/posts\/(\d+)\/like$/, async ({ id }) => ok({ likes: await services.posts.unlike(id, me()) })],
 
     ['PUT', /^\/users\/me\/username$/, async ({ body }) => {
@@ -201,8 +201,8 @@ export function createFakeApi({ storage = globalThis.localStorage } = {}) {
       const isDemoImage = (url) => url === undefined || String(url).startsWith('data:image/');
       if (!isDemoImage(body.fotoPerfil)) throw badRequest('Foto inválida. Envie a imagem de novo.');
       if (!isDemoImage(body.bannerUrl)) throw badRequest('Capa inválida. Envie a imagem de novo.');
-      const { nome, nomeExibicao, bio, fotoPerfil, bannerUrl, mostrarSeloFundador } = body;
-      const usuario = await services.users.updateProfile(me(), { nome, nomeExibicao, bio, fotoPerfil, bannerUrl, mostrarSeloFundador });
+      const { nome, nomeExibicao, bio, fotoPerfil, bannerUrl, mostrarSeloFundador, usarTocaNatal } = body;
+      const usuario = await services.users.updateProfile(me(), { nome, nomeExibicao, bio, fotoPerfil, bannerUrl, mostrarSeloFundador, usarTocaNatal });
       startSession({ ...state.session, nome: usuario.nome });
       return ok(usuario);
     }],

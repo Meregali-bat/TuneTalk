@@ -14,6 +14,7 @@ import { ChangeEmailModal } from '../components/profile/ChangeEmailModal.jsx';
 import { PetalRain } from '../components/effects/PetalRain.jsx';
 import { profileEffectFor } from '../components/effects/profileEffects.js';
 import { VerifiedBadge } from '../components/effects/VerifiedBadge.jsx';
+import { ComToca } from '../components/effects/TocaDeNatal.jsx';
 import { FounderBadge, mostraSeloFundador } from '../components/effects/FounderBadge.jsx';
 import { PullToRefresh } from '../components/common/PullToRefresh.jsx';
 import { ProfileFavorites } from '../components/profile/ProfileFavorites.jsx';
@@ -87,7 +88,9 @@ function ProfileHeader({
 
       <div className="profile-header__body">
         <div className="profile-header__row">
-          <img src={usuario.fotoPerfil} alt={`Foto de perfil de ${nome}`} className="profile-header__avatar" />
+          <ComToca ativa={Boolean(usuario.tocaNatalEm) && usuario.usarTocaNatal !== false} className="com-toca--perfil">
+            <img src={usuario.fotoPerfil} alt={`Foto de perfil de ${nome}`} className="profile-header__avatar" />
+          </ComToca>
           <div className="profile-header__actions">
             {isOwnProfile ? (
               <>

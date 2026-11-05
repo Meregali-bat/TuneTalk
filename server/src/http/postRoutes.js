@@ -57,7 +57,7 @@ export function createPostRoutes({ postService, uploader }) {
   }));
 
   router.post('/:id/like', asyncRoute(async (req, res) => {
-    res.json({ likes: await postService.like(req.params.id, currentUserId(req)) });
+    res.json(await postService.like(req.params.id, currentUserId(req)));
   }));
 
   router.delete('/:id/like', asyncRoute(async (req, res) => {
