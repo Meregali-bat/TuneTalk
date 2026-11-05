@@ -59,8 +59,20 @@ describe('LoginPage', () => {
 
     await fillLogin();
 
-    expect(login).toHaveBeenCalledWith('ana@x.com', 'Senha!1');
+    expect(login).toHaveBeenCalledWith('ana@x.com', 'Senha!1', true);
     expect(screen.getByTestId('location')).toHaveTextContent('/foryou');
+  });
+
+  it('"Manter conectado" vem marcado; desmarcado, o login vale só até fechar o navegador', async () => {
+    const login = vi.fn().mockResolvedValue({ id: 1, nome: 'ana' });
+    renderWithProviders(<LoginPage />, { auth: makeAuth({ user: null, login }) });
+
+    const manter = screen.getByRole('checkbox', { name: /Manter conectado/ });
+    expect(manter).toBeChecked();
+    await userEvent.click(manter);
+    await fillLogin();
+
+    expect(login).toHaveBeenCalledWith('ana@x.com', 'Senha!1', false);
   });
 
   it('quem ainda não escolheu o nome de usuário vai para /bem-vindo', async () => {

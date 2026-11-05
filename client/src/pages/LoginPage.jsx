@@ -10,6 +10,7 @@ export function LoginPage() {
   const navigate = useNavigate();
   const [email, setEmail] = useState('');
   const [senha, setSenha] = useState('');
+  const [manterConectado, setManterConectado] = useState(true);
   const [error, setError] = useState('');
   const [sending, setSending] = useState(false);
 
@@ -18,7 +19,7 @@ export function LoginPage() {
     setSending(true);
     setError('');
     try {
-      const user = await login(email, senha);
+      const user = await login(email, senha, manterConectado);
       navigate(homeFor(user));
     } catch (err) {
       setError(err.message);
@@ -58,6 +59,13 @@ export function LoginPage() {
             />
           )}
         </Field>
+        <label className="auth-manter">
+          <input type="checkbox" checked={manterConectado} onChange={(event) => setManterConectado(event.target.checked)} />
+          <span>
+            Manter conectado
+            <small>Desmarque em computador de outra pessoa: o login some ao fechar o navegador.</small>
+          </span>
+        </label>
         <Link to="/esqueci-senha" className="auth-forgot">Esqueci minha senha</Link>
         <button type="submit" className="auth-submit" disabled={sending || !email || !senha}>
           {sending ? 'Entrando…' : 'Entrar'}

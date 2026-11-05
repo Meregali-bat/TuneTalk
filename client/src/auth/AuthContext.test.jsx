@@ -42,7 +42,7 @@ describe('AuthProvider', () => {
     await waitFor(() => expect(result.current.loading).toBe(false));
 
     await act(() => result.current.login('ana@x.com', 'Senha!1'));
-    expect(authApi.login).toHaveBeenCalledWith('ana@x.com', 'Senha!1');
+    expect(authApi.login).toHaveBeenCalledWith('ana@x.com', 'Senha!1', true);
     expect(result.current.user).toEqual(ana);
 
     act(() => result.current.updateUser({ nome: 'Ana B' }));

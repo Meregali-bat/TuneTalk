@@ -13,7 +13,7 @@ describe('endpoints da API', () => {
 
   it.each([
     ['authApi.me', () => authApi.me(), ['/auth/me']],
-    ['authApi.login', () => authApi.login('a@a.com', 's'), ['/auth/login', { method: 'POST', body: { email: 'a@a.com', senha: 's' } }]],
+    ['authApi.login', () => authApi.login('a@a.com', 's'), ['/auth/login', { method: 'POST', body: { email: 'a@a.com', senha: 's', manterConectado: true } }]],
     ['authApi.logout', () => authApi.logout(), ['/auth/logout', { method: 'POST' }]],
     ['postsApi.feed', () => postsApi.feed('seguindo'), ['/posts?feed=seguindo']],
     ['obrasApi.get', () => obrasApi.get('album', 'AC/DC Live', 'AC/DC'), ['/obras/album?titulo=AC%2FDC+Live&artista=AC%2FDC']],

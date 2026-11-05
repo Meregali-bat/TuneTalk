@@ -17,9 +17,12 @@ export function createAuthRoutes({ authService, passwordResetService, defaultPro
     res.json(req.session.user);
   });
 
+  // "Manter conectado" (padrão): o login dura 30 dias. Desmarcado: o cookie vale só até fechar o
+  // navegador (e o servidor esquece a sessão depois de um tempo parado).
   router.post('/login', asyncRoute(async (req, res) => {
     const user = await authService.login(req.body.email, req.body.senha);
     await startSession(req, user);
+    if (req.body.manterConectado === false) req.session.cookie.maxAge = null;
     res.json(user);
   }));
 

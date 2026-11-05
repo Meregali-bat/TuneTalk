@@ -3,6 +3,7 @@ import { Link, useLocation, useNavigate } from 'react-router-dom';
 import { useAuth } from '../../auth/AuthContext.jsx';
 import { notificationsApi } from '../../api/index.js';
 import { Modal } from '../common/Modal.jsx';
+import { ConfirmarSaida } from '../common/ConfirmarSaida.jsx';
 import { NotificationList } from './NotificationList.jsx';
 import { AvisosNoCelular } from './AvisosNoCelular.jsx';
 import { atualizarBolinha } from '../../utils/avisos.js';
@@ -18,6 +19,7 @@ export function Header() {
   const unreadId = useId();
   const [unread, setUnread] = useState(0);
   const [open, setOpen] = useState(false);
+  const [confirmandoSaida, setConfirmandoSaida] = useState(false);
   const [notifications, setNotifications] = useState(null);
 
   const refreshUnread = useCallback(() => {
@@ -122,12 +124,14 @@ export function Header() {
             <Link className="icon-button" to={`/perfil/${user.id}`} aria-label="Meu perfil">
               <i className="bi bi-person-circle" aria-hidden="true" />
             </Link>
-            <button type="button" className="icon-button" aria-label="Sair" onClick={handleLogout}>
+            <button type="button" className="icon-button" aria-label="Sair" onClick={() => setConfirmandoSaida(true)}>
               <i className="bi bi-box-arrow-right" aria-hidden="true" />
             </button>
           </nav>
         </div>
       </header>
+
+      {confirmandoSaida && <ConfirmarSaida onClose={() => setConfirmandoSaida(false)} onConfirmar={handleLogout} />}
 
       <Modal open={open} title="Notificações" onClose={closeModal} variant="panel">
         <AvisosNoCelular />

@@ -36,6 +36,16 @@ describe('rotas /api/auth', () => {
       expect(res.headers['set-cookie']).toBeDefined();
     });
 
+    it('mantém conectado por padrão (cookie com validade); desmarcado, o cookie vale só até fechar o navegador', async () => {
+      const cookie = (res) => res.headers['set-cookie'].find((c) => c.startsWith('connect.sid='));
+
+      const padrao = await request(app).post('/api/auth/login').send({ email: 'ana@x.com', senha: 'Senha!1' });
+      expect(cookie(padrao)).toMatch(/Expires=/);
+
+      const semManter = await request(app).post('/api/auth/login').send({ email: 'ana@x.com', senha: 'Senha!1', manterConectado: false });
+      expect(cookie(semManter)).not.toMatch(/Expires=|Max-Age=/);
+    });
+
     it('propaga o erro de credenciais', async () => {
       deps.authService.login.mockRejectedValue(new HttpError(401, 'Usuário ou senha incorretos.'));
       const res = await request(app).post('/api/auth/login').send({ email: 'a', senha: 'b' });

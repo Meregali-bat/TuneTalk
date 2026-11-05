@@ -116,14 +116,27 @@ describe('Header', () => {
     });
   });
 
-  it('o botão sair encerra a sessão e vai para /login', async () => {
+  it('o botão sair pergunta antes; confirmando, encerra a sessão e vai para /login', async () => {
     const logout = vi.fn().mockResolvedValue();
     renderWithProviders(<Header />, { auth: makeAuth({ logout }) });
 
     await userEvent.click(screen.getByRole('button', { name: 'Sair' }));
+    const dialogo = screen.getByRole('dialog', { name: 'Sair da conta?' });
+    expect(logout).not.toHaveBeenCalled();
 
+    await userEvent.click(within(dialogo).getByRole('button', { name: 'Sair' }));
     expect(logout).toHaveBeenCalled();
     expect(screen.getByTestId('location')).toHaveTextContent('/login');
+  });
+
+  it('cancelar a saída continua logado', async () => {
+    const logout = vi.fn().mockResolvedValue();
+    renderWithProviders(<Header />, { auth: makeAuth({ logout }) });
+
+    await userEvent.click(screen.getByRole('button', { name: 'Sair' }));
+    await userEvent.click(screen.getByRole('button', { name: 'Cancelar' }));
+    expect(screen.queryByRole('dialog', { name: 'Sair da conta?' })).toBeNull();
+    expect(logout).not.toHaveBeenCalled();
   });
 
   describe('atualiza sozinho, sem recarregar a página', () => {

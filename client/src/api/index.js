@@ -23,7 +23,7 @@ async function uploadImage(signaturePath, file) {
 
 export const authApi = {
   me: () => request('/auth/me'),
-  login: (email, senha) => request('/auth/login', { method: 'POST', body: { email, senha } }),
+  login: (email, senha, manterConectado = true) => request('/auth/login', { method: 'POST', body: { email, senha, manterConectado } }),
   register: ({ email, senha }) => request('/auth/register', { method: 'POST', body: { email, senha } }),
   logout: () => request('/auth/logout', { method: 'POST' }),
   forgotPassword: (email) => request('/auth/forgot-password', { method: 'POST', body: { email } }),

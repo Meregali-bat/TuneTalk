@@ -232,6 +232,36 @@
   }
 }
 
+/* "Manter conectado" no login */
+.auth-manter {
+  display: flex;
+  align-items: flex-start;
+  gap: .65rem;
+  margin-top: -.2rem;
+  cursor: pointer;
+  font-size: .95rem;
+
+  input {
+    flex: none;
+    width: 1.15rem;
+    height: 1.15rem;
+    margin-top: .15rem;
+    accent-color: var(--destaque);
+    cursor: pointer;
+  }
+
+  span {
+    display: grid;
+    gap: .15rem;
+  }
+
+  small {
+    color: var(--texto-suave);
+    font-size: .8rem;
+    line-height: 1.35;
+  }
+}
+
 .auth-forgot {
   /* TODO(email): escondido até o envio de email (Resend com domínio verificado) estar configurado
      em produção. Para mostrar de novo, é só apagar esta linha. Ver TODO.md. */

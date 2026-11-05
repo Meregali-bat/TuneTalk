@@ -15,8 +15,8 @@ export function AuthProvider({ children }) {
       .finally(() => setLoading(false));
   }, []);
 
-  const login = useCallback(async (email, senha) => {
-    const logged = await authApi.login(email, senha);
+  const login = useCallback(async (email, senha, manterConectado = true) => {
+    const logged = await authApi.login(email, senha, manterConectado);
     // Feeds lembrados eram de outra conta (ou de antes de sair).
     esquecerListas();
     setUser(logged);
