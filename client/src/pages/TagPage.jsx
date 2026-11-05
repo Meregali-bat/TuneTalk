@@ -4,6 +4,7 @@ import { useAsync } from '../hooks/useAsync.js';
 import { BackBar } from '../components/layout/BackBar.jsx';
 import { PostCard } from '../components/post/PostCard.jsx';
 import { PullToRefresh } from '../components/common/PullToRefresh.jsx';
+import { hashflag } from '../utils/hashflags.js';
 
 // Posts (e comentários) com uma hashtag, do mais novo para o mais antigo.
 export function TagPage() {
@@ -17,7 +18,7 @@ export function TagPage() {
   return (
     <div className="feed">
       <PullToRefresh onRefresh={reload} />
-      <BackBar titulo={`#${tag}`} subtitulo={quantos} />
+      <BackBar titulo={`#${tag}${hashflag(tag) ? ` ${hashflag(tag).emoji}` : ''}`} subtitulo={quantos} />
 
       {error && <div role="alert" className="feed-error"><p>{error.message}</p></div>}
       {!posts && !error && <p role="status" className="composer-hint">Carregando…</p>}

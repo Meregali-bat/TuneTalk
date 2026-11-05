@@ -3931,4 +3931,80 @@ button.poll__opcao {
 .post-citado__extra {
   color: var(--texto-suave);
   font-size: .85rem;
+
+/* --- Hashtags especiais (ver utils/hashflags.js) --- */
+.hashflag {
+  display: inline-block;
+  margin-left: .2em;
+  font-size: .95em;
+  /* O emoji não ganha o sublinhado do link. */
+  text-decoration: none;
+}
+
+/* A hashtag especial não quebra de linha: o emoji fica sempre colado nela. */
+.hashtag:has(.hashflag),
+.hashtag-row__tag:has(.hashflag) {
+  white-space: nowrap;
+}
+
+.hashtag:hover .hashflag {
+  text-decoration: none;
+}
+
+/* Like de Natal (#xmas): coração vermelho e enfeites que saem dele ao curtir. */
+.like-button {
+  position: relative;
+}
+
+.post-action.like-button--natal.is-active {
+  color: #ff4d5e;
+}
+
+.like-button__pulo {
+  animation: like-pulo .45s cubic-bezier(.3, 1.6, .5, 1);
+}
+
+@keyframes like-pulo {
+  0% { transform: translateY(.08em) scale(1); }
+  35% { transform: translateY(.08em) scale(1.45); }
+  100% { transform: translateY(.08em) scale(1); }
+}
+
+.like-festa {
+  position: absolute;
+  top: 50%;
+  left: 1.2rem;
+  width: 0;
+  height: 0;
+  pointer-events: none;
+
+  span {
+    position: absolute;
+    top: 0;
+    left: 0;
+    font-size: .95rem;
+    line-height: 1;
+    opacity: 0;
+    transform: translate(-50%, -50%);
+    animation: like-festa .9s cubic-bezier(.2, .7, .3, 1) var(--atraso) forwards;
+  }
+}
+
+@keyframes like-festa {
+  0% {
+    opacity: 1;
+    transform: translate(-50%, -50%) rotate(var(--angulo)) translateX(.2rem) rotate(calc(-1 * var(--angulo))) scale(.4);
+  }
+  60% {
+    opacity: 1;
+  }
+  100% {
+    opacity: 0;
+    transform: translate(-50%, -50%) rotate(var(--angulo)) translateX(2.6rem) rotate(calc(-1 * var(--angulo))) translateY(.6rem) scale(1);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .like-festa { display: none; }
+  .like-button__pulo { animation: none; }
 }

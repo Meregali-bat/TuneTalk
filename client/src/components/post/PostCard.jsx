@@ -19,13 +19,21 @@ import { PollBlock } from './PollBlock.jsx';
 import { QueroOuvirButton } from './QueroOuvirButton.jsx';
 import { CitarButton } from './CitarButton.jsx';
 import { PostCitado } from './PostCitado.jsx';
+import { hashflag, temaDoTexto } from '../../utils/hashflags.js';
 import { ImagemDoPost } from './ImagemDoPost.jsx';
 
 // Texto com as marcações (@usuario, link para o perfil) e hashtags (link para a página da tag).
 function TextoComMarcacoes({ texto }) {
   return splitMentions(texto).map((parte, i) => {
     if (parte.tipo === 'mencao') return <Link key={i} to={`/perfil/@${parte.valor}`} className="mention">@{parte.valor}</Link>;
-    if (parte.tipo === 'hashtag') return <Link key={i} to={`/tag/${encodeURIComponent(parte.valor)}`} className="hashtag">#{parte.valor}</Link>;
+    if (parte.tipo === 'hashtag') {
+      const especial = hashflag(parte.valor);
+      return (
+        <Link key={i} to={`/tag/${encodeURIComponent(parte.valor)}`} className="hashtag">
+          #{parte.valor}{especial && <span className="hashflag" aria-hidden="true">{especial.emoji}</span>}
+        </Link>
+      );
+    }
     return <span key={i}>{parte.valor}</span>;
   });
 }
@@ -180,7 +188,7 @@ export function PostCard({
           <i className="bi bi-chat" aria-hidden="true" />
           <span>{commentCount}</span>
         </Link>
-        <LikeButton postId={post.id} likes={post.likes} curtido={post.curtido} />
+        <LikeButton postId={post.id} likes={post.likes} curtido={post.curtido} tema={temaDoTexto(post.texto)} />
         {/* Comentários não são citados: o botão fica nos posts. */}
         {!post.parentId && <CitarButton post={post} />}
         <ShareButton postId={post.id} />
