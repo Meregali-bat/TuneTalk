@@ -1,6 +1,7 @@
 import { Link } from 'react-router-dom';
 import { shortTime } from '../../utils/relativeTime.js';
 import { StarRating } from './StarRating.jsx';
+import { ImagemDoPost } from './ImagemDoPost.jsx';
 
 // O post citado, compacto, dentro de outro post (ou no compositor, sem link). Tocar abre o post citado.
 // Apagado ou de alguém que quem vê não vê: só o aviso de indisponível.
@@ -29,7 +30,7 @@ export function PostCitado({ post, comLink = true }) {
           )}
         </span>
       )}
-      {post.imagem && <img src={post.imagem} alt="" className="post-citado__imagem" loading="lazy" />}
+      {post.imagem && <ImagemDoPost src={post.imagem} alt="" className="post-citado__imagem" loading="lazy" />}
       {post.enquete && (
         <span className="post-citado__extra"><i className="bi bi-bar-chart-line" aria-hidden="true" /> Enquete</span>
       )}

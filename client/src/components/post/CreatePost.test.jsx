@@ -536,7 +536,7 @@ describe('CreatePost', () => {
       expect(screen.getByLabelText('Zoom')).toBeInTheDocument();
     });
 
-    it('"Original": publica a imagem inteira, só limitando o tamanho, com a proporção dela', async () => {
+    it('"Original": publica a imagem inteira, com a proporção dela', async () => {
       postsApi.uploadImage.mockResolvedValue(secureUrl);
       const onCreated = vi.fn();
       render(<CreatePost onCreated={onCreated} />);
@@ -551,7 +551,8 @@ describe('CreatePost', () => {
       expect(postsApi.uploadImage).toHaveBeenCalledWith(file);
       expect(postsApi.create).toHaveBeenCalledWith({
         texto: '',
-        imagemUrl: 'https://res.cloudinary.com/t/image/upload/c_limit,w_1600/v1/tunetalk/posts/gato.gif',
+        // GIF sem corte vai como foi enviado (o Cloudinary grátis recusa processar GIF grande).
+        imagemUrl: secureUrl,
         imagemProporcao: 800 / 600,
       });
       await waitFor(() => expect(onCreated).toHaveBeenCalled());
@@ -681,7 +682,7 @@ describe('CreatePost', () => {
       expect(postsApi.uploadImage).toHaveBeenCalledWith('https://media.giphy.com/abc/giphy.gif');
       expect(postsApi.create).toHaveBeenCalledWith({
         texto: '',
-        imagemUrl: 'https://res.cloudinary.com/t/image/upload/c_limit,w_1600/v1/tunetalk/posts/abc.gif',
+        imagemUrl: 'https://res.cloudinary.com/t/image/upload/v1/tunetalk/posts/abc.gif',
         imagemProporcao: 480 / 360,
       });
       await waitFor(() => expect(onCreated).toHaveBeenCalled());
