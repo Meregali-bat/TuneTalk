@@ -26,6 +26,10 @@ export function NotificationList({ notifications, onNavigate }) {
     return <p role="status" className="notif-status">Carregando notificações…</p>;
   }
 
+  if (notifications.erro) {
+    return <p role="alert" className="notif-status">Não foi possível carregar as notificações. Tente de novo.</p>;
+  }
+
   if (notifications.length === 0) {
     return (
       <div className="notif-empty">
