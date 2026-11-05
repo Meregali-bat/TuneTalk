@@ -75,6 +75,15 @@ describe('likeRepository e notificationRepository (Postgres)', () => {
       expect(await notifications.existsDesde(bia.id, 'natal', ontem)).toBe(false);
     });
 
+    it('lista e conta só os tipos de aviso que esta versão conhece', async () => {
+      const espiao = { notificacao: { findMany: async (args) => { espiao.args = args; return []; }, count: async (args) => { espiao.contagem = args; return 0; } } };
+      const repo = createNotificationRepository(espiao);
+      await repo.listForUser(1);
+      await repo.countUnread(1);
+      expect(espiao.args.where.tipo.in).toEqual(expect.arrayContaining(['like', 'comment', 'toca_natal']));
+      expect(espiao.contagem.where.tipo.in).toEqual(espiao.args.where.tipo.in);
+    });
+
     it('removeLike apaga só a notificação de curtida daquele usuário no post', async () => {
       await notifications.create({ destinatarioId: ana.id, autorId: bia.id, tipo: 'like', conteudo: 'curtiu seu post', postId: post.id });
       await notifications.create({ destinatarioId: ana.id, autorId: bia.id, tipo: 'comment', conteudo: 'comentou', postId: post.id });

@@ -1,10 +1,17 @@
+import { TipoNotificacao } from '../generated/prisma/enums.js';
+
+// Só os tipos de aviso que esta versão do app conhece. O banco pode ter tipos mais novos: o site de
+// teste divide o banco entre branches, e voltar a uma versão anterior na Vercel não desfaz as
+// migrations. Ler um tipo desconhecido derrubaria a lista inteira, então ele fica de fora.
+const TIPOS_CONHECIDOS = { in: Object.values(TipoNotificacao) };
+
 const toNotification = ({ createdAt, ...rest }) => ({ ...rest, data: createdAt.toISOString() });
 
 export function createNotificationRepository(prisma) {
   return {
     async listForUser(usuarioId) {
       const rows = await prisma.notificacao.findMany({
-        where: { destinatarioId: usuarioId },
+        where: { destinatarioId: usuarioId, tipo: TIPOS_CONHECIDOS },
         orderBy: { id: 'desc' },
         select: {
           id: true,
@@ -20,7 +27,7 @@ export function createNotificationRepository(prisma) {
     },
 
     countUnread(usuarioId) {
-      return prisma.notificacao.count({ where: { destinatarioId: usuarioId, lida: false } });
+      return prisma.notificacao.count({ where: { destinatarioId: usuarioId, lida: false, tipo: TIPOS_CONHECIDOS } });
     },
 
     async markAllRead(usuarioId) {
