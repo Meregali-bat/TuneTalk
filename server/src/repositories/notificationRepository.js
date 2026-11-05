@@ -35,6 +35,11 @@ export function createNotificationRepository(prisma) {
       return (await prisma.notificacao.count({ where: { destinatarioId, tipo } })) > 0;
     },
 
+    // Já recebeu esse tipo de aviso desde tal data? (ex.: o de Natal, uma vez por ano)
+    async existsDesde(destinatarioId, tipo, desde) {
+      return (await prisma.notificacao.count({ where: { destinatarioId, tipo, createdAt: { gte: desde } } })) > 0;
+    },
+
     async removeLike(postId, usuarioId) {
       await prisma.notificacao.deleteMany({ where: { postId, autorId: usuarioId, tipo: 'like' } });
     },

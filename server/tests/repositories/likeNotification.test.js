@@ -66,6 +66,15 @@ describe('likeRepository e notificationRepository (Postgres)', () => {
       expect(await notifications.countUnread(bia.id)).toBe(1);
     });
 
+    it('existsDesde: já recebeu aquele tipo de aviso desde a data?', async () => {
+      await notifications.create({ destinatarioId: ana.id, autorId: ana.id, tipo: 'natal', conteudo: 'Feliz Natal!' });
+      const ontem = new Date(Date.now() - 24 * 60 * 60 * 1000);
+      const amanha = new Date(Date.now() + 24 * 60 * 60 * 1000);
+      expect(await notifications.existsDesde(ana.id, 'natal', ontem)).toBe(true);
+      expect(await notifications.existsDesde(ana.id, 'natal', amanha)).toBe(false);
+      expect(await notifications.existsDesde(bia.id, 'natal', ontem)).toBe(false);
+    });
+
     it('removeLike apaga só a notificação de curtida daquele usuário no post', async () => {
       await notifications.create({ destinatarioId: ana.id, autorId: bia.id, tipo: 'like', conteudo: 'curtiu seu post', postId: post.id });
       await notifications.create({ destinatarioId: ana.id, autorId: bia.id, tipo: 'comment', conteudo: 'comentou', postId: post.id });

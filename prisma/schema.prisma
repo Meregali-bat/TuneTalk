@@ -17,6 +17,7 @@ enum TipoNotificacao {
   mention
   voto_enquete
   marco_posts
+  natal
 }
 
 model Usuario {

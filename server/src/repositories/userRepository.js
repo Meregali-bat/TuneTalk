@@ -92,6 +92,12 @@ export function createUserRepository(prisma) {
       await prisma.usuario.update({ where: { id }, data: { favoritos } });
     },
 
+    // Quem já terminou o cadastro (escolheu o nome de usuário): recebe os avisos do TuneTalk.
+    async listIdsComNome() {
+      const rows = await prisma.usuario.findMany({ where: { nome: { not: null } }, select: { id: true }, orderBy: { id: 'asc' } });
+      return rows.map((row) => row.id);
+    },
+
     findById(id) {
       return prisma.usuario.findUnique({ where: { id }, select: PUBLIC_USER_SELECT });
     },

@@ -10,7 +10,7 @@
     "dev:client": "vite",
     "build": "vite build",
     "build:demo": "vite build --mode demo && node scripts/build-demo-page.js",
-    "vercel-build": "node scripts/check-db-before-migrate.js && prisma migrate deploy && vite build",
+    "vercel-build": "node scripts/check-db-before-migrate.js && prisma migrate deploy && vite build && node scripts/aviso-de-natal.js",
     "start": "NODE_ENV=production node server/src/index.js",
     "postinstall": "npm run db:generate",
     "db:migrate": "prisma migrate deploy",

@@ -10,15 +10,19 @@ const ICONS = {
   mention: 'bi-at',
   voto_enquete: 'bi-bar-chart-fill',
   marco_posts: 'bi-trophy-fill',
+  natal: 'bi-tree-fill',
 };
 
 // Avisos do próprio TuneTalk (ex.: selo de fundador) aparecem com o logo, não com o nome de alguém.
-const DO_TUNETALK = new Set(['selo_fundador', 'marco_posts']);
+const DO_TUNETALK = new Set(['selo_fundador', 'marco_posts', 'natal']);
 
-const targetOf = (notification) =>
-  notification.tipo === 'new_follower' || !notification.postId
+const targetOf = (notification) => {
+  // O aviso de Natal leva para os posts com #xmas.
+  if (notification.tipo === 'natal') return '/tag/xmas';
+  return notification.tipo === 'new_follower' || !notification.postId
     ? `/perfil/${notification.autor.id}`
     : `/post/${notification.postId}`;
+};
 
 export function NotificationList({ notifications, onNavigate }) {
   if (!notifications) {

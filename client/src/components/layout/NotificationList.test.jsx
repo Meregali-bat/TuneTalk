@@ -39,6 +39,17 @@ describe('NotificationList: selo de fundador e marcações', () => {
     expect(item.querySelector('.notif__icon--voto_enquete .bi-bar-chart-fill')).not.toBeNull();
   });
 
+  it('Natal: aviso do TuneTalk com árvore, levando aos posts com #xmas', () => {
+    renderWithProviders(<NotificationList notifications={[{
+      id: 9, tipo: 'natal', conteudo: 'Feliz Natal! 🎄', lida: false, postId: null, autor: bia,
+    }]} />);
+    const item = screen.getByRole('link');
+    expect(item).toHaveAttribute('href', '/tag/xmas');
+    expect(item).toHaveTextContent('Feliz Natal! 🎄');
+    expect(item).not.toHaveTextContent('bia');
+    expect(item.querySelector('.notif__icon--natal .bi-tree-fill')).not.toBeNull();
+  });
+
   it('100 posts: parabéns do TuneTalk com troféu, levando ao 100º post', () => {
     renderWithProviders(<NotificationList notifications={[{
       id: 4, tipo: 'marco_posts', conteudo: 'Parabéns pelo seu 100º post!', lida: false, postId: 50, autor: ana,

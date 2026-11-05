@@ -2873,6 +2873,11 @@ button.track-row:hover {
   color: #3a2600;
 }
 
+.notif__icon--natal {
+  background: linear-gradient(160deg, #ff6b78, #c81d34);
+  color: #fff;
+}
+
 .notif__icon--mention {
   background: var(--azul);
 }

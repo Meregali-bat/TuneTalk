@@ -85,6 +85,15 @@ describe('withPush (toda notificação vira aviso)', () => {
     expect(push.enviar).toHaveBeenCalledWith(7, { titulo: 'TuneTalk', texto: 'Parabéns pelo seu 100º post!', url: '/post/42', naoLidas: 1 });
   });
 
+  it('aviso de Natal: frase do TuneTalk que abre a hashtag #xmas', async () => {
+    const notifications = { create: vi.fn(), countUnread: vi.fn().mockResolvedValue(1) };
+    const push = { enviar: vi.fn() };
+    const comPush = withPush(notifications, { push, users: { findById: vi.fn().mockResolvedValue({ id: 7, nome: 'ana' }) } });
+
+    await comPush.create({ destinatarioId: 7, autorId: 7, tipo: 'natal', conteudo: 'Feliz Natal! 🎄' });
+    expect(push.enviar).toHaveBeenCalledWith(7, { titulo: 'TuneTalk', texto: 'Feliz Natal! 🎄', url: '/tag/xmas', naoLidas: 1 });
+  });
+
   it('se o aviso falhar, a notificação continua gravada e nada quebra', async () => {
     const notifications = { create: vi.fn(), countUnread: vi.fn().mockRejectedValue(new Error('x')) };
     const comPush = withPush(notifications, { push: { enviar: vi.fn() }, users: { findById: vi.fn() } });

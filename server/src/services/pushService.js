@@ -59,7 +59,13 @@ export function createPushService({ subscriptions, webpush, vapid, logger = cons
  * para os aparelhos da pessoa. O resto (listar, contar, marcar como lida) passa direto.
  */
 // Avisos do próprio TuneTalk: o texto já é a frase inteira, sem o nome de alguém na frente.
-const AVISOS_DO_TUNETALK = new Set(['selo_fundador', 'marco_posts']);
+const AVISOS_DO_TUNETALK = new Set(['selo_fundador', 'marco_posts', 'natal']);
+
+// Para onde o aviso leva: o de Natal abre a hashtag #xmas; os outros, o post ou o perfil.
+const destinoDoAviso = (n) => {
+  if (n.tipo === 'natal') return '/tag/xmas';
+  return n.postId ? `/post/${n.postId}` : `/perfil/${n.autorId}`;
+};
 
 export function withPush(notifications, { push, users }) {
   return {
@@ -75,7 +81,7 @@ export function withPush(notifications, { push, users }) {
         await push.enviar(notificacao.destinatarioId, {
           titulo: 'TuneTalk',
           texto: AVISOS_DO_TUNETALK.has(notificacao.tipo) ? notificacao.conteudo : `${nome} ${notificacao.conteudo}`,
-          url: notificacao.postId ? `/post/${notificacao.postId}` : `/perfil/${notificacao.autorId}`,
+          url: destinoDoAviso(notificacao),
           naoLidas,
         });
       } catch {

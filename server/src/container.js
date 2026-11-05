@@ -18,6 +18,7 @@ import { createAuthService } from './services/authService.js';
 import { createPostService } from './services/postService.js';
 import { createUserService } from './services/userService.js';
 import { createMusicService } from './services/musicService.js';
+import { enviarAvisoDeNatal } from './services/avisoDeNatalService.js';
 import { createGifService } from './services/gifService.js';
 import { createLyricsService } from './services/lyricsService.js';
 import { createHashtagService } from './services/hashtagService.js';
@@ -96,6 +97,8 @@ export function buildContainer(config) {
     hashtagService: createHashtagService({ posts }),
     pushService,
     notifications,
+    // Usado só pelo script do deploy (scripts/aviso-de-natal.js).
+    avisoDeNatal: () => enviarAvisoDeNatal({ users, notifications }),
     uploader: createCloudinaryUploader(cloudinary),
     sessionStore: createSessionStore(pool),
     sessions,

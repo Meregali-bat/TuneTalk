@@ -16,6 +16,14 @@ describe('userRepository (Postgres)', () => {
   beforeEach(() => db.reset());
   afterAll(() => db.close());
 
+  it('listIdsComNome lista quem já escolheu o nome de usuário, em ordem', async () => {
+    const ana = await factory.user({ nome: 'ana' });
+    const novo = await repo.create({ email: 'novo@x.com', senhaHash: 'h', fotoPerfil: 'f.png' });
+    const bia = await factory.user({ nome: 'bia' });
+    expect(await repo.listIdsComNome()).toEqual([ana.id, bia.id]);
+    expect(await repo.listIdsComNome()).not.toContain(novo);
+  });
+
   // A senha chega já transformada em hash (feito pelo serviço); o repositório só guarda.
   it('create grava o hash recebido, sem nome de usuário, e devolve o id', async () => {
     const id = await repo.create({ email: 'ana@x.com', senhaHash: '$2b$hash', fotoPerfil: 'f.png' });
