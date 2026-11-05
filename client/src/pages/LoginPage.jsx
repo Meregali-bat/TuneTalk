@@ -61,10 +61,7 @@ export function LoginPage() {
         </Field>
         <label className="auth-manter">
           <input type="checkbox" checked={manterConectado} onChange={(event) => setManterConectado(event.target.checked)} />
-          <span>
-            Manter conectado
-            <small>Desmarque em computador de outra pessoa: o login some ao fechar o navegador.</small>
-          </span>
+          <span>Manter conectado</span>
         </label>
         <Link to="/esqueci-senha" className="auth-forgot">Esqueci minha senha</Link>
         <button type="submit" className="auth-submit" disabled={sending || !email || !senha}>

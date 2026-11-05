@@ -235,8 +235,9 @@
 /* "Manter conectado" no login */
 .auth-manter {
   display: flex;
-  align-items: flex-start;
+  align-items: center;
   gap: .65rem;
+  align-self: flex-start;
   margin-top: -.2rem;
   cursor: pointer;
   font-size: .95rem;
@@ -245,20 +246,9 @@
     flex: none;
     width: 1.15rem;
     height: 1.15rem;
-    margin-top: .15rem;
+    margin: 0;
     accent-color: var(--destaque);
     cursor: pointer;
-  }
-
-  span {
-    display: grid;
-    gap: .15rem;
-  }
-
-  small {
-    color: var(--texto-suave);
-    font-size: .8rem;
-    line-height: 1.35;
   }
 }
 
