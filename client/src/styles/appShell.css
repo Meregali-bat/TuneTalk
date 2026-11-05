@@ -2805,14 +2805,28 @@ button.track-row:hover {
     transition: none;
   }
 
+  /* A seta gira em torno do próprio centro: sem o deslocamento que o pacote de ícones põe
+     no desenho (senão ela "manca" ao girar). */
   i {
     display: block;
-    transition: transform .15s ease;
+    line-height: 1;
+    transform: rotate(var(--giro, 0deg));
+
+    &::before {
+      display: block;
+      vertical-align: 0;
+    }
   }
 
+  /* Ao soltar, continua girando de onde o dedo deixou, sem voltar para o começo. */
   &.is-atualizando i {
-    animation: pull-refresh-giro .8s linear infinite;
+    animation: pull-refresh-continua .8s linear infinite;
   }
+}
+
+@keyframes pull-refresh-continua {
+  from { transform: rotate(var(--giro, 0deg)); }
+  to { transform: rotate(calc(var(--giro, 0deg) + 360deg)); }
 }
 
 @keyframes pull-refresh-giro {

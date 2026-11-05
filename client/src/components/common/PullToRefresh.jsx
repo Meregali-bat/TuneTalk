@@ -78,9 +78,15 @@ export function PullToRefresh({ onRefresh }) {
       <div
         className={`pull-refresh${puxando ? ' is-puxando' : ''}${atualizando ? ' is-atualizando' : ''}`}
         aria-hidden="true"
-        style={{ '--puxado': `${puxado}px`, opacity: atualizando ? 1 : progresso, ...(topo !== null && { top: `${topo + 4}px` }) }}
+        style={{
+          '--puxado': `${puxado}px`,
+          // A seta gira com o dedo; ao atualizar, o giro contínuo parte desse mesmo ângulo.
+          '--giro': `${(atualizando ? 1 : progresso) * 270}deg`,
+          opacity: atualizando ? 1 : progresso,
+          ...(topo !== null && { top: `${topo + 4}px` }),
+        }}
       >
-        <i className="bi bi-arrow-clockwise" style={atualizando ? undefined : { transform: `rotate(${progresso * 270}deg)` }} />
+        <i className="bi bi-arrow-clockwise" />
       </div>
       {atualizando && <p role="status" className="visually-hidden">Atualizando…</p>}
     </>
