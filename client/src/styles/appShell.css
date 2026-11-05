@@ -4024,11 +4024,11 @@ button.poll__opcao {
 
 .toca-natal {
   position: absolute;
-  top: -34%;
-  left: -16%;
-  width: 82%;
+  top: -22%;
+  left: -6%;
+  width: 58%;
   pointer-events: none;
-  transform: rotate(-24deg);
+  transform: rotate(-22deg);
   transform-origin: 30% 80%;
   filter: drop-shadow(0 2px 3px rgba(0, 0, 0, .45));
 }
@@ -4054,7 +4054,7 @@ button.poll__opcao {
   justify-items: center;
   gap: .9rem;
   /* Espaço para a ponta da toca, que sobe acima da foto. */
-  padding-top: 3rem;
+  padding-top: 2rem;
   text-align: center;
 
   p {
