@@ -48,13 +48,31 @@ describe('PullToRefresh (arrastar para atualizar)', () => {
     expect(onRefresh).not.toHaveBeenCalled();
   });
 
-  it('o indicador é só visual enquanto puxa e acompanha o dedo', () => {
-    render(<PullToRefresh onRefresh={vi.fn()} />);
-    const indicador = document.querySelector('.pull-refresh');
+  it('puxando, desce o que vem depois dele (os posts) junto com o dedo; o que vem antes fica', () => {
+    render(
+      <div>
+        <nav data-testid="abas" />
+        <PullToRefresh onRefresh={vi.fn()} />
+        <ul data-testid="posts" />
+      </div>,
+    );
+    const indicador = screen.getByTestId('pull-refresh');
     expect(indicador).toHaveAttribute('aria-hidden', 'true');
+    expect(indicador).not.toHaveClass('is-ativo');
 
     fireEvent.touchStart(window, { touches: [{ clientY: 100 }] });
     fireEvent.touchMove(window, { touches: [{ clientY: 200 }] });
-    expect(indicador.style.getPropertyValue('--puxado')).toBe('50px');
+    // A lista lê a medida no documento; o CSS só desce os irmãos seguintes (.is-ativo ~ *).
+    expect(document.documentElement.style.getPropertyValue('--ptr-puxado')).toBe('50px');
+    expect(indicador).toHaveClass('is-ativo', 'is-puxando');
+  });
+
+  it('com uma janela aberta por cima, o gesto não atualiza a página', () => {
+    document.body.classList.add('modal-open');
+    const onRefresh = vi.fn();
+    render(<PullToRefresh onRefresh={onRefresh} />);
+    puxar(100, 400);
+    expect(onRefresh).not.toHaveBeenCalled();
+    document.body.classList.remove('modal-open');
   });
 });

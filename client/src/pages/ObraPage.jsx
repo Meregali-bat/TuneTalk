@@ -112,8 +112,8 @@ export function ObraPage({ tipo }) {
 
   return (
     <div className="feed">
-      <PullToRefresh onRefresh={reload} />
       <BackBar titulo={tipo === 'album' ? 'Álbum' : 'Música'} />
+      <PullToRefresh onRefresh={reload} />
 
       {error && (
         <div className="feed-empty">

@@ -1,22 +1,26 @@
 import { useEffect, useRef, useState } from 'react';
 
-const LIMIAR = 70; // px puxados (já com a resistência) para soltar e atualizar
+const LIMIAR = 64; // px puxados (já com a resistência) para soltar e atualizar
 const MAXIMO = 110;
-const RESISTENCIA = 0.5; // o indicador anda metade do que o dedo anda, como no Twitter
+const RESISTENCIA = 0.5; // a lista anda metade do que o dedo anda
+const VOLTA_MS = 300; // tempo da lista subir de volta (igual à transição no CSS)
 
 /**
- * "Arrastar para atualizar" no celular: com a página no topo, puxar para baixo mostra um círculo
- * que gira com o dedo; soltando depois do limiar, chama onRefresh e gira até ele terminar.
+ * "Arrastar para atualizar": com a página no topo, puxar para baixo desce o que
+ * vem DEPOIS deste componente (os posts), e o carregando aparece no espaço que abre. O que vem
+ * antes (cabeçalho, abas, barra de título) fica parado. Soltando depois do limiar, o espaço fica
+ * aberto girando até onRefresh terminar.
  * Necessário principalmente no app da tela inicial do iPhone, que não tem isso do Safari.
  */
 export function PullToRefresh({ onRefresh }) {
   const [puxado, setPuxado] = useState(0);
   const [puxando, setPuxando] = useState(false);
   const [atualizando, setAtualizando] = useState(false);
-  const [topo, setTopo] = useState(null); // onde o topo do app termina (o círculo sai de baixo dele)
+  const [ativo, setAtivo] = useState(false); // a lista está (ou está voltando de) deslocada
   const inicio = useRef(null);
   const puxadoRef = useRef(0);
   const atualizandoRef = useRef(false);
+  const voltaRef = useRef(null);
   const onRefreshRef = useRef(onRefresh);
   onRefreshRef.current = onRefresh;
 
@@ -24,12 +28,19 @@ export function PullToRefresh({ onRefresh }) {
     const mover = (valor) => {
       puxadoRef.current = valor;
       setPuxado(valor);
+      if (valor > 0) {
+        clearTimeout(voltaRef.current);
+        setAtivo(true);
+      } else {
+        // Só tira o deslocamento depois de a lista terminar de subir (senão ela "pula").
+        voltaRef.current = setTimeout(() => setAtivo(false), VOLTA_MS);
+      }
     };
 
     const start = (event) => {
-      if (atualizandoRef.current || window.scrollY > 0) return;
+      // Com uma janela aberta por cima (post, notificações…), o gesto é dela.
+      if (atualizandoRef.current || window.scrollY > 0 || document.body.classList.contains('modal-open')) return;
       inicio.current = event.touches[0].clientY;
-      setTopo(document.querySelector('.app-header')?.getBoundingClientRect().bottom ?? null);
       setPuxando(true);
     };
 
@@ -64,6 +75,7 @@ export function PullToRefresh({ onRefresh }) {
     window.addEventListener('touchend', end);
     window.addEventListener('touchcancel', end);
     return () => {
+      clearTimeout(voltaRef.current);
       window.removeEventListener('touchstart', start);
       window.removeEventListener('touchmove', move);
       window.removeEventListener('touchend', end);
@@ -71,22 +83,22 @@ export function PullToRefresh({ onRefresh }) {
     };
   }, []);
 
+  // O deslocamento vai no documento: os irmãos seguintes (a lista) leem a mesma medida.
+  useEffect(() => {
+    document.documentElement.style.setProperty('--ptr-puxado', `${puxado}px`);
+  }, [puxado]);
+  useEffect(() => () => document.documentElement.style.removeProperty('--ptr-puxado'), []);
+
   const progresso = Math.min(1, puxado / LIMIAR);
+  const classes = ['pull-refresh', ativo && 'is-ativo', puxando && 'is-puxando', atualizando && 'is-atualizando'];
 
   return (
     <>
-      <div
-        className={`pull-refresh${puxando ? ' is-puxando' : ''}${atualizando ? ' is-atualizando' : ''}`}
-        aria-hidden="true"
-        style={{
-          '--puxado': `${puxado}px`,
-          // A seta gira com o dedo; ao atualizar, o giro contínuo parte desse mesmo ângulo.
-          '--giro': `${(atualizando ? 1 : progresso) * 270}deg`,
-          opacity: atualizando ? 1 : progresso,
-          ...(topo !== null && { top: `${topo + 4}px` }),
-        }}
-      >
-        <i className="bi bi-arrow-clockwise" />
+      <div className={classes.filter(Boolean).join(' ')} aria-hidden="true" data-testid="pull-refresh">
+        <span
+          className="pull-refresh__giro"
+          style={{ opacity: atualizando ? 1 : progresso, '--giro': `${(atualizando ? 1 : progresso) * 300}deg` }}
+        />
       </div>
       {atualizando && <p role="status" className="visually-hidden">Atualizando…</p>}
     </>

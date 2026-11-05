@@ -57,8 +57,8 @@ export function QueroOuvirPage() {
 
   return (
     <div className="feed">
-      <PullToRefresh onRefresh={reload} />
       <BackBar titulo="Quero ouvir" subtitulo={quantos} />
+      <PullToRefresh onRefresh={reload} />
 
       {aviso && (
         <p role="status" className="profile-notice">

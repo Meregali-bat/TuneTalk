@@ -2783,50 +2783,50 @@ button.track-row:hover {
 }
 
 .pull-refresh {
-  position: fixed;
-  top: calc(env(safe-area-inset-top, 0px) + var(--app-header-h) + .25rem);
+  /* Fica no lugar dele (entre as abas e os posts) sem ocupar espaço: quem se move é a lista. */
+  position: relative;
+  z-index: 1;
+  height: 0;
+}
+
+/* Anel do carregando, no meio do espaço que abre quando a lista desce. */
+.pull-refresh__giro {
+  position: absolute;
+  top: 0;
   left: 50%;
-  z-index: 1015;
-  display: grid;
-  place-items: center;
-  width: 2.5rem;
-  height: 2.5rem;
-  border: 1px solid var(--linhas);
+  width: 1.6rem;
+  height: 1.6rem;
+  border: 2.5px solid var(--linhas);
+  border-top-color: var(--destaque-claro);
   border-radius: 50%;
-  background: var(--superficie-2);
-  color: var(--destaque-claro);
-  font-size: 1.15rem;
-  pointer-events: none;
-  transform: translate(-50%, calc(var(--puxado) - 3rem));
+  transform: translate(-50%, calc(var(--ptr-puxado, 0px) / 2 - 50%)) rotate(var(--giro, 0deg));
   transition: transform .3s cubic-bezier(0.23, 1, 0.32, 1), opacity .2s ease;
 
-  /* Enquanto o dedo está na tela, o indicador acompanha sem atraso. */
-  &.is-puxando {
-    transition: none;
+  .is-puxando > & {
+    transition: opacity .2s ease;
   }
 
-  /* A seta gira em torno do próprio centro: sem o deslocamento que o pacote de ícones põe
-     no desenho (senão ela "manca" ao girar). */
-  i {
-    display: block;
-    line-height: 1;
-    transform: rotate(var(--giro, 0deg));
-
-    &::before {
-      display: block;
-      vertical-align: 0;
-    }
-  }
-
-  /* Ao soltar, continua girando de onde o dedo deixou, sem voltar para o começo. */
-  &.is-atualizando i {
-    animation: pull-refresh-continua .8s linear infinite;
+  /* Ao soltar, continua girando do ângulo em que o dedo deixou. */
+  .is-atualizando > & {
+    animation: pull-refresh-continua .7s linear infinite;
   }
 }
 
 @keyframes pull-refresh-continua {
-  from { transform: rotate(var(--giro, 0deg)); }
-  to { transform: rotate(calc(var(--giro, 0deg) + 360deg)); }
+  from { transform: translate(-50%, calc(var(--ptr-puxado, 0px) / 2 - 50%)) rotate(var(--giro, 0deg)); }
+  to { transform: translate(-50%, calc(var(--ptr-puxado, 0px) / 2 - 50%)) rotate(calc(var(--giro, 0deg) + 360deg)); }
+}
+
+/* Tudo o que vem depois (os posts) desce junto com o dedo. Só enquanto está puxado: um
+   transform parado mudaria o que é "fixo" lá dentro. */
+.pull-refresh.is-ativo ~ :not(.composer-fab, .modal, .modal-backdrop) {
+  transform: translateY(var(--ptr-puxado, 0px));
+  transition: transform .3s cubic-bezier(0.23, 1, 0.32, 1);
+}
+
+/* Com o dedo na tela, acompanha sem atraso. */
+.pull-refresh.is-puxando ~ :not(.composer-fab, .modal, .modal-backdrop) {
+  transition: none;
 }
 
 @keyframes pull-refresh-giro {
@@ -2834,8 +2834,8 @@ button.track-row:hover {
 }
 
 @media (prefers-reduced-motion: reduce) {
-  .pull-refresh.is-atualizando i {
-    animation: none;
+  .pull-refresh__giro {
+    animation-duration: 2s !important;
   }
 }
 

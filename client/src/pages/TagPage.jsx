@@ -16,8 +16,8 @@ export function TagPage() {
 
   return (
     <div className="feed">
-      <PullToRefresh onRefresh={reload} />
       <BackBar titulo={`#${tag}`} subtitulo={quantos} />
+      <PullToRefresh onRefresh={reload} />
 
       {error && <div role="alert" className="feed-error"><p>{error.message}</p></div>}
       {!posts && !error && <p role="status" className="composer-hint">Carregando…</p>}

@@ -90,8 +90,9 @@ export function FeedPage({ feed }) {
 
   return (
     <div className="feed">
-      <PullToRefresh onRefresh={reload} />
       <FeedTabs active={feed} />
+      {/* Depois das abas: puxando, só os posts descem; as abas ficam paradas. */}
+      <PullToRefresh onRefresh={reload} />
 
       {loading && !posts && <FeedSkeleton />}
 

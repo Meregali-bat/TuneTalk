@@ -231,9 +231,9 @@ export function ProfilePage() {
 
   return (
     <div className="feed profile">
-      <PullToRefresh onRefresh={reload} />
       {/* key: só cai de novo ao abrir outro perfil, não quando os dados deste recarregam (ex.: seguir). */}
       {profileEffectFor(profile.usuario.nome) === 'petalas' && <PetalRain key={profile.usuario.id} />}
+      <PullToRefresh onRefresh={reload} />
       <ProfileHeader
         profile={profile}
         isOwnProfile={isOwnProfile}

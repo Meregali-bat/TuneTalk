@@ -120,8 +120,8 @@ export function PostPage() {
 
   return (
     <div className="feed thread">
-      <PullToRefresh onRefresh={reload} />
       <BackBar titulo="Post" />
+      <PullToRefresh onRefresh={reload} />
 
       {pai && <ParentLink pai={pai} />}
 
