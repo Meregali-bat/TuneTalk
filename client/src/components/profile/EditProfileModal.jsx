@@ -3,7 +3,7 @@ import { usersApi } from '../../api/index.js';
 import { Modal } from '../common/Modal.jsx';
 import { USERNAME_MESSAGES, checkUsername } from '../../../../shared/usernameRules.js';
 import { IMAGEM_MAX_MB } from '../../api/limits.js';
-import { EFEITO_PADRAO, EFEITO_PALETAS, EFEITO_TIPOS, validarEfeito } from '../../../../shared/profileEffect.js';
+import { EFEITO_PALETAS, EFEITO_TIPOS, lerEfeito } from '../../../../shared/profileEffect.js';
 
 const BIO_MAX = 255;
 const NOME_EXIBICAO_MAX = 50;
@@ -96,7 +96,7 @@ export function EditProfileModal({ open, usuario, onClose, onSaved }) {
   const [bio, setBio] = useState(usuario.bio ?? '');
   const [mostrarSelo, setMostrarSelo] = useState(usuario.mostrarSeloFundador !== false);
   const [mostrarEfeito, setMostrarEfeito] = useState(usuario.mostrarEfeito !== false);
-  const [efeito, setEfeito] = useState(() => validarEfeito(usuario.efeitoPerfil).efeito ?? EFEITO_PADRAO);
+  const [efeito, setEfeito] = useState(() => lerEfeito(usuario.efeitoPerfil));
   const [error, setError] = useState('');
   const [saving, setSaving] = useState(null); // null, 'foto', 'capa' ou 'dados'
   const foto = useImagePick('A foto', setError);

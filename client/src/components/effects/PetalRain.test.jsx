@@ -35,11 +35,26 @@ describe('PetalRain', () => {
     expect(camada.querySelectorAll('.petal')).toHaveLength(12);
   });
 
-  it('com outra forma, cai o caractere (nota, estrela, coração) na cor da paleta', () => {
-    const { getByTestId } = render(<PetalRain count={4} tipo="notas" colors={['#123456']} />);
+  it('estrelas: cai o caractere na cor da paleta', () => {
+    const { getByTestId } = render(<PetalRain count={3} tipo="estrelas" colors={['#123456']} />);
     const glifos = getByTestId('petalas').querySelectorAll('.petal__body--glifo');
-    expect([...glifos].map((g) => g.textContent)).toEqual(['\u266A', '\u266B', '\u266A', '\u266B']);
+    expect([...glifos].map((g) => g.textContent)).toEqual(['\u2605', '\u2605', '\u2605']);
     expect(glifos[0].style.getPropertyValue('--petal-color')).toBe('#123456');
+  });
+
+  it('notas: caem pedaços de pauta (5 linhas nas cores da paleta) com notas, e menos de cada vez', () => {
+    const { getByTestId } = render(<PetalRain tipo="notas" colors={['#111111', '#222222']} />);
+    const pautas = getByTestId('petalas').querySelectorAll('svg.pauta');
+    expect(pautas).toHaveLength(9);
+    const linhas = [...pautas[0].querySelectorAll('path')].slice(0, 5);
+    expect(linhas.map((l) => l.getAttribute('stroke'))).toEqual(['#111111', '#222222', '#111111', '#222222', '#111111']);
+    expect(pautas[0].querySelectorAll('ellipse').length).toBeGreaterThan(0);
+  });
+
+  it('CD holográfico: o disco leva as cores da paleta no arco-íris', () => {
+    const { getByTestId } = render(<PetalRain count={2} tipo="cd" colors={['#abcdef']} />);
+    const cd = getByTestId('petalas').querySelector('.cd-holo');
+    expect(cd.style.getPropertyValue('--cd-arco')).toContain('#abcdef');
   });
 
   it('cai uma vez e some da página quando as pétalas terminam', () => {

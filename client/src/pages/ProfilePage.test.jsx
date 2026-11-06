@@ -402,16 +402,16 @@ describe('ProfilePage', () => {
 
   it('quem ganhou o efeito dos 100 posts tem a forma escolhida caindo no perfil; desligado, nada', async () => {
     const desde = '2026-11-06T00:00:00.000Z';
-    usersApi.profile.mockResolvedValue(profile({ usuario: { ...bia, efeitoDesde: desde, efeitoPerfil: { tipo: 'coracoes', paleta: 'sol' } } }));
+    usersApi.profile.mockResolvedValue(profile({ usuario: { ...bia, efeitoDesde: desde, efeitoPerfil: { tipo: 'cd', paleta: 'sol' } } }));
     const { unmount } = renderProfile();
     await screen.findByRole('heading', { level: 1, name: 'bia' });
     const camada = screen.getByTestId('petalas');
-    expect(camada).toHaveAttribute('data-tipo', 'coracoes');
-    expect(camada.querySelector('.petal__body--glifo')).not.toBeNull();
+    expect(camada).toHaveAttribute('data-tipo', 'cd');
+    expect(camada.querySelector('.cd-holo')).not.toBeNull();
     unmount();
 
     usersApi.profile.mockResolvedValue(profile({
-      usuario: { ...bia, efeitoDesde: desde, efeitoPerfil: { tipo: 'coracoes', paleta: 'sol' }, mostrarEfeito: false },
+      usuario: { ...bia, efeitoDesde: desde, efeitoPerfil: { tipo: 'cd', paleta: 'sol' }, mostrarEfeito: false },
     }));
     renderProfile();
     await screen.findByRole('heading', { level: 1, name: 'bia' });

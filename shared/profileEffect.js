@@ -5,7 +5,7 @@
 export const EFEITO_TIPOS = {
   notas: 'Notas musicais',
   estrelas: 'Estrelas',
-  coracoes: 'Corações',
+  cd: 'CD holográfico',
 };
 
 export const EFEITO_PALETAS = {
@@ -28,8 +28,18 @@ export function validarEfeito(valor) {
   return { efeito: { tipo, paleta } };
 }
 
-// O efeito que aparece no perfil: só se foi desbloqueado, está ligado e é válido; senão null.
+// A escolha gravada, sempre válida: forma que saiu da lista (ex.: corações, que existiu até
+// 2026-11) volta para a padrão, mantendo a paleta que a pessoa tinha escolhido.
+export function lerEfeito(valor) {
+  const { tipo, paleta } = valor && typeof valor === 'object' ? valor : {};
+  return {
+    tipo: Object.hasOwn(EFEITO_TIPOS, tipo) ? tipo : EFEITO_PADRAO.tipo,
+    paleta: Object.hasOwn(EFEITO_PALETAS, paleta) ? paleta : EFEITO_PADRAO.paleta,
+  };
+}
+
+// O efeito que aparece no perfil: só se foi desbloqueado e está ligado; senão null.
 export function efeitoVisivel(usuario) {
   if (!usuario?.efeitoDesde || usuario.mostrarEfeito === false) return null;
-  return validarEfeito(usuario.efeitoPerfil ?? EFEITO_PADRAO).efeito ?? EFEITO_PADRAO;
+  return lerEfeito(usuario.efeitoPerfil);
 }
