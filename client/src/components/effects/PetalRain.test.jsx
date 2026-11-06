@@ -80,6 +80,17 @@ describe('notas: uma pauta só atravessando a tela', () => {
     expect(notas[0].escala).toBeGreaterThan(notas.at(-1).escala * 3);
   });
 
+  it('as cinco linhas só acabam fora da tela, cortadas pela borda de cima', () => {
+    for (const [w, h] of [[390, 844], [1600, 680], [1920, 900]]) {
+      const { segmentos } = montarPauta(w, h);
+      for (let linha = 0; linha < 5; linha += 1) {
+        const fim = segmentos.filter((s) => s.linha === linha).at(-1);
+        const y = Number(fim.d.split(' ').at(-1));
+        expect(y).toBeLessThan(0);
+      }
+    }
+  });
+
   it('desenha com as cores da paleta, se desenha aos poucos e some da página no fim', () => {
     vi.useFakeTimers();
     const { getByTestId, queryByTestId } = render(<ProfileEffect efeito={{ tipo: 'notas', paleta: 'sol' }} />);

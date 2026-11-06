@@ -2,10 +2,11 @@ import { useEffect, useState } from 'react';
 import { ClaveDeSol, Colcheia, ColcheiasLigadas, Seminima } from './shapes.jsx';
 
 // Caminho da pauta, em frações da tela: entra grande pelo canto de baixo à esquerda, atravessa
-// para a direita, sobe fazendo a curva e termina fino lá em cima. Duas curvas de Bézier cúbicas.
+// para a direita, sobe fazendo a curva e sai fina pela borda de cima (só a tela corta a pauta).
+// Duas curvas de Bézier cúbicas.
 const CURVAS = [
   [[-0.08, 0.88], [0.55, 1.08], [1.2, 0.62], [0.82, 0.36]],
-  [[0.82, 0.36], [0.5, 0.12], [0.12, 0.26], [0.32, 0.07]],
+  [[0.82, 0.36], [0.5, 0.12], [0.12, 0.26], [0.36, -0.06]],
 ];
 const SEGMENTOS = 40; // por curva
 const DESENHO_S = 2.4; // tempo para a pauta atravessar a tela
