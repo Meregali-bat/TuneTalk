@@ -1,7 +1,7 @@
 #!/bin/sh
-# Bloqueia push de branch fora do padrão "tipo/nome-curto".
+# Bloqueia push para branch remota fora do padrão "tipo/nome-curto" (claude/... inclusive).
 while read -r local_ref local_sha remote_ref remote_sha; do
   case "$remote_ref" in
-    refs/heads/*) node scripts/padrao-git.js branch "${remote_ref#refs/heads/}" || exit 1 ;;
+    refs/heads/*) node scripts/padrao-git.js branch --ci "${remote_ref#refs/heads/}" || exit 1 ;;
   esac
 done

@@ -55,7 +55,7 @@ Os ids são preservados, então links antigos (`/post/123`, `/perfil/11`) contin
 - Branch: `tipo/nome-curto` — ex.: `feat/repostar`, `fix/like`
 - Tipos: `feat`, `fix`, `refactor`, `style`, `test`, `docs`, `chore`
 
-O `npm install` liga os hooks de `.githooks/` (`commit-msg` e `pre-push`), que barram commit e push fora do padrão. O CI (`.github/workflows/ci.yml`) confere de novo em todo PR e roda testes e build. Ficam de fora: `main`, as branches `claude/...` e mensagens geradas pelo git (merge, revert, fixup).
+O `npm install` liga os hooks de `.githooks/` (`commit-msg` e `pre-push`), que barram commit e push fora do padrão. O CI (`.github/workflows/ci.yml`) confere de novo em todo PR e roda testes e build. Ficam de fora: `main` e mensagens geradas pelo git (merge, revert, fixup). As branches `claude/...` passam no hook local, mas o CI recusa: o push vai para uma branch no padrão.
 
 ## Arquitetura
 

@@ -21,7 +21,7 @@ jobs:
       - name: Nome da branch
         env:
           BRANCH: ${{ github.head_ref }}
-        run: node scripts/padrao-git.js branch "$BRANCH"
+        run: node scripts/padrao-git.js branch --ci "$BRANCH"
       - name: Mensagens dos commits
         env:
           BASE: ${{ github.event.pull_request.base.sha }}
