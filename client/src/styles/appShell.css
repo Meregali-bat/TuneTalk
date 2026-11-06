@@ -1045,8 +1045,8 @@
   display: flex;
   flex-direction: column;
   align-items: center;
-  gap: 1.1rem;
-  padding: .5rem 1rem 1rem;
+  gap: 1rem;
+  padding: .35rem 1rem .75rem;
   text-align: center;
 
   p {
@@ -1074,8 +1074,14 @@
 }
 
 .vinyl-gift__disc--grande {
-  width: 6rem;
-  height: 6rem;
+  width: 5rem;
+  height: 5rem;
+}
+
+/* O modal comum limita a altura a 30rem (listas longas); o presente cabe inteiro, sem rolagem,
+   a não ser numa tela baixa demais. */
+.layout-app .modal-dialog.app-modal--dialog .modal-body:has(> .vinyl-gift__message) {
+  max-height: calc(100dvh - 7rem);
 }
 
 @keyframes vinyl-float {
