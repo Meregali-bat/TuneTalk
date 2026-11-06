@@ -1,0 +1,42 @@
+name: CI
+
+on:
+  pull_request:
+  push:
+    branches: [main]
+
+jobs:
+  padrao:
+    name: Padrão de commits e branch
+    if: github.event_name == 'pull_request'
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+      # Valores via env, nunca interpolados direto no shell (nome de branch é texto livre).
+      - name: Nome da branch
+        env:
+          BRANCH: ${{ github.head_ref }}
+        run: node scripts/padrao-git.js branch "$BRANCH"
+      - name: Mensagens dos commits
+        env:
+          BASE: ${{ github.event.pull_request.base.sha }}
+          HEAD: ${{ github.event.pull_request.head.sha }}
+        run: node scripts/padrao-git.js intervalo "$BASE" "$HEAD"
+
+  testes:
+    name: Testes e build
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+      - run: npm ci
+      - run: npm test
+      - run: npm run build

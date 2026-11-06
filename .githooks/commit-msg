@@ -1,0 +1,4 @@
+#!/bin/sh
+# Bloqueia commit fora do padrão ":emoji: tipo: descrição" e em branch fora de "tipo/nome-curto".
+node scripts/padrao-git.js branch || exit 1
+node scripts/padrao-git.js commit "$1"
