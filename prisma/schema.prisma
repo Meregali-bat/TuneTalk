@@ -277,3 +277,14 @@ model RedefinicaoSenha {
   @@index([usuarioId])
   @@map("redefinicoes_senha")
 }
+
+// Contadores do limite de requisições (server/src/security/limitador.js). Ficam no banco
+// porque na Vercel a memória de uma instância não é vista pelas outras.
+model LimiteRequisicao {
+  chave    String   @id @db.VarChar(255)
+  contagem Int
+  expiraEm DateTime @map("expira_em") @db.Timestamptz(3)
+
+  @@index([expiraEm])
+  @@map("limites_requisicao")
+}

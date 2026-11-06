@@ -1,4 +1,4 @@
-import { describe, it, expect } from 'vitest';
+import { describe, it, expect, vi } from 'vitest';
 import md5 from 'md5';
 import { createPasswords } from '../../src/security/passwords.js';
 
@@ -15,6 +15,14 @@ describe('passwords', () => {
   it('aceita as senhas antigas em md5 e pede para regravar em bcrypt', async () => {
     expect(await passwords.verify('Senha!1', md5('Senha!1'))).toEqual({ ok: true, needsRehash: true });
     expect(await passwords.verify('errada', md5('Senha!1'))).toEqual({ ok: false, needsRehash: false });
+  });
+
+  it('email sem conta também roda o bcrypt, para o tempo de resposta não denunciar o email', async () => {
+    const bcrypt = (await import('bcryptjs')).default;
+    const compare = vi.spyOn(bcrypt, 'compare');
+    expect(await passwords.verify('Senha!1', undefined)).toEqual({ ok: false, needsRehash: false });
+    expect(compare).toHaveBeenCalledTimes(1);
+    compare.mockRestore();
   });
 
   it('recusa hash vazio ou desconhecido', async () => {

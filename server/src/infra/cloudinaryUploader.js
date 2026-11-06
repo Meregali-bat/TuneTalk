@@ -2,6 +2,8 @@
 // a Vercel recusa requisições acima de 4,5 MB, então ela não pode passar pelo nosso servidor.
 // O servidor só assina o envio (o segredo nunca sai daqui) e depois confere o link salvo.
 const FOLDERS = { perfil: 'tunetalk/perfis', banner: 'tunetalk/banners', post: 'tunetalk/posts' };
+// Vai assinado: com a assinatura na mão, ninguém sobe PDF, vídeo ou outro arquivo qualquer.
+const FORMATOS = 'jpg,jpeg,png,gif,webp,heic,heif,avif';
 
 export function createCloudinaryUploader(cloudinary, { now = Date.now } = {}) {
   const config = () => cloudinary.config();
@@ -9,7 +11,7 @@ export function createCloudinaryUploader(cloudinary, { now = Date.now } = {}) {
   return {
     signUpload(tipo = 'perfil') {
       const { cloud_name: cloudName, api_key: apiKey, api_secret: apiSecret } = config();
-      const params = { timestamp: Math.floor(now() / 1000), folder: FOLDERS[tipo] };
+      const params = { timestamp: Math.floor(now() / 1000), folder: FOLDERS[tipo], allowed_formats: FORMATOS };
       return {
         uploadUrl: `https://api.cloudinary.com/v1_1/${cloudName}/image/upload`,
         fields: { api_key: apiKey, ...params, signature: cloudinary.utils.api_sign_request(params, apiSecret) },

@@ -1,8 +1,10 @@
 import { Router } from 'express';
 import { asyncRoute, requireAuth } from './middlewares.js';
+import { criarLimites } from './limites.js';
 
-export function createAuthRoutes({ authService, passwordResetService, defaultProfilePhoto }) {
+export function createAuthRoutes({ authService, passwordResetService, defaultProfilePhoto, limitador }) {
   const router = Router();
+  const limite = criarLimites(limitador);
 
   const startSession = (req, user) =>
     new Promise((resolve, reject) => {
@@ -19,7 +21,7 @@ export function createAuthRoutes({ authService, passwordResetService, defaultPro
 
   // "Manter conectado" (padrão): o login dura 30 dias. Desmarcado: o cookie vale só até fechar o
   // navegador (e o servidor esquece a sessão depois de um tempo parado).
-  router.post('/login', asyncRoute(async (req, res) => {
+  router.post('/login', limite('loginIp'), limite('login'), asyncRoute(async (req, res) => {
     const user = await authService.login(req.body.email, req.body.senha);
     await startSession(req, user);
     if (req.body.manterConectado === false) req.session.cookie.maxAge = null;
@@ -33,19 +35,19 @@ export function createAuthRoutes({ authService, passwordResetService, defaultPro
     });
   });
 
-  router.post('/register', asyncRoute(async (req, res) => {
+  router.post('/register', limite('cadastro'), asyncRoute(async (req, res) => {
     const { email, senha } = req.body;
     const user = await authService.register({ email, senha, fotoPerfil: defaultProfilePhoto });
     await startSession(req, user);
     res.status(201).json(user);
   }));
 
-  router.post('/forgot-password', asyncRoute(async (req, res) => {
+  router.post('/forgot-password', limite('esqueciSenha'), asyncRoute(async (req, res) => {
     await passwordResetService.request(req.body.email);
     res.status(204).end();
   }));
 
-  router.post('/reset-password', asyncRoute(async (req, res) => {
+  router.post('/reset-password', limite('redefinirSenha'), asyncRoute(async (req, res) => {
     await passwordResetService.reset(req.body.token, req.body.novaSenha);
     res.status(204).end();
   }));

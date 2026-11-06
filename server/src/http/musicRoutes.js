@@ -1,10 +1,11 @@
 import { Router } from 'express';
 import { notFound } from '../errors.js';
 import { asyncRoute, requireAuth, requireUsername } from './middlewares.js';
+import { criarLimites } from './limites.js';
 
-export function createMusicRoutes({ musicService, lyricsService }) {
+export function createMusicRoutes({ musicService, lyricsService, limitador }) {
   const router = Router();
-  router.use(requireAuth, requireUsername);
+  router.use(requireAuth, requireUsername, criarLimites(limitador)('externas'));
 
   router.get('/search', asyncRoute(async (req, res) => {
     const tipo = ['album', 'artista'].includes(req.query.tipo) ? req.query.tipo : 'musica';

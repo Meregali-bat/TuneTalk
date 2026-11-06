@@ -668,6 +668,20 @@ describe('postService', () => {
       posts.findById.mockResolvedValue(null);
       await expect(service.like(1, 7)).rejects.toMatchObject({ status: 404 });
     });
+
+    it('curtir de novo depois de descurtir não avisa outra vez (spam de push em loop)', async () => {
+      const vistos = new Set();
+      const avisarUmaVez = vi.fn(async (chave) => !vistos.has(chave) && Boolean(vistos.add(chave)));
+      service = createPostService({ posts, likes, notifications, users, now: () => now, avisarUmaVez });
+
+      await service.like(1, 7);
+      await service.unlike(1, 7);
+      await service.like(1, 7);
+
+      expect(avisarUmaVez).toHaveBeenCalledWith('like:1:7');
+      expect(notifications.create).toHaveBeenCalledTimes(1);
+      expect(likes.add).toHaveBeenCalledTimes(2);
+    });
   });
 
   describe('unlike', () => {

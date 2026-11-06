@@ -305,6 +305,15 @@ describe('userService', () => {
       await expect(service.follow(1, 2)).rejects.toMatchObject({ status: 409 });
       expect(follows.follow).not.toHaveBeenCalled();
     });
+
+    it('seguir de novo depois de deixar de seguir não avisa outra vez', async () => {
+      const avisarUmaVez = vi.fn().mockResolvedValue(false);
+      service = createUserService({ users, follows, postService, notifications, passwords, avisarUmaVez });
+      await service.follow(1, 2);
+      expect(follows.follow).toHaveBeenCalledWith(1, 2);
+      expect(avisarUmaVez).toHaveBeenCalledWith('follow:1:2');
+      expect(notifications.create).not.toHaveBeenCalled();
+    });
   });
 
   describe('unfollow', () => {

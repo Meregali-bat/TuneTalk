@@ -23,6 +23,7 @@ Produção em servidor próprio: `npm run db:migrate && npm run build && npm sta
 - `vercel.json`: a Vercel entrega o build do React (`dist/`) e manda `/api/*` para a função `api/index.js` (o mesmo app Express).
 - O build (`npm run vercel-build`) aplica as migrations e depois gera o React.
 - Sessões ficam no Postgres (tabela `session`), porque cada requisição pode cair numa instância diferente.
+- Limite de requisições pelo mesmo motivo: os contadores ficam na tabela `limites_requisicao` e os números estão em `server/src/http/limites.js`. Passou do limite, a API responde 429 com `Retry-After`. O ip vem do `X-Forwarded-For` que a Vercel preenche; fora dela, atrás de outro proxy, ligue `COOKIE_SECURE=true` (que também ativa o `trust proxy`), senão todo mundo conta como um ip só.
 - Variáveis de ambiente na Vercel: `DATABASE_URL` (Neon com pooler), `DATABASE_URL_UNPOOLED` (Neon direta, usada pelas migrations), `SESSION_SECRET` e as três do Cloudinary. A integração Neon da Vercel cria as duas do banco sozinha.
 - "Esqueci minha senha" (email pelo [Resend](https://resend.com)): `RESEND_API_KEY`, `EMAIL_FROM` (ex.: `TuneTalk <nao-responda@seudominio.com>`, de um domínio verificado no Resend) e, se o site tiver domínio próprio, `APP_URL` (base dos links; sem ela, usa o domínio de produção da Vercel). Sem `RESEND_API_KEY` o email só aparece no log.
 

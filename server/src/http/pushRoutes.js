@@ -1,8 +1,10 @@
 import { Router } from 'express';
 import { asyncRoute, currentUserId, requireAuth } from './middlewares.js';
+import { criarLimites } from './limites.js';
 
-export function createPushRoutes({ pushService }) {
+export function createPushRoutes({ pushService, limitador }) {
   const router = Router();
+  const limite = criarLimites(limitador);
 
   // Chave pública para o navegador se inscrever (null quando os avisos estão desligados no servidor).
   router.get('/chave', (req, res) => {
@@ -11,7 +13,7 @@ export function createPushRoutes({ pushService }) {
 
   router.use(requireAuth);
 
-  router.post('/inscricoes', asyncRoute(async (req, res) => {
+  router.post('/inscricoes', limite('perfil'), asyncRoute(async (req, res) => {
     await pushService.inscrever(currentUserId(req), req.body);
     res.status(204).end();
   }));

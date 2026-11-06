@@ -1,9 +1,11 @@
 import { Router } from 'express';
 import { badRequest } from '../errors.js';
 import { asyncRoute, currentUserId, parseIdParam, requireAuth, requireUsername } from './middlewares.js';
+import { criarLimites } from './limites.js';
 
-export function createPostRoutes({ postService, uploader }) {
+export function createPostRoutes({ postService, uploader, limitador }) {
   const router = Router();
+  const limite = criarLimites(limitador);
   router.use(requireAuth, requireUsername);
   router.param('id', parseIdParam);
 
@@ -21,12 +23,12 @@ export function createPostRoutes({ postService, uploader }) {
   }));
 
   // A imagem vai direto do navegador ao Cloudinary; aqui só assinamos e depois conferimos o link.
-  router.post('/image-upload', (req, res) => {
+  router.post('/image-upload', limite('upload'), (req, res) => {
     res.json(uploader.signUpload('post'));
   });
 
   // Comentários são posts com parentId no corpo.
-  router.post('/', asyncRoute(async (req, res) => {
+  router.post('/', limite('postar'), limite('postarHora'), asyncRoute(async (req, res) => {
     const { imagemUrl } = req.body;
     if (imagemUrl !== undefined && !uploader.isOwnUrl(imagemUrl, 'post')) throw badRequest('Imagem inválida. Envie de novo.');
     const id = await postService.create(currentUserId(req), req.body);
@@ -42,25 +44,25 @@ export function createPostRoutes({ postService, uploader }) {
     res.status(204).end();
   }));
 
-  router.post('/:id/pin', asyncRoute(async (req, res) => {
+  router.post('/:id/pin', limite('perfil'), asyncRoute(async (req, res) => {
     await postService.pin(req.params.id, currentUserId(req));
     res.status(204).end();
   }));
 
-  router.delete('/:id/pin', asyncRoute(async (req, res) => {
+  router.delete('/:id/pin', limite('perfil'), asyncRoute(async (req, res) => {
     await postService.unpin(req.params.id, currentUserId(req));
     res.status(204).end();
   }));
 
-  router.post('/:id/votos', asyncRoute(async (req, res) => {
+  router.post('/:id/votos', limite('interacao'), asyncRoute(async (req, res) => {
     res.json(await postService.votar(req.params.id, currentUserId(req), req.body?.opcaoId));
   }));
 
-  router.post('/:id/like', asyncRoute(async (req, res) => {
+  router.post('/:id/like', limite('interacao'), asyncRoute(async (req, res) => {
     res.json({ likes: await postService.like(req.params.id, currentUserId(req)) });
   }));
 
-  router.delete('/:id/like', asyncRoute(async (req, res) => {
+  router.delete('/:id/like', limite('interacao'), asyncRoute(async (req, res) => {
     res.json({ likes: await postService.unlike(req.params.id, currentUserId(req)) });
   }));
 

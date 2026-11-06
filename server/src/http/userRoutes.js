@@ -1,14 +1,16 @@
 import { Router } from 'express';
 import { badRequest } from '../errors.js';
 import { asyncRoute, currentUserId, parseIdParam, requireAuth, requireUsername } from './middlewares.js';
+import { criarLimites } from './limites.js';
 
-export function createUserRoutes({ userService, postService, restricaoService, sugestaoService, uploader, sessions }) {
+export function createUserRoutes({ userService, postService, restricaoService, sugestaoService, uploader, sessions, limitador }) {
   const router = Router();
+  const limite = criarLimites(limitador);
   router.use(requireAuth);
   router.param('id', parseIdParam);
 
   // Única rota liberada antes de o usuário ter um nome.
-  router.put('/me/username', asyncRoute(async (req, res) => {
+  router.put('/me/username', limite('perfil'), asyncRoute(async (req, res) => {
     const { nome } = await userService.setUsername(currentUserId(req), req.body.nome);
     req.session.user = { ...req.session.user, nome };
     res.json(req.session.user);
@@ -16,13 +18,13 @@ export function createUserRoutes({ userService, postService, restricaoService, s
 
   router.use(requireUsername);
 
-  router.put('/me/password', asyncRoute(async (req, res) => {
+  router.put('/me/password', limite('senhaAtual'), asyncRoute(async (req, res) => {
     await userService.changePassword(currentUserId(req), req.body.senhaAtual, req.body.novaSenha);
     await sessions?.destroyOthers(currentUserId(req), req.sessionID);
     res.status(204).end();
   }));
 
-  router.put('/me/email', asyncRoute(async (req, res) => {
+  router.put('/me/email', limite('senhaAtual'), asyncRoute(async (req, res) => {
     const { email } = await userService.changeEmail(currentUserId(req), req.body.senhaAtual, req.body.novoEmail);
     req.session.user = { ...req.session.user, email };
     res.json(req.session.user);
@@ -33,24 +35,24 @@ export function createUserRoutes({ userService, postService, restricaoService, s
     res.json(await userService.presente(currentUserId(req)));
   }));
 
-  router.post('/me/presente', asyncRoute(async (req, res) => {
+  router.post('/me/presente', limite('perfil'), asyncRoute(async (req, res) => {
     await userService.abrirPresente(currentUserId(req));
     res.status(204).end();
   }));
 
-  router.put('/me/favoritos', asyncRoute(async (req, res) => {
+  router.put('/me/favoritos', limite('perfil'), asyncRoute(async (req, res) => {
     res.json(await userService.updateFavorites(currentUserId(req), req.body));
   }));
 
-  router.post('/me/photo-upload', (req, res) => {
+  router.post('/me/photo-upload', limite('upload'), (req, res) => {
     res.json(uploader.signUpload());
   });
 
-  router.post('/me/banner-upload', (req, res) => {
+  router.post('/me/banner-upload', limite('upload'), (req, res) => {
     res.json(uploader.signUpload('banner'));
   });
 
-  router.put('/me', asyncRoute(async (req, res) => {
+  router.put('/me', limite('perfil'), asyncRoute(async (req, res) => {
     const { nome, nomeExibicao, bio, fotoPerfil, bannerUrl, mostrarSeloFundador, efeitoPerfil, mostrarEfeito } = req.body;
     if (fotoPerfil !== undefined && !uploader.isOwnUrl(fotoPerfil)) throw badRequest('Foto inválida. Envie a imagem de novo.');
     if (bannerUrl !== undefined && !uploader.isOwnUrl(bannerUrl, 'banner')) throw badRequest('Capa inválida. Envie a imagem de novo.');
@@ -89,12 +91,12 @@ export function createUserRoutes({ userService, postService, restricaoService, s
     res.json(await postService.repliesByAuthor(req.params.id, currentUserId(req)));
   }));
 
-  router.post('/:id/follow', asyncRoute(async (req, res) => {
+  router.post('/:id/follow', limite('interacao'), asyncRoute(async (req, res) => {
     await userService.follow(currentUserId(req), req.params.id);
     res.status(204).end();
   }));
 
-  router.delete('/:id/follow', asyncRoute(async (req, res) => {
+  router.delete('/:id/follow', limite('interacao'), asyncRoute(async (req, res) => {
     await userService.unfollow(currentUserId(req), req.params.id);
     res.status(204).end();
   }));
@@ -105,11 +107,11 @@ export function createUserRoutes({ userService, postService, restricaoService, s
     ['silencio', 'silenciar', 'dessilenciar'],
   ];
   for (const [caminho, fazer, desfazer] of acoes) {
-    router.post(`/:id/${caminho}`, asyncRoute(async (req, res) => {
+    router.post(`/:id/${caminho}`, limite('interacao'), asyncRoute(async (req, res) => {
       await restricaoService[fazer](currentUserId(req), req.params.id);
       res.status(204).end();
     }));
-    router.delete(`/:id/${caminho}`, asyncRoute(async (req, res) => {
+    router.delete(`/:id/${caminho}`, limite('interacao'), asyncRoute(async (req, res) => {
       await restricaoService[desfazer](currentUserId(req), req.params.id);
       res.status(204).end();
     }));
