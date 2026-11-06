@@ -28,6 +28,16 @@ export function createUserRoutes({ userService, postService, restricaoService, s
     res.json(req.session.user);
   }));
 
+  // Presente dos 100 posts (o disco de vinil do feed).
+  router.get('/me/presente', asyncRoute(async (req, res) => {
+    res.json(await userService.presente(currentUserId(req)));
+  }));
+
+  router.post('/me/presente', asyncRoute(async (req, res) => {
+    await userService.abrirPresente(currentUserId(req));
+    res.status(204).end();
+  }));
+
   router.put('/me/favoritos', asyncRoute(async (req, res) => {
     res.json(await userService.updateFavorites(currentUserId(req), req.body));
   }));

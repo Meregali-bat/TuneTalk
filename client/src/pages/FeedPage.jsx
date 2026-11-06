@@ -6,6 +6,7 @@ import { CreatePost } from '../components/post/CreatePost.jsx';
 import { PullToRefresh } from '../components/common/PullToRefresh.jsx';
 import { LoadMore } from '../components/common/LoadMore.jsx';
 import { SugestoesDeQuemSeguir } from '../components/profile/SugestoesDeQuemSeguir.jsx';
+import { VinylGift } from '../components/gift/VinylGift.jsx';
 
 const TABS = [
   { feed: 'foryou', label: 'Para você', to: '/foryou' },
@@ -83,6 +84,7 @@ export function FeedPage({ feed }) {
     posts, error, loading, reload, setPosts, carregarMais, tentarMaisDeNovo, carregandoMais, erroMais, fim,
   } = useFeed(feed);
   const [composerOpen, setComposerOpen] = useState(false);
+  const [postou, setPostou] = useState(0);
 
   const removePost = (id) => setPosts((list) => list.filter((post) => post.id !== id));
   // Silenciou ou bloqueou alguém pelo menu do post: some com tudo dessa pessoa.
@@ -122,7 +124,8 @@ export function FeedPage({ feed }) {
         />
       )}
 
-      <CreatePost open={composerOpen} onOpenChange={setComposerOpen} onCreated={reload} />
+      <CreatePost open={composerOpen} onOpenChange={setComposerOpen} onCreated={() => { reload(); setPostou((n) => n + 1); }} />
+      <VinylGift versao={postou} />
     </div>
   );
 }

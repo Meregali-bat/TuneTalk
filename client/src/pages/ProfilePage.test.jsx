@@ -1,5 +1,7 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest';
-import { screen, waitFor, within } from '@testing-library/react';
+import { render, screen, waitFor, within } from '@testing-library/react';
+import { MemoryRouter, Route, Routes } from 'react-router-dom';
+import { AuthContext } from '../auth/AuthContext.jsx';
 import userEvent from '@testing-library/user-event';
 import { ProfilePage } from './ProfilePage.jsx';
 import { musicApi, postsApi, usersApi } from '../api/index.js';
@@ -311,6 +313,19 @@ describe('ProfilePage', () => {
       await userEvent.click(await screen.findByRole('button', { name: 'Fazer o primeiro post' }));
 
       expect(screen.getByRole('dialog', { name: 'Novo post' })).toBeInTheDocument();
+    });
+
+    it('vindo do presente dos 100 posts, o Editar perfil já abre', async () => {
+      usersApi.profile.mockResolvedValue(profile({ usuario: { ...ana, efeitoDesde: '2026-11-06T00:00:00.000Z' } }));
+      render(
+        <AuthContext.Provider value={makeAuth()}>
+          <MemoryRouter initialEntries={[{ pathname: '/perfil/1', state: { editarPerfil: true } }]}>
+            <Routes><Route path="/perfil/:id" element={<ProfilePage />} /></Routes>
+          </MemoryRouter>
+        </AuthContext.Provider>,
+      );
+      const dialog = await screen.findByRole('dialog', { name: 'Editar perfil' });
+      expect(within(dialog).getByText('Efeito do perfil')).toBeInTheDocument();
     });
 
     it('sem os 100 posts, o Editar perfil não mostra o efeito nem o manda ao salvar', async () => {

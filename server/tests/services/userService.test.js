@@ -141,6 +141,38 @@ describe('userService', () => {
     });
   });
 
+  describe('presente dos 100 posts (disco de vinil do feed)', () => {
+    const desde = '2026-11-06T00:00:00.000Z';
+
+    it('pendente enquanto o efeito foi ganho e o disco não foi aberto', async () => {
+      users.getGift = vi.fn().mockResolvedValue({ efeitoDesde: desde, presenteAbertoEm: null });
+      expect(await service.presente(1)).toEqual({ pendente: true });
+      users.getGift.mockResolvedValue({ efeitoDesde: desde, presenteAbertoEm: desde });
+      expect(await service.presente(1)).toEqual({ pendente: false });
+      users.getGift.mockResolvedValue({ efeitoDesde: null, presenteAbertoEm: null });
+      postService.verificarMarco = vi.fn().mockResolvedValue(false);
+      expect(await service.presente(1)).toEqual({ pendente: false });
+    });
+
+    it('quem já tinha passado de 100 ganha ao abrir o feed, e o disco já aparece', async () => {
+      users.getGift = vi.fn()
+        .mockResolvedValueOnce({ efeitoDesde: null, presenteAbertoEm: null })
+        .mockResolvedValueOnce({ efeitoDesde: desde, presenteAbertoEm: null });
+      postService.verificarMarco = vi.fn().mockResolvedValue(true);
+      expect(await service.presente(1)).toEqual({ pendente: true });
+      expect(postService.verificarMarco).toHaveBeenCalledWith(1);
+    });
+
+    it('abrir marca o presente; sem os 100 posts, 403', async () => {
+      users.openGift = vi.fn();
+      users.getGift = vi.fn().mockResolvedValue({ efeitoDesde: desde, presenteAbertoEm: null });
+      await service.abrirPresente(1);
+      expect(users.openGift).toHaveBeenCalledWith(1);
+      users.getGift.mockResolvedValue({ efeitoDesde: null, presenteAbertoEm: null });
+      await expect(service.abrirPresente(1)).rejects.toMatchObject({ status: 403 });
+    });
+  });
+
   describe('updateFavorites', () => {
     const capa = 'https://cdn-images.dzcdn.net/images/artist/a/250x250.jpg';
 

@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import { formatMediaEstrelas } from '../../../shared/rating.js';
-import { useParams } from 'react-router-dom';
+import { useLocation, useParams } from 'react-router-dom';
 import { usersApi } from '../api/index.js';
 import { useAuth } from '../auth/AuthContext.jsx';
 import { useAsync } from '../hooks/useAsync.js';
@@ -199,7 +199,9 @@ export function ProfilePage() {
   const { user, updateUser } = useAuth();
   const { data: profile, error, reload, setData } = useAsync(() => usersApi.profile(id), [id]);
   const [openList, setOpenList] = useState(null);
-  const [editing, setEditing] = useState(false);
+  // Vindo do presente dos 100 posts (disco de vinil do feed), o Editar perfil já abre.
+  const { state: navState } = useLocation();
+  const [editing, setEditing] = useState(Boolean(navState?.editarPerfil));
   const [changingPassword, setChangingPassword] = useState(false);
   const [changingEmail, setChangingEmail] = useState(false);
   const [editingFavorites, setEditingFavorites] = useState(false);

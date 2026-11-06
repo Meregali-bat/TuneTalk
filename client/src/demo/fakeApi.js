@@ -196,6 +196,8 @@ export function createFakeApi({ storage = globalThis.localStorage } = {}) {
       const file = form.get('file');
       return ok({ secure_url: typeof file === 'string' && file.startsWith('data:image/') ? file : await fileToDataUrl(file) });
     }],
+    ['GET', /^\/users\/me\/presente$/, async () => ok(await services.users.presente(me()))],
+    ['POST', /^\/users\/me\/presente$/, async () => { await services.users.abrirPresente(me()); return noContent(); }],
     ['PUT', /^\/users\/me\/favoritos$/, async ({ body }) => ok(await services.users.updateFavorites(me(), body))],
     ['PUT', /^\/users\/me$/, async ({ body }) => {
       const isDemoImage = (url) => url === undefined || String(url).startsWith('data:image/');

@@ -93,6 +93,17 @@ describe('userRepository (Postgres)', () => {
     expect(await repo.findById(ana.id)).toMatchObject({ efeitoPerfil: { tipo: 'estrelas', paleta: 'noite' }, mostrarEfeito: false, efeitoDesde });
   });
 
+  it('getGift/openGift: o presente abre uma vez e guarda quando', async () => {
+    const ana = await factory.user();
+    expect(await repo.getGift(ana.id)).toEqual({ efeitoDesde: null, presenteAbertoEm: null });
+    await repo.unlockEffect(ana.id, { tipo: 'notas', paleta: 'oceano' });
+    await repo.openGift(ana.id);
+    const { presenteAbertoEm } = await repo.getGift(ana.id);
+    expect(presenteAbertoEm).toBeInstanceOf(Date);
+    await repo.openGift(ana.id);
+    expect((await repo.getGift(ana.id)).presenteAbertoEm).toEqual(presenteAbertoEm);
+  });
+
   it('findByNames acha as contas pelos nomes de usuário, sem diferenciar maiúsculas', async () => {
     const bia = await factory.user({ nome: 'Bia.Souza' });
     const caio = await factory.user({ nome: 'caio' });

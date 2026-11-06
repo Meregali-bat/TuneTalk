@@ -95,6 +95,22 @@ export function createUserService({
       };
     },
 
+    // Disco de vinil no feed: aparece para quem ganhou o efeito dos 100 posts e ainda não abriu.
+    // Também é onde quem já tinha passado de 100 antes da recompensa existir ganha o efeito.
+    async presente(usuarioId) {
+      let presente = await users.getGift(usuarioId);
+      if (presente && !presente.efeitoDesde && await postService.verificarMarco?.(usuarioId)) {
+        presente = await users.getGift(usuarioId);
+      }
+      return { pendente: Boolean(presente?.efeitoDesde) && !presente.presenteAbertoEm };
+    },
+
+    async abrirPresente(usuarioId) {
+      const presente = await users.getGift(usuarioId);
+      if (!presente?.efeitoDesde) throw forbidden('O presente é liberado ao chegar a 100 posts.');
+      await users.openGift(usuarioId);
+    },
+
     async setUsername(usuarioId, nome) {
       const clean = (nome ?? '').trim();
       await assertUsernameAvailable(clean, usuarioId);

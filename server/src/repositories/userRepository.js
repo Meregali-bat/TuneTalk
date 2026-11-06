@@ -62,6 +62,15 @@ export function createUserRepository(prisma) {
       return count > 0;
     },
 
+    // Presente dos 100 posts: se o efeito já foi ganho e se o disco do feed já foi aberto.
+    getGift(id) {
+      return prisma.usuario.findUnique({ where: { id }, select: { efeitoDesde: true, presenteAbertoEm: true } });
+    },
+
+    async openGift(id) {
+      await prisma.usuario.updateMany({ where: { id, presenteAbertoEm: null }, data: { presenteAbertoEm: new Date() } });
+    },
+
     async setPinnedPost(id, postId) {
       await prisma.usuario.update({ where: { id }, data: { postFixadoId: postId } });
     },

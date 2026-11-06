@@ -86,6 +86,14 @@ describe('rotas /api/users', () => {
     expect(res.body).toEqual({ uploadUrl: 'https://api.cloudinary.com/x', fields: { signature: 's' } });
   });
 
+  it('GET e POST /api/users/me/presente consultam e abrem o presente dos 100 posts', async () => {
+    deps.userService.presente = vi.fn().mockResolvedValue({ pendente: true });
+    deps.userService.abrirPresente = vi.fn();
+    await agent.get('/api/users/me/presente').expect(200, { pendente: true });
+    await agent.post('/api/users/me/presente').expect(204);
+    expect(deps.userService.abrirPresente).toHaveBeenCalledWith(1);
+  });
+
   describe('PUT /api/users/me', () => {
     it('atualiza nome e bio sem foto nova', async () => {
       deps.userService.updateProfile.mockResolvedValue({ id: 1, nome: 'Novo' });

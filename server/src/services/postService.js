@@ -127,7 +127,8 @@ export function createPostService({
 
   // 100 posts ou mais: desbloqueia o efeito do perfil e dá os parabéns. Uma vez só (o banco guarda
   // quando foi desbloqueado), e vale para quem já tinha passado de 100 antes de existir a recompensa.
-  // Sem postId: a notificação leva ao perfil, onde o efeito aparece.
+  // Sem postId: a notificação leva ao perfil. O presente em si (o efeito) é explicado pelo disco
+  // de vinil que aparece no feed.
   const celebrarMarco = async (autorId) => {
     if ((await posts.countByAuthor(autorId)) < MARCO_POSTS) return false;
     if (!(await users.unlockEffect(autorId, EFEITO_PADRAO))) return false;
@@ -135,7 +136,7 @@ export function createPostService({
       destinatarioId: autorId,
       autorId,
       tipo: 'marco_posts',
-      conteudo: `Parabéns pelos ${MARCO_POSTS} posts! Você ganhou um efeito para o seu perfil: escolha a forma e as cores em Editar perfil.`,
+      conteudo: `Parabéns pelos ${MARCO_POSTS} posts!`,
     });
     return true;
   };

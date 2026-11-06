@@ -1003,6 +1003,86 @@
   }
 }
 
+/* --- Presente dos 100 posts: disco de vinil flutuando no feed --- */
+.vinyl-gift {
+  position: fixed;
+  left: calc(var(--gutter-left) + .25rem);
+  bottom: calc(1.25rem + env(safe-area-inset-bottom, 0px));
+  z-index: 1030;
+  padding: 0;
+  border: 0;
+  background: none;
+  cursor: pointer;
+  -webkit-tap-highlight-color: transparent;
+  animation: vinyl-float 3.2s ease-in-out infinite;
+
+  &:active {
+    transform: scale(.94);
+  }
+}
+
+.vinyl-gift__disc {
+  display: grid;
+  place-items: center;
+  width: 3.75rem;
+  height: 3.75rem;
+  border-radius: 50%;
+  background:
+    radial-gradient(circle at 32% 28%, rgba(255, 255, 255, .28), transparent 38%),
+    repeating-radial-gradient(circle, #111 0 2px, #1d1d1d 2px 4px);
+  box-shadow: 0 0 0 2px rgba(63, 196, 99, .55), 0 14px 30px -10px rgba(63, 196, 99, .8);
+  animation: vinyl-spin 4s linear infinite;
+}
+
+.vinyl-gift__label {
+  width: 36%;
+  height: 36%;
+  border-radius: 50%;
+  background: radial-gradient(circle, var(--background) 0 12%, var(--destaque-claro) 13% 100%);
+}
+
+.vinyl-gift__message {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: .85rem;
+  text-align: center;
+
+  p {
+    margin: 0;
+    color: var(--texto-suave);
+  }
+
+  strong {
+    color: var(--texto);
+  }
+
+  .composer-submit {
+    padding: .7rem 1.4rem;
+  }
+}
+
+.vinyl-gift__disc--grande {
+  width: 6rem;
+  height: 6rem;
+}
+
+@keyframes vinyl-float {
+  0%, 100% { translate: 0 0; }
+  50% { translate: 0 -8px; }
+}
+
+@keyframes vinyl-spin {
+  to { rotate: 360deg; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .vinyl-gift,
+  .vinyl-gift__disc {
+    animation: none;
+  }
+}
+
 /* --- Modais (listas de seguidores) e painel de notificações --- */
 .layout-app {
   .modal-backdrop.show {

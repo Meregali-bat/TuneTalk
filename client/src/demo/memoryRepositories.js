@@ -96,6 +96,15 @@ export function createMemoryRepositories(state, onChange) {
       Object.assign(usuario, { efeitoDesde: new Date().toISOString(), efeitoPerfil: efeito });
       return changed(true);
     },
+    async getGift(id) {
+      const usuario = userById(id);
+      return usuario ? { efeitoDesde: usuario.efeitoDesde ?? null, presenteAbertoEm: usuario.presenteAbertoEm ?? null } : null;
+    },
+    async openGift(id) {
+      const usuario = userById(id);
+      if (!usuario.presenteAbertoEm) usuario.presenteAbertoEm = new Date().toISOString();
+      changed();
+    },
     async setPinnedPost(id, postId) {
       userById(id).postFixadoId = postId;
       changed();

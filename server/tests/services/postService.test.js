@@ -358,7 +358,7 @@ describe('postService', () => {
       destinatarioId: 7,
       autorId: 7,
       tipo: 'marco_posts',
-      conteudo: 'Parabéns pelos 100 posts! Você ganhou um efeito para o seu perfil: escolha a forma e as cores em Editar perfil.',
+      conteudo: 'Parabéns pelos 100 posts!',
     };
 
     it('o 100º post desbloqueia o efeito (notas, oceano) e avisa, levando ao perfil', async () => {

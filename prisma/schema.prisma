@@ -47,6 +47,8 @@ model Usuario {
   efeitoDesde         DateTime? @map("efeito_desde")
   efeitoPerfil        Json?     @map("efeito_perfil")
   mostrarEfeito       Boolean   @default(true) @map("mostrar_efeito")
+  // Quando a pessoa tocou no disco de vinil do feed e leu como usar o presente dos 100 posts.
+  presenteAbertoEm    DateTime? @map("presente_aberto_em")
 
   posts                 Post[]
   curtidas              Curtida[]
