@@ -73,21 +73,33 @@ describe('notas: uma pauta só atravessando a tela', () => {
   afterEach(() => vi.useRealTimers());
 
   it('as cinco linhas afinam do começo ao fim, e as notas diminuem junto', () => {
-    const { segmentos, notas } = montarPauta(390, 844);
-    const linha0 = segmentos.filter((s) => s.linha === 0);
-    expect(linha0[0].largura).toBeGreaterThan(linha0.at(-1).largura * 5);
-    expect(new Set(segmentos.map((s) => s.linha))).toEqual(new Set([0, 1, 2, 3, 4]));
+    const { linhas, notas } = montarPauta(390, 844);
+    expect(linhas.map((l) => l.linha)).toEqual([0, 1, 2, 3, 4]);
+    expect(linhas[0].larguraInicio).toBeGreaterThan(linhas[0].larguraFim * 5);
     expect(notas[0].escala).toBeGreaterThan(notas.at(-1).escala * 3);
+  });
+
+  it('cada linha segue uma curva lisa: trechos retos curtos demais para virar quina', () => {
+    const { linhas } = montarPauta(1920, 900);
+    for (const { caminho } of linhas) {
+      const pontos = caminho.slice(1).split('L').map((p) => p.split(' ').map(Number));
+      const maior = Math.max(...pontos.slice(1).map(([x, y], i) => Math.hypot(x - pontos[i][0], y - pontos[i][1])));
+      expect(maior).toBeLessThan(24);
+    }
+  });
+
+  it('as notas entram na ordem em que a pauta passa por elas', () => {
+    const { notas } = montarPauta(390, 844);
+    const chegadas = notas.map((n) => n.chegada);
+    expect(chegadas).toEqual([...chegadas].sort((x, y) => x - y));
+    expect(chegadas[0]).toBeGreaterThanOrEqual(0);
+    expect(chegadas.at(-1)).toBeLessThan(1);
   });
 
   it('as cinco linhas só acabam fora da tela, cortadas pela borda de cima', () => {
     for (const [w, h] of [[390, 844], [1600, 680], [1920, 900]]) {
-      const { segmentos } = montarPauta(w, h);
-      for (let linha = 0; linha < 5; linha += 1) {
-        const fim = segmentos.filter((s) => s.linha === linha).at(-1);
-        const y = Number(fim.d.split(' ').at(-1));
-        expect(y).toBeLessThan(0);
-      }
+      const { linhas } = montarPauta(w, h);
+      for (const { fim } of linhas) expect(fim[1]).toBeLessThan(0);
     }
   });
 
@@ -97,8 +109,11 @@ describe('notas: uma pauta só atravessando a tela', () => {
     const camada = getByTestId('petalas');
     expect(camada).toHaveAttribute('data-tipo', 'notas');
     const linhas = camada.querySelectorAll('.staff-sweep__linha');
-    expect(linhas[0].getAttribute('stroke')).toBe('#ffb347');
-    expect(parseFloat(linhas[linhas.length - 1].style.animationDelay)).toBeGreaterThan(2);
+    expect(linhas.length).toBe(5);
+    expect(linhas[0].getAttribute('fill')).toBe('#ffb347');
+    // Cada linha se revela pela própria máscara, que se desenha ao longo do caminho.
+    const mascara = camada.querySelector(linhas[0].getAttribute('mask').slice(4, -1).replace(/:/g, '\\:'));
+    expect(parseFloat(mascara.querySelector('.staff-sweep__revela').style.getPropertyValue('--comprimento'))).toBeGreaterThan(100);
     expect(camada.querySelectorAll('.staff-sweep__nota').length).toBe(8);
 
     act(() => vi.advanceTimersByTime(6000));
