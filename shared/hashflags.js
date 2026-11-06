@@ -5,8 +5,8 @@ import { extractHashtags } from './mentions.js';
 // é só acrescentar aqui.
 const HASHFLAGS = {
   xmas: { emoji: '🤶', tema: 'natal' },
-  natal: { emoji: '🎄', tema: 'natal' },
-  christmas: { emoji: '🎄', tema: 'natal' },
+  natal: { emoji: '🤶', tema: 'natal' },
+  christmas: { emoji: '🤶', tema: 'natal' },
 };
 
 export const hashflag = (tag) => HASHFLAGS[String(tag ?? '').toLowerCase()] ?? null;
