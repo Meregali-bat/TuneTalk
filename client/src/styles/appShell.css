@@ -1045,12 +1045,23 @@
   display: flex;
   flex-direction: column;
   align-items: center;
-  gap: .85rem;
+  gap: 1.1rem;
+  padding: .5rem 1rem 1rem;
   text-align: center;
 
   p {
+    max-width: 32ch;
     margin: 0;
     color: var(--texto-suave);
+    line-height: 1.55;
+  }
+
+  .vinyl-gift__disc {
+    margin-bottom: .35rem;
+  }
+
+  .composer-submit {
+    margin-top: .4rem;
   }
 
   strong {
