@@ -1,17 +1,19 @@
 import { useEffect, useState } from 'react';
 import { EFEITO_PALETAS } from '../../../../shared/profileEffect.js';
-import { Cd, Pauta } from './shapes.jsx';
+import { Cd } from './shapes.jsx';
+import { StaffSweep } from './StaffSweep.jsx';
 
 // Roxo, lilás e rosa, na linha das pétalas da Olivia Rodrigo.
 const COLORS = EFEITO_PALETAS.lilas.cores;
 
-// Estrelas são o próprio caractere; notas (pauta) e CD são desenhados em shapes.jsx.
+// Estrelas são o próprio caractere; o CD é desenhado em shapes.jsx. As notas são outra coisa:
+// uma pauta só que atravessa a tela (StaffSweep).
 const GLIFOS = {
   estrelas: ['\u2605'],
 };
 
-// Pedaços de pauta são grandes: caem menos de cada vez.
-const QUANTIDADE = { notas: 9, cd: 14 };
+// CDs são maiores: caem menos de cada vez.
+const QUANTIDADE = { cd: 14 };
 
 const between = (random, min, max) => min + random() * (max - min);
 
@@ -63,17 +65,12 @@ export function PetalRain({ count, random = Math.random, tipo = 'petalas', color
             '--spin': `${p.spin}deg`,
           }}
         >
-          {tipo === 'notas' && (
-            <span className="petal__body petal__body--forma" style={{ '--petal-color': p.color }}>
-              <Pauta largura={p.size * 10} cores={colors} variante={p.id} />
-            </span>
-          )}
           {tipo === 'cd' && (
             <span className="petal__body petal__body--forma" style={{ '--petal-color': p.color }}>
               <Cd tamanho={p.size * 1.9} cores={colors} />
             </span>
           )}
-          {tipo !== 'notas' && tipo !== 'cd' && (glifos ? (
+          {tipo !== 'cd' && (glifos ? (
             <span
               className="petal__body petal__body--glifo"
               style={{ fontSize: `${p.size * 1.4}px`, '--petal-color': p.color }}
@@ -95,5 +92,6 @@ export function PetalRain({ count, random = Math.random, tipo = 'petalas', color
 // O efeito que a pessoa ganhou aos 100 posts, com a forma e a paleta que ela escolheu.
 export function ProfileEffect({ efeito, ...props }) {
   const paleta = EFEITO_PALETAS[efeito.paleta] ?? EFEITO_PALETAS.lilas;
+  if (efeito.tipo === 'notas') return <StaffSweep cores={paleta.cores} />;
   return <PetalRain tipo={efeito.tipo} colors={paleta.cores} {...props} />;
 }

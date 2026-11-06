@@ -2476,7 +2476,7 @@ button.track-row:hover {
   text-shadow: 0 2px 6px rgba(0, 0, 0, .25);
 }
 
-/* Pauta e CD: formas desenhadas, sem o fundo da pétala. A pauta balança de leve, sem virar de lado. */
+/* CD: forma desenhada, sem o fundo da pétala. */
 .petal__body--forma {
   width: auto;
   height: auto;
@@ -2486,18 +2486,38 @@ button.track-row:hover {
   filter: drop-shadow(0 2px 4px rgba(0, 0, 0, .25));
 }
 
-.petal__body--forma:has(> .pauta) {
-  animation-name: pauta-sway;
-}
-
-.pauta {
+/* Notas: uma pauta só que se desenha pela tela (cada pedaço aparece na sua hora) e depois some. */
+.staff-sweep svg {
   display: block;
   overflow: visible;
+  animation: staff-saida 1.1s ease var(--saida) both;
 }
 
-@keyframes pauta-sway {
-  from { transform: translateX(calc(var(--sway) * -1)) rotate(-10deg); }
-  to { transform: translateX(var(--sway)) rotate(10deg); }
+.staff-sweep__linha {
+  fill: none;
+  stroke-linecap: round;
+  opacity: 0;
+  animation: staff-aparece .18s ease-out both;
+}
+
+.staff-sweep__nota {
+  opacity: 0;
+  transform-box: fill-box;
+  transform-origin: center;
+  animation: staff-nota .45s cubic-bezier(.34, 1.56, .64, 1) both;
+}
+
+@keyframes staff-aparece {
+  to { opacity: .95; }
+}
+
+@keyframes staff-nota {
+  from { opacity: 0; transform: scale(.4); }
+  to { opacity: 1; transform: scale(1); }
+}
+
+@keyframes staff-saida {
+  to { opacity: 0; }
 }
 
 /* CD holográfico: arco-íris girando (cônico) sob reflexos prateados, com o furo transparente. */
@@ -2537,10 +2557,11 @@ button.track-row:hover {
     transform: rotate(var(--spin));
   }
 
-  /* A pauta fica quase deitada, como no movimento normal. */
-  .petal__body--forma:has(> .pauta) {
+  /* A pauta aparece inteira de uma vez, sem se desenhar, e some devagar. */
+  .staff-sweep__linha,
+  .staff-sweep__nota {
     animation: none;
-    transform: rotate(calc(var(--spin) / 18 - 10deg));
+    opacity: 1;
   }
 }
 
