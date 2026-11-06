@@ -49,6 +49,14 @@ Os ids são preservados, então links antigos (`/post/123`, `/perfil/11`) contin
 | `npm run db:studio` | abre o Prisma Studio para ver os dados |
 | `npm run build:demo` | gera a demo que roda só no navegador (backend fake com os serviços reais e dados fictícios) em `dist-demo/` |
 
+## Padrão de commits e branches
+
+- Commit: `:emoji: tipo: descrição` — ex.: `:bug: fix: ajuste no like`, `:sparkles: feat: repostar`
+- Branch: `tipo/nome-curto` — ex.: `feat/repostar`, `fix/like`
+- Tipos: `feat`, `fix`, `refactor`, `style`, `test`, `docs`, `chore`
+
+O `npm install` liga os hooks de `.githooks/` (`commit-msg` e `pre-push`), que barram commit e push fora do padrão. O CI (`.github/workflows/ci.yml`) confere de novo em todo PR e roda testes e build. Ficam de fora: `main`, as branches `claude/...` e mensagens geradas pelo git (merge, revert, fixup).
+
 ## Arquitetura
 
 ```

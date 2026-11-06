@@ -13,6 +13,7 @@
     "vercel-build": "node scripts/check-db-before-migrate.js && prisma migrate deploy && vite build",
     "start": "NODE_ENV=production node server/src/index.js",
     "postinstall": "npm run db:generate",
+    "prepare": "node scripts/instalar-hooks.js",
     "db:migrate": "prisma migrate deploy",
     "db:migrate:dev": "prisma migrate dev && npm run db:generate",
     "db:generate": "node scripts/prisma-to-js.js --clean && prisma generate && node --no-warnings scripts/prisma-to-js.js",
