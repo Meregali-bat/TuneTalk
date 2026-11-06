@@ -56,6 +56,12 @@ describe('validarBranch', () => {
     },
   );
 
+  it('no CI recusa claude/... mas continua liberando a main', () => {
+    expect(validarBranch('claude/project-thread-v4oej1', { ci: true }).ok).toBe(false);
+    expect(validarBranch('main', { ci: true }).ok).toBe(true);
+    expect(validarBranch('feat/repostar', { ci: true }).ok).toBe(true);
+  });
+
   it('sugere o comando para renomear', () => {
     expect(validarBranch('Natal Aviso').erro).toContain('git branch -m feat/natal-aviso');
   });

@@ -5,6 +5,7 @@
 // Usado pelos hooks em .githooks/ e pelo workflow .github/workflows/ci.yml.
 //   node scripts/padrao-git.js commit <arquivo-da-mensagem>
 //   node scripts/padrao-git.js branch [nome]          (sem nome: branch atual)
+//   node scripts/padrao-git.js branch --ci <nome>     (sem a exceção das branches claude/)
 //   node scripts/padrao-git.js intervalo <base> <head> (todos os commits entre os dois)
 import { readFileSync } from 'node:fs';
 import { execFileSync } from 'node:child_process';
@@ -12,9 +13,11 @@ import { fileURLToPath } from 'node:url';
 
 export const TIPOS = ['feat', 'fix', 'refactor', 'style', 'test', 'docs', 'chore'];
 
-// Branches que não seguem tipo/nome: a principal e as que o Claude cria sozinho
-// (claude/...), que não podem ser renomeadas por ele.
-const BRANCHES_LIVRES = [/^main$/, /^claude\/.+/];
+// A principal não segue tipo/nome.
+const BRANCHES_LIVRES = [/^main$/];
+// As que o Claude cria sozinho (claude/...) passam só no hook local, senão ele não
+// consegue commitar. No CI não passam: o push precisa ir para uma branch no padrão.
+const BRANCHES_SO_LOCAIS = [/^claude\/.+/];
 
 // Mensagens que o próprio git gera.
 const COMMITS_LIVRES = [/^Merge /, /^Revert "/, /^(fixup|squash|amend)! /];
@@ -48,8 +51,9 @@ export function validarCommit(mensagem) {
   };
 }
 
-export function validarBranch(nome) {
+export function validarBranch(nome, { ci = false } = {}) {
   if (BRANCHES_LIVRES.some((re) => re.test(nome))) return { ok: true };
+  if (!ci && BRANCHES_SO_LOCAIS.some((re) => re.test(nome))) return { ok: true };
   if (BRANCH.test(nome)) return { ok: true };
   return {
     ok: false,
@@ -88,10 +92,12 @@ function main([comando, ...args]) {
   }
 
   if (comando === 'branch') {
+    const ci = args[0] === '--ci';
+    if (ci) args.shift();
     const nome = args[0] || git('rev-parse', '--abbrev-ref', 'HEAD');
     // HEAD solto (rebase, checkout de commit): não há branch para validar.
     if (nome === 'HEAD') return;
-    const r = validarBranch(nome);
+    const r = validarBranch(nome, { ci });
     if (!r.ok) falhar([r.erro]);
     return;
   }
@@ -113,7 +119,7 @@ function main([comando, ...args]) {
     return;
   }
 
-  console.error('Uso: node scripts/padrao-git.js commit <arquivo> | branch [nome] | intervalo <base> <head>');
+  console.error('Uso: node scripts/padrao-git.js commit <arquivo> | branch [--ci] [nome] | intervalo <base> <head>');
   process.exit(2);
 }
 
