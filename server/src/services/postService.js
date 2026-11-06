@@ -85,6 +85,8 @@ export function createPostService({
   now = () => new Date(),
   // Capas das opções de enquete: no app real, só do Deezer; a demo troca pelas capas desenhadas dela.
   capaEnqueteValida = capaDoDeezer,
+  // true na primeira vez que a chave aparece (num tempo); sem isso, sempre avisa.
+  avisarUmaVez = async () => true,
 }) {
   // Enquete com o voto de quem está vendo (null se não votou).
   const comVoto = (post, votos) => (post.enquete
@@ -346,7 +348,10 @@ export function createPostService({
       if (await likes.hasLiked(postId, usuarioId)) return post.likes;
 
       await likes.add({ postId, usuarioId });
-      await notifyAuthor(post, usuarioId, 'like', 'curtiu seu post');
+      // Descurtir apaga o aviso; curtir de novo não avisa outra vez (senão vira spam de push em loop).
+      if (post.autor.id !== usuarioId && await avisarUmaVez(`like:${postId}:${usuarioId}`)) {
+        await notifyAuthor(post, usuarioId, 'like', 'curtiu seu post');
+      }
       return likes.countByPost(postId);
     },
 

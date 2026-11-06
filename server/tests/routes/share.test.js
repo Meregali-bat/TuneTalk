@@ -54,4 +54,20 @@ describe('link de post compartilhado', () => {
     const { app } = montar(vi.fn().mockResolvedValue(null));
     await request(app).get('/api/og/post/8.png').expect(404);
   });
+
+  it('query inventada não gera a imagem de novo: redireciona para a URL oficial (que fica no cache)', async () => {
+    const { app, sharePreview } = montar();
+    const res = await request(app).get('/api/og/post/7.png?x=123').expect(302);
+    expect(res.headers.location).toBe('/api/og/post/7.png');
+    expect(sharePreview.renderizarImagem).not.toHaveBeenCalled();
+  });
+
+  it('com enquete, só a versão do total de votos atual é gerada', async () => {
+    const comEnquete = { ...post, enquete: { total: 3 } };
+    const { app, sharePreview } = montar(vi.fn().mockResolvedValue(comEnquete));
+    await request(app).get('/api/og/post/7.png?v=3').expect(200);
+    expect((await request(app).get('/api/og/post/7.png?v=999').expect(302)).headers.location).toBe('/api/og/post/7.png?v=3');
+    expect((await request(app).get('/api/og/post/7/stories.png').expect(302)).headers.location).toBe('/api/og/post/7/stories.png?v=3');
+    expect(sharePreview.renderizarImagem).toHaveBeenCalledTimes(1);
+  });
 });

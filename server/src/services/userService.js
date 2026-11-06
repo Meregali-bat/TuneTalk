@@ -30,6 +30,8 @@ export function createUserService({
   users, follows, postService, notifications, passwords, capaFavoritoValida = capaDoDeezer, restricoes = SEM_RESTRICOES,
   // Para avisar o endereço antigo quando o email muda (opcional).
   mailer = null,
+  // true na primeira vez que a chave aparece (num tempo); sem isso, sempre avisa.
+  avisarUmaVez = async () => true,
 }) {
   const findOrFail = async (id) => {
     const user = await users.findById(id);
@@ -218,6 +220,8 @@ export function createUserService({
       }
 
       await follows.follow(seguidorId, seguidoId);
+      // Seguir e deixar de seguir em loop não pode virar uma chuva de avisos.
+      if (!(await avisarUmaVez(`follow:${seguidorId}:${seguidoId}`))) return;
       await notifications.create({
         destinatarioId: seguidoId,
         autorId: seguidorId,

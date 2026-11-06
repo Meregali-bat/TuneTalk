@@ -14,10 +14,12 @@ describe('cloudinaryUploader (envio direto do navegador)', () => {
 
     const signed = uploader.signUpload();
 
-    expect(cloudinary.utils.api_sign_request).toHaveBeenCalledWith({ timestamp: 1_700_000_000, folder: 'tunetalk/perfis' }, 'segredo');
+    expect(cloudinary.utils.api_sign_request).toHaveBeenCalledWith({ timestamp: 1_700_000_000, folder: 'tunetalk/perfis', allowed_formats: 'jpg,jpeg,png,gif,webp,heic,heif,avif' }, 'segredo');
     expect(signed).toEqual({
       uploadUrl: 'https://api.cloudinary.com/v1_1/tunetalk/image/upload',
-      fields: { api_key: 'k123', timestamp: 1_700_000_000, signature: 'assinatura', folder: 'tunetalk/perfis' },
+      fields: {
+        api_key: 'k123', timestamp: 1_700_000_000, signature: 'assinatura', folder: 'tunetalk/perfis', allowed_formats: 'jpg,jpeg,png,gif,webp,heic,heif,avif',
+      },
     });
     expect(JSON.stringify(signed)).not.toContain('segredo');
   });

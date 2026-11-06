@@ -1,7 +1,11 @@
 import { Router } from 'express';
 import { descreverPost, injetarMeta, metaTags } from '../share/postMeta.js';
+import { criarLimites } from './limites.js';
 
 const idValido = (valor) => /^\d{1,10}$/.test(valor) && Number(valor) > 0;
+
+// A versão no fim da URL faz os apps buscarem a imagem de novo quando o post muda (ex.: votos).
+const versaoDaImagem = (post) => (post.enquete ? `?v=${post.enquete.total}` : '');
 
 /**
  * Links de post com cartão bonito ao compartilhar:
@@ -33,17 +37,16 @@ export function createSharePageRoutes({ sharePreview }) {
 
     const { titulo, descricao } = descreverPost(post);
     const url = `${sharePreview.appUrl}/post/${post.id}`;
-    // A versão no fim da URL faz os apps buscarem a imagem de novo quando o post muda (ex.: votos).
-    const versao = post.enquete ? `?v=${post.enquete.total}` : '';
-    const imagem = `${sharePreview.appUrl}/api/og/post/${post.id}.png${versao}`;
+    const imagem = `${sharePreview.appUrl}/api/og/post/${post.id}.png${versaoDaImagem(post)}`;
     res.send(injetarMeta(html, metaTags({ titulo, descricao, url, imagem })));
   });
 
   return router;
 }
 
-export function createShareApiRoutes({ sharePreview }) {
+export function createShareApiRoutes({ sharePreview, limitador }) {
   const router = Router();
+  const limite = criarLimites(limitador);
 
   // Cartão da prévia do link (1200×630) e imagem vertical para o Stories (1080×1920).
   const imagem = (formato) => async (req, res, next) => {
@@ -51,6 +54,14 @@ export function createShareApiRoutes({ sharePreview }) {
     try {
       const post = idValido(id) ? await sharePreview.findPost(Number(id)) : null;
       if (!post) return res.status(404).json({ error: 'Post não encontrado.' });
+      // Cada query diferente é uma entrada nova no cache da CDN. Sem isto, ?x=1, ?x=2... obrigaria
+      // a gerar a imagem de novo a cada requisição; com isto, só a URL oficial chega a ser gerada.
+      const versao = versaoDaImagem(post);
+      const query = req.originalUrl.includes('?') ? req.originalUrl.slice(req.originalUrl.indexOf('?')) : '';
+      if (query !== versao) {
+        res.set('Cache-Control', 'public, max-age=60, s-maxage=60');
+        return res.redirect(302, `${req.baseUrl}${req.path}${versao}`);
+      }
       const png = await sharePreview.renderizarImagem(post, formato);
       res.set('Content-Type', 'image/png');
       res.set('Cache-Control', 'public, max-age=3600, s-maxage=86400, stale-while-revalidate=604800');
@@ -59,8 +70,8 @@ export function createShareApiRoutes({ sharePreview }) {
       next(err);
     }
   };
-  router.get('/og/post/:id.png', imagem('cartao'));
-  router.get('/og/post/:id/stories.png', imagem('story'));
+  router.get('/og/post/:id.png', limite('imagemOg'), imagem('cartao'));
+  router.get('/og/post/:id/stories.png', limite('imagemOg'), imagem('story'));
 
   return router;
 }

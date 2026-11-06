@@ -5,6 +5,7 @@ import { v2 as cloudinary } from 'cloudinary';
 import { createPool, createPrismaClient } from './infra/prisma.js';
 import { createSessionCleaner, createSessionStore } from './infra/sessionStore.js';
 import { createPasswords } from './security/passwords.js';
+import { createLimitador, createPostgresStore } from './security/limitador.js';
 import { createConsoleMailer, createResendMailer } from './infra/mailer.js';
 import { createPasswordResetRepository } from './repositories/passwordResetRepository.js';
 import { createPasswordResetService } from './services/passwordResetService.js';
@@ -74,11 +75,14 @@ export function buildContainer(config) {
   );
 
   const passwords = createPasswords();
+  const limitador = createLimitador({ store: createPostgresStore(pool) });
+  // Curtir/descurtir ou seguir/deixar de seguir em loop não pode virar uma chuva de avisos.
+  const avisarUmaVez = (chave) => limitador.primeiraVez(`aviso:${chave}`, 24 * 60 * 60);
   const sessions = createSessionCleaner(pool);
   const mailer = config.resendApiKey
     ? createResendMailer({ apiKey: config.resendApiKey, from: config.emailFrom })
     : createConsoleMailer();
-  const postService = createPostService({ posts, likes, notifications, users, restricoes, queroOuvir });
+  const postService = createPostService({ posts, likes, notifications, users, restricoes, queroOuvir, avisarUmaVez });
 
   return {
     authService: createAuthService({ users, passwords, notifications }),
@@ -86,7 +90,7 @@ export function buildContainer(config) {
       users, resets: createPasswordResetRepository(prisma), passwords, mailer, sessions, appUrl: config.appUrl,
     }),
     postService,
-    userService: createUserService({ users, follows, postService, notifications, passwords, restricoes, mailer }),
+    userService: createUserService({ users, follows, postService, notifications, passwords, restricoes, mailer, avisarUmaVez }),
     restricaoService: createRestricaoService({ restricoes, users }),
     queroOuvirService: createQueroOuvirService({ queroOuvir }),
     sugestaoService: createSugestaoService({ sugestoes: createSugestaoRepository(prisma), follows, restricoes }),
@@ -99,6 +103,7 @@ export function buildContainer(config) {
     uploader: createCloudinaryUploader(cloudinary),
     sessionStore: createSessionStore(pool),
     sessions,
+    limitador,
     sessionSecret: config.sessionSecret,
     appUrl: config.appUrl,
     secureCookies: config.secureCookies,
