@@ -6,3 +6,6 @@ coverage
 server/src/generated
 dist-demo
 .vercel
+# Dumps de banco têm dados reais de usuários: nunca versionar
+*.sql
+!prisma/migrations/**/*.sql

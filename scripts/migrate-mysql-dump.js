@@ -1,9 +1,9 @@
 #!/usr/bin/env node
-// Migra os dados de um dump do MySQL antigo (ex.: banco.sql) para o Postgres em DATABASE_URL.
+// Migra os dados de um dump do MySQL antigo (ex.: dump.sql) para o Postgres em DATABASE_URL.
 //
-//   npm run db:import -- banco.sql --dry-run   # só mostra o relatório
-//   npm run db:import -- banco.sql             # grava no banco (que precisa estar vazio)
-//   npm run db:import -- banco.sql --sql=importacao.sql
+//   npm run db:import -- dump.sql --dry-run   # só mostra o relatório
+//   npm run db:import -- dump.sql             # grava no banco (que precisa estar vazio)
+//   npm run db:import -- dump.sql --sql=importacao.sql
 //                                              # gera um .sql para colar no SQL Editor do Neon
 import 'dotenv/config';
 import fs from 'node:fs';

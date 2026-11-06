@@ -28,13 +28,14 @@ Produção em servidor próprio: `npm run db:migrate && npm run build && npm sta
 
 ### Migrar os dados do MySQL antigo
 
+O dump não fica no repositório (tem dados reais de usuários; o `.gitignore` recusa `*.sql`).
+Gere um com `mysqldump -u <usuario> -p tunetalk > dump.sql` (formato padrão), guarde fora do git e importe:
+
 ```bash
-npm run db:import -- banco.sql --dry-run   # mostra o que entra e o que é descartado (órfãos)
-npm run db:import -- banco.sql             # grava no DATABASE_URL (precisa estar vazio)
+npm run db:import -- dump.sql --dry-run   # mostra o que entra e o que é descartado (órfãos)
+npm run db:import -- dump.sql             # grava no DATABASE_URL (precisa estar vazio)
 ```
 
-Para dados mais recentes que o `banco.sql`, gere um dump novo com
-`mysqldump -u <usuario> -p tunetalk > dump.sql` (formato padrão) e importe o arquivo.
 Os ids são preservados, então links antigos (`/post/123`, `/perfil/11`) continuam funcionando.
 
 | Script | O que faz |
