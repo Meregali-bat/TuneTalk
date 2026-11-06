@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useId, useState } from 'react';
 import { ClaveDeSol, Colcheia, ColcheiasLigadas, Seminima } from './shapes.jsx';
 
 // Caminho da pauta, em frações da tela: entra grande pelo canto de baixo à esquerda, atravessa
@@ -8,7 +8,7 @@ const CURVAS = [
   [[-0.08, 0.88], [0.55, 1.08], [1.2, 0.62], [0.82, 0.36]],
   [[0.82, 0.36], [0.5, 0.12], [0.12, 0.26], [0.36, -0.06]],
 ];
-const SEGMENTOS = 40; // por curva
+const AMOSTRAS = 320; // pontos ao longo da pauta inteira: o bastante para a curva ficar lisa
 const DESENHO_S = 2.4; // tempo para a pauta atravessar a tela
 const SAIDA_S = 1.1; // depois de desenhada, some devagar
 const NOTAS = [
@@ -37,13 +37,14 @@ function ponto(t, w, h) {
 
 /**
  * Monta a pauta: cinco linhas paralelas que vão afinando (traço e espaçamento diminuem de t=0
- * a t=1), cortadas em segmentos para cada um aparecer na sua hora, e as notas ao longo dela.
+ * a t=1). Cada linha vira uma forma só, com contorno liso (a largura varia, então não dá para
+ * usar um stroke), e um traço central que serve de máscara para ela se desenhar pela tela.
  */
 export function montarPauta(w, h) {
   const base = Math.min(w, h);
   const espaco = base * 0.032;
   const traco = base * 0.007;
-  const n = SEGMENTOS * CURVAS.length;
+  const n = AMOSTRAS;
   const amostras = Array.from({ length: n + 1 }, (_, k) => {
     const t = k / n;
     const [x, y] = ponto(t, w, h);
@@ -52,36 +53,57 @@ export function montarPauta(w, h) {
     const ang = Math.atan2(yb - ya, xb - xa);
     return { t, x, y, ang, afina: 1 - 0.88 * t };
   });
-  const naLinha = ({ x, y, ang, afina }, linha) => {
-    const d = (linha - 2) * espaco * afina;
-    return [x - Math.sin(ang) * d, y + Math.cos(ang) * d];
-  };
-
-  const segmentos = [];
-  for (let k = 0; k < n; k += 1) {
-    const a = amostras[k];
-    const b = amostras[k + 1];
-    for (let linha = 0; linha < 5; linha += 1) {
-      const [x1, y1] = naLinha(a, linha);
-      const [x2, y2] = naLinha(b, linha);
-      segmentos.push({ linha, t: a.t, d: `M${x1.toFixed(1)} ${y1.toFixed(1)} L${x2.toFixed(1)} ${y2.toFixed(1)}`, largura: traco * a.afina });
-    }
+  // Quanto do comprimento da pauta já foi percorrido em cada amostra (0 a 1): a máscara se
+  // desenha em velocidade constante, então as notas usam isso para entrar na hora certa.
+  const percorrido = [0];
+  for (let k = 1; k <= n; k += 1) {
+    const a = amostras[k - 1];
+    const b = amostras[k];
+    percorrido.push(percorrido[k - 1] + Math.hypot(b.x - a.x, b.y - a.y));
   }
+  const total = percorrido[n];
+  const deslocar = ({ x, y, ang }, d) => [x - Math.sin(ang) * d, y + Math.cos(ang) * d];
+  const naLinha = (amostra, linha) => deslocar(amostra, (linha - 2) * espaco * amostra.afina);
+  const fmt = ([x, y]) => `${x.toFixed(1)} ${y.toFixed(1)}`;
+
+  const linhas = Array.from({ length: 5 }, (_, linha) => {
+    // Centro da linha em cada amostra; as bordas ficam meia largura para cada lado dele.
+    const centro = amostras.map((a) => {
+      const [x, y] = naLinha(a, linha);
+      return { ...a, x, y, p: [x, y] };
+    });
+    const ida = centro.map((a) => deslocar(a, (traco * a.afina) / 2));
+    const volta = centro.map((a) => deslocar(a, (-traco * a.afina) / 2)).reverse();
+    // Comprimento calculado aqui (e não com pathLength) porque o Safari antigo ignora pathLength
+    // no tracejado, e a máscara depende dele para se desenhar.
+    const comprimento = centro.slice(1).reduce((soma, a, k) => soma + Math.hypot(a.x - centro[k].x, a.y - centro[k].y), 0);
+    return {
+      linha,
+      comprimento,
+      contorno: `M${[...ida, ...volta].map(fmt).join('L')}Z`,
+      caminho: `M${centro.map((a) => fmt(a.p)).join('L')}`,
+      larguraInicio: traco,
+      larguraFim: traco * centro[n].afina,
+      fim: centro[n].p,
+    };
+  });
 
   const notas = NOTAS.map(({ t, Forma, linha }) => {
-    const amostra = amostras[Math.round(t * n)];
+    const k = Math.round(t * n);
+    const amostra = amostras[k];
     const [x, y] = naLinha(amostra, linha);
     // As formas foram desenhadas para um espaço de ~7 unidades entre linhas.
     const escala = (espaco * amostra.afina) / 7;
     // Em pé, mesmo onde a pauta faz a curva: nota deitada não parece nota.
-    return { t, Forma, x, y, escala };
+    return { t, Forma, x, y, escala, chegada: percorrido[k] / total };
   });
 
-  return { segmentos, notas };
+  return { linhas, notas, larguraMascara: traco * 2 + 2 };
 }
 
 /** Uma pauta só que se desenha pela tela, afinando até acabar, e depois some. */
 export function StaffSweep({ cores }) {
+  const id = useId();
   const [tela] = useState(() => ({ w: window.innerWidth || 390, h: window.innerHeight || 844 }));
   const [pauta] = useState(() => montarPauta(tela.w, tela.h));
   const [visivel, setVisivel] = useState(true);
@@ -95,20 +117,37 @@ export function StaffSweep({ cores }) {
 
   return (
     <div className="petal-rain staff-sweep" aria-hidden="true" data-testid="petalas" data-tipo="notas">
-      <svg width={tela.w} height={tela.h} viewBox={`0 0 ${tela.w} ${tela.h}`} style={{ '--saida': `${DESENHO_S + 0.6}s` }}>
-        {pauta.segmentos.map(({ d, linha, t, largura }, i) => (
+      <svg
+        width={tela.w}
+        height={tela.h}
+        viewBox={`0 0 ${tela.w} ${tela.h}`}
+        style={{ '--saida': `${DESENHO_S + 0.6}s`, '--desenho': `${DESENHO_S}s` }}
+      >
+        <defs>
+          {pauta.linhas.map(({ linha, caminho, comprimento }) => (
+            <mask key={linha} id={`${id}-linha-${linha}`} maskUnits="userSpaceOnUse">
+              <path
+                d={caminho}
+                className="staff-sweep__revela"
+                strokeWidth={pauta.larguraMascara.toFixed(1)}
+                // Um pouco a mais que o caminho, para não sobrar um fiapo apagado no fim.
+                style={{ '--comprimento': `${Math.ceil(comprimento + 2)}px` }}
+              />
+            </mask>
+          ))}
+        </defs>
+        {pauta.linhas.map(({ linha, contorno }) => (
           <path
-            key={i}
-            d={d}
+            key={linha}
+            d={contorno}
             className="staff-sweep__linha"
-            stroke={cores[linha % cores.length]}
-            strokeWidth={largura.toFixed(2)}
-            style={{ animationDelay: `${(t * DESENHO_S).toFixed(3)}s` }}
+            fill={cores[linha % cores.length]}
+            mask={`url(#${id}-linha-${linha})`}
           />
         ))}
-        {pauta.notas.map(({ t, Forma, x, y, escala }, i) => (
+        {pauta.notas.map(({ t, Forma, x, y, escala, chegada }, i) => (
           <g key={t} transform={`translate(${x.toFixed(1)} ${y.toFixed(1)}) scale(${escala.toFixed(3)})`}>
-            <g className="staff-sweep__nota" style={{ animationDelay: `${(t * DESENHO_S + 0.1).toFixed(3)}s` }}>
+            <g className="staff-sweep__nota" style={{ animationDelay: `${(chegada * DESENHO_S + 0.1).toFixed(3)}s` }}>
               <Forma x={0} y={0} cor={cores[(i + 1) % cores.length]} />
             </g>
           </g>

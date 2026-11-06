@@ -2486,7 +2486,8 @@ button.track-row:hover {
   filter: drop-shadow(0 2px 4px rgba(0, 0, 0, .25));
 }
 
-/* Notas: uma pauta só que se desenha pela tela (cada pedaço aparece na sua hora) e depois some. */
+/* Notas: uma pauta só que se desenha pela tela (a máscara de cada linha avança em velocidade
+   constante) e depois some. */
 .staff-sweep svg {
   display: block;
   overflow: visible;
@@ -2494,10 +2495,16 @@ button.track-row:hover {
 }
 
 .staff-sweep__linha {
+  opacity: .95;
+}
+
+.staff-sweep__revela {
   fill: none;
-  stroke-linecap: round;
-  opacity: 0;
-  animation: staff-aparece .18s ease-out both;
+  stroke: #fff;
+  stroke-linecap: butt;
+  stroke-dasharray: var(--comprimento) var(--comprimento);
+  stroke-dashoffset: var(--comprimento);
+  animation: staff-desenha var(--desenho) linear both;
 }
 
 .staff-sweep__nota {
@@ -2507,8 +2514,8 @@ button.track-row:hover {
   animation: staff-nota .45s cubic-bezier(.34, 1.56, .64, 1) both;
 }
 
-@keyframes staff-aparece {
-  to { opacity: .95; }
+@keyframes staff-desenha {
+  to { stroke-dashoffset: 0; }
 }
 
 @keyframes staff-nota {
@@ -2558,7 +2565,11 @@ button.track-row:hover {
   }
 
   /* A pauta aparece inteira de uma vez, sem se desenhar, e some devagar. */
-  .staff-sweep__linha,
+  .staff-sweep__revela {
+    animation: none;
+    stroke-dashoffset: 0;
+  }
+
   .staff-sweep__nota {
     animation: none;
     opacity: 1;
