@@ -33,7 +33,7 @@ describe('postService', () => {
       countByPost: vi.fn().mockResolvedValue(6),
     };
     notifications = { create: vi.fn(), removeLike: vi.fn(), exists: vi.fn().mockResolvedValue(false) };
-    users = { setPinnedPost: vi.fn(), findByNames: vi.fn().mockResolvedValue([]) };
+    users = { setPinnedPost: vi.fn(), findByNames: vi.fn().mockResolvedValue([]), unlockEffect: vi.fn().mockResolvedValue(true) };
     service = createPostService({
       posts,
       likes,
@@ -353,33 +353,39 @@ describe('postService', () => {
     });
   });
 
-  describe('parabéns pelos 100 posts', () => {
-    it('o 100º post gera a notificação do TuneTalk, levando ao post', async () => {
+  describe('recompensa dos 100 posts', () => {
+    const PARABENS = {
+      destinatarioId: 7,
+      autorId: 7,
+      tipo: 'marco_posts',
+      conteudo: 'Parabéns pelos 100 posts! Você ganhou um efeito para o seu perfil: escolha a forma e as cores em Editar perfil.',
+    };
+
+    it('o 100º post desbloqueia o efeito (notas, oceano) e avisa, levando ao perfil', async () => {
       posts.countByAuthor.mockResolvedValue(100);
       await service.create(7, { texto: 'cem!' });
       expect(posts.countByAuthor).toHaveBeenCalledWith(7);
-      expect(notifications.create).toHaveBeenCalledWith({
-        destinatarioId: 7,
-        autorId: 7,
-        tipo: 'marco_posts',
-        conteudo: 'Parabéns pelo seu 100º post! Obrigado por fazer o TuneTalk acontecer.',
-        postId: 42,
-      });
+      expect(users.unlockEffect).toHaveBeenCalledWith(7, { tipo: 'notas', paleta: 'oceano' });
+      expect(notifications.create).toHaveBeenCalledWith(PARABENS);
     });
 
-    it('antes ou depois do 100º, não avisa', async () => {
-      for (const total of [99, 101]) {
-        posts.countByAuthor.mockResolvedValue(total);
-        await service.create(7, { texto: 'oi' });
-      }
+    it('quem já tinha passado de 100 também ganha, no próximo post', async () => {
+      posts.countByAuthor.mockResolvedValue(137);
+      await service.create(7, { texto: 'oi' });
+      expect(notifications.create).toHaveBeenCalledWith(PARABENS);
+    });
+
+    it('antes do 100º, nada', async () => {
+      posts.countByAuthor.mockResolvedValue(99);
+      await service.create(7, { texto: 'oi' });
+      expect(users.unlockEffect).not.toHaveBeenCalled();
       expect(notifications.create).not.toHaveBeenCalled();
     });
 
-    it('só uma vez: apagar e postar de novo o 100º não repete', async () => {
-      posts.countByAuthor.mockResolvedValue(100);
-      notifications.exists.mockResolvedValue(true);
+    it('só uma vez: se o efeito já estava desbloqueado, não avisa de novo', async () => {
+      posts.countByAuthor.mockResolvedValue(101);
+      users.unlockEffect.mockResolvedValue(false);
       await service.create(7, { texto: 'oi' });
-      expect(notifications.exists).toHaveBeenCalledWith(7, 'marco_posts');
       expect(notifications.create).not.toHaveBeenCalled();
     });
 
@@ -388,6 +394,15 @@ describe('postService', () => {
       await service.create(7, { texto: 'oi', parentId: 1 });
       expect(posts.countByAuthor).not.toHaveBeenCalled();
       expect(notifications.create).not.toHaveBeenCalledWith(expect.objectContaining({ tipo: 'marco_posts' }));
+    });
+
+    it('verificarMarco confere sem precisar postar e diz se desbloqueou agora', async () => {
+      posts.countByAuthor.mockResolvedValue(120);
+      expect(await service.verificarMarco(7)).toBe(true);
+      users.unlockEffect.mockResolvedValue(false);
+      expect(await service.verificarMarco(7)).toBe(false);
+      posts.countByAuthor.mockResolvedValue(50);
+      expect(await service.verificarMarco(7)).toBe(false);
     });
   });
 

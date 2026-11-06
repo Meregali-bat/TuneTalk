@@ -2,6 +2,9 @@ export const PUBLIC_USER_SELECT = {
   id: true, nome: true, nomeExibicao: true, fotoPerfil: true, bannerUrl: true, bio: true, fundadorDesde: true, mostrarSeloFundador: true,
 };
 
+// O perfil aberto leva também o efeito dos 100 posts (as listas de pessoas não precisam dele).
+const PROFILE_SELECT = { ...PUBLIC_USER_SELECT, efeitoDesde: true, efeitoPerfil: true, mostrarEfeito: true };
+
 const sameText = (value) => ({ equals: value, mode: 'insensitive' });
 
 export function createUserRepository(prisma) {
@@ -51,6 +54,14 @@ export function createUserRepository(prisma) {
       await prisma.usuario.update({ where: { id }, data: { fundadorDesde: new Date() } });
     },
 
+    // Só a primeira vez conta: devolve false se o efeito já estava desbloqueado.
+    async unlockEffect(id, efeito) {
+      const { count } = await prisma.usuario.updateMany({
+        where: { id, efeitoDesde: null }, data: { efeitoDesde: new Date(), efeitoPerfil: efeito },
+      });
+      return count > 0;
+    },
+
     async setPinnedPost(id, postId) {
       await prisma.usuario.update({ where: { id }, data: { postFixadoId: postId } });
     },
@@ -93,12 +104,13 @@ export function createUserRepository(prisma) {
     },
 
     findById(id) {
-      return prisma.usuario.findUnique({ where: { id }, select: PUBLIC_USER_SELECT });
+      return prisma.usuario.findUnique({ where: { id }, select: PROFILE_SELECT });
     },
 
-    async update(id, { nome, nomeExibicao, fotoPerfil, bannerUrl, bio, mostrarSeloFundador }) {
+    async update(id, { nome, nomeExibicao, fotoPerfil, bannerUrl, bio, mostrarSeloFundador, efeitoPerfil, mostrarEfeito }) {
       await prisma.usuario.update({
-        where: { id }, data: { nome, nomeExibicao, fotoPerfil, bannerUrl, bio, mostrarSeloFundador },
+        where: { id },
+        data: { nome, nomeExibicao, fotoPerfil, bannerUrl, bio, mostrarSeloFundador, efeitoPerfil, mostrarEfeito },
       });
     },
   };

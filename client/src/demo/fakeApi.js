@@ -201,8 +201,10 @@ export function createFakeApi({ storage = globalThis.localStorage } = {}) {
       const isDemoImage = (url) => url === undefined || String(url).startsWith('data:image/');
       if (!isDemoImage(body.fotoPerfil)) throw badRequest('Foto inválida. Envie a imagem de novo.');
       if (!isDemoImage(body.bannerUrl)) throw badRequest('Capa inválida. Envie a imagem de novo.');
-      const { nome, nomeExibicao, bio, fotoPerfil, bannerUrl, mostrarSeloFundador } = body;
-      const usuario = await services.users.updateProfile(me(), { nome, nomeExibicao, bio, fotoPerfil, bannerUrl, mostrarSeloFundador });
+      const { nome, nomeExibicao, bio, fotoPerfil, bannerUrl, mostrarSeloFundador, efeitoPerfil, mostrarEfeito } = body;
+      const usuario = await services.users.updateProfile(me(), {
+        nome, nomeExibicao, bio, fotoPerfil, bannerUrl, mostrarSeloFundador, efeitoPerfil, mostrarEfeito,
+      });
       startSession({ ...state.session, nome: usuario.nome });
       return ok(usuario);
     }],

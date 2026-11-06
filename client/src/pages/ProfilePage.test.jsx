@@ -313,6 +313,45 @@ describe('ProfilePage', () => {
       expect(screen.getByRole('dialog', { name: 'Novo post' })).toBeInTheDocument();
     });
 
+    it('sem os 100 posts, o Editar perfil não mostra o efeito nem o manda ao salvar', async () => {
+      usersApi.profile.mockResolvedValue(profile({ usuario: ana }));
+      usersApi.updateMe.mockResolvedValue(ana);
+      renderProfile(1);
+      await userEvent.click(await screen.findByRole('button', { name: 'Editar perfil' }));
+      const dialog = screen.getByRole('dialog', { name: 'Editar perfil' });
+      expect(within(dialog).queryByText('Efeito do perfil')).toBeNull();
+      await userEvent.click(within(dialog).getByRole('button', { name: 'Salvar' }));
+      expect(usersApi.updateMe.mock.calls[0][0]).not.toHaveProperty('efeitoPerfil');
+    });
+
+    it('quem tem o efeito escolhe forma e cores em Editar perfil', async () => {
+      const comEfeito = { ...ana, efeitoDesde: '2026-11-06T00:00:00.000Z', efeitoPerfil: { tipo: 'notas', paleta: 'oceano' } };
+      usersApi.profile.mockResolvedValue(profile({ usuario: comEfeito }));
+      usersApi.updateMe.mockResolvedValue(comEfeito);
+      renderProfile(1);
+      await userEvent.click(await screen.findByRole('button', { name: 'Editar perfil' }));
+      const dialog = screen.getByRole('dialog', { name: 'Editar perfil' });
+
+      await userEvent.click(within(dialog).getByRole('radio', { name: 'Notas musicais' }));
+      await userEvent.click(within(dialog).getByRole('radio', { name: 'Oceano' }));
+      await userEvent.click(within(dialog).getByRole('button', { name: 'Salvar' }));
+      expect(usersApi.updateMe.mock.calls[0][0]).toMatchObject({ efeitoPerfil: { tipo: 'notas', paleta: 'oceano' }, mostrarEfeito: true });
+    });
+
+    it('desligar o efeito esconde as opções e salva mostrarEfeito falso', async () => {
+      const comEfeito = { ...ana, efeitoDesde: '2026-11-06T00:00:00.000Z', efeitoPerfil: { tipo: 'estrelas', paleta: 'noite' } };
+      usersApi.profile.mockResolvedValue(profile({ usuario: comEfeito }));
+      usersApi.updateMe.mockResolvedValue(comEfeito);
+      renderProfile(1);
+      await userEvent.click(await screen.findByRole('button', { name: 'Editar perfil' }));
+      const dialog = screen.getByRole('dialog', { name: 'Editar perfil' });
+
+      await userEvent.click(within(dialog).getByRole('checkbox', { name: 'Mostrar efeito no meu perfil' }));
+      expect(within(dialog).queryByRole('radio', { name: 'Estrelas' })).toBeNull();
+      await userEvent.click(within(dialog).getByRole('button', { name: 'Salvar' }));
+      expect(usersApi.updateMe.mock.calls[0][0]).toMatchObject({ mostrarEfeito: false, efeitoPerfil: { tipo: 'estrelas', paleta: 'noite' } });
+    });
+
     it('edita o perfil e atualiza a página e a sessão', async () => {
       const updateUser = vi.fn();
       usersApi.profile.mockResolvedValue(profile({ usuario: ana }));
@@ -341,6 +380,24 @@ describe('ProfilePage', () => {
     unmount();
 
     usersApi.profile.mockResolvedValue(profile());
+    renderProfile();
+    await screen.findByRole('heading', { level: 1, name: 'bia' });
+    expect(screen.queryByTestId('petalas')).toBeNull();
+  });
+
+  it('quem ganhou o efeito dos 100 posts tem a forma escolhida caindo no perfil; desligado, nada', async () => {
+    const desde = '2026-11-06T00:00:00.000Z';
+    usersApi.profile.mockResolvedValue(profile({ usuario: { ...bia, efeitoDesde: desde, efeitoPerfil: { tipo: 'coracoes', paleta: 'sol' } } }));
+    const { unmount } = renderProfile();
+    await screen.findByRole('heading', { level: 1, name: 'bia' });
+    const camada = screen.getByTestId('petalas');
+    expect(camada).toHaveAttribute('data-tipo', 'coracoes');
+    expect(camada.querySelector('.petal__body--glifo')).not.toBeNull();
+    unmount();
+
+    usersApi.profile.mockResolvedValue(profile({
+      usuario: { ...bia, efeitoDesde: desde, efeitoPerfil: { tipo: 'coracoes', paleta: 'sol' }, mostrarEfeito: false },
+    }));
     renderProfile();
     await screen.findByRole('heading', { level: 1, name: 'bia' });
     expect(screen.queryByTestId('petalas')).toBeNull();

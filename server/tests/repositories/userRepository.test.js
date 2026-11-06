@@ -79,6 +79,20 @@ describe('userRepository (Postgres)', () => {
     expect(Date.now() - fundadorDesde.getTime()).toBeLessThan(60_000);
   });
 
+  it('unlockEffect desbloqueia o efeito uma vez só; update troca a escolha e o liga/desliga', async () => {
+    const ana = await factory.user();
+    expect(await repo.findById(ana.id)).toMatchObject({ efeitoDesde: null, efeitoPerfil: null, mostrarEfeito: true });
+
+    expect(await repo.unlockEffect(ana.id, { tipo: 'notas', paleta: 'oceano' })).toBe(true);
+    const { efeitoDesde } = await repo.findById(ana.id);
+    expect(Date.now() - efeitoDesde.getTime()).toBeLessThan(60_000);
+    expect(await repo.unlockEffect(ana.id, { tipo: 'notas', paleta: 'sol' })).toBe(false);
+    expect((await repo.findById(ana.id)).efeitoPerfil).toEqual({ tipo: 'notas', paleta: 'oceano' });
+
+    await repo.update(ana.id, { efeitoPerfil: { tipo: 'estrelas', paleta: 'noite' }, mostrarEfeito: false });
+    expect(await repo.findById(ana.id)).toMatchObject({ efeitoPerfil: { tipo: 'estrelas', paleta: 'noite' }, mostrarEfeito: false, efeitoDesde });
+  });
+
   it('findByNames acha as contas pelos nomes de usuário, sem diferenciar maiúsculas', async () => {
     const bia = await factory.user({ nome: 'Bia.Souza' });
     const caio = await factory.user({ nome: 'caio' });
@@ -146,6 +160,7 @@ describe('userRepository (Postgres)', () => {
     const ana = await factory.user({ nome: 'Ana', bio: 'oi' });
     expect(await repo.findById(ana.id)).toEqual({
       id: ana.id, nome: 'Ana', nomeExibicao: null, fotoPerfil: ana.fotoPerfil, bannerUrl: null, bio: 'oi', fundadorDesde: null, mostrarSeloFundador: true,
+      efeitoDesde: null, efeitoPerfil: null, mostrarEfeito: true,
     });
     expect(await repo.findById(9999)).toBeNull();
   });
@@ -157,6 +172,7 @@ describe('userRepository (Postgres)', () => {
     });
     expect(await repo.findById(ana.id)).toEqual({
       id: ana.id, nome: 'Novo', nomeExibicao: 'Ana Souza', fotoPerfil: 'n.png', bannerUrl: 'b.png', bio: 'bio', fundadorDesde: null, mostrarSeloFundador: false,
+      efeitoDesde: null, efeitoPerfil: null, mostrarEfeito: true,
     });
   });
 });

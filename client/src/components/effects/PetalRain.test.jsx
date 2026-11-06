@@ -35,6 +35,13 @@ describe('PetalRain', () => {
     expect(camada.querySelectorAll('.petal')).toHaveLength(12);
   });
 
+  it('com outra forma, cai o caractere (nota, estrela, coração) na cor da paleta', () => {
+    const { getByTestId } = render(<PetalRain count={4} tipo="notas" colors={['#123456']} />);
+    const glifos = getByTestId('petalas').querySelectorAll('.petal__body--glifo');
+    expect([...glifos].map((g) => g.textContent)).toEqual(['\u266A', '\u266B', '\u266A', '\u266B']);
+    expect(glifos[0].style.getPropertyValue('--petal-color')).toBe('#123456');
+  });
+
   it('cai uma vez e some da página quando as pétalas terminam', () => {
     vi.useFakeTimers();
     const { queryByTestId } = render(<PetalRain count={8} random={() => 1} />);

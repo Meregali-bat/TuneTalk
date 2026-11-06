@@ -2367,6 +2367,18 @@ button.track-row:hover {
   animation: petal-sway var(--sway-dur) cubic-bezier(0.77, 0, 0.175, 1) var(--delay) infinite alternate;
 }
 
+/* Notas, estrelas e corações: o próprio caractere, na cor da paleta. */
+.petal__body--glifo {
+  width: auto;
+  height: auto;
+  border-radius: 0;
+  background: none;
+  box-shadow: none;
+  color: var(--petal-color);
+  line-height: 1;
+  text-shadow: 0 2px 6px rgba(0, 0, 0, .25);
+}
+
 @keyframes petal-fall {
   0% { transform: translate3d(0, -8vh, 0); opacity: 0; }
   6% { opacity: 1; }
@@ -2874,6 +2886,77 @@ button.track-row:hover {
     height: 1.15rem;
     accent-color: var(--destaque);
   }
+}
+
+/* Efeito do perfil (recompensa dos 100 posts) */
+.edit-profile__effect {
+  display: flex;
+  flex-direction: column;
+  gap: .65rem;
+  margin: 0;
+  padding: .85rem 1rem 1rem;
+  border: 1px solid var(--linhas);
+  border-radius: 14px;
+
+  legend {
+    float: left;
+    width: 100%;
+    margin: 0;
+    font-size: .95rem;
+    font-weight: 700;
+
+    i {
+      color: var(--destaque-claro);
+    }
+  }
+
+  .edit-profile__toggle {
+    padding: 0;
+    border: 0;
+  }
+}
+
+.edit-profile__hint {
+  margin: 0;
+  color: var(--texto-suave);
+  font-size: .85rem;
+}
+
+.effect-options {
+  display: flex;
+  flex-wrap: wrap;
+  gap: .45rem;
+}
+
+.effect-chip {
+  display: inline-flex;
+  align-items: center;
+  gap: .4rem;
+  min-height: 2.25rem;
+  padding: .35rem .8rem;
+  border: 1px solid var(--linhas);
+  border-radius: 999px;
+  background: var(--superficie-2);
+  color: var(--texto-suave);
+  font-size: .85rem;
+  cursor: pointer;
+  -webkit-tap-highlight-color: transparent;
+
+  &.is-active {
+    border-color: var(--destaque);
+    color: var(--texto);
+  }
+
+  &:focus-within {
+    outline: 2px solid var(--destaque-claro);
+    outline-offset: 2px;
+  }
+}
+
+.effect-swatch {
+  width: .95rem;
+  height: .95rem;
+  border-radius: 50%;
 }
 
 /* Notificações: logo do TuneTalk nos avisos do sistema e cores dos tipos novos */

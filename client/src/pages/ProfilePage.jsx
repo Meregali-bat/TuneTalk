@@ -11,7 +11,8 @@ import { UserListModal } from '../components/profile/UserListModal.jsx';
 import { EditProfileModal } from '../components/profile/EditProfileModal.jsx';
 import { ChangePasswordModal } from '../components/profile/ChangePasswordModal.jsx';
 import { ChangeEmailModal } from '../components/profile/ChangeEmailModal.jsx';
-import { PetalRain } from '../components/effects/PetalRain.jsx';
+import { PetalRain, ProfileEffect } from '../components/effects/PetalRain.jsx';
+import { efeitoVisivel } from '../../../shared/profileEffect.js';
 import { profileEffectFor } from '../components/effects/profileEffects.js';
 import { VerifiedBadge } from '../components/effects/VerifiedBadge.jsx';
 import { FounderBadge, mostraSeloFundador } from '../components/effects/FounderBadge.jsx';
@@ -219,6 +220,7 @@ export function ProfilePage() {
   const isOwnProfile = profile.usuario.id === user.id;
   const relacao = profile.relacao ?? SEM_RELACAO;
   const comBloqueio = relacao.bloqueado || relacao.meBloqueou;
+  const efeito = comBloqueio ? null : efeitoVisivel(profile.usuario);
 
   const handleSaved = (usuario) => {
     updateUser({ nome: usuario.nome });
@@ -232,7 +234,9 @@ export function ProfilePage() {
   return (
     <div className="feed profile">
       {/* key: só cai de novo ao abrir outro perfil, não quando os dados deste recarregam (ex.: seguir). */}
-      {profileEffectFor(profile.usuario.nome) === 'petalas' && <PetalRain key={profile.usuario.id} />}
+      {profileEffectFor(profile.usuario.nome) === 'petalas'
+        ? <PetalRain key={profile.usuario.id} />
+        : efeito && <ProfileEffect key={`${profile.usuario.id}-${efeito.tipo}-${efeito.paleta}`} efeito={efeito} />}
       <PullToRefresh onRefresh={reload} />
       <ProfileHeader
         profile={profile}

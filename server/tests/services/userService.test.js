@@ -98,6 +98,49 @@ describe('userService', () => {
     });
   });
 
+  describe('efeito do perfil (recompensa dos 100 posts)', () => {
+    it('ao abrir o próprio perfil, quem passou dos 100 sem o efeito ganha na hora', async () => {
+      const comEfeito = { ...ana, efeitoDesde: '2026-11-06T00:00:00.000Z', efeitoPerfil: { tipo: 'notas', paleta: 'oceano' } };
+      users.findById.mockResolvedValueOnce(ana).mockResolvedValueOnce(comEfeito);
+      postService.verificarMarco = vi.fn().mockResolvedValue(true);
+      const profile = await service.getProfile(1, 1);
+      expect(postService.verificarMarco).toHaveBeenCalledWith(1);
+      expect(profile.usuario).toEqual(comEfeito);
+    });
+
+    it('no perfil dos outros, ou se já tem o efeito, nem confere', async () => {
+      postService.verificarMarco = vi.fn();
+      await service.getProfile(2, 1);
+      users.findById.mockResolvedValueOnce({ ...ana, efeitoDesde: '2026-11-06T00:00:00.000Z' });
+      await service.getProfile(1, 1);
+      expect(postService.verificarMarco).not.toHaveBeenCalled();
+    });
+
+    it('quem desbloqueou escolhe forma, paleta e se mostra', async () => {
+      users.findById.mockResolvedValue({ ...ana, efeitoDesde: '2026-11-06T00:00:00.000Z' });
+      const usuario = await service.updateProfile(1, { efeitoPerfil: { tipo: 'notas', paleta: 'oceano', lixo: 1 }, mostrarEfeito: false });
+      expect(users.update).toHaveBeenCalledWith(1, expect.objectContaining({
+        efeitoPerfil: { tipo: 'notas', paleta: 'oceano' }, mostrarEfeito: false,
+      }));
+      expect(usuario.efeitoPerfil).toEqual({ tipo: 'notas', paleta: 'oceano' });
+    });
+
+    it('forma ou paleta fora da lista: 400', async () => {
+      users.findById.mockResolvedValue({ ...ana, efeitoDesde: '2026-11-06T00:00:00.000Z' });
+      for (const efeitoPerfil of [{ tipo: 'fogos', paleta: 'lilas' }, { tipo: 'notas', paleta: 'arco-iris' }, null, 'petalas']) {
+        await expect(service.updateProfile(1, { efeitoPerfil })).rejects.toMatchObject({ status: 400 });
+      }
+      expect(users.update).not.toHaveBeenCalled();
+    });
+
+    it('sem os 100 posts, não dá para mexer no efeito (403); o resto do perfil salva normal', async () => {
+      await expect(service.updateProfile(1, { efeitoPerfil: { tipo: 'notas', paleta: 'oceano' } })).rejects.toMatchObject({ status: 403 });
+      await expect(service.updateProfile(1, { mostrarEfeito: true })).rejects.toMatchObject({ status: 403 });
+      await service.updateProfile(1, { bio: 'nova' });
+      expect(users.update).toHaveBeenCalledWith(1, expect.not.objectContaining({ efeitoPerfil: expect.anything() }));
+    });
+  });
+
   describe('updateFavorites', () => {
     const capa = 'https://cdn-images.dzcdn.net/images/artist/a/250x250.jpg';
 

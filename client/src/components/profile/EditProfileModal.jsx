@@ -3,6 +3,7 @@ import { usersApi } from '../../api/index.js';
 import { Modal } from '../common/Modal.jsx';
 import { USERNAME_MESSAGES, checkUsername } from '../../../../shared/usernameRules.js';
 import { IMAGEM_MAX_MB } from '../../api/limits.js';
+import { EFEITO_PADRAO, EFEITO_PALETAS, EFEITO_TIPOS, validarEfeito } from '../../../../shared/profileEffect.js';
 
 const BIO_MAX = 255;
 const NOME_EXIBICAO_MAX = 50;
@@ -39,6 +40,53 @@ function usernameProblem(nome, original) {
   return broken ? USERNAME_MESSAGES[broken[0]] : '';
 }
 
+// Recompensa dos 100 posts: liga/desliga o efeito, escolhe a forma e a paleta.
+function EffectPicker({ mostrar, onMostrar, efeito, onEfeito }) {
+  return (
+    <fieldset className="edit-profile__effect">
+      <legend><i className="bi bi-stars" aria-hidden="true" /> Efeito do perfil</legend>
+      <p className="edit-profile__hint">Seu prêmio pelos 100 posts: cai na tela de quem abre o seu perfil.</p>
+      <label className="edit-profile__toggle">
+        <input type="checkbox" checked={mostrar} onChange={(event) => onMostrar(event.target.checked)} />
+        <span>Mostrar efeito no meu perfil</span>
+      </label>
+      {mostrar && (
+        <>
+          <div className="effect-options" role="radiogroup" aria-label="Forma do efeito">
+            {Object.entries(EFEITO_TIPOS).map(([tipo, nome]) => (
+              <label key={tipo} className={`effect-chip${efeito.tipo === tipo ? ' is-active' : ''}`}>
+                <input
+                  type="radio"
+                  name="efeito-tipo"
+                  className="visually-hidden"
+                  checked={efeito.tipo === tipo}
+                  onChange={() => onEfeito({ ...efeito, tipo })}
+                />
+                {nome}
+              </label>
+            ))}
+          </div>
+          <div className="effect-options" role="radiogroup" aria-label="Cores do efeito">
+            {Object.entries(EFEITO_PALETAS).map(([paleta, { nome, cores }]) => (
+              <label key={paleta} className={`effect-chip${efeito.paleta === paleta ? ' is-active' : ''}`}>
+                <input
+                  type="radio"
+                  name="efeito-paleta"
+                  className="visually-hidden"
+                  checked={efeito.paleta === paleta}
+                  onChange={() => onEfeito({ ...efeito, paleta })}
+                />
+                <span className="effect-swatch" aria-hidden="true" style={{ background: `linear-gradient(135deg, ${cores.slice(0, 3).join(', ')})` }} />
+                {nome}
+              </label>
+            ))}
+          </div>
+        </>
+      )}
+    </fieldset>
+  );
+}
+
 export function EditProfileModal({ open, usuario, onClose, onSaved }) {
   const nomeId = useId();
   const exibicaoId = useId();
@@ -47,6 +95,8 @@ export function EditProfileModal({ open, usuario, onClose, onSaved }) {
   const [nomeExibicao, setNomeExibicao] = useState(usuario.nomeExibicao ?? '');
   const [bio, setBio] = useState(usuario.bio ?? '');
   const [mostrarSelo, setMostrarSelo] = useState(usuario.mostrarSeloFundador !== false);
+  const [mostrarEfeito, setMostrarEfeito] = useState(usuario.mostrarEfeito !== false);
+  const [efeito, setEfeito] = useState(() => validarEfeito(usuario.efeitoPerfil).efeito ?? EFEITO_PADRAO);
   const [error, setError] = useState('');
   const [saving, setSaving] = useState(null); // null, 'foto', 'capa' ou 'dados'
   const foto = useImagePick('A foto', setError);
@@ -64,6 +114,7 @@ export function EditProfileModal({ open, usuario, onClose, onSaved }) {
     try {
       const changes = { nome: nome.trim(), nomeExibicao: nomeExibicao.trim(), bio };
       if (usuario.fundadorDesde) changes.mostrarSeloFundador = mostrarSelo;
+      if (usuario.efeitoDesde) Object.assign(changes, { mostrarEfeito, efeitoPerfil: efeito });
       if (foto.file) {
         setSaving('foto');
         changes.fotoPerfil = await usersApi.uploadPhoto(foto.file);
@@ -169,6 +220,10 @@ export function EditProfileModal({ open, usuario, onClose, onSaved }) {
               <i className="bi bi-award-fill founder-badge" aria-hidden="true" /> Mostrar selo de fundador no meu perfil
             </span>
           </label>
+        )}
+
+        {usuario.efeitoDesde && (
+          <EffectPicker mostrar={mostrarEfeito} onMostrar={setMostrarEfeito} efeito={efeito} onEfeito={setEfeito} />
         )}
 
         {error && <p role="alert" className="composer-error">{error}</p>}

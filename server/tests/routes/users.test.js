@@ -122,6 +122,13 @@ describe('rotas /api/users', () => {
       expect(deps.userService.updateProfile.mock.calls[0][1].mostrarSeloFundador).toBe(false);
     });
 
+    it('repassa a escolha do efeito do perfil', async () => {
+      deps.userService.updateProfile.mockResolvedValue({ id: 1 });
+      const efeitoPerfil = { tipo: 'coracoes', paleta: 'sol' };
+      await agent.put('/api/users/me').send({ nome: 'ana', efeitoPerfil, mostrarEfeito: true }).expect(200);
+      expect(deps.userService.updateProfile.mock.calls[0][1]).toMatchObject({ efeitoPerfil, mostrarEfeito: true });
+    });
+
     it('recusa capa que não veio do nosso Cloudinary', async () => {
       deps.uploader.isOwnUrl.mockReturnValue(false);
       const res = await agent.put('/api/users/me').send({ nome: 'N', bannerUrl: 'https://site.com/b.jpg' });
