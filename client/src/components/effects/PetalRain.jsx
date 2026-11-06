@@ -1,15 +1,17 @@
 import { useEffect, useState } from 'react';
 import { EFEITO_PALETAS } from '../../../../shared/profileEffect.js';
+import { Cd, Pauta } from './shapes.jsx';
 
 // Roxo, lilás e rosa, na linha das pétalas da Olivia Rodrigo.
 const COLORS = EFEITO_PALETAS.lilas.cores;
 
-// Formas além da pétala: caracteres de texto (o \uFE0E impede o coração de virar emoji no iPhone).
+// Estrelas são o próprio caractere; notas (pauta) e CD são desenhados em shapes.jsx.
 const GLIFOS = {
-  notas: ['\u266A', '\u266B'],
   estrelas: ['\u2605'],
-  coracoes: ['\u2665\uFE0E'],
 };
+
+// Pedaços de pauta são grandes: caem menos de cada vez.
+const QUANTIDADE = { notas: 9, cd: 14 };
 
 const between = (random, min, max) => min + random() * (max - min);
 
@@ -29,11 +31,11 @@ export function makePetals(count, random = Math.random, colors = COLORS) {
 }
 
 /**
- * Pétalas (ou notas, estrelas, corações) caindo uma vez pela tela. Só CSS (transform e opacity),
+ * Pétalas (ou pautas com notas, estrelas, CDs) caindo uma vez pela tela. Só CSS (transform e opacity),
  * então roda fora da thread principal; quando a última termina, a camada sai da página.
  */
-export function PetalRain({ count = 26, random = Math.random, tipo = 'petalas', colors = COLORS }) {
-  const [petals] = useState(() => makePetals(count, random, colors));
+export function PetalRain({ count, random = Math.random, tipo = 'petalas', colors = COLORS }) {
+  const [petals] = useState(() => makePetals(count ?? QUANTIDADE[tipo] ?? 26, random, colors));
   const glifos = GLIFOS[tipo];
   const [visible, setVisible] = useState(true);
 
@@ -61,7 +63,17 @@ export function PetalRain({ count = 26, random = Math.random, tipo = 'petalas', 
             '--spin': `${p.spin}deg`,
           }}
         >
-          {glifos ? (
+          {tipo === 'notas' && (
+            <span className="petal__body petal__body--forma" style={{ '--petal-color': p.color }}>
+              <Pauta largura={p.size * 10} cores={colors} variante={p.id} />
+            </span>
+          )}
+          {tipo === 'cd' && (
+            <span className="petal__body petal__body--forma" style={{ '--petal-color': p.color }}>
+              <Cd tamanho={p.size * 1.9} cores={colors} />
+            </span>
+          )}
+          {tipo !== 'notas' && tipo !== 'cd' && (glifos ? (
             <span
               className="petal__body petal__body--glifo"
               style={{ fontSize: `${p.size * 1.4}px`, '--petal-color': p.color }}
@@ -73,7 +85,7 @@ export function PetalRain({ count = 26, random = Math.random, tipo = 'petalas', 
               className="petal__body"
               style={{ width: `${p.size}px`, height: `${p.size * 1.25}px`, '--petal-color': p.color }}
             />
-          )}
+          ))}
         </span>
       ))}
     </div>
