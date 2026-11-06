@@ -276,11 +276,11 @@ describe('PostCard', () => {
     expect(img).toHaveAttribute('src', 'https://res.cloudinary.com/t/image/upload/v1700/tunetalk/posts/longo.gif');
   });
 
-  it('#xmas aparece com a árvore de Natal e deixa o like natalino', () => {
+  it('#xmas aparece com a Mamãe Noel e deixa o like natalino', () => {
     renderWithProviders(<PostCard post={{ ...musicPost, texto: 'natal no tunetalk vai salvar o ano #xmas' }} />);
     const tag = screen.getByRole('link', { name: '#xmas' });
     expect(tag).toHaveAttribute('href', '/tag/xmas');
-    expect(tag).toHaveTextContent('#xmas🎄');
+    expect(tag).toHaveTextContent('#xmas🤶');
     expect(screen.getByRole('button', { name: 'Curtir' })).toHaveClass('like-button--natal');
   });
 

@@ -3,8 +3,8 @@ import { hashflag, temaDoTexto } from './hashflags.js';
 
 describe('hashflags', () => {
   it('#xmas (e #natal) têm emoji e tema de Natal, sem diferenciar maiúsculas', () => {
-    expect(hashflag('xmas')).toEqual({ emoji: '🎄', tema: 'natal' });
-    expect(hashflag('XMAS')).toEqual({ emoji: '🎄', tema: 'natal' });
+    expect(hashflag('xmas')).toEqual({ emoji: '🤶', tema: 'natal' });
+    expect(hashflag('XMAS')).toEqual({ emoji: '🤶', tema: 'natal' });
     expect(hashflag('natal')?.tema).toBe('natal');
     expect(hashflag('rock')).toBeNull();
   });
