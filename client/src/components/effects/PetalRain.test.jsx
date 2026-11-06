@@ -1,6 +1,7 @@
 import { describe, it, expect, vi, afterEach } from 'vitest';
 import { act, render } from '@testing-library/react';
-import { PetalRain, makePetals } from './PetalRain.jsx';
+import { PetalRain, ProfileEffect, makePetals } from './PetalRain.jsx';
+import { montarPauta } from './StaffSweep.jsx';
 import { profileEffectFor } from './profileEffects.js';
 
 describe('makePetals', () => {
@@ -35,11 +36,18 @@ describe('PetalRain', () => {
     expect(camada.querySelectorAll('.petal')).toHaveLength(12);
   });
 
-  it('com outra forma, cai o caractere (nota, estrela, coração) na cor da paleta', () => {
-    const { getByTestId } = render(<PetalRain count={4} tipo="notas" colors={['#123456']} />);
+  it('estrelas: cai o caractere na cor da paleta', () => {
+    const { getByTestId } = render(<PetalRain count={3} tipo="estrelas" colors={['#123456']} />);
     const glifos = getByTestId('petalas').querySelectorAll('.petal__body--glifo');
-    expect([...glifos].map((g) => g.textContent)).toEqual(['\u266A', '\u266B', '\u266A', '\u266B']);
+    expect([...glifos].map((g) => g.textContent)).toEqual(['\u2605', '\u2605', '\u2605']);
     expect(glifos[0].style.getPropertyValue('--petal-color')).toBe('#123456');
+  });
+
+
+  it('CD holográfico: o disco leva as cores da paleta no arco-íris', () => {
+    const { getByTestId } = render(<PetalRain count={2} tipo="cd" colors={['#abcdef']} />);
+    const cd = getByTestId('petalas').querySelector('.cd-holo');
+    expect(cd.style.getPropertyValue('--cd-arco')).toContain('#abcdef');
   });
 
   it('cai uma vez e some da página quando as pétalas terminam', () => {
@@ -58,5 +66,31 @@ describe('profileEffectFor', () => {
     expect(profileEffectFor('Sweetener')).toBe('petalas');
     expect(profileEffectFor('bia')).toBeNull();
     expect(profileEffectFor(null)).toBeNull();
+  });
+});
+
+describe('notas: uma pauta só atravessando a tela', () => {
+  afterEach(() => vi.useRealTimers());
+
+  it('as cinco linhas afinam do começo ao fim, e as notas diminuem junto', () => {
+    const { segmentos, notas } = montarPauta(390, 844);
+    const linha0 = segmentos.filter((s) => s.linha === 0);
+    expect(linha0[0].largura).toBeGreaterThan(linha0.at(-1).largura * 5);
+    expect(new Set(segmentos.map((s) => s.linha))).toEqual(new Set([0, 1, 2, 3, 4]));
+    expect(notas[0].escala).toBeGreaterThan(notas.at(-1).escala * 3);
+  });
+
+  it('desenha com as cores da paleta, se desenha aos poucos e some da página no fim', () => {
+    vi.useFakeTimers();
+    const { getByTestId, queryByTestId } = render(<ProfileEffect efeito={{ tipo: 'notas', paleta: 'sol' }} />);
+    const camada = getByTestId('petalas');
+    expect(camada).toHaveAttribute('data-tipo', 'notas');
+    const linhas = camada.querySelectorAll('.staff-sweep__linha');
+    expect(linhas[0].getAttribute('stroke')).toBe('#ffb347');
+    expect(parseFloat(linhas[linhas.length - 1].style.animationDelay)).toBeGreaterThan(2);
+    expect(camada.querySelectorAll('.staff-sweep__nota').length).toBe(8);
+
+    act(() => vi.advanceTimersByTime(6000));
+    expect(queryByTestId('petalas')).toBeNull();
   });
 });

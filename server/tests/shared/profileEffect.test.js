@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest';
-import { EFEITO_PADRAO, EFEITO_PALETAS, efeitoVisivel, validarEfeito } from '../../../shared/profileEffect.js';
+import { EFEITO_PADRAO, EFEITO_PALETAS, efeitoVisivel, lerEfeito, validarEfeito } from '../../../shared/profileEffect.js';
 
 describe('validarEfeito', () => {
   it('aceita forma e paleta da lista e descarta o resto', () => {
@@ -7,7 +7,7 @@ describe('validarEfeito', () => {
   });
 
   it('recusa pétalas (exclusivas da sweetener), forma ou paleta desconhecida, null e o que não é objeto', () => {
-    for (const valor of [{ tipo: 'x', paleta: 'lilas' }, { tipo: 'notas', paleta: 'toString' }, null, [], 'petalas', { tipo: 'petalas', paleta: 'lilas' }, undefined]) {
+    for (const valor of [{ tipo: 'x', paleta: 'lilas' }, { tipo: 'notas', paleta: 'toString' }, null, [], 'petalas', { tipo: 'petalas', paleta: 'lilas' }, { tipo: 'coracoes', paleta: 'sol' }, undefined]) {
       expect(validarEfeito(valor).erro).toBeTruthy();
     }
   });
@@ -34,5 +34,17 @@ describe('efeitoVisivel', () => {
   it('escolha ausente ou estragada no banco cai no padrão', () => {
     expect(efeitoVisivel({ efeitoDesde: desde, efeitoPerfil: null })).toEqual(EFEITO_PADRAO);
     expect(efeitoVisivel({ efeitoDesde: desde, efeitoPerfil: { tipo: 'lixo' } })).toEqual(EFEITO_PADRAO);
+  });
+});
+
+describe('lerEfeito', () => {
+  it('quem tinha escolhido corações (que saiu) volta para as notas, mantendo a paleta', () => {
+    expect(lerEfeito({ tipo: 'coracoes', paleta: 'sol' })).toEqual({ tipo: 'notas', paleta: 'sol' });
+  });
+
+  it('CD holográfico é uma forma válida; lixo vira o padrão', () => {
+    expect(lerEfeito({ tipo: 'cd', paleta: 'noite' })).toEqual({ tipo: 'cd', paleta: 'noite' });
+    expect(lerEfeito(null)).toEqual(EFEITO_PADRAO);
+    expect(lerEfeito({ tipo: 'x', paleta: 'y' })).toEqual(EFEITO_PADRAO);
   });
 });

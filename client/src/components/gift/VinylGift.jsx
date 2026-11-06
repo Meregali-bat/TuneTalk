@@ -52,7 +52,7 @@ export function VinylGift({ versao = 0 }) {
           </span>
           <p>
             Obrigado por fazer o TuneTalk acontecer. De presente, seu perfil ganhou um <strong>efeito especial</strong>:
-            notas musicais, estrelas ou corações caindo na tela de quem abrir o seu perfil.
+            notas musicais, estrelas ou CDs holográficos caindo na tela de quem abrir o seu perfil.
           </p>
           <p>
             Para escolher a forma e as cores, vá em <strong>Editar perfil</strong> e procure &quot;Efeito do perfil&quot;.

@@ -132,7 +132,7 @@ describe('rotas /api/users', () => {
 
     it('repassa a escolha do efeito do perfil', async () => {
       deps.userService.updateProfile.mockResolvedValue({ id: 1 });
-      const efeitoPerfil = { tipo: 'coracoes', paleta: 'sol' };
+      const efeitoPerfil = { tipo: 'cd', paleta: 'sol' };
       await agent.put('/api/users/me').send({ nome: 'ana', efeitoPerfil, mostrarEfeito: true }).expect(200);
       expect(deps.userService.updateProfile.mock.calls[0][1]).toMatchObject({ efeitoPerfil, mostrarEfeito: true });
     });
