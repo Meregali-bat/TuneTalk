@@ -28,6 +28,16 @@ export function createUserRoutes({ userService, postService, restricaoService, s
     res.json(req.session.user);
   }));
 
+  // Presente dos 100 posts (o disco de vinil do feed).
+  router.get('/me/presente', asyncRoute(async (req, res) => {
+    res.json(await userService.presente(currentUserId(req)));
+  }));
+
+  router.post('/me/presente', asyncRoute(async (req, res) => {
+    await userService.abrirPresente(currentUserId(req));
+    res.status(204).end();
+  }));
+
   router.put('/me/favoritos', asyncRoute(async (req, res) => {
     res.json(await userService.updateFavorites(currentUserId(req), req.body));
   }));
@@ -41,10 +51,12 @@ export function createUserRoutes({ userService, postService, restricaoService, s
   });
 
   router.put('/me', asyncRoute(async (req, res) => {
-    const { nome, nomeExibicao, bio, fotoPerfil, bannerUrl, mostrarSeloFundador } = req.body;
+    const { nome, nomeExibicao, bio, fotoPerfil, bannerUrl, mostrarSeloFundador, efeitoPerfil, mostrarEfeito } = req.body;
     if (fotoPerfil !== undefined && !uploader.isOwnUrl(fotoPerfil)) throw badRequest('Foto inválida. Envie a imagem de novo.');
     if (bannerUrl !== undefined && !uploader.isOwnUrl(bannerUrl, 'banner')) throw badRequest('Capa inválida. Envie a imagem de novo.');
-    const usuario = await userService.updateProfile(currentUserId(req), { nome, bio, nomeExibicao, fotoPerfil, bannerUrl, mostrarSeloFundador });
+    const usuario = await userService.updateProfile(currentUserId(req), {
+      nome, bio, nomeExibicao, fotoPerfil, bannerUrl, mostrarSeloFundador, efeitoPerfil, mostrarEfeito,
+    });
     if (usuario.nome) req.session.user = { ...req.session.user, nome: usuario.nome };
     res.json(usuario);
   }));

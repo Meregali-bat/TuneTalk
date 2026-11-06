@@ -3,6 +3,7 @@ import { SEM_RESTRICOES, haBloqueio } from './restricaoService.js';
 import { USERNAME_MESSAGES, checkUsername } from '../../../shared/usernameRules.js';
 import { PASSWORD_RULES_MESSAGE, isPasswordValid } from '../../../shared/passwordRules.js';
 import { emailValido, limparEmail } from '../../../shared/emailRules.js';
+import { validarEfeito } from '../../../shared/profileEffect.js';
 import { capaDoDeezer, favoritosVazios, lerFavoritos, validarFavoritos } from '../../../shared/favorites.js';
 
 export const BIO_MAX = 255;
@@ -44,7 +45,11 @@ export function createUserService({
 
   return {
     async getProfile(profileId, viewerId) {
-      const usuario = await findOrFail(profileId);
+      let usuario = await findOrFail(profileId);
+      // Quem já passou dos 100 posts antes de existir a recompensa ganha ao abrir o próprio perfil.
+      if (profileId === viewerId && !usuario.efeitoDesde && await postService.verificarMarco?.(profileId)) {
+        usuario = await findOrFail(profileId);
+      }
       const relacao = profileId === viewerId
         ? { bloqueado: false, meBloqueou: false, silenciado: false }
         : await restricoes.relacao(viewerId, profileId);
@@ -90,6 +95,22 @@ export function createUserService({
       };
     },
 
+    // Disco de vinil no feed: aparece para quem ganhou o efeito dos 100 posts e ainda não abriu.
+    // Também é onde quem já tinha passado de 100 antes da recompensa existir ganha o efeito.
+    async presente(usuarioId) {
+      let presente = await users.getGift(usuarioId);
+      if (presente && !presente.efeitoDesde && await postService.verificarMarco?.(usuarioId)) {
+        presente = await users.getGift(usuarioId);
+      }
+      return { pendente: Boolean(presente?.efeitoDesde) && !presente.presenteAbertoEm };
+    },
+
+    async abrirPresente(usuarioId) {
+      const presente = await users.getGift(usuarioId);
+      if (!presente?.efeitoDesde) throw forbidden('O presente é liberado ao chegar a 100 posts.');
+      await users.openGift(usuarioId);
+    },
+
     async setUsername(usuarioId, nome) {
       const clean = (nome ?? '').trim();
       await assertUsernameAvailable(clean, usuarioId);
@@ -97,7 +118,9 @@ export function createUserService({
       return { id: usuarioId, nome: clean };
     },
 
-    async updateProfile(usuarioId, { nome, nomeExibicao, bio, fotoPerfil, bannerUrl, mostrarSeloFundador }) {
+    async updateProfile(usuarioId, {
+      nome, nomeExibicao, bio, fotoPerfil, bannerUrl, mostrarSeloFundador, efeitoPerfil, mostrarEfeito,
+    }) {
       const atual = await findOrFail(usuarioId);
       const changes = {
         nome: nome?.trim() || atual.nome,
@@ -107,6 +130,15 @@ export function createUserService({
         bannerUrl: bannerUrl || atual.bannerUrl,
         mostrarSeloFundador: typeof mostrarSeloFundador === 'boolean' ? mostrarSeloFundador : atual.mostrarSeloFundador,
       };
+      if (efeitoPerfil !== undefined || mostrarEfeito !== undefined) {
+        if (!atual.efeitoDesde) throw forbidden('O efeito do perfil é liberado ao chegar a 100 posts.');
+        if (efeitoPerfil !== undefined) {
+          const { efeito, erro } = validarEfeito(efeitoPerfil);
+          if (erro) throw badRequest(erro);
+          changes.efeitoPerfil = efeito;
+        }
+        if (typeof mostrarEfeito === 'boolean') changes.mostrarEfeito = mostrarEfeito;
+      }
       if ((changes.bio ?? '').length > BIO_MAX) throw badRequest(`A bio pode ter no máximo ${BIO_MAX} caracteres.`);
       if ((changes.nomeExibicao ?? '').length > NOME_EXIBICAO_MAX) {
         throw badRequest(`O nome pode ter no máximo ${NOME_EXIBICAO_MAX} caracteres.`);

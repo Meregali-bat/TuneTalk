@@ -10,7 +10,7 @@ import { notificationsApi, postsApi, usersApi } from './api/index.js';
 vi.mock('./api/index.js', () => ({
   notificationsApi: { unreadCount: vi.fn(), list: vi.fn(), readAll: vi.fn() },
   postsApi: { feed: vi.fn(), get: vi.fn() },
-  usersApi: { profile: vi.fn() },
+  usersApi: { profile: vi.fn(), presente: vi.fn().mockResolvedValue({ pendente: false }), abrirPresente: vi.fn() },
   musicApi: { search: vi.fn() },
 }));
 

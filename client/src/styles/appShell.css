@@ -1003,6 +1003,103 @@
   }
 }
 
+/* --- Presente dos 100 posts: disco de vinil flutuando no feed --- */
+.vinyl-gift {
+  position: fixed;
+  left: calc(var(--gutter-left) + .25rem);
+  bottom: calc(1.25rem + env(safe-area-inset-bottom, 0px));
+  z-index: 1030;
+  padding: 0;
+  border: 0;
+  background: none;
+  cursor: pointer;
+  -webkit-tap-highlight-color: transparent;
+  animation: vinyl-float 3.2s ease-in-out infinite;
+
+  &:active {
+    transform: scale(.94);
+  }
+}
+
+.vinyl-gift__disc {
+  display: grid;
+  place-items: center;
+  width: 3.75rem;
+  height: 3.75rem;
+  border-radius: 50%;
+  background:
+    radial-gradient(circle at 32% 28%, rgba(255, 255, 255, .28), transparent 38%),
+    repeating-radial-gradient(circle, #111 0 2px, #1d1d1d 2px 4px);
+  box-shadow: 0 0 0 2px rgba(63, 196, 99, .55), 0 14px 30px -10px rgba(63, 196, 99, .8);
+  animation: vinyl-spin 4s linear infinite;
+}
+
+.vinyl-gift__label {
+  width: 36%;
+  height: 36%;
+  border-radius: 50%;
+  background: radial-gradient(circle, var(--background) 0 12%, var(--destaque-claro) 13% 100%);
+}
+
+.vinyl-gift__message {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 1rem;
+  padding: .35rem 1rem .75rem;
+  text-align: center;
+
+  p {
+    max-width: 32ch;
+    margin: 0;
+    color: var(--texto-suave);
+    line-height: 1.55;
+  }
+
+  .vinyl-gift__disc {
+    margin-bottom: .35rem;
+  }
+
+  .composer-submit {
+    margin-top: .4rem;
+  }
+
+  strong {
+    color: var(--texto);
+  }
+
+  .composer-submit {
+    padding: .7rem 1.4rem;
+  }
+}
+
+.vinyl-gift__disc--grande {
+  width: 5rem;
+  height: 5rem;
+}
+
+/* O modal comum limita a altura a 30rem (listas longas); o presente cabe inteiro, sem rolagem,
+   a não ser numa tela baixa demais. */
+.layout-app .modal-dialog.app-modal--dialog .modal-body:has(> .vinyl-gift__message) {
+  max-height: calc(100dvh - 7rem);
+}
+
+@keyframes vinyl-float {
+  0%, 100% { translate: 0 0; }
+  50% { translate: 0 -8px; }
+}
+
+@keyframes vinyl-spin {
+  to { rotate: 360deg; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .vinyl-gift,
+  .vinyl-gift__disc {
+    animation: none;
+  }
+}
+
 /* --- Modais (listas de seguidores) e painel de notificações --- */
 .layout-app {
   .modal-backdrop.show {
@@ -2367,6 +2464,18 @@ button.track-row:hover {
   animation: petal-sway var(--sway-dur) cubic-bezier(0.77, 0, 0.175, 1) var(--delay) infinite alternate;
 }
 
+/* Notas, estrelas e corações: o próprio caractere, na cor da paleta. */
+.petal__body--glifo {
+  width: auto;
+  height: auto;
+  border-radius: 0;
+  background: none;
+  box-shadow: none;
+  color: var(--petal-color);
+  line-height: 1;
+  text-shadow: 0 2px 6px rgba(0, 0, 0, .25);
+}
+
 @keyframes petal-fall {
   0% { transform: translate3d(0, -8vh, 0); opacity: 0; }
   6% { opacity: 1; }
@@ -2874,6 +2983,77 @@ button.track-row:hover {
     height: 1.15rem;
     accent-color: var(--destaque);
   }
+}
+
+/* Efeito do perfil (recompensa dos 100 posts) */
+.edit-profile__effect {
+  display: flex;
+  flex-direction: column;
+  gap: .65rem;
+  margin: 0;
+  padding: .85rem 1rem 1rem;
+  border: 1px solid var(--linhas);
+  border-radius: 14px;
+
+  legend {
+    float: left;
+    width: 100%;
+    margin: 0;
+    font-size: .95rem;
+    font-weight: 700;
+
+    i {
+      color: var(--destaque-claro);
+    }
+  }
+
+  .edit-profile__toggle {
+    padding: 0;
+    border: 0;
+  }
+}
+
+.edit-profile__hint {
+  margin: 0;
+  color: var(--texto-suave);
+  font-size: .85rem;
+}
+
+.effect-options {
+  display: flex;
+  flex-wrap: wrap;
+  gap: .45rem;
+}
+
+.effect-chip {
+  display: inline-flex;
+  align-items: center;
+  gap: .4rem;
+  min-height: 2.25rem;
+  padding: .35rem .8rem;
+  border: 1px solid var(--linhas);
+  border-radius: 999px;
+  background: var(--superficie-2);
+  color: var(--texto-suave);
+  font-size: .85rem;
+  cursor: pointer;
+  -webkit-tap-highlight-color: transparent;
+
+  &.is-active {
+    border-color: var(--destaque);
+    color: var(--texto);
+  }
+
+  &:focus-within {
+    outline: 2px solid var(--destaque-claro);
+    outline-offset: 2px;
+  }
+}
+
+.effect-swatch {
+  width: .95rem;
+  height: .95rem;
+  border-radius: 50%;
 }
 
 /* Notificações: logo do TuneTalk nos avisos do sistema e cores dos tipos novos */

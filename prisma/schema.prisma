@@ -42,6 +42,13 @@ model Usuario {
   admin               Boolean   @default(false)
   // Post que aparece primeiro no perfil. Se o post for apagado, volta a ficar vazio.
   postFixadoId        Int?      @unique @map("post_fixado_id")
+  // Recompensa dos 100 posts: quando o efeito do perfil foi desbloqueado (fica para sempre,
+  // mesmo que a pessoa apague posts), o efeito escolhido ({ tipo, paleta }) e se ele aparece.
+  efeitoDesde         DateTime? @map("efeito_desde")
+  efeitoPerfil        Json?     @map("efeito_perfil")
+  mostrarEfeito       Boolean   @default(true) @map("mostrar_efeito")
+  // Quando a pessoa tocou no disco de vinil do feed e leu como usar o presente dos 100 posts.
+  presenteAbertoEm    DateTime? @map("presente_aberto_em")
 
   posts                 Post[]
   curtidas              Curtida[]

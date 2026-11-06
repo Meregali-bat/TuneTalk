@@ -6,9 +6,11 @@ import { capaDoDeezer } from '../../../shared/favorites.js';
 import { validarEnquete } from '../../../shared/poll.js';
 import { SEM_RESTRICOES, haBloqueio } from './restricaoService.js';
 import { chaveObra } from '../../../shared/obra.js';
+import { EFEITO_PADRAO } from '../../../shared/profileEffect.js';
 
 const TEXTO_MAX = 500;
-// Ao chegar a esse número de posts (sem contar comentários), o TuneTalk dá os parabéns.
+// Ao chegar a esse número de posts (sem contar comentários), o TuneTalk dá os parabéns
+// e desbloqueia o efeito do perfil.
 export const MARCO_POSTS = 100;
 const MAX_MARCACOES = 10;
 
@@ -123,17 +125,20 @@ export function createPostService({
     await notifications.create({ destinatarioId: post.autor.id, autorId, tipo, conteudo, postId: post.id });
   };
 
-  // Parabéns no 100º post. Só uma vez: apagar e postar de novo não repete o aviso.
-  const celebrarMarco = async (autorId, postId) => {
-    if ((await posts.countByAuthor(autorId)) !== MARCO_POSTS) return;
-    if (await notifications.exists(autorId, 'marco_posts')) return;
+  // 100 posts ou mais: desbloqueia o efeito do perfil e dá os parabéns. Uma vez só (o banco guarda
+  // quando foi desbloqueado), e vale para quem já tinha passado de 100 antes de existir a recompensa.
+  // Sem postId: a notificação leva ao perfil. O presente em si (o efeito) é explicado pelo disco
+  // de vinil que aparece no feed.
+  const celebrarMarco = async (autorId) => {
+    if ((await posts.countByAuthor(autorId)) < MARCO_POSTS) return false;
+    if (!(await users.unlockEffect(autorId, EFEITO_PADRAO))) return false;
     await notifications.create({
       destinatarioId: autorId,
       autorId,
       tipo: 'marco_posts',
-      conteudo: `Parabéns pelo seu ${MARCO_POSTS}º post! Obrigado por fazer o TuneTalk acontecer.`,
-      postId,
+      conteudo: `Parabéns pelos ${MARCO_POSTS} posts!`,
     });
+    return true;
   };
 
   // Quem foi marcado com @ recebe aviso; o autor do post respondido já recebe o de comentário.
@@ -212,6 +217,11 @@ export function createPostService({
     },
 
     // O post fixado vem primeiro; os outros seguem do mais novo para o mais antigo.
+    // Para quem já passou dos 100 posts sem ganhar o efeito: confere ao abrir o próprio perfil.
+    verificarMarco(autorId) {
+      return celebrarMarco(autorId);
+    },
+
     async byAuthor(autorId, viewerId) {
       const list = await posts.listByAuthor(autorId);
       return markLiked([...list.filter((p) => p.fixado), ...list.filter((p) => !p.fixado)], viewerId);
@@ -286,7 +296,7 @@ export function createPostService({
       const id = await posts.create({ ...data, ...(pai && { parentId }), ...(enquete && { enquete }), autorId, data: now() });
       if (pai) await notifyAuthor(pai, autorId, 'comment', 'comentou no seu post');
       await notifyMentions(data.texto, { id, autorId, pai });
-      if (!pai) await celebrarMarco(autorId, id);
+      if (!pai) await celebrarMarco(autorId);
       // Avaliou um disco que estava no "Quero ouvir": já ouviu, sai da lista.
       if (hasMusic && !pai && queroOuvir) {
         const tipo = data.postType === 'album' ? 'album' : 'musica';

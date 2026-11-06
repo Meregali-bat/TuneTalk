@@ -93,6 +93,9 @@ export const usersApi = {
   sugestoes: () => request('/users/sugestoes'),
   // { bloqueados, silenciados }
   restricoes: () => request('/users/me/restricoes'),
+  // Presente dos 100 posts: { pendente } e marcar como aberto.
+  presente: () => request('/users/me/presente'),
+  abrirPresente: () => request('/users/me/presente', { method: 'POST' }),
 };
 
 // Avisos no celular (push da web). chave() é null quando o servidor está sem as chaves VAPID.

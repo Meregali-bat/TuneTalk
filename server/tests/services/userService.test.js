@@ -98,6 +98,81 @@ describe('userService', () => {
     });
   });
 
+  describe('efeito do perfil (recompensa dos 100 posts)', () => {
+    it('ao abrir o próprio perfil, quem passou dos 100 sem o efeito ganha na hora', async () => {
+      const comEfeito = { ...ana, efeitoDesde: '2026-11-06T00:00:00.000Z', efeitoPerfil: { tipo: 'notas', paleta: 'oceano' } };
+      users.findById.mockResolvedValueOnce(ana).mockResolvedValueOnce(comEfeito);
+      postService.verificarMarco = vi.fn().mockResolvedValue(true);
+      const profile = await service.getProfile(1, 1);
+      expect(postService.verificarMarco).toHaveBeenCalledWith(1);
+      expect(profile.usuario).toEqual(comEfeito);
+    });
+
+    it('no perfil dos outros, ou se já tem o efeito, nem confere', async () => {
+      postService.verificarMarco = vi.fn();
+      await service.getProfile(2, 1);
+      users.findById.mockResolvedValueOnce({ ...ana, efeitoDesde: '2026-11-06T00:00:00.000Z' });
+      await service.getProfile(1, 1);
+      expect(postService.verificarMarco).not.toHaveBeenCalled();
+    });
+
+    it('quem desbloqueou escolhe forma, paleta e se mostra', async () => {
+      users.findById.mockResolvedValue({ ...ana, efeitoDesde: '2026-11-06T00:00:00.000Z' });
+      const usuario = await service.updateProfile(1, { efeitoPerfil: { tipo: 'notas', paleta: 'oceano', lixo: 1 }, mostrarEfeito: false });
+      expect(users.update).toHaveBeenCalledWith(1, expect.objectContaining({
+        efeitoPerfil: { tipo: 'notas', paleta: 'oceano' }, mostrarEfeito: false,
+      }));
+      expect(usuario.efeitoPerfil).toEqual({ tipo: 'notas', paleta: 'oceano' });
+    });
+
+    it('forma ou paleta fora da lista: 400', async () => {
+      users.findById.mockResolvedValue({ ...ana, efeitoDesde: '2026-11-06T00:00:00.000Z' });
+      for (const efeitoPerfil of [{ tipo: 'fogos', paleta: 'lilas' }, { tipo: 'notas', paleta: 'arco-iris' }, null, 'petalas']) {
+        await expect(service.updateProfile(1, { efeitoPerfil })).rejects.toMatchObject({ status: 400 });
+      }
+      expect(users.update).not.toHaveBeenCalled();
+    });
+
+    it('sem os 100 posts, não dá para mexer no efeito (403); o resto do perfil salva normal', async () => {
+      await expect(service.updateProfile(1, { efeitoPerfil: { tipo: 'notas', paleta: 'oceano' } })).rejects.toMatchObject({ status: 403 });
+      await expect(service.updateProfile(1, { mostrarEfeito: true })).rejects.toMatchObject({ status: 403 });
+      await service.updateProfile(1, { bio: 'nova' });
+      expect(users.update).toHaveBeenCalledWith(1, expect.not.objectContaining({ efeitoPerfil: expect.anything() }));
+    });
+  });
+
+  describe('presente dos 100 posts (disco de vinil do feed)', () => {
+    const desde = '2026-11-06T00:00:00.000Z';
+
+    it('pendente enquanto o efeito foi ganho e o disco não foi aberto', async () => {
+      users.getGift = vi.fn().mockResolvedValue({ efeitoDesde: desde, presenteAbertoEm: null });
+      expect(await service.presente(1)).toEqual({ pendente: true });
+      users.getGift.mockResolvedValue({ efeitoDesde: desde, presenteAbertoEm: desde });
+      expect(await service.presente(1)).toEqual({ pendente: false });
+      users.getGift.mockResolvedValue({ efeitoDesde: null, presenteAbertoEm: null });
+      postService.verificarMarco = vi.fn().mockResolvedValue(false);
+      expect(await service.presente(1)).toEqual({ pendente: false });
+    });
+
+    it('quem já tinha passado de 100 ganha ao abrir o feed, e o disco já aparece', async () => {
+      users.getGift = vi.fn()
+        .mockResolvedValueOnce({ efeitoDesde: null, presenteAbertoEm: null })
+        .mockResolvedValueOnce({ efeitoDesde: desde, presenteAbertoEm: null });
+      postService.verificarMarco = vi.fn().mockResolvedValue(true);
+      expect(await service.presente(1)).toEqual({ pendente: true });
+      expect(postService.verificarMarco).toHaveBeenCalledWith(1);
+    });
+
+    it('abrir marca o presente; sem os 100 posts, 403', async () => {
+      users.openGift = vi.fn();
+      users.getGift = vi.fn().mockResolvedValue({ efeitoDesde: desde, presenteAbertoEm: null });
+      await service.abrirPresente(1);
+      expect(users.openGift).toHaveBeenCalledWith(1);
+      users.getGift.mockResolvedValue({ efeitoDesde: null, presenteAbertoEm: null });
+      await expect(service.abrirPresente(1)).rejects.toMatchObject({ status: 403 });
+    });
+  });
+
   describe('updateFavorites', () => {
     const capa = 'https://cdn-images.dzcdn.net/images/artist/a/250x250.jpg';
 

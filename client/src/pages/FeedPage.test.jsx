@@ -10,7 +10,7 @@ import { makeAuth, renderWithProviders } from '../test/render.jsx';
 vi.mock('../api/index.js', () => ({
   postsApi: { feed: vi.fn(), remove: vi.fn(), like: vi.fn(), unlike: vi.fn(), create: vi.fn() },
   musicApi: { search: vi.fn() },
-  usersApi: { sugestoes: vi.fn(), follow: vi.fn(), unfollow: vi.fn() },
+  usersApi: { sugestoes: vi.fn(), follow: vi.fn(), unfollow: vi.fn(), presente: vi.fn(), abrirPresente: vi.fn() },
 }));
 
 const post = (id, autorId = 2) => ({
@@ -36,6 +36,37 @@ describe('FeedPage', () => {
     // mockReset também descarta respostas "once" que um teste anterior não usou.
     postsApi.feed.mockReset();
     postsApi.feed.mockResolvedValue([post(1), post(2, 1)]);
+    usersApi.presente.mockResolvedValue({ pendente: false });
+    usersApi.abrirPresente.mockResolvedValue();
+  });
+
+  describe('presente dos 100 posts (disco de vinil)', () => {
+    it('sem presente pendente, nada de disco', async () => {
+      renderWithProviders(<FeedPage feed="foryou" />);
+      await screen.findByText('post 1');
+      expect(screen.queryByRole('button', { name: 'Abrir presente dos 100 posts' })).toBeNull();
+    });
+
+    it('tocar no disco abre os parabéns com o como usar, marca como aberto e o disco some', async () => {
+      usersApi.presente.mockResolvedValue({ pendente: true });
+      renderWithProviders(<FeedPage feed="foryou" />);
+      await userEvent.click(await screen.findByRole('button', { name: 'Abrir presente dos 100 posts' }));
+
+      const dialog = screen.getByRole('dialog', { name: 'Parabéns pelos 100 posts!' });
+      expect(dialog).toHaveTextContent('Editar perfil');
+      expect(dialog).toHaveTextContent('Efeito do perfil');
+      expect(usersApi.abrirPresente).toHaveBeenCalledTimes(1);
+      expect(screen.queryByRole('button', { name: 'Abrir presente dos 100 posts' })).toBeNull();
+    });
+
+    it('"Personalizar meu perfil" leva ao próprio perfil', async () => {
+      usersApi.presente.mockResolvedValue({ pendente: true });
+      renderWithProviders(<FeedPage feed="foryou" />);
+      await userEvent.click(await screen.findByRole('button', { name: 'Abrir presente dos 100 posts' }));
+      await userEvent.click(screen.getByRole('button', { name: 'Personalizar meu perfil' }));
+      expect(screen.getByTestId('location')).toHaveTextContent('/perfil/1');
+      expect(screen.queryByRole('dialog')).toBeNull();
+    });
   });
 
   it('carrega o feed "foryou" e destaca a aba', async () => {

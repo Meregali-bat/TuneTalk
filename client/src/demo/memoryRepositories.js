@@ -6,7 +6,10 @@ import { FEED_PAGINA } from '../../../shared/feed.js';
 
 const publicUser = ({
   id, nome, nomeExibicao = null, fotoPerfil, bannerUrl = null, bio, fundadorDesde = null, mostrarSeloFundador = true,
-}) => ({ id, nome, nomeExibicao, fotoPerfil, bannerUrl, bio, fundadorDesde, mostrarSeloFundador });
+  efeitoDesde = null, efeitoPerfil = null, mostrarEfeito = true,
+}) => ({
+  id, nome, nomeExibicao, fotoPerfil, bannerUrl, bio, fundadorDesde, mostrarSeloFundador, efeitoDesde, efeitoPerfil, mostrarEfeito,
+});
 
 export function createMemoryRepositories(state, onChange) {
   const nextId = (table) => {
@@ -85,6 +88,21 @@ export function createMemoryRepositories(state, onChange) {
     },
     async activateFounder(id) {
       userById(id).fundadorDesde = new Date().toISOString();
+      changed();
+    },
+    async unlockEffect(id, efeito) {
+      const usuario = userById(id);
+      if (usuario.efeitoDesde) return false;
+      Object.assign(usuario, { efeitoDesde: new Date().toISOString(), efeitoPerfil: efeito });
+      return changed(true);
+    },
+    async getGift(id) {
+      const usuario = userById(id);
+      return usuario ? { efeitoDesde: usuario.efeitoDesde ?? null, presenteAbertoEm: usuario.presenteAbertoEm ?? null } : null;
+    },
+    async openGift(id) {
+      const usuario = userById(id);
+      if (!usuario.presenteAbertoEm) usuario.presenteAbertoEm = new Date().toISOString();
       changed();
     },
     async setPinnedPost(id, postId) {

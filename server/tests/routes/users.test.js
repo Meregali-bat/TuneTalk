@@ -86,6 +86,14 @@ describe('rotas /api/users', () => {
     expect(res.body).toEqual({ uploadUrl: 'https://api.cloudinary.com/x', fields: { signature: 's' } });
   });
 
+  it('GET e POST /api/users/me/presente consultam e abrem o presente dos 100 posts', async () => {
+    deps.userService.presente = vi.fn().mockResolvedValue({ pendente: true });
+    deps.userService.abrirPresente = vi.fn();
+    await agent.get('/api/users/me/presente').expect(200, { pendente: true });
+    await agent.post('/api/users/me/presente').expect(204);
+    expect(deps.userService.abrirPresente).toHaveBeenCalledWith(1);
+  });
+
   describe('PUT /api/users/me', () => {
     it('atualiza nome e bio sem foto nova', async () => {
       deps.userService.updateProfile.mockResolvedValue({ id: 1, nome: 'Novo' });
@@ -120,6 +128,13 @@ describe('rotas /api/users', () => {
       deps.userService.updateProfile.mockResolvedValue({ id: 1 });
       await agent.put('/api/users/me').send({ nome: 'ana', mostrarSeloFundador: false }).expect(200);
       expect(deps.userService.updateProfile.mock.calls[0][1].mostrarSeloFundador).toBe(false);
+    });
+
+    it('repassa a escolha do efeito do perfil', async () => {
+      deps.userService.updateProfile.mockResolvedValue({ id: 1 });
+      const efeitoPerfil = { tipo: 'coracoes', paleta: 'sol' };
+      await agent.put('/api/users/me').send({ nome: 'ana', efeitoPerfil, mostrarEfeito: true }).expect(200);
+      expect(deps.userService.updateProfile.mock.calls[0][1]).toMatchObject({ efeitoPerfil, mostrarEfeito: true });
     });
 
     it('recusa capa que não veio do nosso Cloudinary', async () => {
