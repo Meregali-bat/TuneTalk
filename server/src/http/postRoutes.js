@@ -39,6 +39,10 @@ export function createPostRoutes({ postService, uploader, limitador }) {
     res.json(await postService.get(req.params.id, currentUserId(req)));
   }));
 
+  router.get('/:id/remixes', asyncRoute(async (req, res) => {
+    res.json(await postService.remixes(req.params.id, currentUserId(req)));
+  }));
+
   router.delete('/:id', asyncRoute(async (req, res) => {
     await postService.remove(req.params.id, currentUserId(req));
     res.status(204).end();

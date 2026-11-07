@@ -109,16 +109,23 @@ export function createPostService({
 
   const ocultosPara = (viewerId) => restricoes.ocultosPara(viewerId);
 
-  // Citações levam o post citado junto. Apagado, ou de alguém que quem vê não vê (bloqueio ou
-  // silêncio): { indisponivel: true }.
+  // Citações (remixes) levam o post citado junto. Apagado, ou de alguém que quem vê não vê
+  // (bloqueio ou silêncio): { indisponivel: true }. Posts principais levam quantos remixes têm
+  // (sem contar os de quem quem vê não vê, igual à lista de remixes).
   async function comCitados(list, viewerId) {
     const ids = [...new Set(list.map((post) => post.citadoId).filter(Boolean))];
-    if (ids.length === 0) return list;
-    const [citados, ocultos] = await Promise.all([posts.findByIds(ids), ocultosPara(viewerId)]);
+    const principais = list.filter((post) => !post.parentId).map((post) => post.id);
+    if (ids.length === 0 && principais.length === 0) return list;
+    const ocultos = await ocultosPara(viewerId);
+    const [citados, remixes] = await Promise.all([
+      ids.length ? posts.findByIds(ids) : new Map(),
+      principais.length ? posts.contarRemixes(principais, { ocultos }) : new Map(),
+    ]);
     return list.map((post) => {
-      if (!post.citadoId) return post;
+      const comContagem = post.parentId ? post : { ...post, quantidadeRemixes: remixes.get(post.id) ?? 0 };
+      if (!post.citadoId) return comContagem;
       const citado = citados.get(post.citadoId);
-      return { ...post, citado: citado && !ocultos.includes(citado.autor.id) ? citado : { indisponivel: true } };
+      return { ...comContagem, citado: citado && !ocultos.includes(citado.autor.id) ? citado : { indisponivel: true } };
     });
   }
 
@@ -230,6 +237,14 @@ export function createPostService({
       if (!limpa) throw badRequest('Hashtag inválida.');
       const ocultos = await ocultosPara(viewerId);
       return markLiked(await posts.listByHashtag(limpa, { ocultos }), viewerId);
+    },
+
+    // Remixes de um post (citações dele), do mais novo para o mais antigo, sem os de quem quem vê não vê.
+    async remixes(postId, viewerId) {
+      const post = await findOrFail(postId);
+      if (await haBloqueio(restricoes, viewerId, post.autor.id)) throw notFound('Post não encontrado.');
+      const ocultos = await ocultosPara(viewerId);
+      return markLiked(await posts.listRemixes(postId, { ocultos }), viewerId);
     },
 
     // O post fixado vem primeiro; os outros seguem do mais novo para o mais antigo.

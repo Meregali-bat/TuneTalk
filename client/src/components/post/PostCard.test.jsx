@@ -298,7 +298,7 @@ describe('PostCard', () => {
     it('"Remixar post" abre o compositor com o post e, ao publicar, vai para a citação', async () => {
       postsApi.create.mockResolvedValue({ id: 77 });
       renderWithProviders(<PostCard post={musicPost} />);
-      await userEvent.click(screen.getByRole('button', { name: 'Remixar post' }));
+      await userEvent.click(screen.getByRole('button', { name: /^Remixar post/ }));
 
       const dialogo = screen.getByRole('dialog', { name: 'Remixar post' });
       expect(dialogo).toContainElement(screen.getByRole('group', { name: 'Post original de Bia' }));
@@ -309,9 +309,15 @@ describe('PostCard', () => {
       expect(await screen.findByTestId('location')).toHaveTextContent('/post/77');
     });
 
+    it('o botão de remix mostra quantos remixes o post tem, como comentários e curtidas', () => {
+      renderWithProviders(<PostCard post={{ ...musicPost, quantidadeRemixes: 3 }} />);
+      const botao = screen.getByRole('button', { name: 'Remixar post (3 remixes)' });
+      expect(botao).toHaveTextContent('3');
+    });
+
     it('comentário não tem o botão de citar', () => {
       renderWithProviders(<PostCard post={{ ...musicPost, parentId: 5 }} />);
-      expect(screen.queryByRole('button', { name: 'Remixar post' })).toBeNull();
+      expect(screen.queryByRole('button', { name: /^Remixar post/ })).toBeNull();
     });
   });
 });

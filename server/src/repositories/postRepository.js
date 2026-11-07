@@ -184,6 +184,22 @@ export function createPostRepository(prisma) {
       return row ? toPost(row) : null;
     },
 
+    // Remixes (posts que citam este), dos mais novos para os mais antigos.
+    listRemixes(citadoId, { limit = 100, ocultos } = {}) {
+      return findPosts({ where: { citadoId, ...semOcultos(ocultos) }, orderBy: FEED_ORDEM, take: limit });
+    },
+
+    // Quantos remixes cada post tem: Map id → quantidade (posts sem remix não aparecem).
+    async contarRemixes(ids, { ocultos } = {}) {
+      if (ids.length === 0) return new Map();
+      const grupos = await prisma.post.groupBy({
+        by: ['citadoId'],
+        where: { citadoId: { in: ids }, ...semOcultos(ocultos) },
+        _count: { _all: true },
+      });
+      return new Map(grupos.map((g) => [g.citadoId, g._count._all]));
+    },
+
     // Posts citados de uma lista: Map id → post (os apagados não vêm).
     async findByIds(ids) {
       if (ids.length === 0) return new Map();

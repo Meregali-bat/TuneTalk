@@ -135,6 +135,17 @@ export function PostPage() {
         onAutorOculto={() => navigate('/foryou')}
       />
 
+      {/* Remixes (quem citou este post): abre a lista. */}
+      {post.quantidadeRemixes > 0 && (
+        <Link to={`/post/${post.id}/remixes`} className="thread-remixes">
+          <i className="bi bi-shuffle" aria-hidden="true" />
+          <span>
+            <strong>{post.quantidadeRemixes}</strong> {post.quantidadeRemixes === 1 ? 'remix' : 'remixes'}
+          </span>
+          <i className="bi bi-chevron-right thread-remixes__seta" aria-hidden="true" />
+        </Link>
+      )}
+
       <button type="button" className="reply-prompt" aria-label="Comentar" onClick={() => setReplying(true)}>
         <i className="bi bi-chat" aria-hidden="true" />
         <span>Escreva um comentário…</span>

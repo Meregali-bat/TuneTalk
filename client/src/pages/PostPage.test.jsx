@@ -43,6 +43,19 @@ describe('PostPage', () => {
     expect(screen.getByRole('status')).toHaveTextContent('Carregando post');
   });
 
+  it('com remixes, mostra quantos são e leva para a lista; sem remixes, não mostra nada', async () => {
+    postsApi.get.mockResolvedValue(detail({ post: { ...mainPost, quantidadeRemixes: 2 } }));
+    const { unmount } = renderPost();
+    const link = await screen.findByRole('link', { name: '2 remixes' });
+    expect(link).toHaveAttribute('href', '/post/10/remixes');
+    unmount();
+
+    postsApi.get.mockResolvedValue(detail({ post: { ...mainPost, quantidadeRemixes: 0 } }));
+    renderPost();
+    await screen.findByRole('article', { name: 'Post de Ana sobre Help!' });
+    expect(screen.queryByRole('link', { name: /remix/ })).toBeNull();
+  });
+
   it('mostra o post em destaque e os comentários como posts', async () => {
     renderPost();
 

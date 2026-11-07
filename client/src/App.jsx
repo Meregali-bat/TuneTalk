@@ -11,6 +11,7 @@ import { UsernamePage } from './pages/UsernamePage.jsx';
 import { FeedPage } from './pages/FeedPage.jsx';
 import { ProfilePage } from './pages/ProfilePage.jsx';
 import { PostPage } from './pages/PostPage.jsx';
+import { RemixesPage } from './pages/RemixesPage.jsx';
 import { SearchPage } from './pages/SearchPage.jsx';
 import { TagPage } from './pages/TagPage.jsx';
 import { ObraPage } from './pages/ObraPage.jsx';
@@ -45,6 +46,7 @@ export function AppRoutes() {
             <Route path="/seguindo" element={<FeedPage key="seguindo" feed="seguindo" />} />
             <Route path="/perfil/:id" element={<ProfilePage />} />
             <Route path="/post/:id" element={<PostPage />} />
+            <Route path="/post/:id/remixes" element={<RemixesPage />} />
             <Route path="/buscar" element={<SearchPage />} />
             <Route path="/tag/:tag" element={<TagPage />} />
             <Route path="/album" element={<ObraPage key="album" tipo="album" />} />

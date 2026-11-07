@@ -239,6 +239,16 @@ export function createMemoryRepositories(state, onChange) {
       const post = state.posts.find((p) => p.id === id);
       return post ? postRow(post) : null;
     },
+    async listRemixes(citadoId, { limit = 100, ocultos } = {}) {
+      return feedPage(state.posts.filter((p) => p.citadoId === citadoId), { limit, ocultos });
+    },
+    async contarRemixes(ids, { ocultos } = {}) {
+      const contagem = new Map();
+      for (const p of state.posts) {
+        if (ids.includes(p.citadoId) && visivel(ocultos)(p)) contagem.set(p.citadoId, (contagem.get(p.citadoId) ?? 0) + 1);
+      }
+      return contagem;
+    },
     async findByIds(ids) {
       return new Map(state.posts.filter((p) => ids.includes(p.id)).map((p) => [p.id, postRow(p)]));
     },
