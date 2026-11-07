@@ -2354,6 +2354,35 @@ button.track-row:hover {
   }
 }
 
+/* "N replays" no post aberto: leva para a lista de quem deu replay. */
+.thread-replays {
+  display: flex;
+  align-items: center;
+  gap: .6rem;
+  margin-top: .75rem;
+  padding: .75rem 1.1rem;
+  border: 1px solid var(--linhas);
+  border-radius: 999px;
+  color: var(--texto-suave);
+  text-decoration: none;
+  transition: background-color .15s ease, color .15s ease;
+
+  strong {
+    color: var(--texto);
+    font-variant-numeric: tabular-nums;
+  }
+
+  &:hover {
+    background: var(--superficie-2);
+    color: var(--texto);
+  }
+}
+
+.thread-replays__seta {
+  margin-left: auto;
+  font-size: .85rem;
+}
+
 .reply-prompt {
   display: flex;
   align-items: center;

@@ -24,6 +24,8 @@ describe('postService', () => {
       votar: vi.fn().mockResolvedValue(true),
       votosDe: vi.fn().mockResolvedValue(new Map()),
       countByAuthor: vi.fn().mockResolvedValue(5),
+      contarReplays: vi.fn().mockResolvedValue(new Map()),
+      listReplays: vi.fn().mockResolvedValue([]),
     };
     likes = {
       likedPostIds: vi.fn().mockResolvedValue([2, 3]),
@@ -54,7 +56,7 @@ describe('postService', () => {
     it('following lista os posts de quem o usuário segue', async () => {
       const feed = await service.following(7);
       expect(posts.listFromFollowed).toHaveBeenCalledWith(7, { ocultos: [] });
-      expect(feed).toEqual([{ ...post(3), curtido: true }]);
+      expect(feed).toEqual([{ ...post(3), curtido: true, quantidadeReplays: 0 }]);
     });
 
     it('sem página, pede a primeira; com página, continua do último post mostrado', async () => {
@@ -74,7 +76,7 @@ describe('postService', () => {
 
     it('byHashtag lista os posts da hashtag (sem o #) marcados para quem vê', async () => {
       posts.listByHashtag = vi.fn().mockResolvedValue([post(3)]);
-      expect(await service.byHashtag('#Rock', 7)).toEqual([{ ...post(3), curtido: true }]);
+      expect(await service.byHashtag('#Rock', 7)).toEqual([{ ...post(3), curtido: true, quantidadeReplays: 0 }]);
       expect(posts.listByHashtag).toHaveBeenCalledWith('rock', { ocultos: [] });
       await expect(service.byHashtag('#', 7)).rejects.toMatchObject({ status: 400 });
     });
@@ -93,7 +95,7 @@ describe('postService', () => {
     it('byAuthor lista os posts de um autor marcados para quem vê', async () => {
       const feed = await service.byAuthor(4, 7);
       expect(posts.listByAuthor).toHaveBeenCalledWith(4);
-      expect(feed).toEqual([{ ...post(4), curtido: false }]);
+      expect(feed).toEqual([{ ...post(4), curtido: false, quantidadeReplays: 0 }]);
     });
   });
 
@@ -105,7 +107,7 @@ describe('postService', () => {
 
       expect(posts.listReplies).toHaveBeenCalledWith(1, { ocultos: [] });
       expect(result).toEqual({
-        post: { ...post(1, 2, { likes: 5 }), curtido: true },
+        post: { ...post(1, 2, { likes: 5 }), curtido: true, quantidadeReplays: 0 },
         pai: null,
         respostas: [
           { ...post(8, 3, { parentId: 1 }), curtido: false, primeiraResposta: null },
@@ -132,7 +134,7 @@ describe('postService', () => {
       const result = await service.get(8, 7);
 
       expect(result.post.id).toBe(8);
-      expect(result.pai).toEqual({ ...post(1), curtido: false });
+      expect(result.pai).toEqual({ ...post(1), curtido: false, quantidadeReplays: 0 });
     });
 
     it('lança 404 quando o post não existe', async () => {
@@ -412,7 +414,7 @@ describe('postService', () => {
       await service.create(7, { texto: 'discordo dessa nota', citadoId: 5 });
       expect(posts.create).toHaveBeenCalledWith(expect.objectContaining({ citadoId: 5, texto: 'discordo dessa nota', autorId: 7 }));
       expect(notifications.create).toHaveBeenCalledWith({
-        destinatarioId: 3, autorId: 7, tipo: 'citacao', conteudo: 'remixou seu post', postId: 42,
+        destinatarioId: 3, autorId: 7, tipo: 'citacao', conteudo: 'deu replay no seu post', postId: 42,
       });
     });
 
@@ -468,6 +470,40 @@ describe('postService', () => {
       posts.findById.mockResolvedValue(post(10, 2, { citadoId: 5 }));
       const aberto = await service.get(10, 7);
       expect(aberto.post.citado).toEqual(post(5, 3));
+    });
+  });
+
+  describe('replays', () => {
+    it('posts principais trazem quantos replays têm (sem os de quem quem vê não vê); comentários não', async () => {
+      const restricoes = { ocultosPara: vi.fn().mockResolvedValue([9]), relacao: vi.fn().mockResolvedValue({}) };
+      service = createPostService({ posts, likes, notifications, users, restricoes, now: () => now });
+      posts.listLatest.mockResolvedValue([post(10), post(11), post(12, 2, { parentId: 10 })]);
+      posts.contarReplays.mockResolvedValue(new Map([[10, 3]]));
+
+      const feed = await service.forYou(7);
+      expect(posts.contarReplays).toHaveBeenCalledWith([10, 11], { ocultos: [9] });
+      expect(feed.map((p) => p.quantidadeReplays)).toEqual([3, 0, undefined]);
+    });
+
+    it('lista os replays de um post marcados para quem vê, sem os de quem quem vê não vê', async () => {
+      const restricoes = { ocultosPara: vi.fn().mockResolvedValue([9]), relacao: vi.fn().mockResolvedValue({}) };
+      service = createPostService({ posts, likes, notifications, users, restricoes, now: () => now });
+      posts.listReplays.mockResolvedValue([post(3, 4, { citadoId: 1 })]);
+      posts.findByIds = vi.fn().mockResolvedValue(new Map([[1, post(1)]]));
+
+      const lista = await service.replays(1, 7);
+      expect(posts.listReplays).toHaveBeenCalledWith(1, { ocultos: [9] });
+      expect(lista).toEqual([{ ...post(3, 4, { citadoId: 1 }), curtido: true, quantidadeReplays: 0, citado: post(1) }]);
+    });
+
+    it('replays de post apagado ou de quem bloqueou quem vê: 404', async () => {
+      posts.findById.mockResolvedValue(null);
+      await expect(service.replays(1, 7)).rejects.toMatchObject({ status: 404 });
+
+      const restricoes = { ocultosPara: vi.fn().mockResolvedValue([]), relacao: vi.fn().mockResolvedValue({ bloqueado: false, meBloqueou: true }) };
+      service = createPostService({ posts, likes, notifications, users, restricoes, now: () => now });
+      posts.findById.mockResolvedValue(post(1));
+      await expect(service.replays(1, 7)).rejects.toMatchObject({ status: 404 });
     });
   });
 

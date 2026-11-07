@@ -52,6 +52,8 @@ export const postsApi = {
     ? `/posts?feed=${feed}&antes=${encodeURIComponent(depois.data)}&antesId=${depois.id}`
     : `/posts?feed=${feed}`),
   get: (id) => request(`/posts/${id}`),
+  // Replays (citações) de um post, do mais novo para o mais antigo.
+  replays: (id) => request(`/posts/${id}/replays`),
   byHashtag: (tag) => request(`/posts?tag=${encodeURIComponent(tag)}`),
   // Comentários também são criados aqui, com parentId.
   create: (post) => request('/posts', { method: 'POST', body: post }),

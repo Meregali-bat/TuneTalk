@@ -184,6 +184,22 @@ export function createPostRepository(prisma) {
       return row ? toPost(row) : null;
     },
 
+    // Replays (posts que citam este), dos mais novos para os mais antigos.
+    listReplays(citadoId, { limit = 100, ocultos } = {}) {
+      return findPosts({ where: { citadoId, ...semOcultos(ocultos) }, orderBy: FEED_ORDEM, take: limit });
+    },
+
+    // Quantos replays cada post tem: Map id → quantidade (posts sem replay não aparecem).
+    async contarReplays(ids, { ocultos } = {}) {
+      if (ids.length === 0) return new Map();
+      const grupos = await prisma.post.groupBy({
+        by: ['citadoId'],
+        where: { citadoId: { in: ids }, ...semOcultos(ocultos) },
+        _count: { _all: true },
+      });
+      return new Map(grupos.map((g) => [g.citadoId, g._count._all]));
+    },
+
     // Posts citados de uma lista: Map id → post (os apagados não vêm).
     async findByIds(ids) {
       if (ids.length === 0) return new Map();

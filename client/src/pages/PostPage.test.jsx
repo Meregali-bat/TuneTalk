@@ -43,6 +43,19 @@ describe('PostPage', () => {
     expect(screen.getByRole('status')).toHaveTextContent('Carregando post');
   });
 
+  it('com replays, mostra quantos são e leva para a lista; sem replays, não mostra nada', async () => {
+    postsApi.get.mockResolvedValue(detail({ post: { ...mainPost, quantidadeReplays: 2 } }));
+    const { unmount } = renderPost();
+    const link = await screen.findByRole('link', { name: '2 replays' });
+    expect(link).toHaveAttribute('href', '/post/10/replays');
+    unmount();
+
+    postsApi.get.mockResolvedValue(detail({ post: { ...mainPost, quantidadeReplays: 0 } }));
+    renderPost();
+    await screen.findByRole('article', { name: 'Post de Ana sobre Help!' });
+    expect(screen.queryByRole('link', { name: /replay/ })).toBeNull();
+  });
+
   it('mostra o post em destaque e os comentários como posts', async () => {
     renderPost();
 

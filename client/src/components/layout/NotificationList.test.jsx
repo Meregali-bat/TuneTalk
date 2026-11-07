@@ -41,12 +41,12 @@ describe('NotificationList: selo de fundador e marcações', () => {
 
   it('citação: quem citou, com ícone de aspas, levando à citação', () => {
     renderWithProviders(<NotificationList notifications={[{
-      id: 4, tipo: 'citacao', conteudo: 'remixou seu post', lida: false, postId: 41, autor: bia,
+      id: 4, tipo: 'citacao', conteudo: 'deu replay no seu post', lida: false, postId: 41, autor: bia,
     }]} />);
     const item = screen.getByRole('link');
     expect(item).toHaveAttribute('href', '/post/41');
-    expect(item).toHaveTextContent('bia remixou seu post');
-    expect(item.querySelector('.notif__icon--citacao .bi-shuffle')).not.toBeNull();
+    expect(item).toHaveTextContent('bia deu replay no seu post');
+    expect(item.querySelector('.notif__icon--citacao .bi-arrow-repeat')).not.toBeNull();
   });
 
   it('se a lista não carregar, diz que falhou (e não que está vazia)', () => {

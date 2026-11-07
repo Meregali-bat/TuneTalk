@@ -135,6 +135,17 @@ export function PostPage() {
         onAutorOculto={() => navigate('/foryou')}
       />
 
+      {/* Replays (quem citou este post): abre a lista. */}
+      {post.quantidadeReplays > 0 && (
+        <Link to={`/post/${post.id}/replays`} className="thread-replays">
+          <i className="bi bi-arrow-repeat" aria-hidden="true" />
+          <span>
+            <strong>{post.quantidadeReplays}</strong> {post.quantidadeReplays === 1 ? 'replay' : 'replays'}
+          </span>
+          <i className="bi bi-chevron-right thread-replays__seta" aria-hidden="true" />
+        </Link>
+      )}
+
       <button type="button" className="reply-prompt" aria-label="Comentar" onClick={() => setReplying(true)}>
         <i className="bi bi-chat" aria-hidden="true" />
         <span>Escreva um comentário…</span>
