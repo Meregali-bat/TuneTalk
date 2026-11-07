@@ -412,7 +412,7 @@ describe('postService', () => {
       await service.create(7, { texto: 'discordo dessa nota', citadoId: 5 });
       expect(posts.create).toHaveBeenCalledWith(expect.objectContaining({ citadoId: 5, texto: 'discordo dessa nota', autorId: 7 }));
       expect(notifications.create).toHaveBeenCalledWith({
-        destinatarioId: 3, autorId: 7, tipo: 'citacao', conteudo: 'citou seu post', postId: 42,
+        destinatarioId: 3, autorId: 7, tipo: 'citacao', conteudo: 'remixou seu post', postId: 42,
       });
     });
 
