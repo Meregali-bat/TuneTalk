@@ -406,6 +406,71 @@ describe('postService', () => {
     });
   });
 
+  describe('citar um post (repostar com comentário)', () => {
+    it('cria o post citando e avisa o autor do citado, com o link da citação', async () => {
+      posts.findById.mockResolvedValue(post(5, 3));
+      await service.create(7, { texto: 'discordo dessa nota', citadoId: 5 });
+      expect(posts.create).toHaveBeenCalledWith(expect.objectContaining({ citadoId: 5, texto: 'discordo dessa nota', autorId: 7 }));
+      expect(notifications.create).toHaveBeenCalledWith({
+        destinatarioId: 3, autorId: 7, tipo: 'citacao', conteudo: 'remixou seu post', postId: 42,
+      });
+    });
+
+    it('dá para citar com música e nota', async () => {
+      posts.findById.mockResolvedValue(post(5, 3));
+      await service.create(7, { citadoId: 5, musicName: 'Help!', artistName: 'The Beatles', postType: 'música', nota: 8 });
+      expect(posts.create).toHaveBeenCalledWith(expect.objectContaining({ citadoId: 5, musicName: 'Help!', nota: 8 }));
+    });
+
+    it('citar o próprio post não avisa; marcar quem foi citado não avisa duas vezes', async () => {
+      posts.findById.mockResolvedValue(post(5, 7));
+      await service.create(7, { texto: 'oi', citadoId: 5 });
+      expect(notifications.create).not.toHaveBeenCalled();
+
+      posts.findById.mockResolvedValue(post(5, 3));
+      users.findByNames.mockResolvedValue([{ id: 3, nome: 'bia' }]);
+      await service.create(7, { texto: '@bia olha isso', citadoId: 5 });
+      expect(notifications.create).toHaveBeenCalledTimes(1);
+      expect(notifications.create).toHaveBeenCalledWith(expect.objectContaining({ tipo: 'citacao' }));
+    });
+
+    it('recusa citado inválido, apagado, ou citação em comentário', async () => {
+      await expect(service.create(7, { texto: 'x', citadoId: 'abc' })).rejects.toMatchObject({ status: 400 });
+      await expect(service.create(7, { texto: 'x', citadoId: 5, parentId: 1 })).rejects.toMatchObject({ status: 400 });
+      posts.findById.mockResolvedValue(null);
+      await expect(service.create(7, { texto: 'x', citadoId: 5 })).rejects.toMatchObject({ status: 404 });
+      expect(posts.create).not.toHaveBeenCalled();
+    });
+
+    it('não dá para citar quem bloqueou ou foi bloqueado', async () => {
+      const restricoes = {
+        ocultosPara: vi.fn().mockResolvedValue([]),
+        relacao: vi.fn().mockResolvedValue({ bloqueado: true, meBloqueou: false, silenciado: false }),
+      };
+      service = createPostService({ posts, likes, notifications, users, restricoes, now: () => now });
+      posts.findById.mockResolvedValue(post(5, 3));
+      await expect(service.create(7, { texto: 'x', citadoId: 5 })).rejects.toMatchObject({ status: 403 });
+      expect(posts.create).not.toHaveBeenCalled();
+    });
+
+    it('nos feeds e no post aberto, a citação traz o post citado; apagado ou oculto fica indisponível', async () => {
+      const restricoes = { ocultosPara: vi.fn().mockResolvedValue([9]), relacao: vi.fn().mockResolvedValue({}) };
+      service = createPostService({ posts, likes, notifications, users, restricoes, now: () => now });
+      posts.listLatest.mockResolvedValue([
+        post(10, 2, { citadoId: 5 }), post(11, 2, { citadoId: 6 }), post(12, 2, { citadoId: 99 }), post(13, 2),
+      ]);
+      posts.findByIds = vi.fn().mockResolvedValue(new Map([[5, post(5, 3)], [6, post(6, 9)]]));
+
+      const feed = await service.forYou(7);
+      expect(posts.findByIds).toHaveBeenCalledWith([5, 6, 99]);
+      expect(feed.map((p) => p.citado)).toEqual([post(5, 3), { indisponivel: true }, { indisponivel: true }, undefined]);
+
+      posts.findById.mockResolvedValue(post(10, 2, { citadoId: 5 }));
+      const aberto = await service.get(10, 7);
+      expect(aberto.post.citado).toEqual(post(5, 3));
+    });
+  });
+
   describe('create', () => {
     it('grava o post com autor, data atual e nota como número', async () => {
       const id = await service.create(7, { texto: 'oi', musicName: 'Help!', nota: '7', postType: 'música' });

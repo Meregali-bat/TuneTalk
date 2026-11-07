@@ -1214,6 +1214,7 @@
   }
 
   &.notif__icon--new_follower,
+  &.notif__icon--citacao,
   &.notif__icon--voto_enquete {
     background: var(--destaque);
     color: var(--background);
@@ -4071,4 +4072,134 @@ button.poll__opcao {
     color: var(--background);
     font-weight: 600;
   }
+}
+
+/* --- Post citado (repostar com comentário) --- */
+.post-citado {
+  display: flex;
+  flex-direction: column;
+  gap: .5rem;
+  margin-top: .75rem;
+  padding: .75rem .9rem;
+  border: 1px solid var(--linhas);
+  border-radius: 14px;
+  color: var(--texto);
+  text-decoration: none;
+  transition: background-color .15s ease, border-color .15s ease;
+
+  &:is(a):hover {
+    border-color: var(--texto-suave);
+    background: var(--superficie-2);
+  }
+
+  .composer-step > & {
+    margin-top: 0;
+  }
+}
+
+.post-citado--indisponivel {
+  margin-bottom: 0;
+  color: var(--texto-suave);
+  font-size: .9rem;
+}
+
+.post-citado__autor {
+  display: flex;
+  align-items: center;
+  gap: .45rem;
+  min-width: 0;
+  font-size: .88rem;
+}
+
+.post-citado__foto {
+  flex: none;
+  width: 1.4rem;
+  height: 1.4rem;
+  border-radius: 50%;
+  object-fit: cover;
+}
+
+.post-citado__nome {
+  flex: none;
+  max-width: 50%;
+  overflow: hidden;
+  font-weight: 700;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.post-citado__handle {
+  min-width: 0;
+  overflow: hidden;
+  color: var(--texto-suave);
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.post-citado__texto {
+  display: -webkit-box;
+  overflow: hidden;
+  font-size: .95rem;
+  line-height: 1.4;
+  overflow-wrap: anywhere;
+  white-space: pre-line;
+  -webkit-box-orient: vertical;
+  -webkit-line-clamp: 4;
+}
+
+.post-citado__musica {
+  display: flex;
+  align-items: center;
+  gap: .6rem;
+  min-width: 0;
+}
+
+.post-citado__capa {
+  flex: none;
+  width: 2.75rem;
+  height: 2.75rem;
+  border-radius: 8px;
+  object-fit: cover;
+}
+
+.post-citado__obra {
+  display: flex;
+  flex: 1;
+  flex-direction: column;
+  min-width: 0;
+
+  span {
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+}
+
+.post-citado__titulo {
+  font-weight: 600;
+  font-size: .9rem;
+}
+
+.post-citado__artista {
+  color: var(--texto-suave);
+  font-size: .8rem;
+}
+
+.post-citado__nota {
+  flex: none;
+  font-size: .75rem;
+  white-space: nowrap;
+}
+
+.post-citado__imagem {
+  display: block;
+  width: 100%;
+  max-height: 12rem;
+  border-radius: 10px;
+  object-fit: cover;
+}
+
+.post-citado__extra {
+  color: var(--texto-suave);
+  font-size: .85rem;
 }

@@ -9,6 +9,7 @@ import { IMAGEM_MAX_MB } from '../../api/limits.js';
 import { croppedImageUrl } from '../../utils/cloudinaryCrop.js';
 import { ImageCropper } from './ImageCropper.jsx';
 import { GifPicker } from './GifPicker.jsx';
+import { PostCitado } from './PostCitado.jsx';
 import { useMentions } from './useMentions.js';
 import { LyricsPicker } from './LyricsPicker.jsx';
 import { LyricQuote } from './LyricQuote.jsx';
@@ -175,6 +176,8 @@ export function Composer({
   submitLabel = 'Publicar',
   // Música ou álbum já escolhido ao abrir (ex.: "Avaliar" na página do disco).
   musicaInicial = null,
+  // Post citado (repostar com comentário): aparece no compositor e vai junto ao publicar.
+  citando = null,
 }) {
   const textoId = useId();
   const sugestoesId = useId();
@@ -193,7 +196,7 @@ export function Composer({
   // Rascunho: o que a pessoa escreveu e não publicou volta quando ela abre de novo (por conta e
   // por post/comentário). Com um disco já escolhido ("Avaliar"), só o texto volta.
   const usuarioId = useContext(AuthContext)?.user?.id;
-  const chave = chaveRascunho(usuarioId, parentId);
+  const chave = chaveRascunho(usuarioId, citando ? `citar-${citando.id}` : parentId);
   const [rascunho] = useState(() => lerRascunho(chave));
   const musicaDoRascunho = !musicaInicial && rascunho?.track ? rascunho : null;
   const [recuperado, setRecuperado] = useState(Boolean(rascunho));
@@ -348,9 +351,10 @@ export function Composer({
         imagemProporcao = proporcaoDoGif(gif);
       }
       setSending('post');
-      await postsApi.create({
+      const criado = await postsApi.create({
         texto: clean,
         ...(parentId !== undefined && { parentId }),
+        ...(citando && { citadoId: citando.id }),
         ...(track && { ...musicFields(track), nota }),
         ...(track && track.tipo !== 'album' && trecho?.length && { trechoLetra: trecho }),
         ...(imagemUrl && { imagemUrl, imagemProporcao }),
@@ -369,7 +373,7 @@ export function Composer({
       });
       publicado.current = true;
       apagarRascunho(chave);
-      onPublished();
+      onPublished(criado?.id);
     } catch (err) {
       setError(err.message);
       setSending(null);
@@ -468,6 +472,8 @@ export function Composer({
           </ul>
         )}
       </div>
+
+      {citando && <PostCitado post={citando} comLink={false} />}
 
       {previa && recorte && (
         <figure className="composer-image">

@@ -10,6 +10,7 @@ const ICONS = {
   mention: 'bi-at',
   voto_enquete: 'bi-bar-chart-fill',
   marco_posts: 'bi-trophy-fill',
+  citacao: 'bi-shuffle',
 };
 
 // Avisos do próprio TuneTalk (ex.: selo de fundador) aparecem com o logo, não com o nome de alguém.
@@ -23,6 +24,10 @@ const targetOf = (notification) =>
 export function NotificationList({ notifications, onNavigate }) {
   if (!notifications) {
     return <p role="status" className="notif-status">Carregando notificações…</p>;
+  }
+
+  if (notifications.erro) {
+    return <p role="alert" className="notif-status">Não foi possível carregar as notificações. Tente de novo.</p>;
   }
 
   if (notifications.length === 0) {

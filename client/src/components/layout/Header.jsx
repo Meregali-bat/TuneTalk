@@ -78,7 +78,8 @@ export function Header() {
       setNotifications(await notificationsApi.list());
       await notificationsApi.readAll();
     } catch {
-      setNotifications((current) => current ?? []);
+      // Falhou: mostra o erro, e não "nada por aqui", que daria a entender que não há avisos.
+      setNotifications((current) => current ?? { erro: true });
     }
     refreshUnread();
   };

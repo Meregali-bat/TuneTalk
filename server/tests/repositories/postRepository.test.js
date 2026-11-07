@@ -21,6 +21,18 @@ describe('postRepository (Postgres)', () => {
   });
   afterAll(() => db.close());
 
+  it('guarda o post citado e findByIds devolve os que existem', async () => {
+    const citado = await repo.create({ autorId: ana.id, texto: 'original', data: new Date() });
+    const citacao = await repo.create({ autorId: bia.id, texto: 'discordo', citadoId: citado, data: new Date() });
+    expect((await repo.findById(citacao)).citadoId).toBe(citado);
+    const achados = await repo.findByIds([citado, 999999]);
+    expect([...achados.keys()]).toEqual([citado]);
+    expect(achados.get(citado).texto).toBe('original');
+    // Apagar o citado não apaga a citação.
+    await repo.remove(citado);
+    expect((await repo.findById(citacao)).citadoId).toBe(citado);
+  });
+
   describe('create + findById', () => {
     it('grava uma música e devolve no formato da API, com contagens', async () => {
       const data = new Date('2024-01-01T10:00:00Z');
@@ -42,6 +54,7 @@ describe('postRepository (Postgres)', () => {
       expect(await repo.findById(id)).toEqual({
         id,
         parentId: null,
+        citadoId: null,
         texto: 'que som',
         likes: 1,
         nota: 9,

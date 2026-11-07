@@ -66,10 +66,10 @@ function resumirNotas(notas) {
 const pick = (source, fields) =>
   Object.fromEntries(fields.filter((f) => source[f] !== undefined).map((f) => [f, source[f]]));
 
-const parseParentId = (value) => {
+const parseId = (value, mensagem) => {
   if (value === undefined || value === null || value === '') return undefined;
   const id = Number(value);
-  if (!Number.isInteger(id) || id <= 0) throw badRequest('Post respondido inválido.');
+  if (!Number.isInteger(id) || id <= 0) throw badRequest(mensagem);
   return id;
 };
 
@@ -100,14 +100,27 @@ export function createPostService({
       comEnquete.length ? posts.votosDe(viewerId, comEnquete) : new Map(),
     ]);
     const salvos = queroOuvir && list.some((post) => post.titulo) ? await queroOuvir.chaves(viewerId) : null;
-    return list.map((post) => comVoto({
+    return comCitados(list.map((post) => comVoto({
       ...post,
       curtido: liked.has(post.id),
       ...(salvos && post.titulo && { queroOuvir: salvos.has(chaveObra(post)) }),
-    }, votos));
+    }, votos)), viewerId);
   };
 
   const ocultosPara = (viewerId) => restricoes.ocultosPara(viewerId);
+
+  // Citações levam o post citado junto. Apagado, ou de alguém que quem vê não vê (bloqueio ou
+  // silêncio): { indisponivel: true }.
+  async function comCitados(list, viewerId) {
+    const ids = [...new Set(list.map((post) => post.citadoId).filter(Boolean))];
+    if (ids.length === 0) return list;
+    const [citados, ocultos] = await Promise.all([posts.findByIds(ids), ocultosPara(viewerId)]);
+    return list.map((post) => {
+      if (!post.citadoId) return post;
+      const citado = citados.get(post.citadoId);
+      return { ...post, citado: citado && !ocultos.includes(citado.autor.id) ? citado : { indisponivel: true } };
+    });
+  }
 
   // Curtir, comentar e votar não valem entre quem se bloqueou.
   const podeInteragir = async (post, usuarioId) => {
@@ -144,11 +157,12 @@ export function createPostService({
   };
 
   // Quem foi marcado com @ recebe aviso; o autor do post respondido já recebe o de comentário.
-  const notifyMentions = async (texto, { id, autorId, pai }) => {
+  // jaAvisado: quem foi citado, que já recebe o aviso de citação.
+  const notifyMentions = async (texto, { id, autorId, pai, jaAvisado }) => {
     const nomes = extractMentions(texto ?? '').slice(0, MAX_MARCACOES);
     if (nomes.length === 0) return;
     const marcados = (await users.findByNames(nomes))
-      .filter((u) => u.id !== autorId && u.id !== pai?.autor.id);
+      .filter((u) => u.id !== autorId && u.id !== pai?.autor.id && u.id !== jaAvisado);
     for (const marcado of marcados) {
       await notifications.create({
         destinatarioId: marcado.id,
@@ -246,8 +260,9 @@ export function createPostService({
       const primeirasMarcadas = new Map(
         (await markLiked([...primeiras.values()], viewerId)).map((p) => [p.parentId, p]),
       );
+      const [principal] = await comCitados([comVoto({ ...post, curtido }, votos)], viewerId);
       return {
-        post: comVoto({ ...post, curtido }, votos),
+        post: principal,
         pai: paiMarcado,
         respostas: (await markLiked(respostas, viewerId)).map((r) => ({
           ...r,
@@ -260,7 +275,9 @@ export function createPostService({
     async create(autorId, body) {
       const data = pick(body, CREATE_FIELDS);
       if (data.texto !== undefined) data.texto = String(data.texto).trim();
-      const parentId = parseParentId(body.parentId);
+      const parentId = parseId(body.parentId, 'Post respondido inválido.');
+      const citadoId = parseId(body.citadoId, 'Post citado inválido.');
+      if (citadoId !== undefined && parentId !== undefined) throw badRequest('Comentário não pode citar um post.');
       const imagemProporcao = parseProporcao(data.imagemProporcao, Boolean(data.imagemUrl));
       if (imagemProporcao !== undefined) data.imagemProporcao = imagemProporcao;
       const hasMusic = Boolean(data.musicName || data.albumName);
@@ -295,9 +312,18 @@ export function createPostService({
 
       const pai = parentId === undefined ? null : await findOrFail(parentId);
       if (pai) await podeInteragir(pai, autorId);
-      const id = await posts.create({ ...data, ...(pai && { parentId }), ...(enquete && { enquete }), autorId, data: now() });
+      const citado = citadoId === undefined ? null : await posts.findById(citadoId);
+      if (citadoId !== undefined && !citado) throw notFound('O post citado não existe mais.');
+      if (citado) await podeInteragir(citado, autorId);
+      const id = await posts.create({
+        ...data, ...(pai && { parentId }), ...(citado && { citadoId }), ...(enquete && { enquete }), autorId, data: now(),
+      });
       if (pai) await notifyAuthor(pai, autorId, 'comment', 'comentou no seu post');
-      await notifyMentions(data.texto, { id, autorId, pai });
+      // O aviso aponta para a citação (é lá que está a opinião sobre o post).
+      if (citado && citado.autor.id !== autorId) {
+        await notifications.create({ destinatarioId: citado.autor.id, autorId, tipo: 'citacao', conteudo: 'remixou seu post', postId: id });
+      }
+      await notifyMentions(data.texto, { id, autorId, pai, jaAvisado: citado?.autor.id });
       if (!pai) await celebrarMarco(autorId);
       // Avaliou um disco que estava no "Quero ouvir": já ouviu, sai da lista.
       if (hasMusic && !pai && queroOuvir) {

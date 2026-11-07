@@ -39,6 +39,22 @@ describe('NotificationList: selo de fundador e marcações', () => {
     expect(item.querySelector('.notif__icon--voto_enquete .bi-bar-chart-fill')).not.toBeNull();
   });
 
+  it('citação: quem citou, com ícone de aspas, levando à citação', () => {
+    renderWithProviders(<NotificationList notifications={[{
+      id: 4, tipo: 'citacao', conteudo: 'remixou seu post', lida: false, postId: 41, autor: bia,
+    }]} />);
+    const item = screen.getByRole('link');
+    expect(item).toHaveAttribute('href', '/post/41');
+    expect(item).toHaveTextContent('bia remixou seu post');
+    expect(item.querySelector('.notif__icon--citacao .bi-shuffle')).not.toBeNull();
+  });
+
+  it('se a lista não carregar, diz que falhou (e não que está vazia)', () => {
+    renderWithProviders(<NotificationList notifications={{ erro: true }} />);
+    expect(screen.getByRole('alert')).toHaveTextContent('Não foi possível carregar as notificações');
+    expect(screen.queryByText('Nada por aqui ainda')).toBeNull();
+  });
+
   it('100 posts: parabéns do TuneTalk com troféu, levando ao 100º post', () => {
     renderWithProviders(<NotificationList notifications={[{
       id: 4, tipo: 'marco_posts', conteudo: 'Parabéns pelo seu 100º post!', lida: false, postId: 50, autor: ana,

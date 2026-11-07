@@ -214,6 +214,17 @@ describe('API fake da demo (serviços reais + banco em memória)', () => {
     expect(achados).toEqual([expect.objectContaining({ nome: 'bruno.lima', seguindo: true })]);
   });
 
+  it('citar um post: a citação traz o citado e pode ter música', async () => {
+    await login();
+    const [alheio] = (await call('GET', '/posts?feed=foryou')).body.filter((p) => p.autor.id !== api.currentUserId());
+    const criado = await call('POST', '/posts', JSON.stringify({
+      texto: 'discordo', citadoId: alheio.id, musicName: 'Help!', artistName: 'The Beatles', postType: 'música', nota: 6,
+    }));
+    expect(criado.status).toBe(201);
+    const { post } = (await call('GET', `/posts/${criado.body.id}`)).body;
+    expect(post).toMatchObject({ texto: 'discordo', titulo: 'Help!', citado: { id: alheio.id } });
+  });
+
   it('busca de GIF: GIFs de mentira, e o escolhido vira a imagem do post', async () => {
     await login();
     const todos = (await call('GET', '/gifs?q=')).body;
