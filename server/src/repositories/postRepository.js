@@ -184,13 +184,13 @@ export function createPostRepository(prisma) {
       return row ? toPost(row) : null;
     },
 
-    // Remixes (posts que citam este), dos mais novos para os mais antigos.
-    listRemixes(citadoId, { limit = 100, ocultos } = {}) {
+    // Replays (posts que citam este), dos mais novos para os mais antigos.
+    listReplays(citadoId, { limit = 100, ocultos } = {}) {
       return findPosts({ where: { citadoId, ...semOcultos(ocultos) }, orderBy: FEED_ORDEM, take: limit });
     },
 
-    // Quantos remixes cada post tem: Map id → quantidade (posts sem remix não aparecem).
-    async contarRemixes(ids, { ocultos } = {}) {
+    // Quantos replays cada post tem: Map id → quantidade (posts sem replay não aparecem).
+    async contarReplays(ids, { ocultos } = {}) {
       if (ids.length === 0) return new Map();
       const grupos = await prisma.post.groupBy({
         by: ['citadoId'],

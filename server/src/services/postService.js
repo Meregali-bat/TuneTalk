@@ -109,20 +109,20 @@ export function createPostService({
 
   const ocultosPara = (viewerId) => restricoes.ocultosPara(viewerId);
 
-  // Citações (remixes) levam o post citado junto. Apagado, ou de alguém que quem vê não vê
-  // (bloqueio ou silêncio): { indisponivel: true }. Posts principais levam quantos remixes têm
-  // (sem contar os de quem quem vê não vê, igual à lista de remixes).
+  // Citações (replays) levam o post citado junto. Apagado, ou de alguém que quem vê não vê
+  // (bloqueio ou silêncio): { indisponivel: true }. Posts principais levam quantos replays têm
+  // (sem contar os de quem quem vê não vê, igual à lista de replays).
   async function comCitados(list, viewerId) {
     const ids = [...new Set(list.map((post) => post.citadoId).filter(Boolean))];
     const principais = list.filter((post) => !post.parentId).map((post) => post.id);
     if (ids.length === 0 && principais.length === 0) return list;
     const ocultos = await ocultosPara(viewerId);
-    const [citados, remixes] = await Promise.all([
+    const [citados, replays] = await Promise.all([
       ids.length ? posts.findByIds(ids) : new Map(),
-      principais.length ? posts.contarRemixes(principais, { ocultos }) : new Map(),
+      principais.length ? posts.contarReplays(principais, { ocultos }) : new Map(),
     ]);
     return list.map((post) => {
-      const comContagem = post.parentId ? post : { ...post, quantidadeRemixes: remixes.get(post.id) ?? 0 };
+      const comContagem = post.parentId ? post : { ...post, quantidadeReplays: replays.get(post.id) ?? 0 };
       if (!post.citadoId) return comContagem;
       const citado = citados.get(post.citadoId);
       return { ...comContagem, citado: citado && !ocultos.includes(citado.autor.id) ? citado : { indisponivel: true } };
@@ -239,12 +239,12 @@ export function createPostService({
       return markLiked(await posts.listByHashtag(limpa, { ocultos }), viewerId);
     },
 
-    // Remixes de um post (citações dele), do mais novo para o mais antigo, sem os de quem quem vê não vê.
-    async remixes(postId, viewerId) {
+    // Replays de um post (citações dele), do mais novo para o mais antigo, sem os de quem quem vê não vê.
+    async replays(postId, viewerId) {
       const post = await findOrFail(postId);
       if (await haBloqueio(restricoes, viewerId, post.autor.id)) throw notFound('Post não encontrado.');
       const ocultos = await ocultosPara(viewerId);
-      return markLiked(await posts.listRemixes(postId, { ocultos }), viewerId);
+      return markLiked(await posts.listReplays(postId, { ocultos }), viewerId);
     },
 
     // O post fixado vem primeiro; os outros seguem do mais novo para o mais antigo.
@@ -336,7 +336,7 @@ export function createPostService({
       if (pai) await notifyAuthor(pai, autorId, 'comment', 'comentou no seu post');
       // O aviso aponta para a citação (é lá que está a opinião sobre o post).
       if (citado && citado.autor.id !== autorId) {
-        await notifications.create({ destinatarioId: citado.autor.id, autorId, tipo: 'citacao', conteudo: 'remixou seu post', postId: id });
+        await notifications.create({ destinatarioId: citado.autor.id, autorId, tipo: 'citacao', conteudo: 'deu replay no seu post', postId: id });
       }
       await notifyMentions(data.texto, { id, autorId, pai, jaAvisado: citado?.autor.id });
       if (!pai) await celebrarMarco(autorId);

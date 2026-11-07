@@ -2354,8 +2354,8 @@ button.track-row:hover {
   }
 }
 
-/* "N remixes" no post aberto: leva para a lista de quem remixou. */
-.thread-remixes {
+/* "N replays" no post aberto: leva para a lista de quem deu replay. */
+.thread-replays {
   display: flex;
   align-items: center;
   gap: .6rem;
@@ -2378,7 +2378,7 @@ button.track-row:hover {
   }
 }
 
-.thread-remixes__seta {
+.thread-replays__seta {
   margin-left: auto;
   font-size: .85rem;
 }

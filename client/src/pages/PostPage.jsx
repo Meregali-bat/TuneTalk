@@ -135,14 +135,14 @@ export function PostPage() {
         onAutorOculto={() => navigate('/foryou')}
       />
 
-      {/* Remixes (quem citou este post): abre a lista. */}
-      {post.quantidadeRemixes > 0 && (
-        <Link to={`/post/${post.id}/remixes`} className="thread-remixes">
-          <i className="bi bi-shuffle" aria-hidden="true" />
+      {/* Replays (quem citou este post): abre a lista. */}
+      {post.quantidadeReplays > 0 && (
+        <Link to={`/post/${post.id}/replays`} className="thread-replays">
+          <i className="bi bi-arrow-repeat" aria-hidden="true" />
           <span>
-            <strong>{post.quantidadeRemixes}</strong> {post.quantidadeRemixes === 1 ? 'remix' : 'remixes'}
+            <strong>{post.quantidadeReplays}</strong> {post.quantidadeReplays === 1 ? 'replay' : 'replays'}
           </span>
-          <i className="bi bi-chevron-right thread-remixes__seta" aria-hidden="true" />
+          <i className="bi bi-chevron-right thread-replays__seta" aria-hidden="true" />
         </Link>
       )}
 

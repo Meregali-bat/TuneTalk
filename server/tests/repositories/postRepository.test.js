@@ -33,18 +33,18 @@ describe('postRepository (Postgres)', () => {
     expect((await repo.findById(citacao)).citadoId).toBe(citado);
   });
 
-  it('lista os remixes de um post (mais novos primeiro) e conta quantos cada post tem, sem os ocultos', async () => {
+  it('lista os replays de um post (mais novos primeiro) e conta quantos cada post tem, sem os ocultos', async () => {
     const caio = await factory.user({ nome: 'Caio' });
     const original = await repo.create({ autorId: ana.id, texto: 'original', data: new Date('2024-01-01T10:00:00Z') });
     const outro = await repo.create({ autorId: ana.id, texto: 'outro', data: new Date('2024-01-01T10:00:00Z') });
     const r1 = await repo.create({ autorId: bia.id, texto: 'r1', citadoId: original, data: new Date('2024-01-02T10:00:00Z') });
     const r2 = await repo.create({ autorId: caio.id, texto: 'r2', citadoId: original, data: new Date('2024-01-03T10:00:00Z') });
 
-    expect((await repo.listRemixes(original)).map((p) => p.id)).toEqual([r2, r1]);
-    expect((await repo.listRemixes(original, { ocultos: [caio.id] })).map((p) => p.id)).toEqual([r1]);
-    expect(await repo.contarRemixes([original, outro])).toEqual(new Map([[original, 2]]));
-    expect(await repo.contarRemixes([original], { ocultos: [caio.id] })).toEqual(new Map([[original, 1]]));
-    expect(await repo.contarRemixes([])).toEqual(new Map());
+    expect((await repo.listReplays(original)).map((p) => p.id)).toEqual([r2, r1]);
+    expect((await repo.listReplays(original, { ocultos: [caio.id] })).map((p) => p.id)).toEqual([r1]);
+    expect(await repo.contarReplays([original, outro])).toEqual(new Map([[original, 2]]));
+    expect(await repo.contarReplays([original], { ocultos: [caio.id] })).toEqual(new Map([[original, 1]]));
+    expect(await repo.contarReplays([])).toEqual(new Map());
   });
 
   describe('create + findById', () => {

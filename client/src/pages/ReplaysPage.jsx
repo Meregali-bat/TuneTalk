@@ -5,31 +5,31 @@ import { BackBar } from '../components/layout/BackBar.jsx';
 import { PostCard } from '../components/post/PostCard.jsx';
 import { PullToRefresh } from '../components/common/PullToRefresh.jsx';
 
-// Remixes de um post (quem citou ele), do mais novo para o mais antigo.
-export function RemixesPage() {
+// Replays de um post (quem citou ele), do mais novo para o mais antigo.
+export function ReplaysPage() {
   const { id } = useParams();
-  const { data: remixes, error, reload, setData } = useAsync(() => postsApi.remixes(id), [id]);
+  const { data: replays, error, reload, setData } = useAsync(() => postsApi.replays(id), [id]);
 
-  const quantos = remixes ? `${remixes.length} ${remixes.length === 1 ? 'remix' : 'remixes'}` : null;
+  const quantos = replays ? `${replays.length} ${replays.length === 1 ? 'replay' : 'replays'}` : null;
   const removePost = (postId) => setData((lista) => lista.filter((p) => p.id !== postId));
   const ocultarAutor = (autorId) => setData((lista) => lista.filter((p) => p.autor.id !== autorId));
 
   return (
     <div className="feed">
-      <BackBar titulo="Remixes" subtitulo={quantos} />
+      <BackBar titulo="Replays" subtitulo={quantos} />
       <PullToRefresh onRefresh={reload} />
 
       {error && <div role="alert" className="feed-error"><p>{error.message}</p></div>}
-      {!remixes && !error && <p role="status" className="composer-hint">Carregando…</p>}
-      {remixes?.length === 0 && (
+      {!replays && !error && <p role="status" className="composer-hint">Carregando…</p>}
+      {replays?.length === 0 && (
         <div className="feed-empty">
-          <i className="bi bi-shuffle" aria-hidden="true" />
-          <p>Ninguém remixou esse post ainda.</p>
+          <i className="bi bi-arrow-repeat" aria-hidden="true" />
+          <p>Ninguém deu replay nesse post ainda.</p>
         </div>
       )}
-      {remixes?.length > 0 && (
+      {replays?.length > 0 && (
         <div className="feed-list">
-          {remixes.map((post) => <PostCard key={post.id} post={post} onDeleted={removePost} onAutorOculto={ocultarAutor} />)}
+          {replays.map((post) => <PostCard key={post.id} post={post} onDeleted={removePost} onAutorOculto={ocultarAutor} />)}
         </div>
       )}
     </div>
